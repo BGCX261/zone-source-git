@@ -1,0 +1,36 @@
+digraph ulk7_recalc_task_prio{
+        label="recalc_task_prio(p,now)";
+        size="16,10";
+        ratio=filled;
+
+        node[style=filled,shape=box,fillcolor=gray];
+        sleep_time_min[label="sleep_time = min(now - p->timestamp, 10^9)"];
+        effective_prio[label="effective_prio()"];
+        p_sleep_avg[label="p->sleep_avg = 900"];
+        CURRENT_BONUSE[label="CURRENT_BONUSE for bonuse"];
+        sleep_time_0[label="sleep_time = 0"];
+        sleep_avg_reach_the_limit[label="sleep_avg reach the limit"];
+        
+        uninterruptible_not_thread[shape=hexagon,label="uninterruptible and \lnot kernel thread"];
+        add_sleep_time_avg[label="add sleep_time to sleep_avg"];
+        add_and_greater[shape=diamond,label="sleep_time+sleep_avg"];
+        set_sleep_avg_lmt[label="set sleep_avg limit\land sleep_time 0"];
+        limit_sleep_avg[label="sleep_avg under 1000"];
+        
+        sleep_time_min -> effective_prio[decorate=true,label="smaller than 0"];
+        sleep_time_min -> p_sleep_avg[decorate=true,label="kernel thread, \lTASK_UNINTERRUPTIBLE,\lsleep time limit"];
+        p_sleep_avg -> effective_prio;
+        sleep_time_min -> CURRENT_BONUSE;
+        CURRENT_BONUSE -> uninterruptible_not_thread;
+        uninterruptible_not_thread -> sleep_avg_reach_the_limit[label="true"];
+        sleep_avg_reach_the_limit -> sleep_time_0[label="true"];
+        sleep_avg_reach_the_limit -> add_and_greater[label="false"];
+        add_and_greater -> set_sleep_avg_lmt[label="greater limit"];
+        add_and_greater -> add_sleep_time_avg;
+        uninterruptible_not_thread -> add_sleep_time_avg[label="false"];
+        sleep_time_0 -> add_sleep_time_avg;
+        // sleep_time_0 -> set_sleep_avg_lmt[decorate=true,label="sleep_time+p->slep_avg \lnot smaller than limit"];
+        set_sleep_avg_lmt -> add_sleep_time_avg;
+        add_sleep_time_avg -> limit_sleep_avg;
+        limit_sleep_avg -> effective_prio;
+}

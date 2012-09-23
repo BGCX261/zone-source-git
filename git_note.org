@@ -1,0 +1,191 @@
+#+STARTUP: showall
+* Chapter 1 Repositories and Branches
+- what is commit?
+  - It stores the history as a compressed collection of interrelated snapshots of the project’s contents. In git each such version is called a commit.
+- what is branch?
+  - Those snapshots aren’t necessarily all arranged in a single line from oldest to newest; instead, work may simultaneously proceed along parallel lines of development, called branches, which may merge and diverge.
+- what is head?
+  - A single git repository can track development on multiple branches. It does this by keeping a list of heads which reference the latest commit on each branch; the git-branch(1) command shows you the list of branch heads
+- what is tag?
+  - Most projects also use tags. Tags, like heads, are references into the project’s history, and can be listed using the git-tag(1) command, Tags are expected to always point at the same version of a project, while heads are expected to advance as development progresses.
+- checkout
+  - Create a new branch head pointing to one of these versions and check it out using git-checkout(1).
+    - git checkout -b new v2.6.13
+       - The working directory then reflects the contents that the project had when it was tagged v2.6.13.
+       - an asterisk marking the currently checked-out branch
+       - can modify the current branch to point at v2.6.17 instead, with git reset --hard v2.6.17, resetting that branch may leave you with no way to find the history it used to point to.
+- what is reachable?
+  - we say that commit X is "reachable" from commit Y if commit X is an ancestor of commit Y Equivalently, you could say that Y is a descendant of X, or that .there is a chain of parents leading from commit Y to commit X.
+
+- 
+     #+BEGIN_SRC emacs-lisp 
+
+        o--o--o <-- Branch A
+       /
+o--o--o--o--o <-- master
+       \
+        o--o--o <-- Branch B
+     #+END_SRC
+  - "branch head" (or just "head") to mean a reference to the most recent commit on a branch. In the example above, the branch head named "A" is a pointer to one particular commit, but we refer to the line of three commits leading up to that point as all being part of "branch A"
+- Manipulating branches
+  - git branch
+  - git branch <branch> //create a new branch named <branch>, referencing the same point in history as the current branch
+  - git branch <branch> <start-point>
+  - git branch -d <branch> //delete the branch <branch>; if the branch you are deleting points to a commit which is not reachable from the current branch, this command will fail with a warning.
+  - git branch -D <branch>
+  - git checkout <branch>
+  - git checkout -b <new> <branch>
+  - git uses a file named "HEAD" in the .git directory to remember which branch is current
+     #+BEGIN_SRC emacs-lisp
+               $ git checkout master             (1)
+               $ git checkout master~2 Makefile  (2)
+               $ rm -f hello.c
+               $ git checkout hello.c            (3)
+
+           1. switch branch
+           2. take a file out of another commit
+           3. restore hello.c from the index
+     #+END_SRC
+
+- Examining an old version without creating a new branch
+  - check out the commit referenced by a tag
+    - git checkout v2.6.17
+    - The HEAD then refers to the SHA-1 of the commit instead of to a branch, and git branch shows that you are no longer on a branch. In this case we say that the HEAD is "detached"
+- Examining branches from a remote repository
+     #+BEGIN_SRC emacs-lisp
+$ git branch -r
+origin/HEAD
+origin/html
+origin/maint
+origin/man
+origin/master
+origin/next
+origin/pu
+origin/todo
+     #+END_SRC
+  - In this example, "origin" is called a remote repository, or "remote" for short. The branches of this repository are called "remote branches" from our point of view.
+  - You might want to build on one of these remote-tracking branches on a branch of your own, just as you would for a tag
+     #+BEGIN_SRC emacs-lisp 
+$ git checkout -b my-todo-copy origin/todo
+     #+END_SRC
+- Naming branches, tags, and other references
+  - The branch "test" is short for "refs/heads/test".
+  - The tag "v2.6.18" is short for "refs/tags/v2.6.18".
+  - "origin/master" is short for "refs/remotes/origin/master".
+- Updating a repository with git fetch
+  - The command "git fetch", with no arguments, will update all of the remote-tracking branches to the latest version found in her repository. It will not touch any of your own branches—not even the "master" branch that was created for you on clone.
+- Fetching branches from other repositories
+  -
+     #+BEGIN_SRC emacs-lisp 
+    $ git remote add linux-nfs git://linux-nfs.org/pub/nfs-2.6.git
+    $ git fetch linux-nfs
+    \* refs/remotes/linux-nfs/master: storing branch 'master' ...
+      commit: bf81b46
+     #+END_SRC
+New remote-tracking branches will be stored under the shorthand name that you gave
+"git remote add", in this case linux-nfs:
+     #+BEGIN_SRC emacs-lisp
+$ git branch -r
+linux-nfs/master
+origin/master
+     #+END_SRC
+If you run "git fetch <remote>" later, the remote-tracking branches for the named
+<remote> will be updated.
+
+* Chapter 2. Exploring git history
+
+- How to use bisect to find a regression
+  - Suppose version 2.6.18 of your project worked, but the version at "master" crashes.
+     #+BEGIN_SRC emacs-lisp 
+$ git bisect start
+$ git bisect good v2.6.18
+$ git bisect bad master
+Bisecting: 3537 revisions left to test after this
+[65934a9a028b88e83e2b0f8b36618fe503349f8e] BLOCK: Make USB storage depend on SCSI r
+     #+END_SRC
+     if you run "git branch" at this point, you’ll see that git has temporarily moved you in
+"(no branch)"HEAD is now detached from any branch and points directly to a commit
+(with commit id 65934...) that is reachable from "master" but not from v2.6.18.Compile
+and test it, and see whether it crashes. if bad then
+     #+BEGIN_SRC emacs-lisp 
+$ git bisect bad
+Bisecting: 1769 revisions left to test after this
+[7eff82c8b1511017ae605f0c99ac275a7e21b867] i2c-core: Drop useless bitmaskings
+     #+END_SRC
+
+     #+BEGIN_SRC emacs-lisp 
+$ git bisect reset
+     #+END_SRC
+to return you to the branch you were on before.
+- Naming commits We have seen several ways of naming commits already:
+  - 40-hexdigit object name
+  - branch name: refers to the commit at the head of the given branch
+  - tag name: refers to the commit pointed to by the given tag (we’ve seen branches
+  - and tags are special cases of references).
+  - HEAD: refers to the head of the current branch
+
+     #+BEGIN_SRC emacs-lisp 
+$ git show fb47ddb2 # the first few characters of the object name
+$ git show HEAD^  # parent(last commit) of the HEAD commit
+$ git show HEAD^^ # grandparent(last last commit)
+$ git show HEAD~4 # great-great-grandparent
+     #+END_SRC
+
+- Creating tags
+  - We can also create a tag to refer to a particular commit; after running
+     #+BEGIN_SRC emacs-lisp 
+    $ git tag stable-1 1b2e1d63ff
+     #+END_SRC
+    You can use stable-1 to refer to the commit 1b2e1d63ff.
+  - you would also like to include a comment with the tag,
+- Browsing revisions
+     #+BEGIN_SRC emacs-lisp 
+$ git log v2.5.. # commits since (not reachable from) v2.5
+$ git log test..master # commits reachable from master but not test
+$ git log master..test # ...reachable from test but not master
+$ git log master...test # ...reachable from either test or master, but not both
+$ git log --since="2 weeks ago" # commits from the last 2 weeks
+$ git log Makefile # commits which modify Makefile
+$ git log fs/ # ... which modify any file under fs/
+$ git log -S'foo()' # commits which add or remove any file data matching the string 'foo()'
+
+$ git log v2.5.. Makefile fs/
+
+$ git log -p #You can also ask git log to show patches:
+     #+END_SRC
+
+- Generating diffs
+  #+BEGIN_SRC emacs-lisp 
+  $ git diff master..test // That will produce the diff between the tips of the two branches. just about file.
+  #+END_SRC
+
+  #+BEGIN_SRC emacs-lisp 
+  $ git diff master...test //find the diff from their common ancestor to test, you can use three dots instead of two
+  #+END_SRC
+
+  #+BEGIN_SRC emacs-lisp 
+  $ git format-patch master..test //will generate a file with a patch for each commit reachable from test but not from master.
+  #+END_SRC
+
+That will produce the diff between the tips of the two branches. If you’d prefer to find the diff from their common ancestor to test, you can use three dots instead of two
+- Viewing old file versions
+
+  #+BEGIN_SRC emacs-lisp 
+  $ git show v2.5:fs/locks.c
+  #+END_SRC
+- Counting the number of commits on a branch
+  #+BEGIN_SRC emacs-lisp 
+  $ git log --pretty=oneline origin..mybranch | wc -l //Suppose you want to know how many commits you’ve made on "mybranch" since it diverged from "origin":
+  #+END_SRC
+  #+BEGIN_SRC emacs-lisp 
+  $ git rev-list origin..mybranch | wc -l //which just lists the SHA-1’s of all the given commits
+  #+END_SRC
+
+- Check whether two branches point at the same history
+  #+BEGIN_SRC emacs-lisp 
+  $ git diff origin..master
+  #+END_SRC
+  #+BEGIN_SRC emacs-lisp 
+  $ git log origin...master //you could recall that the ... operator selects all commits contained reachable from either one reference or the other but not both, will return no commits when the two branches are equal
+  #+END_SRC
+

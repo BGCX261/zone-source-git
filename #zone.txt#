@@ -167,5 +167,4 @@ https://yjie_life%40163.com@code.google.com/p/zone-source.git master
 以一直了git push来推送到服务器了。接着又有一个问题了，修改了文件的内容
 但是commit是没反应，后来发现要用git commit -a,晕。
 
-dired-mode不错，可以拷贝多个文件，方法是用命令m先将文件标记好，再用C将它们一起复制。
-还有一个比较新鲜的k功能，用来kill line的，但没有删文件。
+dired-mode不错，可以拷贝多个文件，方法是用命令m先将文件标记好，再用c

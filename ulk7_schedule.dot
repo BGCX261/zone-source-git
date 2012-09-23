@@ -1,0 +1,61 @@
+digraph ulk7_schedule{
+        label="schedule()";
+        size="10,18";
+        ratio=filled;
+        
+        node[style=filled,shape=box,fillcolor=gray];
+        preempt;
+        check_kernel_lock[label="check kernel lock"];
+        sched_clock[label="calc cpu time, limit in 1s"];
+        disable_irq_lock[label="disalbe_irq, lock rq"];
+        PF_DEAD[label="check PF_DEAD, set EXIT_DEAD"];
+        deactivate_task[label="deactivate_task"];
+        set_task_running[label="set TASK_RUNNING"];
+        dependent_sleeper[label="dependent_sleeper()"];
+        idle_balance[label="idle_balance()"];
+        exch_active_expired[label="switch active and expired"];
+        search_process[label="search process by bitmask"];
+        add_sleeptime[label="add sleeptime"];
+        add_all_time[label="add all time"];
+        add_fraction_time[label="add fraction time"];
+        prefect;
+        clear_TIF_NEED_RESCHED[label="clear TIF NEED RESCHED"];
+        rcq_qsctr_inc;
+        substract_sleeptime[label="substract sleeptime"];
+        set_timestamps[label="set timestamps"];
+        same_process[label="same process"];
+        context_switch[label="context_switch()"];
+        set_prev_mm[label="set prev_mm field"];
+        barrier[label="barrier()"];
+        finish_task_switch[label="finish_task_switch()"];
+        
+        preempt -> check_kernel_lock;
+        check_kernel_lock -> sched_clock;
+        sched_clock -> disable_irq_lock;
+        disable_irq_lock -> PF_DEAD;
+        PF_DEAD -> deactivate_task[label="NOT TASK_RUNNINT\land not preempt in kernel mode"];
+        deactivate_task -> set_task_running[label="not signal pend \land in TASK_INTERRUPTIBLE"];
+        set_task_running -> dependent_sleeper[label="have processes in rq"];
+        dependent_sleeper -> exch_active_expired[label="haven't processes in active"];
+        dependent_sleeper -> search_process[label="have processes in active"];
+        set_task_running -> idle_balance[label="haven't processes in rq"];
+        idle_balance -> exch_active_expired[label="haven't processes in active"];
+        idle_balance -> search_process[label="have processes in active"];
+        exch_active_expired -> search_process;
+        search_process -> add_sleeptime;
+        add_sleeptime -> add_all_time[label="by intr or defer"];
+        add_sleeptime -> add_fraction_time[label="by sys call"];
+        
+        add_all_time -> prefect;
+        add_fraction_time -> prefect;
+        prefect -> clear_TIF_NEED_RESCHED;
+        clear_TIF_NEED_RESCHED -> rcq_qsctr_inc;
+        rcq_qsctr_inc -> substract_sleeptime;
+        substract_sleeptime -> set_timestamps;
+        set_timestamps -> same_process;
+        same_process -> context_switch[label="not the same"];
+        same_process -> barrier;
+        context_switch -> set_prev_mm;
+        set_prev_mm -> barrier;
+        barrier -> finish_task_switch;
+}

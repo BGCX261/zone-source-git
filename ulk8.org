@@ -1,0 +1,280 @@
+* 说明
+- 之前对《Understanding Linux Kernel》作过大量纸质的笔记和摘录，但还是感觉内容太多了，大概有近200页的A4纸，想再把它读得更薄点，所以用了Emacs的org-mode来对它作一下极简摘录。
+
+* 内存管理
+
+** -8.1 页框管理
+- 4KB
+
+*** -8.1.1 页描述符
+- page, mem\_map
+- virt\_to\_page()
+- pfn\_to\_page()
+- \_count, +1
+- flag, Page(set/clear)XYZ
+
+*** -8.1.2 非一致内存访问
+- pg\_data\_t
+- pgdata\_list
+- couting\_page\_data
+
+*** -8.1.3 内存管理区
+- 两个限制
+- 3个管理区
+- 64位
+
+*** -8.1.4 保留的页框池
+- 分配方式
+- ATOMIC
+- min\_freekbyte
+
+*** -8.1.5 分区页框分配器
+- 连续页框
+- alloc\_page(s)
+- \_\_get\_free\_page(s)
+- gt\_zoerd\_page
+- \_\_get\_dma\_pages
+- gfp\_mask
+- node\_zonelists
+- 后备管理区
+- \_\_free\_pages()保留
+- free\_pages() 线性
+- \_\_free\_page
+- free\_page()
+
+*** -8.1.6 高端内存页框的内核映射
+- high\_memory
+- 方法
+- 3种机制
+- 阻塞
+- 保证
+
+**** -8.1.6.1 永久内存映射
+- pkmap\_page\_table
+- LAST\_PKMAP
+- 最多
+- PKMAP\_BASE
+- PKMAP\_COUNT, n-1
+- page\_address\_htable
+- page\_address\_map
+- page\_address()
+- kmap(), 中断
+- kmap\_high()
+- map\_new\_virtual()
+- 记录
+- flush\_all\_zero\_pkmaps()
+- kunmap()
+
+**** -8.1.6.2 临时内核映射
+- km\_type enum
+- KM\_TYPE\_NR
+- enum fixed\_address
+- FIX\_KMAP\_BAGIN
+- FIX\_KMAP\_KMAP\_END
+- fix\_to\_virt(FIX\_KMAP\_BEGIN), kmp\_pte,
+- kmpa\_atomic()
+- kumap\_atomic()
+
+*** -8.1.7 伙伴系统算法
+- 2和方法
+- 3个原因
+- 11个链表
+- 合并条件
+
+**** -8.1.7.1 数据结构
+- 区
+- zone\_mem\_map, size
+- 11个free\_area, free\_area域，free\_list,lru,nr\_free
+- private
+
+**** -8.1.7.2 分配块
+- \_\_rmqueue()查找
+
+**** -8.1.7.3 释放块
+- \_\_free\_page\_bulk(), zone
+
+*** -8.1.8 per\_cpu 页框cache
+- 每区2个cache 每cpu
+- 马上写入，DMA
+- pageset域，per\_cput\_pageset, per\_cput\_pages
+
+**** -8.1.8.1 分配内框
+- buffered\_rmqueue()
+
+**** -8.1.8.2 释放
+- free\_(hot/cold)\_page()
+- page\_flags
+- per\_cput\_pages
+- \_\_free\_pages\_bulk()
+
+*** -8.1.9 管理区分配器
+- 目标
+- \_\_alloc\_pages()
+- zonelist
+- 阈值
+- zone\_watermark\_ok()不包保留
+- 3个中1个，gfp\_high,can\_try\_harder
+- page\_low, 为0，kswap
+- page\_min
+- PF\_MEMALLOC, PF\_MEMDE, 忽略
+- 保留
+- \_\_GFP\_WAIT
+- cond\_resched()
+- PF\_MEMALLOC
+- reclaim\_state
+- try\_to\_free\_pages()
+  - \_\_GFP\_NORETRY,8页/\_\_GFP\_REPEAT \_\_GFP\_NOFAIL, blk\_congetion\_wait()
+- page\_high, out\_of\_memory()
+
+**** -8.1.9.1 释放一姐页框
+- \_\_free\_pages()
+- 动态的\_count, order
+- free\_page\_bulk
+
+** -8.2 内存区管理
+- 13，32-131072
+
+*** -8.2.1 slab分配器
+- 数据类型
+- 重复请求
+- cache
+- cache - slab- 页找现 - 对象
+
+*** -8.2.2 cache描述符
+- kmem\_cache\_t
+- lists域
+
+*** -8.2.3 slab描述符
+- slab
+- 存放位置
+- CFLAGS\_OFF\_SLAB
+
+*** -8.2.4 通用和专用cache
+- kmem\_cache, cache\_cache
+- 13, 26, malloc\_sizes
+- kmem\_cache\_init()
+- kmem\_cache\_create()
+- cache\_chain
+- kmem\_cache\_destroy()
+- keme\_cache\_shrink()
+
+*** -8.2.5 slab分配器和分区框分配器的接口
+- kmem\_getpages(), PG\_slab
+- keme\_freepages()
+ 
+*** -8.2.6 给高速缓存分配slab
+- 分配条件
+- cache\_grow()
+- kmem\_getpages()
+- alloc\_stabmgmet()
+- 扫描，填充，lru
+- cache\_init\_objs()
+- list\_add\_tail()
+- free\_object()
+
+*** -8.2.7 从cache中释放slab
+- 被释放的情况
+- slab\_destroy()
+  - 构析，kmem\_freepages()
+- 实际更复杂
+
+*** -8.2.8 对象描述符
+- kmem\_bufctl\_t
+  - slabp\_cache, 紧接slab描述符
+- 索引
+
+*** -8.2.9 对齐内存中的对象
+- 4096
+- 字大小对齐，BYTES\_PR\_WORD
+- 硬件高速缓存对齐
+
+*** -8.2.10 slab着色
+- 缓存
+
+*** -8.2.11 空闲slab对象的本地高速缓存
+- array\_cache
+- kmem\_cache\_create()
+- list.shared
+
+*** -8.2.12 分配一个slab对象
+- kmem\_cache\_alloc(cachep, flag)
+- cache\_alloc\_refill()
+  - 本地，获得空闲对象
+  - 锁
+  - 共享cache
+  - slabs\_partial/slabs\_free，inuse, free,插入链表,avail,free\_objebjects
+  - touch,最后一个插入的
+  - cache\_grow()
+
+*** -8.2.13 释放slab对象
+- kmem\_cache\_free(cachep, objp)
+- cache\_fluharray()
+  - 锁
+  - 共享cache
+  - free\_block() -> slab分配器
+    - free\_object
+    - 移除slab分配器
+    - slabp.free
+    - slabp.inuse++
+    - 释放slab
+    - 插入cachep.list.slab\_free
+    - 插入cachep.list.slab\_partial
+  - 放锁
+  - avail
+  - 移到开始端
+
+*** -8.2.14 通用对象
+- kmalloc()
+  - malloc\_size最近次方，kmem\_cache\_alloc()
+- kfree()
+
+*** -8.2.15 内存池
+- 内核成分，内存紧缺
+- 保留页框：中断处理程序和内部临界区，原子分配
+- 特定的
+- slab分配器
+- mempool\_t
+- 自定义alloc,free，mempool\_alloc\_slab()/mempool\_free\_slab(), kmem\_cache\_alloc()/kmem\_cache\_free(),cache地址
+- mempool\_create(), mempool\_destroy()
+- mempool\_alloc()
+  - 基本内存
+  - \_\_GFP\_WAIT，释放内存池
+- mempool\_free(), 是否满
+
+** -8.3 非连续内存区管理
+- 请求不经常，外部碎片，内核页表,4096,swap,模块，I/O设备
+
+*** -8.3.1 非连续内存区的线性地址
+- high\_memory
+- 固定线性地址映射的线性地址
+- PKMAP\_BASE
+- VMALLOC\_OFFSET
+- VMALLOC\_START, VMALLOC\_END
+
+*** -8.3.2 非连续内存的描述符
+- vm\_struct的描述符
+- vmlist
+- VM\_ALLOC - vmalloc(), VM\_MAP - vmap(), VM\_IOREMAP - ioreamap()
+- get\_vm\_aarea()
+  - kmalloc()
+  - 锁，合适大小
+  - 放锁
+  - 放描述符，放锁
+
+*** -8.3.3 分配非连续内存区
+- vmalloc()
+  - 4096倍
+  - get\_vm\_area(), VMALLOC, kmalloc(), alloc\_page(),area->pages,ZONE\_HIGHMEME
+- map\_vm\_area()修改内核的页表，不解当前页表，缺页时找内核页表
+- vmalloc\_32(), ZONE\_NORMAL和ZONE\_DMA
+- vmap(), 接页描述符地址，不分页框
+
+*** -8.3.4 释放非连续内存区
+- vfree() - vmallco/\_32(), vunmap() - vmap(), \_\_vunmap()
+- vunmap(), - vfree() deallocate\_pages为1 - vunmap() deallocate\_pages为0
+  - remove\_vm\_area(), 清内核页表
+  - \_\_free\_page()页表, kfree(area->page)自己，
+  - kfree(area)
+
+
+

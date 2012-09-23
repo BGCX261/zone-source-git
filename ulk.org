@@ -1,0 +1,270 @@
+* 说明
+- 之前对《Understanding Linux Kernel》作过大量纸质的笔记和摘录，但还是感觉内容太多了，大概有近200页的A4纸，想再把它读得更薄点，所以用了Emacs的org-mode来对它作一下极简摘录。
+
+* 中断
+
+** 5.2
+
+*** -5.2.10 completion
+- 竞争的例子
+- completion 结构体
+- complete ()
+- wait\_for\_completion ()
+- 区别
+
+*** -5.2.11 禁止本地中断
+- 一起使用
+- local\_irq\_disable ()
+- local\_irq\_enable ()
+- local\_irq\_save ()
+- local\_irq\_restore ()
+
+*** -5.2.12 禁止和使能可延迟函数
+- 禁止中断
+- preempt\_count ()
+- local\_bh\_disable ()，local\_bh\_enable ()
+  - 相等
+- do\_softirq ()，preempt\_schedule ()
+
+** 5.3 对内核数据的同步访问
+- 并发度
+- 短时间
+- 避免原因
+- 整数值，链表
+
+*** -5.3.1在自旋锁，信号量及中断禁止间选择
+- 根据内核控制路径
+- 自动禁止抢占
+
+**** -5.3.1.1 保护由异常访问的数据结构
+- 信号量
+- per_cpu变量
+
+**** -5.3.1.2 保护由中断访问的数据结构
+- 对于自己
+- 单cpu
+- 多cpu
+- spin(read,write)
+
+  \_lock(unlick,seqbegin,seqretry,seqlock,sequnlock)
+
+  \_irq(bh,irqsave,irqrestore)
+
+**** -5.3.1.3 保护由可延迟函数访问的数据结构
+- 单cpu
+- softirq()
+- tasklet(s)()
+
+**** -5.3.1.4 保护由异常和中断访问的数据结构
+- 信号量代替
+
+**** -5.3.1.5 保护由异常和可延迟函数访问的数据结构
+- 禁软中断
+
+** -5.4 避免竞争条件的例子
+
+*** -5.4.1 引用计数器
+
+*** -5.4.2 大内核锁
+- 自旋锁
+- kernel\_sem
+- lock\_depth
+- 允许schedule ()
+- 可抢占
+- 不能释放
+- preempt\_schedule\_irq ()
+
+*** -5.4.3 内存描述符读写信号量
+- 轻量级进程共享
+
+*** -5.4.4 slab cache list信号量
+- cache\_chain\_sem
+
+*** -5.4.4 Inode信号量
+
+* 定时测量
+- 时间和日期，时间间隔
+
+** -6.1 时钟和定时器电路
+- 当前时间和时间度量，发生中断
+
+*** -6.1.1 实时时钟 (RTC)
+- 闹钟
+- /dev/rtc
+- 获取时间和日期
+
+*** -6.1.2 时间戳计数器 (TSC)
+- TSC计数器
+- 不同频率CPU
+- 5ms
+
+*** -6.1.3 可编程间隔定时器 (PIT)
+- 不是闹钟
+- 节拍
+- tick\_nesc
+- 长短优缺
+- HZ
+- CLOCK\_TICK\_RATE
+- LATCH
+
+*** -6.1.4 CPU本地定时器
+- 32位
+- 非全局
+- 非总线
+
+*** -6.1.5 高精度事件定时器 (HPET)
+
+*** -6.1.6 ACPI 电源管理定时器
+
+** -6.2 Linux 计时体系结构
+- 周期活动 (5)
+- 单/多处理器
+- 2个计时函数
+
+*** -6.2.1 计时体系结构的数据结构
+
+**** -6.2.1.1 定时器对象
+- timer\_opts
+  - 记录上一节拍时间
+  - 返回自上一节拍开始经过的时间
+  - 返回自内核初始化开始经过的纳秒数
+- 定时差补
+- cur\_timer
+
+**** -6.2.1.2 jiffies变量
+- 解决溢出
+- 64位慢，原子
+- get\_jiffies\_64()
+- ++jiffies\_64
+
+**** -6.2.1.3 xtime变量
+- timespec
+- 也是xtime\_lock\_seqlock
+
+*** -6.2.2 单处理器系统上的计时体系结构
+
+**** -6.2.2.1 初始化阶段
+- time\_init()
+  - xtime, wall\_to\_monotonic, HPET,select\_time(),setup\_irq()
+
+**** -6.2.2.2 定时器中断处理程序
+- timer\_interupt()
+  - 锁
+  - mark\_offset()
+  - do\_timer\_interrupt()
+    - jiffies\_64, update\_times(), update\_process\_times(),profile\_tick(),外部时钟
+
+*** -6.2.3 多处理器系统上的计时体系结构
+
+**** -6.2.3.1 初始化阶段
+
+**** -6.2.3.2 全局时钟中断处理程序
+
+**** -6.2.3.3 本地时钟中断处理程序
+
+** -6.3 更新时间和日期
+- update\_times()
+- 丢失
+- update\_wall\_time()
+
+** -6.4 更新系统统计数
+- 4种数据
+
+*** -6.4.1 更新本地CPU统计数
+- update\_process\_times()
+  - acccount\_user/system\_time()
+  - SIGXCPU,SIGKILL
+  - account\_it\_virt/prof()
+  - kstat, TIMER\_SOFTIRT
+  - rcu\_tasklet, scheduler\_tick()
+
+*** -6.2.4 记录系统负载
+- update()
+- calc\_load()
+- 平均系统负载
+
+*** -6.2.3 监管内核代码
+- readprofile
+  - eip
+- profile\_tick()
+- /proc/profile文件
+
+*** -6.4.4 检查非屏敝中断 (NMI)看门狗
+- 系统冻结内核bug
+- do\_nmi()
+- irq\_stat, apic\_timer()
+
+** -6.5 软定时品和延迟函数
+- 动态/间隔
+- 可延迟函数
+
+*** -6.5.1 动态定时器
+- timer\_list
+- init\_timer(),add\_timer(),mod\_timer()
+- 显式移除
+- del\_time(), del\_timer\_sync(), del\_singleshot\_timer\_sync()
+- 相同的CPU
+
+**** -6.5.1.1 动态定时器和竞争条件
+- 停止释放, 多处理器
+- 会激活自己
+
+**** -6.5.1.2 动态定时器的数据结构
+- tvec\_base(per\_cpu), tv1-5
+- tvec\_root\_t, vec, 256
+- tvec\_t 64
+- timer\_jiffies, runtimer\_softirq()
+
+**** -6.5.1.3 处理动态定时器
+- TIMER\_SOFTIRQ
+- run\_timter\_softirq()
+  - basc->lock
+  - 索引
+  - cascade()
+  - timer\_jiffies
+  - 删定时器
+  - base->running\_timer
+  - t\_base
+  - 放锁，执行函数
+
+*** -6.5.3 nenosleep()系统调用
+- schedule\_timerout()
+
+*** -6.5.4 延迟函数
+- 小于几毫秒
+- udelay(), ndelay()
+- cur\_timer的delay()
+- "loop", CPU循环，紧凑指令循环
+- calibrate\_delay()
+- current\_cpu\_data.loops\_per\_jiffy
+
+** -6.6与定时测量相关的系统调用
+***  -6.6.1 time() 和 gettimeofday()
+- 秒数/秒数，微秒数，timval
+- sys\_gettimerofdat()
+- do\_gettimerofday()
+- 锁，get\_offset(),丢失，usec
+- read\_seqretry()
+- stime(), settimeofday()
+- sys\_settimeofday()
+- do\_settimeofdat()
+
+*** -6.6.2 adjtimx()
+- NTP
+- update\_wall\_time\_one\_tick()
+- xtime\_to\_usec
+
+*** -6.6.3 settimer() 和 alarm()系统调用
+- 间隔定时器
+- 周期的信号
+- ITIMER\_REAL,SIGALAM
+- ITIMER\_VIRUAL, SIGVTALRM
+- ITIMER\_PROF, SIGPROF
+- 单次/周期，itimerval
+- it\_real/virt/prof\_incr/value
+- real\_timer域
+- it\_read\_fn()
+- account\_it\_virt()
+- account\_it\_prof
+- 同时使用
+

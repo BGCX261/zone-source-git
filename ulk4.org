@@ -1,0 +1,381 @@
+#+STARTUP: showall
+* 说明
+- 之前对《Understanding Linux Kernel》作过大量纸质的笔记和摘录，但还是感觉内容太多了，大概有近200页的A4纸，想再把它读得更薄点，所以用了Emacs的org-mode来对它作一下极简摘录。
+
+* 中断和异常
+** -4.1 中断信号的作用
+- 内核路径
+- 中断处理程序可嵌套执行
+
+** -4.2 中断和异常
+- Intel分类
+  - 中断
+    - 可屏蔽中断，I/O设备
+    - 非屏蔽中断
+  - 异常
+    - processor\_deteched异常
+    - 故障（fault）,可以纠正
+    - 陷阱（trap），eip下一条指令
+    - 异常终止（abort）,严重的错误，强制中止
+    - programmed异常，int或int3指令产生这异常，into、bound
+  - 向量，数字标识，非屏蔽中断和异常是固定的
+
+*** -4.2.1 IRQ和中断
+  1. 硬件控制器
+  2. 选择禁止，不丢失
+  3. 全局屏蔽，IF全屏蔽
+
+**** -4.2.1.1 高级可编程中断控制器
+
+*** -4.2.2 异常
+- 80x86异常
+  - Divide error(fault),Debug(fault和fault),Not used,Break point(trap),Overflow(trap),
+
+    Bounds chech(fault),Invailid opcode(fault),Device not available(fault),Double fault(abort)
+
+    coprocessor segmemt overrun(abort),Invalid Tss(fault),segmemt not present(fault),
+
+    stack segmemt fault(fault),general protection(fault),page fault(fault),
+
+    Floating point error(fault),alignment check(fault),machine check(abort),SIMD floating point exception(fault)
+
+
+*** -4.2.3 中断描述符表
+- ITD，GDT，idtr
+- task门描述符，TSS
+- interupt门描述符，段选择符和偏移量，IF
+- trap门描述符，没IF
+
+*** -4.2.4 中断和异常的中断处理
+- 下一条指令前
+- 检测到
+  - 向量号，
+  - IDT，
+  - 段描述符，
+  - CPL<段DPL,CPL>门DPL，
+  - 新栈，
+  - fault,cs,eip
+  - efags,cs,eip->栈
+  - 硬件错误号
+  - cs,eip
+- 返回
+  - cs,eip,efags,硬件错误号
+  - CPL
+  - 旧栈
+  - 清ds,es,fs,gs
+
+** -4.3 中断和异常的嵌套处理
+- 代价
+  - 永不阻塞，不切换，当前进程内核栈
+- 中断抢占其它中断或异常，异常不抢占中断
+- 提高吞吐量，无优先级模式
+- 异常移CPU
+
+** -4.4 初始化中断描述符表
+- DPL禁止用户态
+- 中断门(),非用户，中断门，中断处理程序
+- 系统门，用户，陷阱门，4，5和128异常
+- 系统中断门，用户，中断门，3异常
+- 陷阱门，非用户，陷阱门，大多异常处理程序
+- 任务门，非用户，任务门，double\_fault
+- set\_intr\_gate(),set\_system\_gate(),
+
+  set\_system\_int\_gate(),set\_trap\_gate(),set\_task\_gate()
+
+*** -4.4.2 IDT的初步初始化
+- setup\_idt(), ignore\_int()
+
+** -4.5 异常的处理
+- 发信号
+- 框架
+  - 保存到内核栈
+  - 处理函数
+  - ret\_from\_exception()
+- trap\_init(),不可屏蔽
+
+*** -4.5.1 为异常处理保存寄存器的值
+- 硬件出错代码，垫NULL值
+- error\_code
+  - 存寄存器
+  - 字符串指令
+  - 硬件错误代码->edx,-1
+  - do\_handler\_name->edi,es
+  - 栈顶->eax
+  - 用户数据段选择符->ds/es
+  - edi
+
+*** -4.5.2 进入和离开异常处理函数
+- do\_前缀，do\_trap()，
+  - 错误代码/向量->进程描述符,
+  - 发信号
+- 马上处理信号
+- 内核态
+  - 无效系统调用参数
+  - die()
+    - 打印终端，do\_exit()
+
+** -4.6 处理中断
+- I/O中断，时钟中断，处理器间中断
+
+
+*** -4.6.1 I/O中断处理
+- 服务多个设备
+  - IRQ共享
+  - IRQ动力态分配
+- IRQ暂时忽略，保持TASKRUNNING
+- 事件分类，
+  - 紧急的，非紧急的，非紧急可延缓的
+- 4步
+  1. IRQ值，寄存器
+  2. 应答，
+  3. ISR
+  4. ret\_rom\_intr()
+
+**** -4.6.1.1 中断向量
+- 系统调用，128
+
+**** -4.6.1.2 IRQ data struct
+- one vector to one irq\_desc\_t 
+- unexpected intr
+- status flags
+- system init, init\_IRQ(), IRQ\_DISABLE
+- interrupt[n] - IRQn
+- one irqaction to one special device and intr
+- status flags
+- iqr\_stat array
+
+**** -4.6.1.3 irq distribution in multiprocessor systems
+- round-robin
+
+**** -4.6.1.4 multiple kernel mode stacks
+- 8K, 4K
+  - exception stack, inside
+  - hard IRQ stack, per cpu, one page
+  - soft IRQ stack, per cpu, one page
+- hardirq\_stack softirq\_stack array, irq\_ctx union, bottom for thread\_info
+
+**** -4.6.1.5 saving the registers for interrupt handler
+- firstly saving
+- interrupt[] to IDT term
+- common\_interrupt tag
+- then do\_IRQ(),ret\_from\_intr()
+
+**** -4.6.1.6 do\_RIQ()
+- all ISR of intr
+- action
+  - irq\_enter(), preempt\_count
+  - switch stack,
+    - cmp, task/previous\_esp field
+  - \_\_do\_IRQ()
+  - switch stack
+  - irq\_exit(), preempt\_count , deferrable kernel function(DKF)
+  - ret\_from\_intr()
+
+**** -4.6.1.7 \_\_do\_IRQ()
+- not again
+- do nothing
+  - IRQ\_DISABLE, always \_\_do\_IRQ()
+  - IRQ\_INPROGRESS, the same CPU
+  - irq\_des[].action NULL, detect
+- handle\_IRQ\_event() for ISR
+- IRQ\_PENDING ,in handle\_IRQ\_event()
+
+**** -4.6.1.8 reviving a lost interrupt
+- reasion
+- enable\_irq()
+  - IRQ\_PENDING after ISR , IRQ\_DISABLE
+  - hw\_resend\_irq(), IRQ\_REPLAY
+
+**** -4.6.1.9 ISR
+- handle\_IRQ\_event()
+  1. SA\_INTERRUPT
+  2. all ISR
+  3. disable local intr
+  4. 0 no ISR (unexpected)
+
+**** -4.6.1.10 dynamic allocation of IRQ lines
+- before activing
+  - request\_irq() irqaction, 
+  - setup\_irq(), error for not shared
+  - free\_irq()
+- setup\_irq()
+  1. used? SA\_SHIRQ
+  2. insert to action
+  3. shared? IRQ\_DISABLE, IRQ\_AUTODETECT, IRQ\_WAITING and IRQ\_INPROGRESS
+
+*** -4.6.2 interprocessor interrupt handing
+- CALL\_FUNCTION\_VECTOR, no himself
+- RESCHEDULE\_VECTOR, reschedule
+- INVALIDATE\_TLB\_VECTOR, no himself
+
+** -4.7 softirqs and tasklets
+- take deferrable tasks out
+  - deferrable function(softirq and tasklet) and work queue for it
+- diff
+  - softirq, static(compile), same type and time, 
+  - tasklet, dynamic(load module), same type and diff time
+- deferrable function action
+  - init, define him, kernel init himself or load module
+  - activation, pending, next turn
+  - masking, even activation
+  - execution
+- bound, no too reasions, dangerous
+
+*** -4.7.1 softirq
+- HI\_SOFTIRQ, tasklets
+
+  TIMER\_SOFTIRQ, timer
+
+  NET\_TX\_SOFTIRQ
+
+  NET\_RX\_SOFTIRQ
+
+  SCSI\_SOFTIRQ
+
+  TASKLET\_SOFTIRQ
+
+**** -4.7.1.1 data structures
+- softirq\_vec, 32 ,softirq\_action type, 
+- preempt\_count field
+  - preempt, kernel preemption count
+  - softirq, deep disable times
+  - hardirq, nested, irq\_enter() irq\_exit()
+  - preempt + softirq + hardirq > 0 -> preemption
+- in\_interrupt(),
+
+  preempt\_count,
+
+  softirq,
+
+  hardirq,
+
+  multstack
+- irq\_cputstat\_t
+
+  \_\_softirq\_pending
+
+  local\_softirq\_pending()
+
+**** -4.7.1.2 handling softirqs
+- open\_sofirq(), init
+- raise\_softirq(), activation
+  1. local\_irq\_save() IF
+  2. \_\_softirq\_pending
+  3. in\_inrerupt() -> 5
+  4. wakup\_sotirqd()
+  5. local\_irq\_restore()
+- check points
+  - local\_hb\_enable()
+  - do\_IRQ() irq\_exit
+  - CALL\_FUNCTION\_VECTOR
+  - ksoftirqd/n thread
+
+**** -4.7.1.3 do\_softirq()
+- after check points
+- action
+  1. in\_interupt()
+  2. IF
+  3. softirq stack
+  4. \_\_do\_softirq()
+  5. softirq stack
+  6. IF
+
+**** -4.7.1.4 \_\_do\_softirq()
+- action
+  1. iteration count
+  2. cpy \_\_softirq\_pending
+  3. local\_hb\_disable(), softirq count
+  4. softirq bitmap
+  5. irq\_enable()
+  6. exec
+  7. local\_irq\_disable()
+  8. cpy agian, 
+  9. iterate
+  10. wakeup\_softirqd()
+  11. softirq count
+
+**** -4.7.1.5 ksoftirqd
+- ksoftirqd()
+- TASK\_INTERRUPTIBLE
+
+*** -4.7.2 tasklet
+- preferred way for I/O drivers
+- HI\_SOFTIRQ, TASKLET\_SOFTIRQ,
+- tasklet\_vec and tasklet\_hi\_vec ,per\_cpu, tasklet\_head
+- state flag
+  - TASKLET\_STATE\_SCHED, pending, had been exec
+  - TASKLET\_STATE\_RUN, running
+- active, task\_schedule(), tasklet\_hi\_schedule()
+  1. TASKLET\_STATE\_SCHED
+  2. local\_irq\_save() IF
+  3. begin of tasklet\_vec/tasklet\_hi\_vec[]
+  4. raise\_soft\_irqoff(), similar raise\_softirq()
+  5. local\_irq\_restore
+- HI\_SOFTIRQ, tasklet\_hi\_action(), TASK\_SOFTIRQ, tasklet\_action()
+  1. disable local irq
+  2. CPU num
+  3. tasklet\_vec/hi\_vec[]
+  4. NULL
+  5. rever 1 step
+  6. foreach descriptor
+     1. TASKLET\_STATE\_RUN, reinsert, reactive, or set
+     2. count field, clear, reinsert, reactive
+     3. TASKLET\_STATE\_SCHED, exec
+
+** -4.8 work queue
+- diff
+  - interrupt/process context, block
+  - user mode address space, no process/kernel thread
+
+*** -4.8.1
+
+**** -4.8.1.1 work queue data structure
+- workqueue\_struct, 
+  - NR\_CPUS, cpu\_workqueue
+- worklist field
+
+**** -4.8.1.2 work queue functions
+- create\_workqueue(),
+  - create workqueue\_struct
+  - NR\_CPUS threads, create\_siglethread\_workqueue()
+- queue\_work()
+  1. pending field, adde
+  2. insert, pending field
+  3. wake up workerthread
+- queue\_delayed\_work()
+  - delay insert
+  - cancel\_delay\_work(), ever scheduled
+- cycling in work\_thread()
+  - waked up then run\_workqueue()
+    - remove work
+    - exec function
+  - blocked, sleep, move CPU
+- flush\_workqueue()
+  - block current
+  - finish all works
+  - without later works, remove\_sequeue, insert\_sequeue
+
+**** -4.8.1.3 the predefined work queue
+- events work queue
+- workqueue\_struct, keventd\_wq array
+- schedule\_work(), schedule\_delay\_work, schedule\_delay\_work\_on(), flush\_schedule\_work()
+- not too long
+
+** -4.9 returning from interrupts and exceptions
+- before terminal intr and excep
+  - concurrent 1
+  - pending processes request switch
+  - handle signals if have
+  - signle\_step mode, debug, resume in user mode
+- thread\_info flags
+  - TIF\_SYSCALL\_TRACE
+  - TIF\_NOTIFY\_RESUME
+  - TIF\_SIGPENDING, have signal
+  - TIF\_NEED\_RESCHED
+  - TIF\_SINGLESTEP, resume in user mode
+  - TIF\_IRET, iret not sysexit
+  - TIF\_SYSCALL\_AUDIT, system call audited
+  - TIF\_MEMDIE, destroy to reclaim memory
+- entry points
+  - ret\_from\_intr(), ret\_from\_exception()
+

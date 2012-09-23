@@ -1,0 +1,329 @@
+#+STARTUP: showall
+* 1.1  The Elements of Programming
+- 语言的三个机制
+  - primitive expressions, means of combination, means of abstraction
+- In programming, we deal with two kinds of elements: procedures and
+  data.
+- procedures are descriptions of the rules for manipulating the data.
+- any powerful programming language should be able to describe primitive data and
+  primitive procedures and should have methods for combining and abstracting procedures and
+  data.
+- In this chapter we will deal only with simple numerical data so that
+  we can focus on the rules for building procedures.
+** 1.1.1 Expressions
+- 介绍几个lisp表达示的优点
+  - (+ 137 349)
+  - (+ 21 35 12 7)
+  - (+ (* 3 5) (- 10 6))
+  - (+ (* 3
+           (+ (* 2 4)
+              (+ 3 5)))
+        (+ (- 10 7)
+           6))
+** 1.1.2 Naming and the Environment
+- In the Scheme dialect of Lisp, we name things with `define'.
+- (define size 2)
+- (define circumference (* 2 pi radius))
+- `Define' is our language's simplest means of abstraction, for it
+allows us to use simple names to refer to the results of compound
+operations, such as the `circumference' computed above.
+
+** 1.1.3 Evaluating Combinations
+- To evaluate a combination, do the following:
+  - 1. Evaluate the subexpressions of the combination.
+  - 2. Apply the procedure that is the value of the leftmost
+          subexpression (the operator) to the arguments that are the
+          values of the other subexpressions (the operands).
+** 1.1.4 Compound Procedures
+- elemets in lisp
+  * Numbers and arithmetic operations are primitive data and
+     procedures.
+  * Nesting of combinations provides a means of combining operations.
+  * Definitions that associate names with values provide a limited
+     means of abstraction.
+- Now we will learn about "procedure definitions", a much more powerful
+abstraction technique by which a compound operation can be given a name
+and then referred to as a unit.
+- (define (square x) (* x x))
+- (define (<NAME> <FORMAL PARAMETERS>) <BODY>)
+- The <BODY> is an expression that will
+yield the value of the procedure application when the formal parameters
+are replaced by the actual arguments to which the procedure is
+applied.
+     (define (f a)
+       (sum-of-squares (+ a 1) (* a 2)))
+ 
+** 1.1.5 The Substitution Model for Procedure Application
+- applicative order versus normal order
+- applicative order
+   #+BEGIN_EXAMPLE
+     (sum-of-squares (+ a 1) (* a 2))
+     (sum-of-squares (+ 5 1) (* 5 2))
+     (+ (square 6) (square 10))
+     (+ (* 6 6) (* 10 10))
+     (+ 36 100)
+     136
+#+END_EXAMPLE
+- normal order
+   #+BEGIN_EXAMPLE
+     (sum-of-squares (+ 5 1) (* 5 2))
+
+     (+    (square (+ 5 1))      (square (* 5 2))  )
+
+     (+    (* (+ 5 1) (+ 5 1))   (* (* 5 2) (* 5 2)))
+
+     (+         (* 6 6)             (* 10 10))
+
+     (+           36                   100)
+
+                         136
+#+END_EXAMPLE
+
+
+** 1.1.6 Conditional Expressions and Predicates
+-  
+   #+BEGIN_EXAMPLE
+   (cond (<P1> <E1>)
+           (<P2> <E2>)
+           ...
+           (<PN> <EN>))
+
+     (define (abs x)
+       (cond ((< x 0) (- x))
+             (else x)))
+
+     (define (abs x)
+       (if (< x 0)
+           (- x)
+           x))
+
+     (if <PREDICATE> <CONSEQUENT> <ALTERNATIVE>)
+
+   (and <E1> ... <EN>)
+
+   (or <E1> ... <EN>)
+
+   (not <E>)
+   #+END_EXAMPLE
+- Notice that `and' and `or' are special forms, not procedures, because
+the subexpressions are not necessarily all evaluated.  `Not' is an
+ordinary procedure.
+- 
+   #+BEGIN_EXAMPLE
+     (define (>= x y)
+       (or (> x y) (= x y)))
+   #+END_EXAMPLE
+
+- Observe that our model of evaluation allows for
+     combinations whose operators are compound expressions.
+   #+BEGIN_EXAMPLE
+  (define (a-plus-abs-b a b)
+  ((if (> b 0) + -) a b))
+   #+END_EXAMPLE
+
+** 1.1.7 Example: Square Roots by Newton's Method
+- In mathematics we are usually concerned with declarative (what is)
+descriptions, whereas in computer science we are usually concerned with
+imperative (how to) descriptions.
+
+** 1.1.8 Procedures as Black-Box Abstractions
+- when we define the
+`good-enough?' procedure in terms of `square', we are able to regard
+the `square' procedure as a "black box.
+- Indeed, as far as the `good-enough?' procedure is concerned, `square' is not
+quite a procedure but rather an abstraction of a procedure, a so-called "procedural
+abstraction".
+- local names
+  - One detail of a procedure's implementation that should not matter to
+the user of the procedure is the implementer's choice of names for the
+procedure's formal parameters.
+  - bound variable and bind
+    - A formal parameter of a procedure has a very special role in the
+procedure definition, in that it doesn't matter what name the formal
+parameter has.  Such a name is called a "bound variable", and we say
+that the procedure definition "binds" its formal parameters.
+  - scope
+    - The set of expressions for which
+a binding defines a name is called the "scope" of that name.
+
+- Internal definitions and block structure
+  - To make this possible, we allow a procedure to have internal definitions that are local to that procedure.Such nesting of definitions, called "block structure", is basically
+the right solution to the simplest name-packaging problem.
+#+BEGIN_EXAMPLE
+     (define (sqrt x)
+       (define (good-enough? guess x)
+         (< (abs (- (square guess) x)) 0.001))
+       (define (improve guess x)
+         (average guess (/ x guess)))
+       (define (sqrt-iter guess x)
+         (if (good-enough? guess x)
+             guess
+             (sqrt-iter (improve guess x) x)))
+       (sqrt-iter 1.0 x))
+#+END_EXAMPLE
+  - This discipline is called "lexical scoping".
+#+BEGIN_EXAMPLE
+     (define (sqrt x)
+       (define (good-enough? guess)
+         (< (abs (- (square guess) x)) 0.001))
+       (define (improve guess)
+         (average guess (/ x guess)))
+       (define (sqrt-iter guess)
+         (if (good-enough? guess)
+             guess
+             (sqrt-iter (improve guess))))
+       (sqrt-iter 1.0))
+#+END_EXAMPLE
+
+** 1.2.1 Linear Recursion and Iteration
+#+BEGIN_EXAMPLE
+          (factorial 6)        ------------------------.
+          (* 6 (factorial 5))                          |
+          (* 6 (* 5 (factorial 4)))                    |
+          (* 6 (* 5 (* 4 (factorial 3))))              |
+          (* 6 (* 5 (* 4 (* 3 (factorial 2)))))        |
+          (* 6 (* 5 (* 4 (* 3 (* 2 (factorial 1))))))  |
+          (* 6 (* 5 (* 4 (* 3 (* 2 1)))))              |
+          (* 6 (* 5 (* 4 (* 3 2))))                    |
+          (* 6 (* 5 (* 4 6)))                          |
+          (* 6 (* 5 24))                               |
+          (* 6 120)                                    |
+          720          <-------------------------------'
+
+     (define (factorial n)
+       (if (= n 1)
+           1
+           (* n (factorial (- n 1)))))
+
+
+          (factorial 6)   -----.
+          (fact-iter   1 1 6)  |
+          (fact-iter   1 2 6)  |
+          (fact-iter   2 3 6)  |
+          (fact-iter   6 4 6)  |
+          (fact-iter  24 5 6)  |
+          (fact-iter 120 6 6)  |
+          (fact-iter 720 7 6)  V
+          720
+
+
+     (define (factorial n)
+       (fact-iter 1 1 n))
+
+     (define (fact-iter product counter max-count)
+       (if (> counter max-count)
+           product
+           (fact-iter (* counter product)
+                      (+ counter 1)
+                      max-count)))
+#+END_EXAMPLE
+- recursive process
+  - This type
+of process, characterized by a chain of deferred operations, is called
+a "recursive process".
+- deferred operations
+  - The expansion occurs as the process builds up a chain of operations
+"deferred operations" (in this case, a chain of multiplications).
+- linear recursive process
+  - hence the amount of information needed to keep
+track of it, grows linearly with n (is proportional to n), just like
+the number of steps.  Such a process is called a "linear recursive
+process".
+- iterative process
+  - We call this an "iterative process".
+- linear iterative process
+  - In computing n!, the number of steps required grows linearly with n.  Such
+a process is called a "linear iterative process".
+- In the iterative case, the program variables provide a complete
+description of the state of the process at any point.
+- a recursive "process" and a a recursive "procedure"
+  - When we describe a procedure as recursive, we
+are referring to the syntactic fact that the procedure definition
+refers (either directly or indirectly) to the procedure itself.  But
+when we describe a process as following a pattern that is, say,
+linearly recursive, we are speaking about how the process evolves, not
+about the syntax of how a procedure is written.
+
+** 1.2.2 Tree Recursion
+- 0, 1, 1, 2, 3, 4, 8, 13, 21, ...
+  - In general,
+the number of steps required by a tree-recursive process will be
+proportional to the number of nodes in the tree, while the space
+required will be proportional to the maximum depth of the tree.
+
+** 1.2.3 Orders of Growth
+- Let n be a parameter that measures the size of the problem, and let
+R(n) be the amount of resources the process requires for a problem of
+size n.
+- We say that R(n) has order of growth [theta](f(n)), written R(n) =
+[theta](f(n)) (pronounced "theta of f(n)"), if there are positive
+constants k_1 and k_2 independent of n such that
+
+     k_1 f(n) <= R(n) <= k_2 f(n)
+- For instance, with the linear recursive process for computing
+factorial described in section *Note 1-2-1:: the number of steps grows
+proportionally to the input n.
+- Orders of growth provide only a crude description of the behavior of
+a process.
+** 1.2.4 Exponentiation
+- 
+  #+BEGIN_EXAMPLE
+     b^n = b * b^(n - 1)
+     b^0 = 1
+  #+END_EXAMPLE
+- This is a linear recursive process, which requires [theta](n) steps
+and [theta](n) space.
+  #+BEGIN_EXAMPLE  
+     (define (expt b n)
+       (if (= n 0)
+           1
+           (* b (expt b (- n 1)))))
+  #+END_EXAMPLE
+- This version requires [theta](n) steps and [theta](1) space.
+  #+BEGIN_EXAMPLE  
+     (define (expt b n)
+       (expt-iter b n 1))
+
+     (define (expt-iter b counter product)
+       (if (= counter 0)
+           product
+           (expt-iter b
+                     (- counter 1)
+                     (* b product))))
+  #+END_EXAMPLE
+- We can
+also take advantage of successive squaring in computing exponentials in
+general if we use the rule
+  #+BEGIN_EXAMPLE  
+
+     b^n = (b^(b/2))^2    if n is even
+     b^n = b * b^(n - 1)  if n is odd
+
+     (define (fast-expt b n)
+       (cond ((= n 0) 1)
+             ((even? n) (square (fast-expt b (/ n 2))))
+             (else (* b (fast-expt b (- n 1))))))
+
+  #+END_EXAMPLE
+  - The process evolved by `fast-expt' grows logarithmically with n in
+both space and number of steps.
+
+** 1.2.5 Greatest Common Divisors
+- The greatest common divisor (GCD) of two integers a and b is defined to
+be the largest integer that divides both a and b with no remainder.
+
+  #+BEGIN_EXAMPLE  
+     GCD(206,40) = GCD(40,6)
+                 = GCD(6,4)
+                 = GCD(4,2)
+                 = GCD(2,0)
+                 = 2
+
+     (define (gcd a b)
+       (if (= b 0)
+           a
+           (gcd b (remainder a b))))
+  #+END_EXAMPLE
+- The fact that the number of steps required by Euclid's Algorithm has
+logarithmic growth bears an interesting relation to the Fibonacci
+numbers

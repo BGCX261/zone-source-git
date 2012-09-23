@@ -1,0 +1,64 @@
+#+STARTUP: showall
+* 说明
+- 之前对《Understanding Linux Kernel》作过大量纸质的笔记和摘录，但还是感觉内容太多了，大概有近200页的A4纸，想再把它读得更薄点，所以用了Emacs的org-mode来对它作一下极简摘录。
+
+* processes
+
+** -3.1 processes, lightweight processes and threads
+
+** -3.2 process descriptor
+
+*** -3.2.1 process state
+1. TASK\_RUNNING,
+   run or wait for exec
+2. TASK\_INTERUPTIBLE,
+   hardware intr, release resource, deliver signal
+3. TASK\_UNINTERUPTIBLE,
+   no deliver signal
+4. TASK\_STOPED,
+   SIGSTOP, SIGTSTP, SIGTTIN, SIGTTOU
+5. TASK\_TRACED
+   stop by debugger
+6. stat or exit\_state
+   - EXIT\_ZOMBIE, not waite4() or wait\_pid()
+   - EXIT\_DEAD, thread
+7. set\_task\_state(), set\_current\_state(), compiler and CPU
+
+*** -3.2.2 identifying a process
+1. lightweight process
+2. address
+3. pid field, sequentially
+4. pidmap\_array
+5. tgid
+
+**** -3.2.2.1 process descriptors handling
+- pack thread_info, kernel mode stack
+- thread_info at the begining
+- task and thread_info field
+- when switch always empty
+- thread_union
+- alloc/free_thread_info() to them
+
+**** -3.2.2.2 identifying the current process
+- esp
+- current_thread_info()
+- current_thread_info()->task == current
+
+**** -3.2.2.3 doubly linked lists
+- list_head, List_HEAD(list_name)
+- list_add(n,p), list_add_tail(n,p), list_del(p), list_empty(p), list_entry(p,t,m)
+
+  list_for_each(p,h), list_for_each_entry(p,h,m)
+- not cycle, for hash table
+  - hlist_head, list_node, similar with list
+
+**** -3.2.2.4 process list
+- tasks field, list_head type, link to task_struct
+- connect all descriptors
+- init_task, 0 process
+
+**** -3.2.25 the lists of TASK_RUNNING processes
+- one prio to list
+- run_list field, list_head type
+- prio_array_t ,nr_active, bitmap, queue?x
+- enqueue_task(p,array), dequeue_task(p, array)

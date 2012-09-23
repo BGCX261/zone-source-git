@@ -1,0 +1,56 @@
+digraph scheduler_tick{
+        size="10,12";
+        ratio=filled;
+        bgcolor=darkolivegreen4;
+        node[style=filled,shape=box,fillcolor=gray];
+        timestamp_last_tick;
+        swap_process[label="swap process"];
+        set_TIF_NEED_RESCHED_swap[label="set TIF_NEED_RESCHED"];
+        set_TIF_NEED_RESCHED_normal[label="set TIF_NEED_RESCHED"];
+        hyper_threading;
+        replace[label="haven't replace"];
+        lock_rq[label="lock_rq"];
+        descrease_time[shape=record,label="{{<f0>realtime|<f1>normal}}"];
+        descrease_time_fifo[label="descrease_time"];
+        descrease_time_normal[label="descrease_time"];
+        effective_prio[label="effective_prio()"];
+        
+        fifo_rr[shape=record,label="{{<f0>FIFO|<f1>RR}}"];
+        nothing[label="nothing to do"];
+        move_tail[label="move to tail if 0"];
+        dequeue_task[label="dequeue_task()"];
+        reset_clean_time[label="reset timeslice and clean first_time,"];
+        set_expired_timestamp[label="set expired_timestamp"];
+        insert_active_expired[label="insert active or expired,\lTASK_INTERACTIVE,\lEXPIRED_STARVING"];
+        timesile_granularity[label="TIMESILE_GRANULARITY"];
+        unlock_rq[label="unlock_rq"];
+        reblance_tick[label="reblance_tick()"];
+        
+        timestamp_last_tick -> swap_process;
+        swap_process -> replace;
+        replace -> lock_rq;
+        lock_rq -> descrease_time;
+        
+        descrease_time:f0 -> fifo_rr;
+        fifo_rr:f0:s -> nothing;
+        fifo_rr:f1 -> descrease_time_fifo;
+        descrease_time_fifo -> move_tail;
+        
+        unlock_rq -> reblance_tick;
+        swap_process -> set_TIF_NEED_RESCHED_swap[label="is swap"];
+        set_TIF_NEED_RESCHED_swap -> hyper_threading;
+        hyper_threading -> reblance_tick;
+        nothing -> unlock_rq;
+        move_tail -> unlock_rq;
+        
+        descrease_time:f1 -> descrease_time_normal;
+        descrease_time_normal -> timesile_granularity;
+        descrease_time_normal -> dequeue_task[label="timeout"];
+        dequeue_task -> set_TIF_NEED_RESCHED_normal;
+        set_TIF_NEED_RESCHED_normal -> effective_prio;
+        effective_prio -> reset_clean_time;
+        reset_clean_time -> set_expired_timestamp;
+        set_expired_timestamp -> insert_active_expired;
+        insert_active_expired -> unlock_rq;
+        timesile_granularity -> unlock_rq;
+}

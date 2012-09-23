@@ -1,0 +1,19 @@
+* 
+schedule()函数的流程图如下图所示，该图是根据《Understanding Linux Kernel》关于schedule()的解说来画的。
+我在分析schedule()函数的过程中，产生了一个疑问和想法：
+- 为什么限制运行时间在1移内呢？
+  - 在新的版本上是不计算运行时间的了
+- 一个PF\_DEAD状态的程序也会调用schedule()
+  - 在新的版本上没有检查这个状态
+  - PF\_DEAD 与 EXIT\_DEAD是什么关系的呢？
+- 进程是在schedule()被移出runqueue的
+  - 不是所有不是TASK\_RUNNING状态的进程都会被移出runqueue，因为与在内核态运行被抢占有关。
+  - !(preempt\_count() & PREEMPT\_ACTIVE) 这是判断是否在内核态被抢占。
+- TASK\_INTERRUPTIBLE 会在scheduler()中被检查并可能改为TASK\_RUNNING
+  - 这有可能使prev 成为 next
+  - 新版本不再只是检查TASK\_INTERRUPTIBLE
+- 交换active和expired是在idle\_balance()之后的
+  - 这说明就算本地cpu的runqueue中的expired有进程，如是active中没有进程可运行，也会从其它cpu移进程到本地cpu.
+
+[[file:/home/yj/ulk7_schedule.png]]
+

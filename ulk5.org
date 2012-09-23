@@ -1,0 +1,252 @@
+#+STARTUP: showall
+* 说明
+- 之前对《Understanding Linux Kernel》作过大量纸质的笔记和摘录，但还是感觉内容太多了，大概有近200页的A4纸，想再把它读得更薄点，所以用了Emacs的org-mode来对它作一下极简摘录。
+
+
+* -5 内核同步
+
+** -5.1 内核如何为不同的请求服务
+
+*** -5.1.1 内核抢占
+- 内核态进程
+- 计划切换，强制切换
+- 除非切到用户态
+- 异步中断抢占
+- 时间配额
+- preempt\_count大于0
+  - 执行中断服务例程
+  - 可延迟函数禁止
+  - 显式设置
+- 异常和未显式禁止
+- preempt\_count/disable/(enable\_no\_reched)/enable/(),get/put\_cpu(),put\_cput\_no\_resched()
+- preempt\_scheule()
+  - 本地中断，preempt\_count, schedule()
+
+*** -5.1.2 什么时候需要同步
+- 单处理器
+  - 内核控制路径（中断处理程序）共享，禁止中断
+  - 系统调用服务例程，禁止抢占
+
+*** -5.1.3 什么时候不需要同步
+- 禁止相同的中断
+- 中断处理程序、软中断和tasklet不能被抢占和阻塞
+- 中断内核路径不被可延迟函数或系统调用服务例程内核路径中断
+- 软中断和tasklet，交错
+- 相同task，几个CPU
+- 中断处理程序和tasklet，可重入
+- 仅软中断和tasklet，per\_cpu
+- 仅一种tasklet
+
+** -5.2 同步原语
+
+*** -5.2.1 per\_cpu 变量
+- 最好的同步技术
+- 最简单最高效的是 per\_cpu变量，一个元素对应一个CPU
+- 逻辑上是独立
+- 不同行
+- 竞争，访问另一个CPU的，禁止抢占
+- DEFINE\_PER\_CPOUT(),
+
+  per\_cpu(),
+
+  \_\_get\_cpu\_var()
+
+  get\_cput\_var(),先禁抢占
+
+  put\_cput\_var()
+
+  alloc\_percput()
+
+  free\_percput()
+  
+  per\_cpu\_ptr()
+
+*** -5.2.2 原子操作
+- 两次访问
+- atomic\_t
+- atomic\_read(), ~\_set(),
+  
+  ~\_add(), ~\_sub(),
+  
+  ~\_inc(), ~\_dec(),
+  
+  ~\_sub\_and\_test(), ~\_dec\_and\_test(), ~\_Inc\_and\_test,
+  
+  ~\_add\_negative(),
+  
+  ~\_inc\_retrun(), ~\_dec\_retrun(), ~\_add\_retrun(), ~\_sub\_return()
+- test\_bit(),set\_bit(),clear\_bit(),change\_bit(),
+  
+  test\_and\_set\_bit(),test\_and\_clear\_bit(),test\_and\_chang\_bit(),
+
+  atomic\_clear\_mask(),atomic\_set\_mask()
+
+*** -5.2.3 优化和内存屏障
+- 编译器重新排指令
+- 前后隔开
+- 优化屏障barrier()
+  - asm volatile("":::"memory")
+  - volatile, 禁止该指令和其它组合
+  - memory, 假定内存全被修改
+  - CPU会混淆
+- mb(),rmb(),wmb(),smp\_mb(),smp\_rwmb(),smp\_wmb()
+
+*** -5.2.4 自旋锁
+- 单处理器仅作用内核抢占
+- 等待期间仍可抢占，高优先级
+- spinlock\_t,slock,break\_lock
+- spin\_lock\_init(),spin\_lock(),spin\_unlick(),spin\_unlock\_wait(),spin\_is\_locked(),spin\_trylock()
+
+**** -5.2.4.1 内核抢占下的spin\_lock
+- spin\_lock()
+  1. preempt\_disable()
+  2. \_raw\_spin\_trylock(),test\_and\_set
+  3. 终止
+  4. preempt\_enable()
+  5. break\_lock
+  6. 等待循环
+
+**** -5.2.4.2 没有内核抢占下的spin\_lock
+
+*** -5.2.5 spin\_unlick宏
+- rwlock\_t
+  - 24个位，补码
+  - 24位，未锁
+  - break\_lock
+
+**** -5.2.5.1 为读获取和释放一个锁
+
+**** -5.2.5.2 为写获取和释放一个锁
+
+*** -5.2.7 顺序锁seqlock
+- 写者高优先级
+- sqelock\_t 
+  - 顺序计数器，前后各读一次
+- SEQLOCK\_UNLOCKED，seqlock\_init(),write\_seqlock()加月,sequnlock()减1
+- read\_seqbegin()当前计数值
+- read\_seqrentry(),odd,不相配匹
+- 不包含指针，没副作用
+
+*** -5.2.7 读-拷贝-更新
+- 多个读者写者同时，高速缓存行窃用和失效
+- 限制
+  1. 动态的，指针
+  2. 不能睡眠
+- 读
+   1. rcu\_read\_lock()(preempt\_disble())
+   2. 读
+   3. rcu\_read\_unlock()(preempt\_enable9))
+- 写
+   - 拷贝，修改，修改（原子），自旋锁
+- rcu\_read\_unlock()后释放，静止状态
+  - CPU执行进程切换
+  - 开始在用户态执行
+  - idle循环
+- call\_rcu()
+  - 嵌入的rcu\_head
+  - callback函数
+  - cru\_head, callback的per\_cput链表，rcu\_tasklet
+
+*** -5.2.8 信号量
+- 内核信号量，用户态的SystemV IPC
+- 中断处理程序和可延迟函数不用
+- struct\_semaphore
+  - 大于0，等于0，负数；等待链表；睡眠标志
+- init\_MUTEX(),init\_MUTEX\_LOCKED(),DECLARE\_MUTEX，DECLARE\_MUTEX\_LOCKED
+
+**** -5.2.8.1 获取和释放信号量
+- up()
+  - 递增，大于0，\_\_up()唤醒
+- down(), sleepers
+- down\_trylock(), 中断处理程序和可延迟函数
+- down\_interuptible()
+- 经常是开的
+
+*** -5.2.9读/写信号量
+- FIFO，队尾插入，直到写者。
+- rw\_semaphore
+  - 两个16位，等待和非等待，最高为写，补码；队列；锁
+- init\_rwsem(),
+  
+  down\_read(),down\_write(),
+
+  up\_read(),up\_write(),
+
+  dwon\_read\_trylock(),down\_write\_trylock(),dwongrade\_write()
+
+*** -5.2.10 completion
+- 竞争的例子
+- completion 结构体
+- complete ()
+- wait\_for\_completion ()
+- 区别
+
+*** -5.2.11 禁止本地中断
+- 一起使用
+- local\_irq\_disable ()
+- local\_irq\_enable ()
+- local\_irq\_save ()
+- local\_irq\_restore ()
+
+*** -5.2.12 禁止和使能可延迟函数
+- 禁止中断
+- preempt\_count ()
+- local\_bh\_disable ()，local\_bh\_enable ()
+  - 相等
+- do\_softirq ()，preempt\_schedule ()
+
+** 5.3 对内核数据的同步访问
+- 并发度
+- 短时间
+- 避免原因
+- 整数值，链表
+
+*** -5.3.1在自旋锁，信号量及中断禁止间选择
+- 根据内核控制路径
+- 自动禁止抢占
+
+**** -5.3.1.1 保护由异常访问的数据结构
+- 信号量
+- per_cpu变量
+
+**** -5.3.1.2 保护由中断访问的数据结构
+- 对于自己
+- 单cpu
+- 多cpu
+- spin(read,write)
+
+  \_lock(unlick,seqbegin,seqretry,seqlock,sequnlock)
+
+  \_irq(bh,irqsave,irqrestore)
+
+**** -5.3.1.3 保护由可延迟函数访问的数据结构
+- 单cpu
+- softirq()
+- tasklet(s)()
+
+**** -5.3.1.4 保护由异常和中断访问的数据结构
+- 信号量代替
+
+**** -5.3.1.5 保护由异常和可延迟函数访问的数据结构
+- 禁软中断
+
+** -5.4 避免竞争条件的例子
+
+*** -5.4.1 引用计数器
+
+*** -5.4.2 大内核锁
+- 自旋锁
+- kernel\_sem
+- lock\_depth
+- 允许schedule ()
+- 可抢占
+- 不能释放
+- preempt\_schedule\_irq ()
+
+*** -5.4.3 内存描述符读写信号量
+- 轻量级进程共享
+
+*** -5.4.4 slab cache list信号量
+- cache\_chain\_sem
+
+*** -5.4.4 Inode信号量

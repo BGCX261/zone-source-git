@@ -1,0 +1,23 @@
+digraph ulk7_schedule{
+        label="direct schedule";
+        size="10,12";
+        ratio=filled;
+        
+        node[style=filled,shape=box,fillcolor=gray];
+        
+        subgraph direct_call{
+                label="direct all";
+                node[style=filled,shape=box,fillcolor=gray];
+                insert_into_wait_queue[label="insert into wait queue"];
+                set_un_interruptible[label="set_un_interruptible"];
+                schedule[label="schedule()"];
+                check[label="check resource"];
+                remove[label="remove from wait queue"];
+                
+                insert_into_wait_queue -> set_un_interruptible;
+                set_un_interruptible -> schedule;
+                schedule -> check;
+                check -> set_un_interruptible[label="false"];
+                check -> remove[label="true"];
+        }
+        }       

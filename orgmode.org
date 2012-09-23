@@ -1,0 +1,11 @@
+#+STARTUP: showall
+* 5.2.10 completion
+** 竞争例子
+- down ()- >up ()
+** completion结构体
+- done,等待队列
+** complete (completion)
+- 自旋锁，done,唤醒
+** wait\_for\_completion (completion)
+** 区别
+* 5.2.11 禁止本地中断 

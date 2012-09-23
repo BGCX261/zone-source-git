@@ -1,0 +1,352 @@
+#+STARTUP: showall
+* 说明
+- 之前对《Understanding Linux Kernel》作过大量纸质的笔记和摘录，但还是感觉内容太
+  多了，大概有近200页的A4纸，想再把它读得更薄点，所以用了Emacs的org-mode来对它作
+  一下极简摘录。
+
+* 进程调度
+** - 7.1 调度策略
+- I/O /CPU受限
+- 交互式/批处理/实时
+- nice(),
+- getpriority(), setpriority()
+- sched\_getschrdule(), sched\_setscheduler()
+- sched\_getpara(), sched\_setpara()
+- sched\_yield()
+- sched\_set\_priority\_max()
+- sched\_rr\_get\_interval()
+- sched\_setaffinity()
+- sched\_getaffinity()
+
+*** -7.1.1 进程抢占
+- 大于
+- TIF\_NEED\_RESCHED
+- 仍是TASK\_RUNNINT
+
+*** -7.1.2 一个时间片必须持续多久
+- 尽可能长
+
+** 7.2 调度算法
+- SCHED\_FIFO，SCHED\_RR定时
+- SCHED\_NORMAL
+
+*** -7.2.1 普通进程的调度
+- 100-139
+- 继承
+
+**** -7.2.1.1 基本时间片
+- (140 - 静态优先级) * 20(<120)
+- (140 - 静态优先级) * 5 (>=120)
+
+**** -7.2.1.2 动态优先级和平均睡眠时间
+- 100-139
+- 选择运行
+- max(100, min(静态优先级-bouns+5, 130))
+- 平均睡眠时间，bouns与时间粒度关系
+- 交互公式
+
+**** -7.2.1.3 活动和过期进程
+- 时间片
+- 移交互
+
+**** -7.2.1.4 实时进程调度
+- 1-99, 总是
+- 第一个
+- 优先级，阻塞停止，放弃，SCHED\_RR
+
+** -7.3调度程序所使用的数据结构
+
+*** -7.3.1 数据结构runqueue
+- runqueues
+- this\_rq(), cpu\_rq(n)
+- 所属CPU
+- arrays域
+- 周期交换
+
+*** -7.3.2 进程描述符
+- 相关域
+- sched\_fork()
+- sched\_clock()
+
+** -7.4 调度器所使用的函数
+
+*** -7.4.1 scheduler\_tick()函数
+- timestamp\_last\_tick
+:PROPERTIES:
+timestamp\_last\_tick just like a static value, it will be changed every time
+when the function is called.
+:END:
+- swap process
+  * TIF\_NEED\_RESCHED
+:PROPERTIES:
+TIF\_NEED\_RESCHED of swap process can also be set. can it be set many times?
+where it will be switched at last?
+:END:
+  * hyper_threading
+- haven't replace, TIF\_NEED\_RESCHED
+:PROPERTIES:
+Is it necessary to set TIF\_NEED\_RESCHED?
+:END:
+- lock rq
+- unlock rq
+- reblance\_tick()
+
+**** -7.4.1.1 更新实时进程时间片
+- FIFO
+  - nothing to do
+:PROPERTIES:
+lower or equal prio, but how are higher ones?
+:END:
+- RR
+  - decrease timeslice
+  - moving to the tail if timeout
+:PROPERTIES:
+so if realtime process is in running statuse, none of the normal
+process can run even it is in running statuse. never set TIF_NEED_RESCHED, but
+it can yield himself.
+:END:
+
+**** -7.4.1.2 更新普通进程的时间片
+- decrease timeslice
+- if timeout
+  - dequeue\_task() from active list
+  - set TIF\_NEED\_RESCHED
+  - effective\_prio() for dynamic prio and avg sleeptime
+:PROPERTIES:
+why not is recal_task_prio()?
+dynamic prio and avg sleeptime will be calced when the process's timeslice
+is out, and is this the only place they calced?so we can learn that when
+insert in expired list, them must have been calc, this will be show by
+following.
+:END:
+  - reset timeslice(base on the last step)
+  - clean first\_time\_slice
+  - set expired\_timestamp if 0
+  - insert active or expired
+:PROPERTIES:
+why doest't it modify the timestamp field?
+:END:
+    - TASK\_INTERACTIVE
+    - EXPIRED\_STARVING
+- TIMESILE\_GRANULARITY
+
+*** -7.4.2 try\_to\_wake\_up() 函数
+- task\_rq\_lock()
+:PROPERTIES:
+disable irq and acquire lock of rq
+:END:
+- stat_mask
+:PROPERTIES:
+so it can wake up any process in defference statuse, even
+TASK_UNINTERRUPTIBLE.
+:END:
+- array
+  1. move to CPU
+     :PROPERTIES:
+        itcan wake up the process that it's not belong to current cpu.
+        the process assigns to the cpu from the function not when it created.
+     :END:
+  2. nr_uninterruptible, p->actived
+  3. active\_task()
+       :PROPERTIES:
+       why doesn't set first_time_slice?
+       :END:
+     - sched\_clock()
+     - recalc\_task\_prio(), p->actived
+       :PROPERTIES:
+        why actived field is set again.
+       :END:
+  4. timestamp
+     :PROPERTIES:
+        when it is waked up, also set timestamp
+     :END:
+  5. insert active list
+:PROPERTIES:
+it always insert into the active list
+:END:
+- local CPU或sync, resched\_task(), uni/multiprocessor
+:PROPERTIES:
+why call resched_task() in the func, but no in scheduler_tick(), because
+  scheduler_tick() also set TIF_NEED_RESCHED in uniprocessor.
+where the lower prio process will be replaced ?
+:END:
+- TASK\_RUNNIGN
+- unlock rq
+
+*** -7.4.3 recalc\_task\_prio() 函数
+- calc avg sleeptime and dynamic prio
+- min(now - p->timestamp, 10^9)
+- not greater than 0
+- p->sleep_avg = 900
+:PROPERTIES:
+who can exec here? system load is very high?
+:END:
+- CURRENT\_BONUS
+- 大于或等于
+- 大于或等于
+- sleep_time add sleep_avg
+- must smaller than 1000
+- effective_prio
+
+*** -7.4.4 schedule()
+
+**** -7.4.4.1 direct invocation
+- for resource
+- 5 steps
+  1. insert wait list
+  2. TASK_(UN)INTERRUPTIBLE
+  3. schedule()
+  4. check resource
+  5. remove from list
+
+**** -7.4.4.2 lazy invocation
+- TIF\_NEED\_RESCHED
+:PROPERTIES:
+is it just only check it when switch to user mode ?
+:END:
+- example
+  1. scheduler_tick()
+  2. try_to_wake_up()
+  3. sched_setschedule()
+:PROPERTIES:
+all of them are functions. just in these case set TIF\_NEED\_RESCHED ?
+:END:
+
+**** -7.4.4.3 actions performed by schedule() before a process switch
+- next, prev, rq
+- preempt_disable(), this_rq()
+- check kernel lock
+- get run_time, sched_clock()-prev->timestamp
+- limit in 1s
+:PROPERTIES:
+why is 1s?
+:END:
+- lock rq
+- PF\_DEAD
+:PROPERTIES:
+A PF\_DEAD's process will also call schedule()?
+what is the relation between PF_DEAD(p->flags) and EXIT_DEAD(p->state)
+:END:
+- not in running stat and not be preempt in kernel mode then remove from rq
+:PROPERTIES:
+why remove from rq not active list, and where is also remove it from rq
+:END:
+- TASK_INTERRUPTIBLE(no TASK_STOPPED) and not pending by signal then set RUNNING, and it will
+also be the next.
+:PROPERTIES:
+TASK_RUNNING may be set again in schedule().
+:END:
+- idle\_balance()
+- active <-> expired
+- bitmask
+:PROPERTIES:
+bitmask is used in schedule(), it is firstly idle\_balance() then active <-> expired
+:END:
+- add sleeptime
+  - TASK_INTERRUPTIBLE or TASK_STOPPED
+    1. by system call
+    2. by interrupt or deferred function
+
+**** -7.4.4.4 完成进程切换时所执行的操作
+- prefetch
+- clear next's  TIF\_NEED\_RESCHED
+- rcq_qsctr_inc
+- minus next't sleeptime, timestamps
+:PROPERTIES:
+add in 7.4.4.3 and subtract here
+:END:
+- prev == next
+- active_mm(using) and mm(own) field.
+- prev is kernel thread or a exit process
+  - set prev\_mm field
+
+**** -7.4.4.5 进程切换后schedule()执行的操作
+- barrier()
+- finish\_task\_switch()
+  - unlock rq, enable irq
+  - put\_task\_struct() if prev is zombie
+    :PROPERTIES:
+    zombie process free his left resource here.
+    :END:
+- kernel lock, enabel preempt, check TIF\_NEED\_RESCHED
+:PROPERTIES:
+why check TIF\_NEED\_RESCHED again, if it's set, it will rerun schedule()
+:END:
+
+** -7.4 多处理器系统中进行队列的平衡
+- flavous
+- 典型超线程NUMA
+- 调度域
+
+*** -7.5.1 调度域
+- CPU集合， 分层
+- 组间
+- sched\_domain, sched\_group, groups, parent
+- phys\_domains, sd
+
+*** -7.5.2 rebalance\_tick()
+- scheduler\_tick
+- 3参数
+- cpu\_load域
+- 迭代load\_balance(), 频率
+
+*** -7.5.3 load\_balance() 函数
+- 移到本地
+- find\_busest\_group()
+- 调整
+- find\_busiest\_queue(), 最忙
+- move\_tasks()
+- 锁
+- active\_balance, migrtion\_thread
+- 放锁
+
+*** -7.5.4 move\_tasks()
+- NEWLY\_IDLE
+- expired, 高优先级
+- active， can\_migrate\_task()
+- 远程CPU，cpus,allowed,idle,反复,"cache hot"
+- pull\_task(), dequeue/enqueue\_task(), resched\_task
+
+** -7.6 与调度相关的系统调用
+
+*** -7.6.1 nice() 系统调用
+- sys\_nice()
+- 40
+- capable()
+- security\_task\_setnice()
+- static\_prio
+- setuser\_nice()
+- resched\_task()
+
+*** -7.6.2 getpriority() 和setpriority()调用
+- 20减
+- PRIO\_PROCESS/PGRP/USER
+
+*** -7.6.3 sched\_get(SET)AFFINITY()
+- cpus\_allows, 位图
+- 移进程
+
+*** -7.6.4 与实时进程相关的系统调用
+
+**** -7.6.4.1 sched\_get(set)scheduler()
+- sys\_sched\_getschedule()
+- policy域
+- do\_sched\_setscheduler()
+- 删，更新，插
+
+**** -7.6.4.2 sched\_get(set)param()
+- rt\_priority域
+- expired或runqueue
+
+**** -7.6.4.3 sched\_yield()
+- expired或runqueue
+
+**** -7.6.4.4 
+
+**** -7.6.4.5 sched\_rr\_get\_interval()
+- 实时进程
+- 纳秒
+- FIFO
+
+
+
