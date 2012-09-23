@@ -154,3 +154,8 @@ schedule()这些函数的改动还不少的。
 设合适的，再按下M-q就可以了，不用手动一行一行地按TAB对齐
 
 org中加block一定要用#+BLOCK_EXAMPLE
+
+==============================12/09/23==============================
+
+原来要用git push https://yjie_life%40163.com@code.google.com/p/zone-source.git master
+
