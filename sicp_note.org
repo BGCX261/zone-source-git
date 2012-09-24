@@ -245,7 +245,36 @@ linearly recursive, we are speaking about how the process evolves, not
 about the syntax of how a procedure is written.
 
 ** 1.2.2 Tree Recursion
-- 0, 1, 1, 2, 3, 4, 8, 13, 21, ...
+- Fibonacci numbers
+#+BEGIN_EXAMPLE
+  0, 1, 1, 2, 3, 4, 8, 13, 21, ...
+
+
+     (define (fib n)
+       (cond ((= n 0) 0)
+             ((= n 1) 1)
+             (else (+ (fib (- n 1))
+                      (fib (- n 2))))))
+
+                         ..<............ fib5   <..........
+                      ...     ___________/  \___________   .
+                   ...       /       . .....            \    .
+                 ..       fib4     .        . . . .     fib3  .
+               ..     ____/. \____  ..             .  __/  \__  .
+             ..      /  . .  ..   \    .        ..   /  . .   \   .
+           ..     fib3 .       .  fib2 .        . fib2 .   .  fib1 .
+         ..      / . \  .     .   /  \  .      .  /  \ ...  .  |  .
+       ..       / . . \   .  .   /  . \   .  .   / .  \   .  . 1 .
+      .      fib2 . . fib1.  .fib1 .  fib0 . .fib1. . fib0 .  .  .
+      .      /  \  . . |  .  . |  .  . |   . . |   . . |   .   .>
+      V     /  . \   . 1  .  . 1  .  . 0  .  . 1  .  . 0  ..
+      .  fib1 .. fib0..  .   .   .   .   .   V   .   ..  .
+      .   |  .  . |  . .>     .>.     . .    ..>.      .>
+      .   1 .   . 0  .
+       .   .     .  .
+       .>.       ..
+
+#+END_EXAMPLE
   - In general,
 the number of steps required by a tree-recursive process will be
 proportional to the number of nodes in the tree, while the space
