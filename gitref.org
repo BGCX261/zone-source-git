@@ -247,13 +247,59 @@ If you leave off the -m option, Git will try to open a text editor for you to wr
   #+BEGIN_EXAMPLE
   #+END_EXAMPLE
 
+git commit -a automatically stage all tracked, modified files before the commit.
+
+If you think the git add stage of the workflow is too cumbersome, Git allows you to skip that part with the -a option. This basically tells Git to run git add on any file that is "tracked" - that is, any file that was in your last commit and has been modified. 
   #+BEGIN_EXAMPLE
+
+$ vim hello.rb
+$ git status -s
+ M  hello.rb
+$ git commit -m 'changes to hello file'
+# On branch master
+# Changed but not updated:
+#   (use "git add ..." to update what will be committed)
+#   (use "git checkout -- ..." to discard changes in working directory)
+#
+# modified:   hello.rb
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+$ git commit -am 'changes to hello file'
+[master 78b2670] changes to hello file
+ 1 files changed, 2 insertions(+), 1 deletions(-)
   #+END_EXAMPLE
 
-  #+BEGIN_EXAMPLE
-  #+END_EXAMPLE
+* git reset HEAD : unstage changes that you have staged
+Let's say that you have modified two files and want to record them into two different commits. You should stage and commit one, then stage and commit the other. If you accidentally stage both of them, how do you un-stage one? You do it with git reset HEAD -- file.Technically here you don't have to add the -- - it is used to tell Git when you have stopped listing options and are now listing file paths, but it's probably good to get into the habit of using it to separate options from paths even if you don't need to.   
+#+BEGIN_EXAMPLE
+$ git status -s
+ M README
+ M hello.rb
+$ git add .
+$ git status -s
+M  README
+M  hello.rb
+$ git reset HEAD -- hello.rb 
+Unstaged changes after reset:
+M hello.rb
+$ git status -s
+M  README
+ M hello.rb
+#+END_EXAMPLE
 
-  #+BEGIN_EXAMPLE
+If you want to be able to just run git unstage, you can easily setup an alias in Git. Just run git config --global alias.unstage "reset HEAD".Once you have run that, you can then just run git unstage [file] instead. 
+
+* git rm : remove files from the staging area
+git rm will remove entries from the staging area.
+
+By default, a git rm file will remove the file from the staging area entirely and also off your disk (the working directory). To leave the file in the working directory, you can use git rm --cached .
+
+* git mv : git rm --cached orig; mv orig new; git add new
+Unlike most other version control systems, Git does not track file renames. Instead, it just tracks the snapshots and then figures out what files were likely renamed by comparing snapshots. If a file was removed from one snapshot and another file was added to the next one and the contents are similar, Git figures it was most likely a rename.
+
+
+all it does is a git rm --cached, moves the file on disk, then runs a git add on the new file. You don't really need to use it, but if it's easier, feel free.
+#+BEGIN_EXAMPLE
   #+END_EXAMPLE
 
   #+BEGIN_EXAMPLE
