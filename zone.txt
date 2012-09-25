@@ -846,6 +846,101 @@ emacs的复制一般用删除代替。
 ==============================12/05/25==============================
 写一个工具，可以根据自动程序自动画出程序结构图和数据流图。
 
+==============================12/05/26==============================
+
+学习dot (DOT语言_GUIDE.pdf) ：digraph是有向图；graph是无向图；有向图
+用->表示，无向图用--表示；不能同时用digraph和->，若想同时用digraph和无
+向连接，可以用dir属性。
+
+设置边的属性,在每条边后面的双括号里设置边的属性。也可以在用edge设置边的
+默认值.
+
+给点设置属性就必须给每个点单独的设置一个属性,node表示点的默认值。点的默
+认参数是shape=ellipse, width=.75, height=.5 and labeled by the node
+name.一些点的形状在 appendix.h 中,一些常用的形状有
+bos,circle,record,plaintext
+
+label字符串中可以用转义符'\n'.
+设置edge的属性之后，会在下一次设置之前以下的所有边使用这次设置的属性。
+
+execute -> { make_string; printf} 这句表示execute连两个点
+make_string [label="make a\nstring"]; 这句改变make_string的名称。
+
+结点若不设置label属性则默认是结点的名称，边不设置label属性
+
+http://www.graphviz.org/doc/info/shapes.html 这里有结点的名称
+在这个网站下也有
+
+可以设置每条边箭头的方向,用 dir,有 forward(default),back,both,none 四种。
+B -> C[dir = none];
+B -> C[dir = none];
+这样就可以画两条线。
+
+结点可以先说明链接关系，然后再在后面修改属性，那么之前的结点的属性也会
+被修改，被修改的单个结点属性对该结点来说是全局的a -> b -> c; c
+[shape=polygon,sides=4,skew=.4,label="hello world"]
+
+点的 shape 除了 record 和 Mrecord 这两种之外,其他的形状都是多边形,而我
+们可以对多边形进行一下属性上的设置,shape = polygon。Sides 用于设置它的
+边数,peripheries 用于设置多边形的外框的层数,regular = true 可以让你的多
+边形是一个规则的多边形,orientation = *,可以让你的多边形旋转一个角度,如
+orientation = 15 就是转了 15 度。skew 后面跟一个(-1.0~1.0)的小数,能让你
+的图形斜切一个角度,distortion 是让你的图形产生透视效果。
+
+record 和 Mrecord 的区别就是 Mrecord 的角是圆的。Record 就是由横的和竖的矩形组成的
+图形。
+
+dot的大小写是敏感的，把Skew不会报错，但是不会有任何效果。
+dot语言也可以像C语言一样将一个语句分多行写的。
+
+设置图的尺寸用size属性，size ="4,4"设为4英寸，4英寸，显示的图象根据需要
+自适应，但最少有一边是4寸。
+
+当你的线和线 label 比较多时,可以给线的属性 decorate = true,使得每条线的
+label 与所属线之间连线。你还可以给每条线加上 headlabel 和 taillabel,给
+每条线的起始点和终点加上label,他们的颜色由 labelfontcolor 来决定,而
+label 的颜色由 fontcolor 来决定。
+
+最外层的label可以给该图设置名字，要加双引号；labelloc是该label的垂直位置，t表示顶端，b表示底端；labeljust表示该label的水平位置，l表示左，r表示右。
+
+C -- D[label= "s1"];像这种在一个连接语句后有一个属性的设置就对线的设置的。
+
+在 dot 中我们可以用 html 语言写一个 table。在 label 后用< >而不是” ”
+就能引入 html 语言。这样就可以创造了一个 5 行 5 列的表格,我们可以在表格
+中打字。
+
+默认时图中的线都是从上到下的,我们可以将其改为从左到右,在文件的最上层打入
+rankdir=LR 就是从左到右,默认是 TB(top -> bottom),也可以是 RL,BT。
+
+当图中时间表之类的东西时,我们会需要点能排在一行(列),这时要用到 rank,用花括
+号把 rank=same,然后把需要并排的点一次输入。
+
+
+设立一条边时,我们可以制定这条边从起点的那个位置射出和从哪个位置结束。控制符
+有"n", "ne","e", "se", "s", "sw", "w" 和 "nw",n表示north，e表示east，
+s表示south，w表示west.用法是        c:n -> d:e[label = n];
+
+我们也可以在 record 中给点定义一些 port,因为 record 类型中都是一个个格子。
+A[label = "<f0> | <f1> A |<f2> "];
+B[label = "<f0> | <f1> B |<f2> "];
+A:f0:sw -> B:f1;
+
+画一个子图就是 subgraph cluster#,必须有 cluster 前缀。主图可以使用子图
+的结点，子图与子图之间的结点也可以相互引用，结点没有作用域一说。但是结
+点第一出现的子图，结点就属于该子图。所以要想将子图与子图之间的结点相连，
+就必须在这些子图之外进行连接。如a结点在子图A中第一次出现，那它就是属于
+子图clusterA的结的，b属于子图clusterB的结点，若要将a与b连接，那么直接在
+两个子图外用a->b语句。
+
+当你想把一条边连到一个子图的边界上,先输入 compound = true,然后就能用
+lhead 和 ltail来设置连接的子图了。设a是clusterA子图的结点，b是clusterB
+子图的结点，那么a->b[lhead=clusterB];这句就会使得有一条连接线从a指向子
+图clusterB，而不是子图clusterB是的b；a->b[lhead=clusterB,
+ltail=clusterA];这包就会使得有一条连接线从子图clusterA到子图clusterB。
+
+
+重新载入文件快速输入rr,重新载入文件用revert-buffer命令。
+
 ==============================12/00/2==============================
 emacs的帮助文档快捷键不错：p-上一结点，n-下一结点，^-上一级目录，l-后退，r-前进，
 详细的可以用C-h ? m查看。
