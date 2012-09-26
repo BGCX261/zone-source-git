@@ -104,7 +104,10 @@ MM README
   #+END_EXAMPLE
 
 * git diff shows diff of what is staged and what is modified but unstaged
-- Without any extra arguments, a simple git diff will display in unified diff format (a patch) what code or content you've changed in your project since the last commit that are not yet staged for the next commit snapshot. 
+- Without any extra arguments, a simple git diff will display in
+  unified diff format (a patch) what code or content you've changed in
+  your project since the last commit that are not yet staged for the
+  next commit snapshot.
   #+BEGIN_EXAMPLE
 $ vim hello.rb
 $ git status -s
@@ -124,7 +127,8 @@ index d62ac43..8d15d50 100644
  
  end
   #+END_EXAMPLE
-- The git diff --cached command will show you what contents have been staged. That is, this will show you the changes that will currently go into the next commit snapshot. 
+- The git diff --cached command will show you what contents have been
+  staged.
 
   #+BEGIN_EXAMPLE
 $ git status -s
