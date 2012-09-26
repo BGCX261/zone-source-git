@@ -330,8 +330,17 @@ and the contents are similar, Git figures it was most likely a rename.
 all it does is a git rm --cached, moves the file on disk, then runs a
 git add on the new file. You don't really need to use it, but if it's
 easier, feel free.
-#+BEGIN_EXAMPLE
-  #+END_EXAMPLE
+* git branch list your available branches
+- Without arguments, git branch will list out the local branches that you have. 
+- When you run git init it will automatically create a 'master' branch for you by default.
+* git branch (branchname) create a new branch
+  #+BEGIN_EXAMPLE
+$ git branch testing
+$ git branch
+#* master
+  testing
+
+#+END_EXAMPLE
 
   #+BEGIN_EXAMPLE
   #+END_EXAMPLE

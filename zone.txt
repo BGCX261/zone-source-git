@@ -1073,3 +1073,5 @@ machine code.google.com login yjie_life@163.com password Jf5vc5ZY9qR7
 写程一个功能的代码是先写好他的测试代码，不要到时错了又怪我。
 
 把AI，CNT，TI的精度分开计算还是不错的，今天又验证了。
+
+先把git的库clone下来之后再修改.netrc文件是没有用，要先设置.netrc文件。
