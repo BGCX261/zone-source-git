@@ -140,13 +140,13 @@ disable irq and acquire lock of rq
 so it can wake up any process in defference statuse, even
 TASK_UNINTERRUPTIBLE.
 :END:
-- array
+- p->array null
   1. move to CPU
      :PROPERTIES:
         itcan wake up the process that it's not belong to current cpu.
         the process assigns to the cpu from the function not when it created.
      :END:
-  2. nr_uninterruptible, p->actived
+  2. nr_uninterruptible, p->actived = -1
   3. active\_task()
        :PROPERTIES:
        why doesn't set first_time_slice?
@@ -154,7 +154,7 @@ TASK_UNINTERRUPTIBLE.
      - sched\_clock()
      - recalc\_task\_prio(), p->actived
        :PROPERTIES:
-        why actived field is set again.
+        why actived field is set again, it had been set in step 2.
        :END:
   4. timestamp
      :PROPERTIES:
@@ -166,7 +166,7 @@ it always insert into the active list
 :END:
 - local CPU或sync, resched\_task(), uni/multiprocessor
 :PROPERTIES:
-why call resched_task() in the func, but no in scheduler_tick(), because
+why call resched_task() in the func, but not in scheduler_tick()? because
   scheduler_tick() also set TIF_NEED_RESCHED in uniprocessor.
 where the lower prio process will be replaced ?
 :END:
@@ -218,7 +218,7 @@ all of them are functions. just in these case set TIF\_NEED\_RESCHED ?
 - check kernel lock
 - get run_time, sched_clock()-prev->timestamp
 - limit in 1s
-:PROPERTIES:
+q:PROPERTIES:
 why is 1s?
 :END:
 - lock rq

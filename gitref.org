@@ -1,0 +1,321 @@
+#+STARTUP: showall
+* git init
+  #+BEGIN_EXAMPLE
+  $ cd konichiwa
+  $ ls
+    README   hello.rb
+
+  $ git init
+  Initialized empty Git repository in /opt/konichiwa/.git/
+  
+  $ ls -a
+  .        ..       .git     README   hello.rb
+
+  #+END_EXAMPLE
+
+* git clone
+  #+BEGIN_EXAMPLE
+$ git clone git://github.com/schacon/simplegit.git
+Initialized empty Git repository in /private/tmp/simplegit/.git/
+remote: Counting objects: 100, done.
+remote: Compressing objects: 100% (86/86), done.
+remote: Total 100 (delta 35), reused 0 (delta 0)
+Receiving objects: 100% (100/100), 9.51 KiB, done.
+Resolving deltas: 100% (35/35), done.
+$ cd simplegit/
+$ ls
+README   Rakefile lib
+  
+$ ls -a
+.        ..       .git     README   Rakefile lib
+$ cd .git
+$ ls
+HEAD        description info        packed-refs
+branches    hooks       logs        refs
+config      index       objects
+#+END_EXAMPLE
+
+* git add
+- In Git, you have to add file contents to your staging area before you can commit them.
+  #+BEGIN_EXAMPLE
+$ git status -s
+?? README
+?? hello.rb
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+$ git add README hello.rb
+  #+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+$ git status -s
+A  README
+A  hello.rb
+#+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+$ vim README
+$ git status -s
+AM README
+A  hello.rb
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+$ vim README
+$ git status -s
+AM README
+A  hello.rb
+  #+END_EXAMPLE
+- The 'AM' status means that the file has been modified on disk since we last added it. This means that if we commit our snapshot right now, we will be recording the version of the file when we last ran git add, not the version that is on our disk. 
+
+* git status
+  #+BEGIN_EXAMPLE
+$ git status -s
+AM README
+A  hello.rb
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+$ git status
+# On branch master
+#
+# Initial commit
+#
+# Changes to be committed:
+#   (use "git rm --cached ..." to unstage)
+#
+# new file:   README
+# new file:   hello.rb
+#
+# Changed but not updated:
+#   (use "git add ..." to update what will be committed)
+#   (use "git checkout -- ..." to discard changes in working directory)
+#
+# modified:   README
+#
+  #+END_EXAMPLE
+
+- Git will also tell you about files that were deleted since your last commit or files that were modified or staged since your last commit.
+#+BEGIN_EXAMPLE
+$ git status -s
+M  README
+ D hello.rb
+#+END_EXAMPLE
+- You can see there are two columns in the short status output. The first column is for the staging area, the second is for the working directory. 
+
+- if you have the README file staged and then you modify it again without running git add a second time, you'll see this: 
+  #+BEGIN_EXAMPLE
+$ git status -s
+MM README
+ D hello.rb
+  #+END_EXAMPLE
+
+* git diff shows diff of what is staged and what is modified but unstaged
+- Without any extra arguments, a simple git diff will display in unified diff format (a patch) what code or content you've changed in your project since the last commit that are not yet staged for the next commit snapshot. 
+  #+BEGIN_EXAMPLE
+$ vim hello.rb
+$ git status -s
+ M hello.rb
+$ git diff
+diff --git a/hello.rb b/hello.rb
+index d62ac43..8d15d50 100644
+--- a/hello.rb
++++ b/hello.rb
+@@ -1,7 +1,7 @@
+ class HelloWorld
+   
+   def self.hello
+-    puts "hello world"
++    puts "hola mundo"
+   end
+ 
+ end
+  #+END_EXAMPLE
+- The git diff --cached command will show you what contents have been staged. That is, this will show you the changes that will currently go into the next commit snapshot. 
+
+  #+BEGIN_EXAMPLE
+$ git status -s
+ M hello.rb
+$ git add hello.rb 
+$ git status -s
+M  hello.rb
+$ git diff
+$
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+$ git status -s
+M  hello.rb
+$ git diff
+$ 
+$ git diff --cached
+diff --git a/hello.rb b/hello.rb
+index d62ac43..8d15d50 100644
+--- a/hello.rb
++++ b/hello.rb
+@@ -1,7 +1,7 @@
+ class HelloWorld
+   
+   def self.hello
+-    puts "hello world"
++    puts "hola mundo"
+   end
+ 
+ end
+  #+END_EXAMPLE
+
+- If you want to see both staged and unstaged changes together, you can run git diff HEAD 
+  #+BEGIN_EXAMPLE
+$ vim hello.rb 
+$ git diff
+diff --git a/hello.rb b/hello.rb
+index 4f40006..2ae9ba4 100644
+--- a/hello.rb
++++ b/hello.rb
+@@ -1,7 +1,7 @@
+ class HelloWorld
+   
++  # says hello
+   def self.hello
+     puts "hola mundo"
+   end
+ 
+ end
+$ git diff --cached
+diff --git a/hello.rb b/hello.rb
+index 2aabb6e..4f40006 100644
+--- a/hello.rb
++++ b/hello.rb
+@@ -1,7 +1,7 @@
+ class HelloWorld
+ 
+   def self.hello
+-    puts "hello world"
++    puts "hola mundo"
+   end
+ 
+ end
+$ git diff HEAD
+diff --git a/hello.rb b/hello.rb
+index 2aabb6e..2ae9ba4 100644
+--- a/hello.rb
++++ b/hello.rb
+@@ -1,7 +1,8 @@
+ class HelloWorld
+ 
++  # says hello
+   def self.hello
+-    puts "hello world"
++    puts "hola mundo"
+   end
+ 
+ end
+  #+END_EXAMPLE
+
+- we can use the --stat option, which will give us a summary of changes instead.
+  #+BEGIN_EXAMPLE
+$ git status -s
+MM hello.rb
+$ git diff --stat
+ hello.rb |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+$ git diff --cached --stat
+ hello.rb |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+$ git diff HEAD --stat
+ hello.rb |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+  #+END_EXAMPLE
+
+* git commit records a snapshot of the staging area
+Git records your name and email address with every commit you make, so the first step is to tell Git what these are. 
+  #+BEGIN_EXAMPLE
+$ git config --global user.name 'Your Name'
+$ git config --global user.email you@somedomain.com
+  #+END_EXAMPLE
+
+we'll use the -m option to provide the commit message on the command line. 
+  #+BEGIN_EXAMPLE
+$ git add hello.rb 
+$ git status -s
+M  hello.rb
+$ git commit -m 'my hola mundo changes'
+[master 68aa034] my hola mundo changes
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+  #+END_EXAMPLE
+If you leave off the -m option, Git will try to open a text editor for you to write your commit message.
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE
+
+git commit -a automatically stage all tracked, modified files before the commit.
+
+If you think the git add stage of the workflow is too cumbersome, Git allows you to skip that part with the -a option. This basically tells Git to run git add on any file that is "tracked" - that is, any file that was in your last commit and has been modified. 
+  #+BEGIN_EXAMPLE
+
+$ vim hello.rb
+$ git status -s
+ M  hello.rb
+$ git commit -m 'changes to hello file'
+# On branch master
+# Changed but not updated:
+#   (use "git add ..." to update what will be committed)
+#   (use "git checkout -- ..." to discard changes in working directory)
+#
+# modified:   hello.rb
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+$ git commit -am 'changes to hello file'
+[master 78b2670] changes to hello file
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+  #+END_EXAMPLE
+
+* git reset HEAD : unstage changes that you have staged
+Let's say that you have modified two files and want to record them into two different commits. You should stage and commit one, then stage and commit the other. If you accidentally stage both of them, how do you un-stage one? You do it with git reset HEAD -- file.Technically here you don't have to add the -- - it is used to tell Git when you have stopped listing options and are now listing file paths, but it's probably good to get into the habit of using it to separate options from paths even if you don't need to.   
+#+BEGIN_EXAMPLE
+$ git status -s
+ M README
+ M hello.rb
+$ git add .
+$ git status -s
+M  README
+M  hello.rb
+$ git reset HEAD -- hello.rb 
+Unstaged changes after reset:
+M hello.rb
+$ git status -s
+M  README
+ M hello.rb
+#+END_EXAMPLE
+
+If you want to be able to just run git unstage, you can easily setup an alias in Git. Just run git config --global alias.unstage "reset HEAD".Once you have run that, you can then just run git unstage [file] instead. 
+
+* git rm : remove files from the staging area
+git rm will remove entries from the staging area.
+
+By default, a git rm file will remove the file from the staging area entirely and also off your disk (the working directory). To leave the file in the working directory, you can use git rm --cached .
+
+* git mv : git rm --cached orig; mv orig new; git add new
+Unlike most other version control systems, Git does not track file renames. Instead, it just tracks the snapshots and then figures out what files were likely renamed by comparing snapshots. If a file was removed from one snapshot and another file was added to the next one and the contents are similar, Git figures it was most likely a rename.
+
+
+all it does is a git rm --cached, moves the file on disk, then runs a git add on the new file. You don't really need to use it, but if it's easier, feel free.
+#+BEGIN_EXAMPLE
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE
