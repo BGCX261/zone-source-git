@@ -1069,3 +1069,5 @@ file:///C:/Documents and Settings/Administrator/桌面/新建文件夹
 (1<<BITS) - 1
 这样可以让最低的BITS个位全为1，然后可以再通过向右移位来使中间的连续几个位为1。
 machine code.google.com login yjie_life@163.com password Jf5vc5ZY9qR7
+
+写程一个功能的代码是先写好他的测试代码，不要到时错了又怪我。
