@@ -339,23 +339,546 @@ $ git branch testing
 $ git branch
 #* master
   testing
+#+END_EXAMPLE
+- we can see that we have a new branch. When you create a branch this
+  way it creates the branch at your last commit so if you record some
+  commits at this point and then switch to 'testing', it will revert
+  your working directory context back to when you created the branch
+  in the first place
 
+  #+BEGIN_EXAMPLE
+$ ls
+README   hello.rb
+$ echo 'test content' > test.txt
+$ echo 'more content' > more.txt
+$ git add *.txt
+$ git commit -m 'added two files'
+[master 8bd6d8b] added two files
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 more.txt
+ create mode 100644 test.txt
+$ ls
+README   hello.rb more.txt test.txt
+$ git checkout testing
+Switched to branch 'testing'
+$ ls
+README   hello.rb
+  
+$ ls
+README   hello.rb
+$ git checkout master
+Switched to branch 'master'
+$ ls
+README   hello.rb more.txt test.txt
+#+END_EXAMPLE
+
+* git checkout -b (branchname) create and immediately switch to a branch
+- You can do this pretty easily with git branch newbranch; git
+  checkout newbranch, but Git gives you a shortcut for this: git
+  checkout -b newbranch.
+
+  #+BEGIN_EXAMPLE
+$ git branch
+* master
+$ ls
+README   hello.rb more.txt test.txt
+$ git checkout -b removals
+Switched to a new branch 'removals'
+$ git rm more.txt 
+rm 'more.txt'
+$ git rm test.txt 
+rm 'test.txt'
+$ ls
+README   hello.rb
+$ git commit -am 'removed useless files'
+[removals 8f7c949] removed useless files
+ 2 files changed, 0 insertions(+), 2 deletions(-)
+ delete mode 100644 more.txt
+ delete mode 100644 test.txt
+$ git checkout master
+Switched to branch 'master'
+$ ls
+README   hello.rb more.txt test.txt
+  #+END_EXAMPLE
+
+* git branch -d (branchname) delete a branch
+  #+BEGIN_EXAMPLE
+$ git branch
+* master
+  testing
+$ git branch -d testing
+Deleted branch testing (was 78b2670).
+$ git branch
+* master
+  #+END_EXAMPLE
+
+* git merge merge a branch context into your current one
+- Once you have work isolated in a branch, you will eventually want to
+  incorporate it into your main branch. You can merge any branch into
+  your current branch with the git merge command.
+  #+BEGIN_EXAMPLE
+$ git branch
+* master
+  removals
+$ ls
+README   hello.rb more.txt test.txt
+$ git merge removals
+Updating 8bd6d8b..8f7c949
+Fast-forward
+ more.txt |    1 -
+ test.txt |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
+ delete mode 100644 more.txt
+ delete mode 100644 test.txt
+$ ls
+README   hello.rb
+  #+END_EXAMPLE
+- let's see what happens when we edit a file in one branch and in
+  another branch we rename it and then edit it and then merge these
+  branches together.
+  #+BEGIN_EXAMPLE
+$ git branch
+* master
+$ cat hello.rb 
+class HelloWorld
+  def self.hello
+    puts "Hello World"
+  end
+end
+
+HelloWorld.hello
+
+$ git checkout -b change_class
+M hello.rb
+Switched to a new branch 'change_class'
+$ vim hello.rb 
+$ head -1 hello.rb 
+class HiWorld
+$ git commit -am 'changed the class name'
+[change_class 3467b0a] changed the class name
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+$ git checkout master
+Switched to branch 'master'
+$ git mv hello.rb ruby.rb
+$ vim ruby.rb 
+$ git diff
+diff --git a/ruby.rb b/ruby.rb
+index 2aabb6e..bf64b17 100644
+--- a/ruby.rb
++++ b/ruby.rb
+@@ -1,7 +1,7 @@
+ class HelloWorld
+
+   def self.hello
+-    puts "Hello World"
++    puts "Hello World from Ruby"
+   end
+
+ end
+$ git commit -am 'added from ruby'
+[master b7ae93b] added from ruby
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+ rename hello.rb => ruby.rb (65%)
+$ git branch
+  change_class
+* master
+$ git merge change_class
+Renaming hello.rb => ruby.rb
+Auto-merging ruby.rb
+Merge made by recursive.
+ ruby.rb |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+$ cat ruby.rb
+class HiWorld
+  def self.hello
+    puts "Hello World from Ruby"
+  end
+end
+
+HiWorld.hello
+  #+END_EXAMPLE
+
+- In situations where the same block of code is edited in different
+  branches there is no way for a computer to figure it out, so it's up
+  to us.
+  #+BEGIN_EXAMPLE
+$ git branch
+* master
+$ git checkout -b fix_readme
+Switched to a new branch 'fix_readme'
+$ vim README 
+$ git commit -am 'fixed readme title'
+[fix_readme 3ac015d] fixed readme title
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+#+END_EXAMPLE
+
+- let's change the same line in a different way back on our 'master'
+  branch
+  #+BEGIN_EXAMPLE
+$ git checkout master
+Switched to branch 'master'
+$ vim README 
+$ git commit -am 'fixed readme title differently'
+[master 3cbb6aa] fixed readme title differently
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 #+END_EXAMPLE
 
   #+BEGIN_EXAMPLE
+$ git merge fix_readme
+Auto-merging README
+CONFLICT (content): Merge conflict in README
+Automatic merge failed; fix conflicts and then commit the result.
+$ cat README 
+<<<<<<< HEAD
+Many Hello World Examples
+=======
+Hello World Lang Examples
+>>>>>>> fix_readme
+
+This project has examples of hello world in
+nearly every programming language.
+#+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+$ vim README   # here I'm fixing the conflict
+$ git diff
+diff --cc README
+index 9103e27,69cad1a..0000000
+--- a/README
++++ b/README
+@@@ -1,4 -1,4 +1,4 @@@
+- Many Hello World Examples
+ -Hello World Lang Examples
+++Many Hello World Lang Examples
+
+  This project has examples of hello world in
+#+END_EXAMPLE
+- We will do it manually here, but check out git mergetool if you want
+  Git to fire up a graphical mergetool (like kdiff3, emerge, p4merge,
+  etc) instead.
+
+- A cool tip in doing merge conflict resolution in Git is that if you
+  run git diff, it will show you both sides of the conflict and how
+  you've resolved it as I've shown here.
+- Now it's time to mark the file as resolved. In Git we do that with
+  git add - to tell Git the file has been resolved, you have to stage
+  it.
+  #+BEGIN_EXAMPLE
+$ git status -s
+UU README
+$ git add README 
+$ git status -s
+M  README
+$ git commit 
+[master 8d585ea] Merge branch 'fix_readme'
+  #+END_EXAMPLE
+
+* git log show commit history of a branch
+- To see a chronological list of the parents of any branch, you can
+  run git log when you are in that branch.
+- To see a more compact version of the same history, we can use the
+  --oneline option.
+- We can also use it to see when the history was branched and merged
+  with the very helpful --graph option.
+- another example
+  #+BEGIN_EXAMPLE
+$ git checkout -b erlang
+Switched to a new branch 'erlang'
+$ vim erlang_hw.erl
+$ git add erlang_hw.erl 
+$ git commit -m 'added erlang'
+[erlang ab5ab4c] added erlang
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+ create mode 100644 erlang_hw.erl
+
+$ vim haskell.hs
+$ git add haskell.hs 
+$ git commit -m 'added haskell'
+[erlang 1834130] added haskell
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+ create mode 100644 haskell.hs
+
+$ git checkout master
+Switched to branch 'master'
+$ ls
+README  ruby.rb
+$ vim ruby.rb 
+$ git commit -am 'reverted to old class name'
+[master 594f90b] reverted to old class name
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+$ git log --oneline erlang
+1834130 added haskell
+ab5ab4c added erlang
+8d585ea Merge branch 'fix_readme'
+3cbb6aa fixed readme title differently
+3ac015d fixed readme title
+558151a Merge branch 'change_class'
+b7ae93b added from ruby
+3467b0a changed the class name
+17f4acf first commit
+  #+END_EXAMPLE
+- if we are interested in merging in the 'erlang' branch we want to
+  see what commits are going to effect our snapshot when we do that
+  merge. The way we tell Git that is by putting a ^ in front of the
+  branch that we don't want to see. For instance, if we want to see
+  the commits that are in the 'erlang' branch that are not in the
+  'master' branch, we can do erlang ^master, or vice versa.
+  #+BEGIN_EXAMPLE
+$ git log --oneline erlang ^master
+1834130 added haskell
+ab5ab4c added erlang
+$ git log --oneline master ^erlang
+594f90b reverted to old class name
+  #+END_EXAMPLE
+
+* git tag tag a point in history as important
+- We can tag the last commit (HEAD) as "v1.0" by running git tag -a
+  v1.0. The -a means "make an annotated tag", which allows you to add
+  a tag message to it, which is what you almost always want to do.
+- when we run git log --decorate, we can see our tag there.
+  #+BEGIN_EXAMPLE
+  $ git log --oneline --decorate --graph
+* 594f90b (HEAD, tag: v1.0, master) reverted to old class name
+*   8d585ea Merge branch 'fix_readme'
+|\
+| * 3ac015d (fix_readme) fixed readme title
+* | 3cbb6aa fixed readme title differently
+|/
+*   558151a Merge branch 'change_class'
+|\
+| * 3467b0a changed the class name
+* | b7ae93b added from ruby
+|/
+* 17f4acf first commit
+#+END_EXAMPLE
+
+- If we forgot to tag a commit that we released, we can retroactively
+  tag it by running the same command, but with the commit SHA at the
+  end.
+  #+BEGIN_EXAMPLE
+$ git tag -a v0.9 558151a
+$ git log --oneline --decorate --graph
+* 594f90b (HEAD, tag: v1.0, master) reverted to old class name
+*   8d585ea Merge branch 'fix_readme'
+|\
+| * 3ac015d (fix_readme) fixed readme title
+* | 3cbb6aa fixed readme title differently
+|/
+*   558151a (tag: v0.9) Merge branch 'change_class'
+|\
+| * 3467b0a changed the class name
+* | b7ae93b added from ruby
+|/
+* 17f4acf first commit
+  #+END_EXAMPLE
+
+* git remote list, add and delete remote repository aliases
+- Git repositories are all basically equal and you simply synchronize
+  between them. This makes it easy to have more than one remote
+  repository - you can have some that you have read-only access to and
+  others that you can write to as well.
+* git remote list your remote aliases
+- you don't have to use the full URL of a remote repository
+  every time you want to synchronize with it, Git stores an alias or
+  nickname for each remote repository URL you are interested in.
+- Without any arguments, Git will simply show you the remote
+  repository aliases that it has stored. By default, if you cloned the
+  project (as opposed to creating a new one locally), Git will
+  automatically add the URL of the repository that you cloned from
+  under the name 'origin'. If you run the command with the -v option,
+  you can see the actual URL for each alias.
+  #+BEGIN_EXAMPLE
+$ git remote
+origin
+$ git remote -v
+origin	git@github.com:schacon/git-reference.git (fetch)
+origin	git@github.com:schacon/git-reference.git (push)
+  #+END_EXAMPLE
+* git remote add : add a new remote repository of your project
+- if you want to interact in any way with a new repository, it's
+  generally easiest to add it as a remote. You do that by running git
+  remote add [alias] [url]. That adds [url] under a local remote named
+  [alias].
+  #+BEGIN_EXAMPLE
+$ git remote
+$ git remote add github git@github.com:schacon/hw.git
+$ git remote -v
+github	git@github.com:schacon/hw.git (fetch)
+github	git@github.com:schacon/hw.git (push)
+  #+END_EXAMPLE
+* git remote rm removing an existing remote alias
+
+  #+BEGIN_EXAMPLE
+$ git remote -v
+github	git@github.com:schacon/hw.git (fetch)
+github	git@github.com:schacon/hw.git (push)
+$ git remote add origin git://github.com/pjhyett/hw.git
+$ git remote -v
+github	git@github.com:schacon/hw.git (fetch)
+github	git@github.com:schacon/hw.git (push)
+origin	git://github.com/pjhyett/hw.git (fetch)
+origin	git://github.com/pjhyett/hw.git (push)
+$ git remote rm origin
+$ git remote -v
+github	git@github.com:schacon/hw.git (fetch)
+github	git@github.com:schacon/hw.git (push)
+  #+END_EXAMPLE
+
+* git fetch download new branches and data from a remote repository
+* git pull fetch from a remote repo and try to merge into the current branch
+- git fetch will synchronize you with another repo, pulling down any
+  data that you do not have locally and giving you bookmarks to where
+  each branch on that remote was when you synchronized. These are
+  called "remote branches" and are identical to local branches except
+  that Git will not allow you to check them out - however, you can
+  merge from them, diff them to other branches, run history logs on
+  them, etc.
+- git pull. This command will basically run a git fetch immediately
+  followed by a git merge of the branch on that remote that is tracked
+  by whatever branch you are currently in.
+- you would first run git fetch [alias] to tell Git to fetch down all
+  the data it has that you do not, then you would run git merge
+  [alias]/[branch] to merge into your current branch anything new you
+  see on the server
+ #+BEGIN_EXAMPLE
+$ git fetch github
+remote: Counting objects: 4006, done.
+remote: Compressing objects: 100% (1322/1322), done.
+remote: Total 2783 (delta 1526), reused 2587 (delta 1387)
+Receiving objects: 100% (2783/2783), 1.23 MiB | 10 KiB/s, done.
+Resolving deltas: 100% (1526/1526), completed with 387 local objects.
+From github.com:schacon/hw
+   8e29b09..c7c5a10  master     -> github/master
+   0709fdc..d4ccf73  c-langs    -> github/c-langs
+   6684f82..ae06d2b  java       -> github/java
+ * [new branch]      ada        -> github/ada
+ * [new branch]      lisp       -> github/lisp
+ #+END_EXAMPLE
+- The 'master' branch on the remote repository becomes a branch named
+  'github/master' locally. That way now I can merge the 'master'
+  branch on that remote into my local 'master' branch by running git
+  merge github/master. Or, I can see what new commits are on that
+  branch by running git log github/master ^master. If your remote is
+  named 'origin' it would be origin/master instead. Almost any command
+  you would run using local branches you can use remote branches with
+  too.
+- If you have more than one remote repository, you can either fetch
+  from specific ones by running git fetch [alias] or you can tell Git
+  to synchronize with all of your remotes by running git fetch --all.
+
+* git push push your new branches and data to a remote repository
+- you run git push [alias] [branch] which will attempt to make your
+  [branch] the new [branch] on the [alias] remote.
+  #+BEGIN_EXAMPLE
+  $ git push github master
+Counting objects: 25, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (25/25), done.
+Writing objects: 100% (25/25), 2.43 KiB, done.
+Total 25 (delta 4), reused 0 (delta 0)
+To git@github.com:schacon/hw.git
+ * [new branch]      master -> master
+#+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+$ git push github erlang
+Counting objects: 7, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 652 bytes, done.
+Total 6 (delta 1), reused 0 (delta 0)
+To git@github.com:schacon/hw.git
+ * [new branch]      erlang -> erlang
   #+END_EXAMPLE
 
   #+BEGIN_EXAMPLE
+$ git push github master
+To git@github.com:schacon/hw.git
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to 'git@github.com:schacon/hw.git'
+To prevent you from losing history, non-fast-forward updates were rejected
+Merge the remote changes before pushing again.  See the 'Note about
+fast-forwards' section of 'git push --help' for details.
+  #+END_EXAMPLE
+- You can fix this by running git fetch github; git merge
+  github/master and then pushing again.
+
+* git log --author look for only commits from a specific author
+  #+BEGIN_EXAMPLE
+$ git log --author=Linus --oneline -5
+81b50f3 Move 'builtin-*' into a 'builtin/' subdirectory
+3bb7256 make "index-pack" a built-in
+377d027 make "git pack-redundant" a built-in
+b532581 make "git unpack-file" a built-in
+112dd51 make "mktag" a built-in
   #+END_EXAMPLE
 
+* git log --since --before filter commits by date authored
+- If you want to specify a date range that you're interested in
+  filtering your commits down to, you can use a number of options - I
+  use --since and --before, but you can also use --until and --after.
+- --no-merges to remove merge commits
   #+BEGIN_EXAMPLE
+$ git log --oneline --before={3.weeks.ago} --after={2010-04-18} --no-merges
+5469e2d Git 1.7.1-rc2
+d43427d Documentation/remote-helpers: Fix typos and improve language
+272a36b Fixup: Second argument may be any arbitrary string
+b6c8d2d Documentation/remote-helpers: Add invocation section
+5ce4f4e Documentation/urls: Rewrite to accomodate transport::address
+00b84e9 Documentation/remote-helpers: Rewrite description
+03aa87e Documentation: Describe other situations where -z affects git diff
+77bc694 rebase-interactive: silence warning when no commits rewritten
+636db2c t3301: add tests to use --format="%N"
   #+END_EXAMPLE
 
+* git log --grep filter commits by commit message
+- You may also want to look for commits with a certain phrase in the
+  commit message. You can use --grep for that.
+- Git will logically OR all --grep and --author arguments. If you want
+  to use --grep and --author to see commits that were authored by
+  someone AND have a specific message content, you have to add the
+  --all-match option.
   #+BEGIN_EXAMPLE
-  #+END_EXAMPLE
+$ git log --grep=P4EDITOR --no-merges
+commit 82cea9ffb1c4677155e3e2996d76542502611370
+Author: Shawn Bohrer
+Date:   Wed Mar 12 19:03:24 2008 -0500
+
+    git-p4: Use P4EDITOR environment variable when set
+
+    Perforce allows you to set the P4EDITOR environment variable to your
+    preferred editor for use in perforce.  Since we are displaying a
+    perforce changelog to the user we should use it when it is defined.
+
+    Signed-off-by: Shawn Bohrer 
+    Signed-off-by: Simon Hausmann
+#+END_EXAMPLE
+
+- In these examples, I'm going to use the --format option, so we can
+  see who the author of each commit was.
+  #+BEGIN_EXAMPLE
+$ git log --grep="p4 depo" --format="%h %an %s"
+ee4fd1a Junio C Hamano Merge branch 'master' of git://repo.or.cz/git/fastimport
+da4a660 Benjamin Sergeant git-p4 fails when cloning a p4 depo.
+1cd5738 Simon Hausmann Make incremental imports easier to use by storing the p4 d
+#+END_EXAMPLE
 
   #+BEGIN_EXAMPLE
-  #+END_EXAMPLE
+$ git log --grep="p4 depo" --format="%h %an %s" --author="Hausmann"
+cdc7e38 Simon Hausmann Make it possible to abort the submission of a change to Pe
+f5f7e4a Simon Hausmann Clean up the git-p4 documentation
+30b5940 Simon Hausmann git-p4: Fix import of changesets with file deletions
+4c750c0 Simon Hausmann git-p4: git-p4 submit cleanups.
+0e36f2d Simon Hausmann git-p4: Removed git-p4 submit --direct.
+edae1e2 Simon Hausmann git-p4: Clean up git-p4 submit's log message handling.
+4b61b5c Simon Hausmann git-p4: Remove --log-substitutions feature.
+36ee4ee Simon Hausmann git-p4: Ensure the working directory and the index are cle
+e96e400 Simon Hausmann git-p4: Fix submit user-interface.
+38f9f5e Simon Hausmann git-p4: Fix direct import from perforce after fetching cha
+2094714 Simon Hausmann git-p4: When skipping a patch as part of "git-p4 submit" m
+1ca3d71 Simon Hausmann git-p4: Added support for automatically importing newly ap
+...
+#+END_EXAMPLE
 
-  #+BEGIN_EXAMPLE
-  #+END_EXAMPLE
+* git log -S filter by introduced diff
