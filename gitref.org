@@ -882,3 +882,228 @@ e96e400 Simon Hausmann git-p4: Fix submit user-interface.
 #+END_EXAMPLE
 
 * git log -S filter by introduced diff
+- What if you write really horrible commit messages? Or, what if you
+  are looking for when a function was introduced, or where variables
+  started to be used? You can also tell Git to look through the diff
+  of each commit for a string. For example, if we wanted to find which
+  commits modified anything that looked like the function name
+  'userformat_find_requirements', we would run this:
+  #+BEGIN_EXAMPLE
+$ git log -Suserformat_find_requirements
+commit 5b16360330822527eac1fa84131d185ff784c9fb
+Author: Johannes Gilger
+Date:   Tue Apr 13 22:31:12 2010 +0200
+
+    pretty: Initialize notes if %N is used
+
+    When using git log --pretty='%N' without an explicit --show-notes, git
+    would segfault. This patches fixes this behaviour by loading the needed
+    notes datastructures if --pretty is used and the format contains %N.
+    When --pretty='%N' is used together with --no-notes, %N won't be
+    expanded.
+
+    This is an extension to a proposed patch by Jeff King.
+
+    Signed-off-by: Johannes Gilger
+    Signed-off-by: Junio C Hamano
+#+END_EXAMPLE
+
+* git log -p show patch introduced at each commit
+
+- You can either do this by running git show [SHA] with a specific
+  commit SHA, or you can run git log -p, which tells Git to put the
+  patch after each commit. It is a great way to summarize what has
+  happened on a branch or between commits.
+  #+BEGIN_EXAMPLE
+$ git log -p --no-merges -2
+commit 594f90bdee4faf063ad07a4a6f503fdead3ef606
+Author: Scott Chacon schacon@gmail.com
+Date:   Fri Jun 4 15:46:55 2010 +0200
+
+    reverted to old class name
+
+diff --git a/ruby.rb b/ruby.rb
+index bb86f00..192151c 100644
+--- a/ruby.rb
++++ b/ruby.rb
+@@ -1,7 +1,7 @@
+-class HiWorld
++class HelloWorld
+   def self.hello
+     puts "Hello World from Ruby"
+   end
+ end
+
+-HiWorld.hello
++HelloWorld.hello
+
+commit 3cbb6aae5c0cbd711c098e113ae436801371c95e
+Author: Scott Chacon schacon@gmail.com
+Date:   Fri Jun 4 12:58:53 2010 +0200
+
+    fixed readme title differently
+
+diff --git a/README b/README
+index d053cc8..9103e27 100644
+--- a/README
++++ b/README
+@@ -1,4 +1,4 @@
+-Hello World Examples
++Many Hello World Examples
+ ======================
+
+ This project has examples of hello world in
+#+END_EXAMPLE
+
+* git log --stat show diffstat of changes introduced at each commit
+- If the -p option is too verbose for you, you can summarize the
+  changes with --stat instead. Here is the same log output with --stat
+  instead of -p
+  #+BEGIN_EXAMPLE
+$ git log --stat --no-merges -2
+commit 594f90bdee4faf063ad07a4a6f503fdead3ef606
+Author: Scott Chacon schacon@gmail.com
+Date:   Fri Jun 4 15:46:55 2010 +0200
+
+    reverted to old class name
+
+ ruby.rb |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+commit 3cbb6aae5c0cbd711c098e113ae436801371c95e
+Author: Scott Chacon schacon@gmail.com
+Date:   Fri Jun 4 12:58:53 2010 +0200
+
+    fixed readme title differently
+
+ README |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+#+END_EXAMPLE
+
+* git diff
+- To see what has changed since the last release, you can simply run
+  git diff [version] (or whatever you tagged the release).
+  #+BEGIN_EXAMPLE
+$ git diff v0.9
+diff --git a/README b/README
+index d053cc8..d4173d5 100644
+--- a/README
++++ b/README
+@@ -1,4 +1,4 @@
+-Hello World Examples
++Many Hello World Lang Examples
+ ======================
+
+ This project has examples of hello world in
+diff --git a/ruby.rb b/ruby.rb
+index bb86f00..192151c 100644
+--- a/ruby.rb
++++ b/ruby.rb
+@@ -1,7 +1,7 @@
+-class HiWorld
++class HelloWorld
+   def self.hello
+     puts "Hello World from Ruby"
+   end
+ end
+
+-HiWorld.hello
++HelloWorld.hello
+#+END_EXAMPLE
+- Just like git log, you can use the --stat option with it.
+  #+BEGIN_EXAMPLE
+$ git diff v0.9 --stat
+ README  |    2 +-
+ ruby.rb |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+#+END_EXAMPLE
+
+- To compare two divergent branches, however, you can run something
+  like git diff branchA branchB but the problem is that it will do
+  exactly what you are asking - it will basically give you a patch
+  file that would turn the snapshot at the tip of branchA into the
+  snapshot at the tip of branchB. This means if the two branches
+  have diverged - gone in different directions - it will remove all
+  the work that was introduced into branchA and then add everything
+  that was introduced into branchB. This is probably not what you
+  want - you want the changes added to branchB that are not in
+  branchA, so you really want the difference between where the two
+  branches diverged and the tip of branchB. So, if our history
+  looks like this:
+
+  #+BEGIN_EXAMPLE
+
+$ git log --graph --oneline --decorate --all
+* 594f90b (HEAD, tag: v1.0, master) reverted to old class name
+| * 1834130 (erlang) added haskell
+| * ab5ab4c added erlang
+|/
+*   8d585ea Merge branch 'fix_readme'
+...
+#+END_EXAMPLE
+
+- And we want to see what is on the "erlang" branch compared to
+  the "master" branch, running git diff master erlang will give us
+  the wrong thing.
+  #+BEGIN_EXAMPLE
+
+$ git diff --stat master erlang
+ erlang_hw.erl |    5 +++++
+ haskell.hs    |    4 ++++
+ ruby.rb       |    4 ++--
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+#+END_EXAMPLE
+
+- You see that it adds the erlang and haskell files, which is what
+  we did in that branch, but then the output also reverts the
+  changes to the ruby file that we did in the master branch. What
+  we really want to see is just the changes that happened in
+  the "erlang" branch (adding the two files). We can get the
+  desired result by doing the diff from the common commit they
+  diverged from:
+
+  #+BEGIN_EXAMPLE
+
+$ git diff --stat 8d585ea erlang
+ erlang_hw.erl |    5 +++++
+ haskell.hs    |    4 ++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+
+#+END_EXAMPLE
+
+- That's what we're looking for, but we don't want to have to
+  figure out what commit the two branches diverged from every
+  time. Luckily, Git has a shortcut for this. If you run git diff
+  master...erlang (with three dots in between the branch names),
+  Git will automatically figure out what the common
+  commit (otherwise known as the "merge base") of the two commit is
+  and do the diff off of that.
+  
+  #+BEGIN_EXAMPLE
+
+$ git diff --stat master erlang
+ erlang_hw.erl |    5 +++++
+ haskell.hs    |    4 ++++
+ ruby.rb       |    4 ++--
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+$ git diff --stat master...erlang
+ erlang_hw.erl |    5 +++++
+ haskell.hs    |    4 ++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+#+END_EXAMPLE
+
+- As a bit of an aside, you can also have git manually calculate
+  the merge-base (first common ancestor commit) of any two commits
+  would be with the git merge-base command:
+
+#+BEGIN_EXAMPLE
+$ git merge-base master erlang
+8d585ea6faf99facd39b55d6f6a3b3f481ad0d3d
+
+
+$ git diff --stat $(git merge-base master erlang) erlang
+ erlang_hw.erl |    5 +++++
+ haskell.hs    |    4 ++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+
+#+END_EXAMPLE
