@@ -1075,3 +1075,7 @@ machine code.google.com login yjie_life@163.com password Jf5vc5ZY9qR7
 把AI，CNT，TI的精度分开计算还是不错的，今天又验证了。
 
 先把git的库clone下来之后再修改.netrc文件是没有用，要先设置.netrc文件。
+
+==============================12/09/28==============================
+
+可以用C-x r l <RET>来显示所有的书签，用d来标记删除，用x来执行删除。与dired-mode的相似。
