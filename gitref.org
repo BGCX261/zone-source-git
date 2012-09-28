@@ -282,6 +282,7 @@ $ git commit -am 'changes to hello file'
  1 files changed, 2 insertions(+), 1 deletions(-)
   #+END_EXAMPLE
 
+-  it is different from "git commit -a" to git "add ."
 * git reset HEAD : unstage changes that you have staged
 Let's say that you have modified two files and want to record them
 into two different commits. You should stage and commit one, then
@@ -331,8 +332,6 @@ all it does is a git rm --cached, moves the file on disk, then runs a
 git add on the new file. You don't really need to use it, but if it's
 easier, feel free.
 * git branch list your available branches
-- Without arguments, git branch will list out the local branches that you have. 
-- When you run git init it will automatically create a 'master' branch for you by default.
 * git branch (branchname) create a new branch
   #+BEGIN_EXAMPLE
 $ git branch testing
@@ -373,9 +372,6 @@ README   hello.rb more.txt test.txt
 #+END_EXAMPLE
 
 * git checkout -b (branchname) create and immediately switch to a branch
-- You can do this pretty easily with git branch newbranch; git
-  checkout newbranch, but Git gives you a shortcut for this: git
-  checkout -b newbranch.
 
   #+BEGIN_EXAMPLE
 $ git branch
@@ -757,7 +753,7 @@ From github.com:schacon/hw
  #+END_EXAMPLE
 - The 'master' branch on the remote repository becomes a branch named
   'github/master' locally. That way now I can merge the 'master'
-  branch on that remote into my local 'master' branch by running git
+  branch on that remote into my local 'master' branch by running 
   merge github/master. Or, I can see what new commits are on that
   branch by running git log github/master ^master. If your remote is
   named 'origin' it would be origin/master instead. Almost any command
@@ -1107,3 +1103,11 @@ $ git diff --stat $(git merge-base master erlang) erlang
  2 files changed, 9 insertions(+), 0 deletions(-)
 
 #+END_EXAMPLE
+
+* new get
+- ^
+- ...
+- remote branch, merge, diff, log
+  - git merge github/master
+  - git log github/master ^master
+- push [alias] [branch]
