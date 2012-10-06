@@ -356,3 +356,282 @@ be the largest integer that divides both a and b with no remainder.
 - The fact that the number of steps required by Euclid's Algorithm has
 logarithmic growth bears an interesting relation to the Fibonacci
 numbers
+
+** 1.3 Formulating Abstractions with Higher-Order Procedures
+- To express such patterns
+as concepts, we will need to construct procedures that can accept
+procedures as arguments or return procedures as values.  Procedures
+that manipulate procedures are called "higher-order procedures".
+
+** 1.3.1 Procedures as Arguments
+-
+   #+BEGIN_EXAMPLE  
+     (define (sum-integers a b)
+       (if (> a b)
+           0
+           (+ a (sum-integers (+ a 1) b))))
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+
+     (define (sum-cubes a b)
+       (if (> a b)
+           0
+           (+ (cube a) (sum-cubes (+ a 1) b))))
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+       1       1       1
+     ----- + ----- + ------ + ...
+     1 * 3   5 * 7   9 * 11
+
+     (define (pi-sum a b)
+       (if (> a b)
+           0
+           (+ (/ 1.0 (* a (+ a 2))) (pi-sum (+ a 4) b))))
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+
+     (define (<NAME> a b)
+       (if (> a b)
+           0
+           (+ (<TERM> a)
+              (<NAME> (<NEXT> a) b))))
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+
+     (define (sum term a next b)
+       (if (> a b)
+           0
+           (+ (term a)
+              (sum term (next a) next b))))
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+
+     (define (inc n) (+ n 1))
+
+     (define (sum-cubes a b)
+       (sum cube a inc b))
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+
+     (define (pi-sum a b)
+       (define (pi-term x)
+         (/ 1.0 (* x (+ x 2))))
+       (define (pi-next x)
+         (+ x 4))
+       (sum pi-term a pi-next b))
+  #+END_EXAMPLE
+
+** 1.3.2 Constructing Procedures Using `Lambda'
+
+  #+BEGIN_EXAMPLE  
+
+     (define (pi-sum a b)
+       (sum (lambda (x) (/ 1.0 (* x (+ x 2))))
+            a
+            (lambda (x) (+ x 4))
+            b))
+  #+END_EXAMPLE
+
+- In general, `lambda' is used to create procedures in the same way as
+`define', except that no name is specified for the procedure:
+  #+BEGIN_EXAMPLE  
+     (lambda (<FORMAL-PARAMETERS>) <BODY>)
+  #+END_EXAMPLE
+-  The resulting procedure is just as much a procedure as one that is
+created using `define'.  The only difference is that it has not been
+associated with any name in the environment.
+  #+BEGIN_EXAMPLE  
+     (define (plus4 x) (+ x 4))
+     is equivalent to
+     (define plus4 (lambda (x) (+ x 4)))
+
+  #+END_EXAMPLE
+- Like any expression that has a procedure as its value, a `lambda'
+expression can be used as the operator in a combination such as
+  #+BEGIN_EXAMPLE  
+     ((lambda (x y z) (+ x y (square z))) 1 2 3)
+  #+END_EXAMPLE
+
+- Using `let' to create local variables
+
+  #+BEGIN_EXAMPLE  
+     f(x,y) = x(1 + xy)^2 + y(1 - y) + (1 + xy)(1 - y)
+
+     (define (f x y)
+       (define (f-helper a b)
+         (+ (* x (square a))
+            (* y b)
+            (* a b)))
+       (f-helper (+ 1 (* x y))
+                 (- 1 y)))
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+
+     (define (f x y)
+       ((lambda (a b)
+          (+ (* x (square a))
+             (* y b)
+             (* a b)))
+        (+ 1 (* x y))
+        (- 1 y)))
+  #+END_EXAMPLE
+- This construct is so useful that there is a special form called
+`let' to make its use more convenient.
+  #+BEGIN_EXAMPLE  
+
+     (define (f x y)
+       (let ((a (+ 1 (* x y)))
+             (b (- 1 y)))
+         (+ (* x (square a))
+            (* y b)
+            (* a b))))
+
+     (let ((<VAR1> <EXP1>)
+           (<VAR2> <EXP2>)
+           ...
+           (<VARN> <VARN>))
+        <BODY>)
+  #+END_EXAMPLE
+- `Let' allows one to bind variables as locally as possible to where
+     they are to be used.
+  #+BEGIN_EXAMPLE  
+
+          (+ (let ((x 3))
+               (+ x (* x 10)))
+             x)
+  #+END_EXAMPLE
+-   This
+     matters when the expressions that provide the values for the local
+     variables depend upon variables having the same names as the local
+     variables themselves.
+  #+BEGIN_EXAMPLE  
+          (let ((x 3)
+                (y (+ x 2)))
+            (* x y))
+  #+END_EXAMPLE
+- Sometimes we can use internal definitions to get the same effect as
+with `let'.
+  #+BEGIN_EXAMPLE  
+
+     (define (f x y)
+       (define a (+ 1 (* x y)))
+       (define b (- 1 y))
+       (+ (* x (square a))
+          (* y b)
+          (* a b)))
+  #+END_EXAMPLE
+- We prefer, however, to use `let' in situations like this and to use
+internal `define' only for internal procedures.
+
+** 1.3.3 Procedures as General Methods
+- can define lambda as a parameter.
+  #+BEGIN_EXAMPLE  
+
+     (half-interval-method (lambda (x) (- (* x x x) (* 2 x) 3))
+                           1.0
+                           2.0)
+     1.89306640625
+  #+END_EXAMPLE
+
+** 1.3.4 Procedures as Returned Values
+
+  #+BEGIN_EXAMPLE  
+     (define (average-damp f)
+       (lambda (x) (average x (f x))))
+  #+END_EXAMPLE
+- `Average-damp' is a procedure that takes as its argument a procedure
+`f' and returns as its value a procedure (produced by the `lambda')
+that, when applied to a number `x', produces the average of `x' and `(f
+x)'.
+
+  #+BEGIN_EXAMPLE  
+
+     ((average-damp square) 10)
+     55
+  #+END_EXAMPLE
+
+- Elements with the fewest restrictions are said to have "first-class" status.
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE  
+  #+END_EXAMPLE
