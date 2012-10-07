@@ -361,3 +361,19 @@ Euclid's Algorithm.
 - fascinated
   - Since ancient times, mathematicians have been fascinated by problems
 concerning prime numbers,
+
+** 2.1.1 Example: Arithmetic Operations for Rational Numbers
+- rational
+  - Suppose we want to do arithmetic with rational numbers.
+- numerator
+  - Let us begin by assuming that we already have a way of constructing
+a rational number from a numerator and a denominator.
+- synthesis
+  - We are using here a powerful strategy of synthesis.
+- glue
+  - What we need is some
+way to glue together a numerator and a denominator to form a rational
+number.
+- remedy  
+  - We can remedy this by
+changing `make-rat'.
