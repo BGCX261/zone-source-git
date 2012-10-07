@@ -71,6 +71,1056 @@ trash：垃圾
 ./configure emacs时说有错，少了libgif,libxpm,libtiff,于是就用yum搜了与gif,
 xpm,tiff相关的东西来安装，特别是它们的开发包,就是有“devel”字样的。
 
+==============================12/02/13==============================
+tar 的-C指定解压的文件夹
+tar 不指定目录的话就会解压到当前目录
+
+==============================12/02/14==============================
+makefile中的目标文件包含可执行文件和中间文件(.o) .
+make 有自动推导功能，就是隐晦规则，
+make 的.PHONY clean 表示clean是个伪目标文件，同是clean后的rm命令前有一个
+‘-’.
+makefile 中的目标文件的中间文件可以是多个的。(堆在一起的东西有一种乱，不好理解，
+不好增删的缺点)
+makefile中的命令必须以TAB开头。
+make -f 可以指定文件
+makefile 可以用include包含其它的makefile (include foo.mk *.mk, $(bar))
+在include 前加一个'-'表示无论include过程中出现什么错误，都不要报错继续进行。
+makefile 的include时会在当前目录、make的-I或--inlcude-dir指定的目录、
+<prefix>/include(/usr/local/bin 和/usr/include等)中找
+
+make的工作步骤：
+1、读入所有的 Makefile。
+2、读入被 include 的其它 Makefile。
+3、初始化文件中的变量。
+4、推导隐晦规则,并分析所有规则。
+5、为所有的目标文件创建依赖关系链。
+6、根据依赖关系,决定哪些目标要重新生成。
+7、执行生成命令。
+
+如果命令与目标写在同一行，就要用';'把命令隔开.
+
+makefile支持三种通配(fdyy)符: * , ? , [...]
+
+object = *.o  中*.o会展开，类似C的宏；若要在object变量中展开，可用
+objects := $(wildcard *.o)
+
+可以在依赖文件前加上路径让make去找源文件，也可用特殊变量VPATH，make先在
+当前目录找，若找不到，就在VPATH中找
+
+==============================12/02/15==============================
+1、vpath <pattern> <directories>
+为符合模式<pattern>的文件指定搜索目录<directories>。
+2、vpath <pattern>
+清除符合模式<pattern>的文件的搜索目录。
+3、vpath
+清除所有已被设置好了的文件搜索目录。
+
+多个vpath中若有相同的pattern,则好像只有最后一个有效。如果连续的 vpath
+语句中出现了相同的<pattern>,或是被重复了的<pattern>,那么,make 会按照
+vpath 语句的先后顺序来执行搜索。
+vpath %.c foo:bar
+vpath % blish
+
+“伪目标”并不是一个文件,只是一个标签,由于“伪目标”不是文件,所以 make
+无法生成它的依赖关系和决定它是否要执行。为了避免和文件重名的这种情况,我
+们可以使用一个特殊的标记“.PHONY”来显示地指明一个目标是“伪目标” 向
+make 说明, ,不管是否有这个文件,这个目标就是“伪目标”。 .PHONY : clean
+说明是伪目标，这句可以放在clean:这句之后或之前,可以放在之前的是在
+clean:这一行没有其它东西，就是:号后没有其它目标.而放在之后的就是可以用
+来执行一条伪命令之后就可以生成多个目标。
+.PHONY: clean
+clean:
+        rm *.o temp
+
+
+多目标：
+bigoutput littleoutput : text.g
+          generate text.g -$(subst output,,$@) > $@
+   上述规则等价于(其实在GNU make3.82中以上命令只生成下面的第一条指令而已):
+bigoutput : text.g
+          generate text.g -big > bigoutput
+littleoutput : text.g
+             generate text.g -little > littleoutput
+以上的说法是正确的：make -n 命令是生成第一条规则(因为默认目标是bigoutput)，而
+用make -n littleoutput 命令就会生成第二条规则，若想用make这一条命令同时生成
+bigoutput 和 littleoutput两个目标，可以用伪目标信赖于bigoutput和
+littleoutput的方法。
+
+静态模式:
+<targets ...>: <target-pattern>: <prereq-patterns ...>
+         <commands>
+如果我们的<target-parrtern>定义成“%.o”,意思是我们的<target>集合中都是以
+“.o”结尾的（没有过滤的作用）,而如果我们的<prereq-parrterns>定义成“%.c”,
+意思是对<target-parrtern>所形成的目标集进行二次定义,其计算方法是,取
+<target-parrtern>模式中的“%”(也就是去掉了[.o]这个结尾),并为其加上[.c]
+这个结尾,形成的新集合。
+例子：$(objects): %.o: %.c
+            $(CC) -c $(CFLAGS) $< -o $@
+指明目标要从$object中获取，%.o表明要所有以“.o”结尾的目标.
+files = foo.elc bar.o foo.o
+$(filter %.o,$(files)): %.o: %.c
+         $(CC) -c $(CFLAGS) $< -o $@
+$(filter %.elc,$(files)): %.elc: %.el
+         emacs -f batch-byte-compile $<
+
+这个可以正确执行。若没有foo.el，则直接make命令输入会只生成bar.o，make
+foo.o则会生成只生成foo.o，都没有警告，但是如果将第二行改为
+
+$(files):%.o: %.c
+
+则make是会输出：
+
+Makefile:3: 目标“foo.elc”不匹配目标模式
+cc -c   -o foo.elc
+cc: 没有输入文件
+make: *** [foo.elc] 错误 1
+
+所以我觉得那个"%.o"只是为了获得%号的东西来方便确定%.c这些依赖文件。
+
+
+自动生成依赖关系：
+
+大多数的 C/C++编译器都支持一个“-M”的选项,即自动找寻源文件中包含的头文
+件,并生成一个依赖关系，GNU的编译器要用-MM,-M”参数会把一些标准库的头
+文件也包含进来。
+
+gcc -M main.c 的输出是:
+main.o:main.c defs.h/usr/include/stdio.h /usr/include/features.h
+gcc -MM main.c 的输出则是:
+main.o: main.c defs.h
+
+GNU 组织建议把编译器为每一个源文件的自动生成的依赖关系放到一个文件中,为
+每一个“name.c”的文件都生成一个“name.d”的 Makefile 文件,[.d]文件中就
+存放对应[.c]文件的依赖关系。
+
+在命令行之间中的空格或是空行会被忽略,但是如果该空格或空行是以 Tab 键开
+头的,那么make 会认为其是一个空命令。
+
+显示命令:
+当我们用“@”字符在命令行前,那么,这个命令将不被 make 显示出来,
+如@echo 正在编译 XXX 模块......
+
+make -n或--just-printf只显示命令，不执行命令，这可调试Makefile文
+件,而-s或--slient则是全面禁止显示命令。
+
+(与是否显示命令有关的是@和-n,-s)
+
+分隔命令可用回车或用分号。
+
+若makefile中命令执行有错（检查返回值），就会终止；但如mkdir创建一已存在
+的文件夹就会出错，但可忽略它，在命令前加-就可以继续执行而不终止。make加
+上-i或--ignore-errors可以忽略所有的命令出错。规则以.IGNORE作为目标，那
+这规则中的所有命令将会忽略错误.加-k或--keep-going表示终止有命令出错的规
+则，继续其它的。（总结：-; -i,--ignore-errors; .IGNORE）
+
+嵌套执行make:(项目上是否该加的呢？我觉得应该)
+若有一子目录subdir,其中有makefile要执行，那么总控makefile可以写道：
+subsystem:
+        cd subdir && $(MAKE)
+等价于：
+subsystem:
+        $(MAKE) -C subdir
+意思都是先进入“subdir”目录,然后执行 make 命令。
+定义$(MAKE)宏变量的意思是,也许我们的 make 需要一些参数,所以定义成一个变量
+        比较利于维护。
+总控 Makefile 的变量可以传递到下级的Makefile 中(如果你显示的声明),但是不会覆盖
+     下层的 Makefile 中所定义的变量。,除非指定了“-e”参数。
+传递变量到下级，使用这样的声明export <variable ...>
+不想，就这样声明unexport <variable ...>
+
+定义命令包：
+define run-yacc
+yacc $(firstword $^)
+mv y.tab.c $@
+endef
+使用命令包
+foo.c : foo.y
+      $(run-yacc)
+
+变量就像c/c++的宏
+使用变量时，要在前加$,最好用()或{}把变量包括起来，$$表示用真正的$
+
+变量中的变量：
+变量可以是先使用后定义的
+foo = $(bar)
+bar = $(ugh)
+ugh = Huh?
+all:
+    echo $(foo)
+
+makefile可以检测递归定义
+A = $(B)
+B = $(A)
+
+也可以:=定义变量，这种方式定义的前面变量不可用后面定义的变量
+y := $(x) bar
+x := foo
+y 是bar
+
+定义一个空格的方法：
+nullstring :=
+space := $(nullstring) # end of the line
+先用一个Empty变量（nullstring）后加一个空格，再加一个#注释
+
+dir := /foo/bar    # directory to put the frobs in
+dir 这个变量的值是“/foo/bar”,后面还跟了 4 个空格,如果我们这样使用这样变量来指
+定别的目录——“$(dir)/file”那么就完蛋了,这时就可用nullstring了。
+
+操作符?=
+foo ?= bar
+如果 foo 没有被定义过,那么变量 foo 的值就是“bar”,否则什么也不做
+
+变量替换：
+格式是“$(var:a=b)”或是“${var:a=b}”,其意思是,把变量“var”中所有
+以“a”字串“结尾”的“a”替换成“b”字串。“结尾”意思是“空格”或是“结束符”。
+foo := a.o b.o c.o
+bar := $(foo:.o=.c)
+另外一种变量替换的技术是以“静态模式”:
+foo := a.o b.o c.o
+bar := $(foo:%.o=%.c)
+这依赖于被替换字串中的有相同的模式,模式中必须包含一个“%”字符
+
+这种变量替换可以用于编辑文本的，替换好的变量可以用echo打印出来或写到一
+个文件。
+
+------------------------------
+
+把变量的值再当成变量：
+
+x = y y = z a := $($(x))
+
+这一点上C/C++的宏好像实现不了，就是不能再在宏定义#define中使用#if等条件
+编译。
+
+------------------------------
+
+------------------------------
+
+first_second = Hello
+a = first
+b = second
+all = $($a_$b)
+all 是Hello
+
+这不就是C/C++中用##来实现的宏定义吗
+
+------------------------------
+
+------------------------------
+
+使用“+=”操作符给变量追加值
+
+------------------------------
+
+如果有变量是通常 make 的命令行参数设置的,那么 Makefile 中对这个变量的赋
+值会被忽略。如果你想在 Makefile 中设置这类参数的值,那么,你可以使用
+“override”指示符。
+
+------------------------------
+
+libSource/dio/../../include/lib_dio.h:7:22: warning: 'struct
+DSignalUseStatusShmStruct' declared inside parameter list
+
+libSource/dio/../../include/lib_dio.h:7:22: warning: its scope is only
+this definition or declaration, which is probably not what you want
+
+上面的第一条警告是因为lib_dio.h没有包含声明struct
+DSignalUseStatusShmStruct结构体的头文件(该结构用在了一个函数参数里了),
+这句虽然是警告，但是它同时引起了不少的错误，所以以后注意不要忽略警告。
+
+------------------------------
+
+error: expected specifier-qualifier-list before 'pid_t'
+
+这个编译错误是因为没有包含声明pid_t的头文件
+
+specifier 说明符
+
+qualifier 限定词 修饰词
+
+------------------------------
+
+一makefile文件有
+
+dio.a : dio.o dataAcq.o timer_delay.o
+	ar -r $@ $< && mv $@ lib
+
+make将上面的命令转换为:
+
+	ar -r dio.a dio.o && mv dio.a lib
+
+且可以成功通过,但是dio.c要用到dataAcq.c和timer_delay.c定义文件的函数.
+而不是ar -r dio.a dio.o dataAcq.o timer_delay.o && mv dio.a lib所以需要
+显式指明为:ar -r $@ dataAcq.o timer_delay.o && mv $@ lib可能是$<是最小
+依赖文件的集合.
+
+------------------------------
+
+------------------------------
+
+一Makefile文件有
+foo bar : bar.c foo.c
+	gcc -o $@ $<
+
+用make bar -n 命令打印出来的是 gcc -o bar bar.c;用make foo -n打印出来的
+是 gcc -o foo bar.c;
+
+------------------------------
+
+执行make命令后，会打印出具体执行的命令，可以通过查看打印的命令判断
+makefile是否写对。
+
+------------------------------
+
+------------------------------
+
+编译.a文件是要用到ld程序来链接的,虽然不用加其它文件也可以成功,但是在使
+用.a文件的时候会出现问题.
+
+------------------------------
+
+emacser的网站有windows下的cedet安装方法.
+
+在windows下一定要将cedet1.7的替换lisp/目录下的,不然用不了.
+
+------------------------------
+
+动态库怎么用的呢？
+
+========================================12/02/16==============================
+
+------------------------------
+
+模式规则：
+%.o : %.c
+    $(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+把所有的[.c]文件都编译成[.o]文件.
+
+有foo.c和bar.c文件，有一Makefile文件内容如下：
+
+%.o : %.c
+	gcc -o $@ $<
+
+输入make foo.o -n 命令会输出 gcc -o foo.o foo.c
+输入make bar.o -n 命令会输出 gcc -o bar.o bar.c
+输入make bar -n 命令会输出 cc bar.c -o bar (使用了隐含规则)
+
+------------------------------
+
+%.tab.c %.tab.h: %.y
+       bison -d $<
+
+这条规则告诉make把所有的[.y]文件都以“bison –d <n>.y”执行,然后生成
+“<n>.tab.c”和“<n>.tab.h”文件。(怎么好像不行的呢，好像多目标的都不行的)
+
+------------------------------
+
+目标变量：
+为某个目标设置局部变量,这种变量被称为“Target-specific Variable”,它可以和“全局变量”同名,
+因为它的作用范围只在这条规则以及连带规则中,所以其值也只在作用范围内有效。
+<target ...> : <variable-assignment>
+target可以有多个，因为有...
+<variable-assignment>可以是前面讲过的各种赋值表达式,如“=”“:=”“+=”或“?=”。
+prog : CFLAGS = -g
+prog : prog.o foo.o bar.o
+     $(CC) $(CFLAGS) prog.o foo.o bar.o
+prog.o : prog.c
+     $(CC) $(CFLAGS) prog.c
+
+$(CC) $(CFLAGS) prog.c 这条命令的CFLAGS也是在其作用范围之内。
+
+------------------------------
+
+模式变量：
+支持模式变量(Pattern-specific Variable),模式变量的好处就是,我们可以给定一
+种“模式”,可以把变量定义在符合这种模式的所有目标上。(注意：目标要是模式才行)
+make 的“模式”一般是至少含有一个“%”的,可以以如下方式给所有以[.o]结尾的目标定义目标变量:
+%.o : CFLAGS = -O
+模式变量的语法和“目标变量”一样.
+
+------------------------------
+
+条件判断：
+ifeq、ifneq、ifdef、ifndef、else 和 endif。
+最好不要把自动化变量(如“$@”等)放入条件表达式中,因为自动化变量是在运行时才有的。
+
+------------------------------
+
+调函数语法：
+$(<function> <arguments>)或是将小括号改为大括号
+参数间以逗号“,”分隔,而函数名和参数之间以“空格”分隔。
+
+------------------------------
+
+以下的很多函数可以用来作为文本处理工具。
+
+$(subst <from>,<to>,<text>)
+名称:字符串替换函数——subst。
+功能:把字串<text>中的<from>字符串替换成<to>。
+返回:函数返回被替换过后的字符串。
+
+$(patsubst <pattern>,<replacement>,<text>)
+名称:模式字符串替换函数——patsubst。
+功能:查找<text>中的单词(单词以“空格”“Tab”或“回车”
+、“换行”分隔)是否符合模式<pattern>,如果匹配的话,则以<replacement>替换。
+这里,<pattern>可以包括通配符“%”,表示任意长度的字串。如果<replacement>
+中也包含“%”,那么,<replacement>中的这个“%”将是<pattern>中的那个“%”
+所代表的字串,就是%的东西不变。(可以用“\”来转义,以“\%”来表示真实含义的“%”字符)
+返回:函数返回被替换过后的字符串。
+
+例子：$(patsubst %.c,%.o,x.c.c bar.c)把字串“x.c.c bar.c”符合模式
+[%.c]的单词替换成[%.o],返回结果是“x.c.o bar.o”而不是“x.o.o bar.o”或
+“x.o.c bar.o"，难道是模式最大匹配原则。
+
+$(strip <string>)
+名称:去空格函数——strip。
+功能:去掉<string>字串中开头和结尾的空字符。
+返回:返回被去掉空格的字符串值。
+
+$(findstring <find>,<in>)
+名称:查找字符串函数——findstring。
+功能:在字串<in>中查找<find>字串。
+返回:如果找到,那么返回<find>,否则返回空字符串。
+
+$(filter <pattern...>,<text>)
+名称:过滤函数——filter。
+功能:以<pattern>模式过滤<text>字符串中的单词,保留符合模式<pattern>的单
+词。可以有多个模式。
+返回:返回符合模式<pattern>的字串。
+
+$(filter-out <pattern...>,<text>)
+名称:反过滤函数——filter-out。
+功能:以<pattern>模式过滤<text>字符串中的单词,
+去除符合模式<pattern>的单
+词。可以有多个模式。
+返回:返回不符合模式<pattern>的字串。
+
+$(sort <list>)
+名称:排序函数——sort。
+功能:给字符串<list>中的单词排序(升序)。
+返回:返回排序后的字符串。
+
+$(word <n>,<text>)
+名称:取单词函数——word。
+功能:取字符串<text>中第<n>个单词。(从一开始)
+返回:返回字符串<text>中第<n>个单词。如果<n>比<text>中的单词数要大,那么
+返回空字符串。
+
+$(wordlist <s>,<e>,<text>)
+名称:取单词串函数——wordlist。
+功能:从字符串<text>中取从<s>开始到<e>的单词串。<s>和<e>是一个数字。
+返回:返回字符串<text>中从<s>到<e>的单词字串。如果<s>比<text>中的单词数
+要大,那么返回空字符串。如果<e>大于<text>的单词数,那么返回从<s>开始,
+到<text>结束的单词串。
+
+$(words <text>)
+名称:单词个数统计函数——words。
+功能:统计<text>中字符串中的单词个数。
+返回:返回<text>中的单词数。
+
+$(firstword <text>)
+名称:首单词函数——firstword。
+功能:取字符串<text>中的第一个单词。
+返回:返回字符串<text>的第一个单词。
+
+文件名操作函数：
+$(dir <names...>)
+名称:取目录函数——dir。
+功能:从文件名序列<names>中取出目录部分。目录部分是指最后一个反斜杠(“/”
+)之前的部分。如果没有反斜杠,那么返回“./”。
+返回:返回文件名序列<names>的目录部分。
+
+$(notdir <names...>)
+名称:取文件函数——notdir。
+功能:从文件名序列<names>中取出非目录部分。非目录部分是指最后一个反斜杠
+（“/”)之后的部分。
+返回:返回文件名序列<names>的非目录部分。
+
+$(suffix <names...>)
+名称:取后缀函数——suffix。
+功能:从文件名序列<names>中取出各个文件名的后缀。
+返回:返回文件名序列<names>的后缀序列,如果文件没有后缀,则返回空字串。
+示例:$(suffix src/foo.c src-1.0/bar.c hacks)返回值是“.c .c”
+
+$(basename <names...>)
+名称:取前缀函数——basename。
+功能:从文件名序列<names>中取出各个文件名的前缀部分。
+返回:返回文件名序列<names>的前缀序列,如果文件没有前缀,则返回空字串。
+
+$(addsuffix <suffix>,<names...>)
+名称:加后缀函数——addsuffix。
+功能:把后缀<suffix>加到<names>中的每个单词后面。
+返回:返回加过后缀的文件名序列。
+
+$(addprefix <prefix>,<names...>)
+名称:加前缀函数——addprefix。
+功能:把前缀<prefix>加到<names>中的每个单词前面。
+返回:返回加过前缀的文件名序列。
+
+$(join <list1>,<list2>)
+名称:连接函数——join。
+功能:把<list2>中的单词对应地加到<list1>的单词后面。如果<list1>的单词个
+数要比<list2>的多,那么,<list1>中的多出来的单词将保持原样。如果<list2>的单
+词个数要比<list1>多,那么,<list2>多出来的单词将被复制到<list2>中。
+返回:返回连接过后的字符串。
+
+foreach函数：
+$(foreach <var>,<list>,<text>)
+意思是,把参数<list>中的单词逐一取出放到参数<var>所指定的变量中,然
+后再执行<text>所包含的表达式。每一次<text>会返回一个字符串,循环过程中,
+<text>的所返回的每个字符串会以空格分隔,最后当整个循环结束时,<text>所返
+回的每个字符串所组成的整个字符串(以空格分隔)将会是 foreach 函数的返回值.
+names := a b c d
+files := $(foreach n,$(names),$(n).o)
+$(files)的值是“a.o b.o c.o d.o”。
+
+if函数
+$(if <condition>,<then-part>)
+或是
+$(if <condition>,<then-part>,<else-part>)
+<condition>参数是 if 的表达式,如果其返回的为非空字符串,那么这个表达式
+就相当于返回真,于是,<then-part>会被计算,否则<else-part>会被计算。
+
+call 函数：
+是唯一一个可以用来创建新的参数化的函数。你可以写一个非常复杂的表达式,
+这个表达式中,你可以定义许多参数,然后你可以用 call 函数来向这个表达式传递参数。
+其语法是:
+$(call <expression>,<parm1>,<parm2>,<parm3>...)
+<expression>参数中的变量,如$(1),$(2),$(3)等,会被
+参数<parm1>,<parm2>,<parm3>依次取代。而<expression>的返回值就是 call 函
+数的返回值。
+
+origin 函数
+不像其它的函数,他并不操作变量的值,他只是告诉你你的这个变量是哪里来
+的?其语法是:
+$(origin <variable>)
+返回值:
+“undefined”
+如果<variable>从来没有定义过,origin 函数返回这个值“undefined”。
+“default”
+如果<variable>是一个默认的定义,比如“CC”这个变量,这种变量我们将在后面
+讲述。
+“environment”
+如果<variable>是一个环境变量,并且当 Makefile 被执行时,“-e”参数没有被打开。
+“file”
+如果<variable>这个变量被定义在 Makefile 中。
+“command line”
+如果<variable>这个变量是被命令行定义的。
+“override”
+如果<variable>是被 override 指示符重新定义的。
+“automatic”
+如果<variable>是一个命令运行中的自动化变量。
+
+shell函数：
+它的参数应该就是操作系统 Shell 的命令。它和反引号“`”是相同的功能。
+shell 函数把执行操作系统命令后的输出作为函数返回。
+
+控制make
+需要检测一些运行 Makefile 时的运行时信息,并且根据这些信息来决定,
+你是让 make 继续执行,还是停止。
+$(error <text ...>)
+产生一个致命的错误,<text ...>是错误信息。注意,error 函数不会在一被使用就
+会产生错误信息,所以如果你把其定义在某个变量中,并在后续的脚本中使用这个变量,那
+么也是可以的。
+$(warning <text ...>)
+这个函数很像 error 函数,只是它并不会让 make 退出,只是输出一段警告信息,而
+make 继续执行。
+
+make退出码：
+0 —— 表示成功执行。
+1 —— 如果 make 运行时出现任何错误,其返回 1。
+2 —— 如果你使用了 make 的“-q”选项,并且 make 使得一些目标不需要更新,那
+么返回 2。
+
+依次找三个文件——“GNUmakefile”“makefile”和“Makefile”
+
+指定目标：
+“all”
+这个伪目标是所有目标的目标,其功能一般是编译所有的目标。
+“clean”
+这个伪目标功能是删除所有被 make 创建的文件。
+“install”
+这个伪目标功能是安装已编译好的程序,其实就是把目标执行文件拷贝到指定的目
+标中去。
+“print”
+这个伪目标的功能是例出改变过的源文件。
+“tar”
+这个伪目标功能是把源程序打包备份。也就是一个 tar 文件。
+“dist”
+这个伪目标功能是创建一个压缩文件,一般是把 tar 文件压成 Z 文件。或是 gz 文
+件。
+“TAGS”
+这个伪目标功能是更新所有的目标,以备完整地重编译使用。
+“check”和“test”
+这两个伪目标一般用来测试 makefile 的流程。
+
+检查规则：
+只想检查一下我们的命令,或是执行的序列的make参数有：
+“-n” “--just-print” “--dry-run” “--recon”
+
+“-t” “--touch” 这个参数的意思就是把目标文件的时间更新,但不更改目标文件。
+
+“-q” “--question”
+这个参数的行为是找目标的意思,也就是说,如果目标存在,那么其什么也不会输出,
+当然也不会执行编译,如果目标不存在,其会打印出一条出错信息。
+
+“-W <file>” “--what-if=<file>” “--assume-new=<file>”
+“--new-file=<file>”
+这个参数需要指定一个文件。一般是是源文件(或依赖文件),Make 会根据规则推导来
+运行依赖于这个文件的命令,一般来说,可以和“-n”参数一同使用,来查看这个依赖文件
+所发生的规则命令。
+
+make参数：
+“-b”
+“-m”
+这两个参数的作用是忽略和其它版本 make 的兼容性。
+
+“-B”
+“--always-make”
+认为所有的目标都需要更新(重编译)。
+
+“-C <dir>”
+“--directory=<dir>”
+指定读取 makefile 的目录。如果有多个“-C”参数,make 的解释是后面的路径
+以前面的作为相对路径,并以最后的目录作为被指定目录。
+如:“make –C ~hchen/test –C prog”等价于“make –C ~hchen/test/prog”。
+
+“—debug[=<options>]”
+输出 make 的调试信息。它有几种不同的级别可供选择,如果没有参数,那就是输出最简单
+的调试信息。下面是<options>的取值:
+a —— 也就是 all,输出所有的调试信息。
+(会非常的多)
+b —— 也就是 basic,只输出简单的调试信息。即输出不需要重编译的目标。
+v —— 也就是 verbose, b 选项的级别之上。
+在
+输出的信息包括哪个 makefile 被解
+析,不需要被重编译的依赖文件(或是依赖目标)等。
+i —— 也就是 implicit,输出所以的隐含规则。
+j —— 也就是 jobs,输出执行规则中命令的详细信息,如命令的 PID、返回码等。
+m —— 也就是 makefile,输出 make 读取 makefile,更新 makefile,执行
+makefile 的信息。
+
+“-d”
+相当于“--debug=a”。
+
+“-e”
+“--environment-overrides”
+指明环境变量的值覆盖 makefile 中定义的变量的值。
+
+“-f=<file>”
+“--file=<file>”
+“--makefile=<file>”
+指定需要执行的 makefile
+
+“-i”
+“--ignore-errors”
+在执行时忽略所有的错误。
+
+“-I <dir>”
+“--include-dir=<dir>”
+在<dir>中搜索被包含的 makefile。
+
+“-j [<jobsnum>]”
+“--jobs[=<jobsnum>]”
+指同时运行命令的个数。如果没有这个参数,make 运行命令时能运行多少就运行多少。
+
+“-k”
+“--keep-going”
+出错也不停止运行。如果生成一个目标失败了,那么依赖于其上的目标就不会被执行了。
+
+“-l <load>”
+“--load-average[=<load]”
+“—max-load[=<load>]”
+指定 make 运行命令的负载。
+
+“-o <file>”
+“--old-file=<file>”
+“--assume-old=<file>”
+不重新生成的指定的<file>,即使这个目标的依赖文件新于它。
+
+隐含规则：
+“隐含规则”也就是一种惯例,把[.c]文件编译成[.o]文件这一规则,根本
+就不用写出来,make 会自动推导出这种规则,并生成我们需要的[.o]文件。
+
+“隐含规则”会使用一些我们系统变量,我们可以改变这些系统变量的值来定制隐含规则的
+运行时的参数。如系统变量“CFLAGS”可以控制编译时的编译器参数。
+
+make 会试图去自动推导产生这个目标的规则和命令,如果 make 可以自动推导生成这个目
+标的规则和命令,那么这个行为就是隐含规则的自动推导。
+
+foo : foo.o bar.o
+    cc –o foo foo.o bar.o $(CFLAGS) $(LDFLAGS)
+make会自动生成foo.o 和 bar.o 这两目标的规则和命令。
+
+make 会在自己的“隐含规则”库中寻找可以用的规则,如果找到,那么就会使用。如果找
+不到,那么就会报错。
+
+在 make 的“隐含规则库”中,每一条隐含规则都在库中有其顺序,越靠前的则是越
+被经常使用的,所以,这会导致我们有些时候即使我们显示地指定了目标依赖,make 也不
+会管。
+foo.o : foo.p
+如果目录下存在了
+“foo.c”文件,那么我们的隐含规则一样会生效,并会通过“foo.c”调用 C 的编译器生
+成 foo.o 文件。因为,在隐含规则中,Pascal 的规则出现在 C 的规则之后.
+
+隐含规则一览：
+1、编译 C 程序的隐含规则。
+“<n>.o”的目标的依赖目标会自动推导为“<n>.c”,并且其生成命令是
+“$(CC) –c $(CPPFLAGS) $(CFLAGS)”
+
+2、编译 C++程序的隐含规则。
+“<n>.o”的目标的依赖目标会自动推导为“<n>.cc”或是“<n>.C”,并且其生成命令是
+“$(CXX) –c $(CPPFLAGS) $(CFLAGS)”(建议使用“.cc”作为 C++源文件的后缀,。
+而不是“.C”).
+
+3、编译 Pascal 程序的隐含规则。
+“<n>.o”的目标的依赖目标会自动推导为“<n>.p”,并且其生成命令是
+“$(PC) –c $(PFLAGS)”。
+
+4、编译 Fortran/Ratfor 程序的隐含规则。
+“<n>.o”的目标的依赖目标会自动推导为“<n>.r”或“<n>.F”或“<n>.f”,
+并且其生成命令是:
+“.f” “$(FC) –c $(FFLAGS)”
+“.F” “$(FC) –c $(FFLAGS) $(CPPFLAGS)”
+“.f” “$(FC) –c $(FFLAGS) $(RFLAGS)”
+
+5、预处理 Fortran/Ratfor 程序的隐含规则。
+“<n>.f”的目标的依赖目标会自动推导为“<n>.r” “<n>.F”.这个规则只是转换Ratfor
+或或有预处理的 Fortran 程序到一个标准的 Fortran 程序。其使用的命令是:
+“.F” “$(FC) –F $(CPPFLAGS) $(FFLAGS)”
+“.r” “$(FC) –F $(FFLAGS) $(RFLAGS)”
+
+6、编译 Modula-2 程序的隐含规则。
+“<n>.sym”的目标的依赖目标会自动推导为“<n>.def”,并且其生成命令是:
+“$(M2C) $(M2FLAGS) $(DEFFLAGS)”.
+“<n.o>” 的目标的依赖目标会自动推导为“<n>.mod”。并且其生成命令是:
+“$(M2C) $(M2FLAGS) $(MODFLAGS)”。
+
+7、汇编和汇编预处理的隐含规则。
+“<n>.o” 的目标的依赖目标会自动推导为“<n>.s”,默认使用编译品“as”,并且
+其生成命令是:“$(AS) $(ASFLAGS)”.“<n>.s”的目标的依赖目标会自动推导为
+“<n>.S”。默认使用 C 预编译器“cpp”,并且其生成命令是
+:“$(AS) $(ASFLAGS)”。
+
+8、链接 Object 文件的隐含规则。
+“<n>”目标依赖于“<n>.o”,通过运行 C 的编译器来运行链接程序生成(一般是“ld”,)
+其生成命令是:“$(CC) $(LDFLAGS) <n>.o $(LOADLIBES) $(LDLIBS)”。
+这个规则对于只有一个源文件的工程有效,同时也对多个 Object 文件(由不同的
+源文件生成)的也有效。
+x : y.o z.o
+并且“x.c”“y.c”和“z.c”都存在时,隐含规则将执行如下命令:
+cc -c x.c -o x.o
+cc -c y.c -o y.o
+cc -c z.c -o z.o
+cc x.o y.o z.o -o x
+rm -f x.o
+rm -f y.o
+rm -f z.o
+如果没有一个源文件(如上例中的 x.c)和你的目标名字(如上例中的 x)相关联,那么,
+你最好写出自己的生成规则,不然,隐含规则会报错的。
+
+9、Yacc C 程序时的隐含规则。
+“<n>.c”的依赖文件被自动推导为“n.y”(Yacc 生成的文件) 其生成命令是:
+“$(YACC)$(YFALGS)”(“Yacc”是一个语法分析器,关于其细节请查看相关资料)
+
+10、Lex C 程序时的隐含规则。
+“<n>.c”的依赖文件被自动推导为“n.l”(Lex 生成的文件),其生成命令是:
+“$(LEX) $(LFALGS)”(关于“Lex”的细节请查看相关资料)
+
+11、Lex Ratfor 程序时的隐含规则。
+“<n>.r”的依赖文件被自动推导为“n.l”(Lex 生成的文件),其生成命令是:
+“$(LEX) $(LFALGS)”。
+
+12、从 C 程序、Yacc 文件或 Lex 文件创建 Lint 库的隐含规则。
+“<n>.ln”(lint 生成的文件)的依赖文件被自动推导为“n.c” 
+其生成命令是: $(LINT) “$(LINTFALGS) $(CPPFLAGS) -i”。
+对于“<n>.y”和“<n>.l”也是同样的规则。
+
+隐含规则使用的变量：
+在隐含规则中的命令中,基本上都是使用了一些预先设置的变量。
+只要设置了这些特定的变量,那么其就会对隐含规则起作用。
+可以在你的 makefile中改变这些变量的值,或是在 make 的命令行中传入这些值,
+或是在你的环境变量中设置这些值。
+1、关于命令的变量。
+AR
+函数库打包程序。默认命令是“ar”。
+AS
+汇编语言编译程序。默认命令是“as”。
+CC
+C 语言编译程序。默认命令是“cc”。
+CXX
+C++语言编译程序。默认命令是“g++”。
+CO
+从 RCS 文件中扩展文件程序。默认命令是“co”。
+CPP
+C 程序的预处理器(输出是标准输出设备)。默认命令是“$(CC) –E”。
+FC
+Fortran 和 Ratfor 的编译器和预处理程序。默认命令是“f77”。
+GET
+从 SCCS 文件中扩展文件的程序。默认命令是“get”。
+LEX
+Lex 方法分析器程序(针对于 C 或 Ratfor)。默认命令是“lex”。
+PC
+Pascal 语言编译程序。默认命令是“pc”。
+YACC
+Yacc 文法分析器(针对于 C 程序)。默认命令是“yacc”。
+YACCR
+Yacc 文法分析器(针对于 Ratfor 程序)。默认命令是“yacc –r”。
+MAKEINFO
+转换 Texinfo 源文件(.texi)到 Info 文件程序。默认命令是“makeinfo”。
+TEX
+从 TeX 源文件创建 TeX DVI 文件的程序。默认命令是“tex”。
+TEXI2DVI
+从 Texinfo 源文件创建军 TeX DVI 文件的程序。默认命令是“texi2dvi”。
+WEAVE
+转换 Web 到 TeX 的程序。默认命令是“weave”。
+CWEAVE
+转换 C Web 到 TeX 的程序。默认命令是“cweave”。
+TANGLE
+转换 Web 到 Pascal 语言的程序。默认命令是“tangle”。
+CTANGLE
+转换 C Web 到 C。默认命令是“ctangle”。
+RM
+删除文件命令。默认命令是“rm –f”。
+
+2、关于命令参数的变量
+如果没有指明其默认值,那么其默认值都是空。
+
+ARFLAGS
+函数库打包程序 AR 命令的参数。默认值是“rv”。
+ASFLAGS
+汇编语言编译器参数。(当明显地调用“.s”或“.S”文件时)。
+CFLAGS
+C 语言编译器参数。
+CXXFLAGS
+C++语言编译器参数。
+COFLAGS
+RCS 命令参数。
+CPPFLAGS
+C 预处理器参数。( C 和 Fortran 编译器也会用到)。
+FFLAGS
+Fortran 语言编译器参数。
+GFLAGS
+SCCS “get”程序参数。
+LDFLAGS
+链接器参数。(如:“ld”)
+LFLAGS
+Lex 文法分析器参数。
+PFLAGS
+Pascal 语言编译器参数。
+RFLAGS
+Ratfor 程序的 Fortran 编译器
+RFLAGS
+Ratfor 程序的 Fortran 编译器参数。
+YFLAGS
+Yacc 文法分析器参数。
+
+隐含规则链
+一个目标可能被一系列的隐含规则所作用。例如,一个[.o]的文件生成,可能会
+是先被 Yacc 的[.y]文件先成[.c],然后再被 C 的编译器生成。我们把这
+一系列的隐含规则叫做“隐含规则链”。
+
+对于中间目标,只要目标成功产生,那么,产生最终目标过程中,所产生的
+中间目标文件会被以“rm -f”删除。
+
+个被 makefile 指定成目标或是依赖目标的文件不能被当作中介。然而,你可以明
+显地说明一个文件或是目标是中介目标,你可以使用伪目标“.INTERMEDIATE”来强制声
+明。(如:.INTERMEDIATE : mid )
+
+也可以阻止 make 自动删除中间目标,要做到这一点,你可以使用伪目标“.SECONDARY”
+来强制声明(如:.SECONDARY : sec)。你还可以把你的目标,以模式的方式来指定(如:
+%.o)成伪目标“.PRECIOUS”的依赖目标,以保存被隐含规则所生成的中间文件。
+
+在“隐含规则链”中,禁止同一个目标出现两次或两次以上,这样一来,就可防止在 make
+自动推导时出现无限递归的情况。
+
+定义模式规则：
+模式规则中,至少在规则的目标定义中要包含“%”,否则,就是一般的规则。
+“%”的意思是表示一个或多个任意字符（不能空）。在依赖目标中同样可以使用“%”,只是
+依赖目标中的“%”的取值,取决于其目标。
+“%”的展开发生在变量和函数的展开之后,变量和函数的展开发生在make 载入 
+Makefile 时,而模式规则中的“%”则发生在运行时。
+
+目标中的模式的“%”决定了依赖目标中“%”的样子。
+
+在模式规则中,目标可能会是多个的,如果有模式匹配出多个目标,make 
+就会产生所有的模式目标,
+
+自动化变量：
+所谓自动化变量,就是这种变量会把模式（注意是模式的）中所定义的一系列的文件
+自动地挨个取出,直至所有的符合模式的文件都取完了。这种自动化变量只应出现在
+规则的命令中。
+
+$@
+表示规则中的目标文件集。在模式规则中,如果有多个目标,那么,
+“$@”就是匹配于目标中模式定义的集合。
+
+$%
+仅当目标是函数库文件中,表示规则中的目标成员名。例如,如果一个目标是
+“foo.a(bar.o)”,那么,“$%”就是“bar.o”“$@”就是“foo.a”。
+如果目标不是函数库文件(Unix 下是[.a],Windows 下是[.lib]),
+那么其值为空。
+
+$<
+依赖目标中的第一个目标名字。如果依赖目标是以模式(即“%”)定义的,那么“$<”
+将是符合模式的一系列的文件集。注意,其是一个一个取出来的。
+
+$?
+所有比目标新的依赖目标的集合。以空格分隔。不是一个一个取出的
+
+$^
+所有的依赖目标的集合。以空格分隔。不是一个一个取出的，如果在依赖目标中
+有多个重复的,那个这个变量会去除重复的依赖目标,只保留一份。
+
+$+
+这个变量很像“$^”
+,也是所有依赖目标的集合。只是它不去除重复的依赖目标。
+
+$*
+这个变量表示目标模式（目标模式就是目标，不过目标中有模式%）中“%”及
+其之前的部分。如果目标是“dir/a.foo.b”,并且目标的模式是“a.%.b”,
+那么,“$*”的值就是“dir/a.foo”。
+
+对于“$<”,为了避免产生不必要的麻烦,我们最好给$后面的那个特定字符都
+加上圆括号,比如,“$(<)”就要比“$<”要好一些。
+
+这些变量只使用在规则的命令中,而且一般都是“显式规则”和“静态模
+式规则”。其在隐含规则中并没有意义。
+
+把“%”所匹配的内容叫做“茎”,目标和依赖目标中同时有“%”时,依赖目标的
+“茎”会传给目标,当做目标中的“茎”。(是信赖目标传给目标)
+当一个模式匹配包含有斜杠(实际也不经常包含)的文件时,那么在进行模式匹配时,目录
+部分会首先被移开,然后进行匹配,成功后,再把目录加回去。在进行“茎”的传递时,我
+们需要知道这个步骤。例如有一个模式“e%t” 文件, “src/eat”匹配于该模式, 
+“src/a”于是就是其“茎”,如果这个模式定义在依赖目标中,而被依赖于这个模式
+的目标中又有个模式“c%r”,那么,目标就是“src/car”。
+
+
+老式风格的”后缀规则“：
+后缀规则是一个比较老式的定义隐含规则的方法。
+双后缀规则定义了一对后缀:目标文件的后缀和依赖目标(源文件)的后缀。如“.c.o”
+(c在o前的)相当于“%o : %c”。单后缀规则只定义一个后缀,也就是源文件的后缀。
+如“.c”相当于“% :%.c”。
+后缀规则不允许任何的依赖文件,如果有依赖文件的话,那就不是后缀规则,那些后缀
+统统被认为是文件名.
+后缀规则中,如果没有命令,那是毫无意义的。因为他也不会移去内建的隐含规则。
+
+
+
+函数库文件的成员：
+一个函数库文件由多个文件组成。你可以以如下格式指定函数库文件及其组成:
+archive(member)
+这个不是一个命令,而一个目标和依赖的定义。一般来说,这种用法基本上就是为了“ar”
+命令来服务的。如:
+foolib(hack.o) : hack.o
+ar cr foolib hack.o
+如果要指定多个 member,那就以空格分开,如:
+foolib(hack.o kludge.o)
+其等价于:
+foolib(hack.o) foolib(kludge.o)
+你还可以使用 Shell 的文件通配符来定义,如:
+foolib(*.o)
+
+当 make 搜索一个目标的隐含规则时,一个特殊的特性是,如果这个目标是“a(m)”
+形式的,其会把目标变成“(m)”。于是,如果我们的成员是“%.o”的模式定义,并且
+如果我们使用“make foo.a(bar.o)”的形式调用 Makefile 时,隐含规则会
+去找“bar.o”的规则,如果没有定义 bar.o 的规则,那么内建隐含规则生效,
+make 会去找 bar.c 文件来生成bar.o,如果找得到的话,make 执行的命令
+大致如下:
+cc –c bar.c –o bar.o
+ar r foo.a bar.o
+rm –f bar.o
+
+==============================12/02/17==============================
+用emacs写c++代码时（是.cpp文件）,用M-;注释时是用//注释的，而不是.c文件的/**/
+
+为什么
+test test1 : test.c
+	gcc -o $@ $<
+make解析为
+gcc -o test test.c
+没有把test1也作为目标来生成多一条命令呢？
+
+输入命令的字符串有空格或'-'时要用‘\'转为原意.
+
+==============================12/02/19==============================
+gcc
+-M
+Instead of outputting the result of preprocessing, output a rule 
+suitable for make describing the dependencies Unless specified 
+explicitly (with -MT or -MQ), the object file name consists of the 
+name of the source file with the dependency rules you should 
+explicitly specify the dependency output file with -MF, or use an
+ Passing -M to the driver implies -E, and suppresses warnings with 
+an implicit -w.
+-MM 
+Like -M but do not mention header files that are found in system
+ header directories, nor header files that are determine whether
+ that header will appear in -MM dependency output.  This is a slight 
+change in semantics from When used with -M or -MM, specifies a file 
+to write the dependencies to.  If no -MF switch is given the When used
+ with the driver options -MD or -MMD, -MF overrides the default 
+dependency output file.
+
+以root用户用stardict命令打开stardict时提示：
+(stardict:4570): GnomeUI-WARNING **: While connecting to session 
+manager:None of the authentication protocols specified are supported.
+**
+GLib-GIO:ERROR:gdbusconnection.c:2270:initable_init: assertion failed:
+ (connection->initialization_error == NULL)
+已放弃 (core dumped)
+普通用户就不会。
+
+suppress: 抑制 取消 删除 镇压 平定
+
+所谓回调，就是事先将一个回调函数（callback function）指针传递给某一个处理过程，
+当这个处理过程得到执行时，回调预先定义好的回调函数以期实现激活其他处理过程的目的。
+
+==============================12/02/20==============================
+qt的:要一个哪里显示就在new说对象时加上其要显示的对象为参数,如:
+QLabel a = new QLabel(b);这时label a就在b 上显示。
+
+mlock()  and mlockall() respectively lock part or all of the calling 
+process's virtual address space into RAM, pre-venting that memory 
+from being paged to the swap area.  munlock() and munlockall() 
+perform the converse  operation,respectively  unlocking  part or 
+all of the calling process's virtual address space, so that pages
+ in the specified virtual address range may once more to be swapped
+ out if required by the kernel memory manager.  Memory locking and
+unlocking are performed in units of whole pages.
+
+==============================12/02/21==============================
+a.c中调用b.c的一个方法,b.c中的文件又调c.c的一个方法,现在要生成一个a.c的
+静态文件库a.a
+命令是ar -r a.a a.o b.o c.o
+不能只是ar -r a.a a.o b.o
+
+==============================12/02/22==============================
+http://mirrors.163.com/fedora/releases/  这个地址有fedora的安装包下载
+
+亿图的破解方法是:把crack中的文件复制安装目录,然后运行主程序，点
+“帮助”－“注册” 填上用户名（英文名随便填）和产品密钥（数字随便填）点
+“激活”－“确定”然后再点“帮助”－“注册”，唤出注册框后，再填上产品密钥，
+再点“手动激活”确定后再重新运行主程序，即为注册版.
+
+查看设备或端口等等被哪个程序使用的命令:lsof
+http://lelong.iteye.com/blog/844808
+
+==============================12/02/23==============================
+
+phony 假货, 假冒者, 赝品, 伪造的, 假的,
+
+在图形坐标中，横的是x,竖的是y.
+
+==============================12/02/24==============================
+c99 就是gcc命令
+compilation编辑，编译
+preprocess预（xsig）处理
+
+在某个目录复制一个文件的副本，也是用cp,
+
 ==============================12/02/25==============================
 安装gnome-tweak-tool
 yum install gnome-tweak-tool
@@ -84,32 +1134,168 @@ yum install gconf-editor.i686
 用find -type f | grep -E '\.[chS]$' > cscope.files
 命令生成cscope.files文件
 
+有一本有例子的书和看手册足已:在找用什么方法将string转换成int类型的时候，
+在qt的chm帮助文档中搜索"string to int"关键字然后在搜索结果中静心的找一下就可以
+找到有一个toInt函数，如果是在网上找，就算是找出了，找到的东西可以不知是什么意思，
+也要可能找很长的时间，我觉得在手册中找还是快一点的，虽然有时不知如何找，一定要耐住。
+而且在手册中找的过程中，还可以学习到其它东西，这点不像在网上找的效果。在找如何动态
+分配数组空间的时候也有这种感受，我用的是allocate array关键字找到的。
+
+qt：在类的声明中用到非指针声明一个对象时，是用默认的构造函数，且不能再给这个对像
+new一次。
+
 ==============================12/02/26==============================
 原来在rc.local中要加#!/bin/sh这一行才行的啊。
+
+emacs C-o键是在光标的前加一个回车，与enter键不一样。
+将切换到其它缓冲区的键换成 Alt+p
 
 ==============================12/02/27==============================
 现在发现Options-> Document Options里面的右下角Editing Options栏里，
 把Expand tabs勾起来，然后确定。OK，现在TAB键的缩进和四个空格的缩进在SIS里面看
 起来就对齐咯！
 
+
+==============================12/02/29==============================
+问题：工资提升，商业医疗保险。
+规范：头文件的摆放应是先系统的，后是自定义的。
+
+openoffice有一个修订的功能可以跟踪别人的修改。office也有一个这样的功能
+
+代码规范：对于一个逻辑代码块应在上面注释，即使是一行代码，而不是旁边。
+
+emacs里用C-s是向下搜索的，搜索过程按backspace可以往回搜索。
+
 ==============================12/03/03==============================
 曲（KKD）
+群（XMAU）
+
+==============================12/03/04==============================
+写qt_ga代码的时候，出现了栈溢出，后来找到了是使用了未初始化的变量。
+
+a > b ? c : a;
+这句有警告，说是第二个操作数（号）无效之类的。
+
+有时间看看emacs的Alt + backspace删除一个单词时是以什么划分单词的。
 
 ==============================12/03/05==============================
-emacs 加上自动注释
+svn 可以管理images,music,database,documentatoin and so on.
 
+from time to time 有时
+
+svn-book.pdf的how to read this book这一章的第一段讲得有意思。
+
+emacs 加上自动注释
 ==============================12/03/06==============================
+nuances 细微差别
+
+svn checkout file:///var/svn/repos
+这是访问本地库的方法，用file://  服务器的名称是localhost或没有
+Windows的访问是C:\> svn checkout file:///X:/var/svn/repos
+Windows的路径也用斜杠
+
+svn 用的file:// 这种URL是网页浏览器不能识别的，因为svn用的是一个虚拟的文件系统。
+
+svn和网页浏览器用一样方法解码URL
+svn checkout "http://host/path with space/project/españa"
+svn checkout http://host/path%20with%20space/project/espa%C3%B1a
+
+svn的库访问URL：file:///; http:; //https://；svn:// (通过自定义的协议访问
+svnserve服务器); svn+ssh:// (在svn://的基础上用了ssh通道)。
+
+svn:工作副本的每个目录都有一个.svn的目录作为svn的管理目录。
+
+svn update会合并新版本和工作副本。
+
+revision 修订版
+
+svn的修订号是对一个库来说的，而不是对单独的文件。
+
+svn的工作副本有可能有多个修订版本号。svn的Revisions一节有讲到。
+
+svn的工作文件有四种状态：
+unchanged and current : 文件副本和库都没改变，commit和update都没不做任何事。
+locally changed and current : 上次update后库一直没被更新过，commit命令会
+成功提交，update不作任何事。
+unchanged and out of date : commit不做任何事，update将成功。
+locally changed and out of date : commit时会有 "out of date" 错误，update
+试图合并工作副本，若不能自动合并则让用户自己解决。
+
+svn help import 是svn import的帮助命令
+
+import本地文件到本地库之后，import的那个文件不是本地工作的副本，还是需要checkout的
+
+svnadmin create /var/svn/newrepos
+这条命令后会在newrepos目录下建一个库
+
+svn import mytree file:///var/svn/newrepos/some/project -m "Initial import"
+这条命令就可以将mytree(文件或目录)导入库，但是newrepos没有所要控制的文件（就是mytree）
+
+svn list file:///var/svn/newrepos/some/project
+查看newrepos库中的文件
+
+推荐的源布局：trunk/,branches/,tags
+
+svn copy
+svn move
+
 在这个网址可以了解一下gnome3:linux-wiki.cn/wiki/GNOME_3安装配置与使用
 同时也找到解决alt+tab切换窗口时分组的问题,用AlternateTab.
 这个网址是用google.com/ncr搜出来的，baidu搜不出。
 
-==============================12/03/08==============================
-在emacs中要将光标定位到某一行的单词的前面，假如现在已定位到某一行开头，可以先
-M-f后M-b
+==============================12/03/07==============================
+svn checkout http://svn.collab.net/repos/svn/trunk subv
+将trunk目录的checkout出来，但checkout出来的工作副本的目录名不是trunk，而是
+指定的subv,若不存在则自动创建subv目录。
+
+以禁止密码cache的方式执行一个命令时，要加上--no-auth-cache参数。要永久禁止，则
+把 store-passwords = no 这句加到本机的svn配置文件。
 
 ==============================12/03/08==============================
 http://topic.csdn.net/u/20110325/13/dbf419be-b618-47c2-9b07-ebe71c33b173.html
 21楼说得好。
+
+在emacs中要将光标定位到某一行的单词的前面，假如现在已定位到某一行开头，可以先
+M-f后M-b
+
+时时提醒用腹呼吸，特别是紧张的时候会口臭，肚子饿的时候会气胀。
+
+emacs的shift-end跳到buffer的最后一行的下一新行。
+
+常用的命令
+svn update
+svn add
+svn copy
+svn move
+svn status
+svn diff
+svn revert
+svn update
+svn resolve
+svn commit
+
+在工作副本中删一个空行也是作了修改。
+
+while 虽然
+
+当一个符号链接提交到svn库时，svn会记住它是一个符号链接和它指向的对象，当这个符号被
+checkout到另一个非windows系统时，svn会重构文件系统级的符号链接。
+
+svn add foo命令会将foo文件,目录或符号链接加到库中,当commit时,foo就会被提交,若
+foo是一个目录时且不想将目录中的文件commit时,可加--depth empty参数.
+
+svn delete foo 若foo是一个目录,则该命令会删除副本中的foo目录下的文件,但不删除
+副本中foo目录本身,但commit后也会删除副本的foo目录和库中的foo目录和目录中的文件.
+
+svn copy foo bar 在工作副本或版本库中复制数据，保留历史.
+
+svn move foo bar 和运行svn copy foo bar;svn delete foo一样
+
+svn mkdir blort 和进行mkdir blort; svn add blort一样
+
+以上的命令都可以直接在库的URL上操作
+
+find 命令用-P参数指定搜索目录
 
 ==============================12/03/09==============================
 声明结构体的时候是不可以初始化的
@@ -122,8 +1308,122 @@ emacs删除该行中从光标处开始的空格用M-\。
 
 emacs打开文件时有比较智能的文件名识别能力。
 
+对库里的文件进行修改（就是对工作副本进行修改并提交）并不会对文件系统中真正的文件进行
+修改，而是对svn特有的虚拟文件系统中的文件进行修改。
+
+svn status,svn diff,svn revert命令可以不用访问库，就是可以不用取网。
+
+若输入svn status命令后所显示的第一个字符表示意思有：
+A item:表示该item被加到了库中。
+C item:表示item与库中的最新版本有冲突。
+D item:表示item被删除。
+M item:表示item在工作副本中被修改,item被提交后若与库中的发现冲突且推迟解决冲突,
+       那么M就会变成C。
+
+可以在svn status后加上所要查看的文件的文件名来显示其状态.
+
 ==============================12/03/10==============================
 下载文档时先到官网去找。
+
+svn status --verbose可以查看所有文件的状态。其中显示出的第二列是工作版本号，第
+三和第四列分别是该item上一次被修改时所在的版本号和修改它的人。
+
+svn status --show-updates(-u)会联接库来增加过期信息。如
+svn status -u
+        *       11   test.c
+版本的     12 状态
+其中的*号表示该item已过时的版本，这时若commit会没有任何反应，这时不要误以为
+已经commit了。
+M       *       13   test.c
+版本的     14 状态
+若是有个*号又有一个M，则表示你是在旧版中作了修改。
+
+若你有一个文件是在当前最新的版本期间修改的，那么update之后这个文件没有被更新并保留
+你的修改。
+
+commit所有文件后，再用status -v查看所有文件的状态时，会发现commit前没被修改的文件
+的版号不是最新的，而是和之前一样，但是update后就全都是一样的且是最新的版本号了。
+
+svn diff会拿.svn域的原始拷贝与修改的相比较，而不是库的。
+svn diff的输出是unified diff format，所以可以将输出重新定位到一个文件来作为patch
+（补丁）程序使用的补丁文件,如:svn diff > patchfile
+
+svn diff默认用自己的diff工具，用--diff-cmd 可指定外部diff工具，如
+svn diff --diff-cmd /usr/bin/diff --extensions '-i' test.c
+以上指定了/usr/bin/diff为外部diff工具,传给外部diff的参数是-i.
+
+scratch : 擦除
+
+svn revert file用.svn域中的原始版本恢复未已修改的文件。
+svn revert可以撤消任何调度操作，如撤消svn add，和svn delete操作。
+
+svn update若显示有G的item,则表示该item在updata的时候被与库中的相应的新版合并了，
+且是没冲突的。在update中解决冲突后，还要用commit提交。
+
+在commit提交时若有冲突，则commit时会失败的，要先update来解决冲突，才可以commit.
+
+==============================12/03/11==============================
+update时，解决冲突的选项有p:postpone, df:show all changes made to merged file
+显示全部差异，e:edit, r:resolved己解决, mf:mine-full 全用我的, tf:their-full
+全用它们的， s:显示全部选项
+
+通过修改SVN_MERGE环境变量戓在配置文件中定义merge-tool-cmd可以使用合并工具如merge.
+
+svn 的配置文件在用户目录下的.subersion目录下。
+
+解决冲突后要再运行update并选择r(己解决)，这样才可以commit
+
+在update时不想解决任何冲突，可以加上--non-interactive来跳过，且所有有冲突的文件会
+标上C
+
+update时选择推迟后，svn会额外生成的三个文件：filename.mine, filename.rOLDREV
+filename.rNEWREV,第一个文件就是在执行这次的update命令前文件（filename这个文件在
+update后已经改变了，增加了一些统一diff格式的东西），第二个文件是BASE版本，就是在上一
+次修改前checkout的；第三个文件是这时update从库中接收到的最新版本。
+
+update的选择推迟后，再次update的时候不会再提示有冲突，这就要用reslove来解决了，
+这时会用到reslove的--accept选项来选择版本，该选项有几个参数：base，选择修改前且
+最近checkout的版本，mine-full,只包含我修改的版本，their-full，最近从库中拽
+来的版本；working,若已手动解决了，就可以用这个参数。
+
+svn resolve要指定已解决的文件，这与其它命令不一样，这可以防止错误操作其它的文件，
+一旦用svn resolve --accept处理过某个文件后，无论该文件是否真的被处理冲突过，都会
+被允许commit，即使文件还保留有统一的diff格式的文本。
+
+svn revert filename 丢弃你所修改的，重新开始编辑。
+
+svn log是以本地的工作副本的最新版本为准去从库中显示日志。所以
+在commit你的修改后，如果不update一下就直接log的话是不会显示你commit时消息。
+
+丢(mbzs)
+
+用svn log查看日志，可以用--revision(-r)指定要查看的版本的范围如
+svn log -r 5:19 会显示按时间从第5条到19条的日志，
+svn log -r 19:5 会显示按时间反序从第19条到第5条的日志。
+svn log -r 8    会显示第8条日志。
+
+svn log foo.c 以工作副本的版本为最新版本号从库中显示日志。
+svn log http://foo.com/svn/trunk/code/foo.c 查看foo.c要库中的所有日志。
+svn log -v 可以显示更详细的消息。
+svn log -v -q; -q参数使得不显示日志消息，只显示改变的文件的文件名。
+若中工作副本的子目录执行svn log -r 2，且子目录和递归的子目录都没有被改变，那么将不
+会显示任何消息。
+
+svn diff -r 8 foo.c; -r参数可以指定哪个版本与指定的文件当前修改比较。
+svn diff -r 2:3 foo.c;比较版本3和版本5之间的不同。
+svn diff -c 3 foo.c;-c是--change的缩写，比较版本3与前一个版本（就是版本2）。
+svn diff -c 5 http://svn.example.com/repos/example/trunk/text/rules.txt
+这就可以使得即使本地没有工作副本也可以查看版本之间的改变。
+
+svn cat -r 2 foo.c;这可以查看第二版本的foo.c的源文件而不带任何比较信息。
+
+svn list -v;会显示更详细的信息，有最近被修改时所在的版本和修改的人，文件大小，日期。
+
+svn checkout -r 2;checkout版本2
+svn update -r 2;update版本2
+
+svn export http://svn.example.com/svn/repos1;这可以导出没有.svn目录的版本，还可以
+用-r指定版本号。
 
 ==============================12/03/13==============================
 http://baike.baidu.com/view/1731634.htm
@@ -151,6 +1451,34 @@ E5%8F%A3%E5%8D%95%E5%87%BA%E5%8F%A3.html
 信号处理函数可以有参数的
 
 可以用ms office word来作字体转换工具
+
+==============================2012/03/16==============================
+In general, longer, evocative names are used for global variables and
+routines, and short names, which may mirror common mathematical
+notation, are used for local variables. (C语言接口与实现)
+Variables are declared near their first use, perhaps in chunks.（C语言接口与实现）
+Locals are declared at the beginning of the compound statements in which they
+are used, when possible. （C语言接口与实现）
+Tuning a program to make it faster almost always makes it bigger,
+more difficult to understand, and more likely to contain errors. There’s
+no point in such tuning unless measurements of execution time show
+that the program is too slow. A program needs only to be fast enough,
+not necessarily as fast as possible.（C语言接口与实现p11）
+
+发现头文件定义的结构体或其它类型的定义在编译时有重定义的警告时，可以在结构体或其它
+类型的定义前用一个条件编译的宏来解决。
+
+结构的定义要放在最底层的模块中。就是说，函数A和函数B要用到结构体T，A和B分别在不同的.c文件中，
+且它们的接口声明分别在不同的头文件，要A中调用了B，那么结构体的定义要放在B接口所声明的头文件中，
+而不是A所声明的结构体中。
+
+==============================12/03/17==============================
+C语言接口与实现有一种用来让代码读起来更舒服的方法，在ｐ23，用define来定义结构缩写
+
+很多时候函数可以将被传入且被修改的参数作为函数的返回值。
+
+用printf等标准输入输出函数打印浮点类型的时候，若要指定精度，则在%f中加一个精度值，如
+%.10f
 
 ==============================12/03/19==============================
 if和while的语句块应该是在右边注释比较好，因为它可能还和其它语句合成更大的逻辑块
@@ -193,6 +1521,8 @@ emacs 的C-u和C-p或C-n结合起来挺好用的，特别是在折叠代码的�
 
 为了参数少一点而把一些参数绑到一个结构体中合理吗？结构体中的成员都会被接收函数用到
 
+画坐标的时候要画相对的位置，标原点是（x,y）时，x是与最左边的距离相对，y是与最底边相对
+
 ==============================12/03/22==============================
 Ctrl + 向上/向下 是段落跳
 
@@ -228,6 +1558,13 @@ make之前一定要make clean!!!
 程序结构图中有一个缺点就是不能反应出在某个模块内部处理过程中传入数据在内部外理时是否有
 依赖。
 
+我还是觉得函数注释中的input就只写参数，而output就写该函数外部可见的函数内部的修改，
+如一些被修改的参数指针，全局变量。
+
+评估一个函数接口是否设计得好，可以通过让一个普通的程序员根据接口描述来给这个函数编码，
+如果他可以不费大力气就可以完成编码，那么这就是一个好的设计。所以这也要求在设计接口的
+时候或注释的时候要站在其它人的角度看。
+
 ==============================12/03/27==============================
 画结构图的数据和控制信息可以用后根的方法画.
 宏也要画进输入流中
@@ -235,6 +1572,8 @@ make之前一定要make clean!!!
 向的地址上所存放的根本不会被使用，这又如何表示呢？可以用在输入的前面加个*表示输入的是
 一个指针且指针所指向的内容不会被使用，若输入是一个指针但指针所指向的内容会被使用，则不
 加*号,若是有使用且被修改就用*/表示，指针输入所对应的输出都不加*号
+
+在emacs中多用搜索定位而不是用方向键或类似方向键的快捷键去定位。
 
 ==============================12/03/28==============================
 关于二目运算符前后要不要加空格的问题：若有多层，则在最后一层不加上空格。
@@ -247,6 +1586,18 @@ make之前一定要make clean!!!
 函数需要该结构体中的一个成员就把整个结构体传给他，这要看情况，当一个函数所需该
 结构体成员的个数到达一定的数量的时候就可以考虑把整个结构体传给函数，如一个函数
 需要很多块共享内存。
+
+既然身边没有高手请教，那么可以通过邮件向高手提问。
+
+就如《程序员修炼之道》所说的：在做设计的时候看看关于编码的书，在编码的时候看看关于设计
+的书。在设计时看看编码的书，不会忘记基本功，这对设计也有帮助，反之亦然。
+
+==============================12/03/29==============================
+在QT中，如Qt::white这个表示元素的常量也算是魔（tgfn）数。
+
+你别忘了你要成为一个linux专家。
+
+emacs 没有redo这个函数，只有undo这个
 
 ==============================12/03/30==============================
 我自己最的缺点就是有想法不行动的人，具体情况就是，如编程时想起有一个C语言知识点（##）可以
@@ -287,7 +1638,19 @@ DO_PORTA 这个是旧的定义
 #define O_PORT_GRP_ADDR0 DO_PORTA  这样就可以兼容了，就是加了O_PORT_GRP_ADDR0这个层。
 
 类似的可以用冗余来解决在重构过程中尝试对数据结构重新定义出现的数据兼容的问题。
-x
+
+函数注释里的input不能是参数，不能是在函数中只被修改的全局变量，应该是被函数使用的
+全局变量。被修改的全局变量应该放在output中。如果是一个全局的结构体变量中的某个成员
+的值在函数中被修改，则不能把该结构体变量作为output，要把它的成员作为output，input
+也是如此，如a.b。
+
+==============================12/03/31==============================
+emacs的c-l快捷键可以让光标所在的行上下滚动，光标跟着上下跳。
+
+Emacs的一个使用技巧：如在给一个已实现的函数写注释时，若这个函数的行数大多以至不可以一屏
+显示完整，这时可以分成上下窗口的方法，一个窗口写注释，另一个看代码，用Alt+PgUp/PgDn来
+滚屏看代码的窗口。
+
 ==============================2012/04/01==============================
 当形参数名字有类同的时候有换行对齐也是一种程序自注释的效果。
 
@@ -295,11 +1658,46 @@ x
 而且写出接口的程序更容易看懂,更易维护，总之在写接口之前是不会体会到这些的，写了才知道，
 所以一定要强迫自己写。
 
+
+==============================12/04/02==============================
+程序员应该从维护、重构、软件再工程的工作做起而不是编码，让他看看糟糕的代码是多么臭的，并让他学习
+到哪些是臭的，怎么把臭味去掉。
+
+==============================12/04/03==============================
+把技术当玩具，玩得开心就行了，不一定要很牛，这样就不会浮躁了。
+
+要善于把错误和解决方法记下
+今天在运行那个毕业设计的程序时遇到一个错误：将计算的最值存放到一个二维数组中，当时是
+2行102列测试的，存放的下标是A*B+C的，但是第一行最后一个元素总是错误的值，且第二行的
+最后一个元素总是空，后来发现是因为B少加了1。以后遇到这种类似的问题可以注意一下是不是
+这种解决方法。在这个问题上同时还一个感想：不要一直盯着程序找错，这种方法对我来说效率
+不高，而是很低。找错时先找出错误的现象，这时就应该盯着程序想一想是什么问题导致了这个
+错，同时要凭感觉该什么时候应该离开电脑静静想一想错误出现的原因。
+
 ==============================2012/04/04==============================
 函数头注释中的parameter一项中的参数，要写得更具体，而不是写得很抽象，就是说参数的说明
 要针对函数去写，如struct dio_shm *shm - dio使用的所有的共享内存，这样的注释其实不好
 
 一段代码在开头加了一个空格，svn diff命令就会显示这个这一行代码被修改了。
+
+睡觉不合脚，坐时不翘二郎腿后那里就不痛了。
+
+
+==============================12/04/05==============================
+最近有一个关于职业发展的问题困扰着我，就是我在工作上到底想要什么，到底想成为什么？
+本来在大学的时候我应该是这样想的：精通linux内核，但是到底是做通用机开发呢还是做专用
+机开发的呢？并没有做出一个选择。现在是在做专用机上的东东，接下来又有一个问题了，就是
+是做底层上的内核/驱动还是做上层的东东呢？现在我觉得都应该做，因为如果只做内核/驱动或
+上层的话，技术面会很窄，首先是工作难找，其次的由于技术面窄使得技术太容易掌握就没有竞
+争力了。其实在嵌入式系统上我还没涉及到硬件，上层还没做过界面，所以技术面也没那么广，
+不要老是以为自己做的东西太广了。这里说的上层不包括界面的东东。
+
+==============================12/04/06==============================
+绘图时若发现明明会显示的东东却不会显示，这就很可能没有update了
+
+==============================12/04/07==============================
+若问我做这个东西要多久，我给出的答案是4天，其实应该再加上一个数字，就是在4天完成的概率
+是80%，假如要求在3天完成，那么完成的概率是50%。
 
 ==============================2012/04/09==============================
 宏里有操作的一定要加括号
@@ -309,6 +1707,10 @@ x
 #define COUNTER_NUM   (AIF_AIV_START-AIF_COUNTER_START)
 
 int a = DIGINPUTNUM-COUNTER_NUM;不加括号就变意思了。
+
+==============================12/04/10==============================
+用文档说明结构体时，用表格，像毕业论文那样。
+表格真的好用，可以美化文档，对可以表达清晰的结构，让看的人也舒服所以要多用表格。
 
 ==============================2012/04/11==============================
 未处理的数据中raw来表示变量名。
@@ -325,6 +1727,8 @@ C语言运算符优先级:
 ！ > 算术运算符 > 关系运算符 > && > || > 赋值运算符
 
 用数组简化物理端口地址不连续的问题。
+
+openoffice对doc的目录有时支持不好。
 
 ==============================2012/04/12==============================
 outb和inb的地址参数是16位的。
@@ -379,6 +1783,50 @@ indent-region命令
 
 衰（skrh）
 
+看了编程匠艺第XI页的最后一段之后，真想说一句：去你的工作计划，想怎么做就怎么做，只要是
+高效的，要“我行我素”。
+
+
+==============================12/04/14==============================
+在《编程匠艺》中P25中的“如果你在家中为了娱乐写了一些代码”这一段中，我意识到要在无压力
+下约束自己来养成好习惯。
+
+《编程匠艺》如果你无法想出恰当的名称，那么你也许就需要改变你的设计了。
+
+要写一篇文档时，且很急，不想自己写时，想从网上找时，一般很难找到一篇可以直接用，这要
+花很多的时间，这时可以退一步，可以先自己把要写的文档分成几个逻辑块，然后以这几个逻辑块
+为单位来在网上找答案，再组合。最好还是自己写的吧。
+
+小二郎胜腿也不要翘，就是只有脚板翘起。
+
+预编译不是简单的文本替换。
+
+每天写写随笔吧。
+
+==============================12/04/15==============================
+今天开始用svn管理自己所有的资料了。
+
+在《learning GNU Emacs》这木书中的第二页有一句话：不管你想用Emacs做什么，你都会发现
+它其实是很容易学习和掌握的。
+
+在《learning GNU Emacs》这本书中18页有一句：Emacs的重要性体现在“它能把你想做的许多
+事情都集成到一起来”。
+
+《Learning GNU Emacs》的26页有说META、ESC、ALT键的区别，其实它们就一表示同一个意思，
+即使键盘中同时有这些键。其实有ALT和ESC有一个区别就是使ESC时不用一直按住。
+
+C-x C-v读取另一个文件来代替刚才读入的那一个。
+
+是Emacs的Tab自动补全功能启发了Korn shell和tesh的开发者。
+
+M->移动到文件的结尾
+
+==============================12/04/16==============================
+以后不管时间多紧，都要抽出一定的时间学习，它就像工作、吃饭、睡觉一样是日常的。
+
+笔记本可以倒过来用的。
+
+
 ==============================12/04/17==============================
 选中一个区按下Tab键可以将选中的区域对齐。
 
@@ -424,6 +1872,34 @@ void MyFunction(int nSize)
 
 ==============================12/04/20==============================
 一个数组结构体，把这个数组地址传给一个函数，那么
+
+==============================12/04/21==============================
+C语言如何实现泛型。
+
+==============================12/04/22==============================
+可以用函数的参数来初始化数组的元素个数。
+
+移动到结尾Alt + >.
+
+emacs的C-x和C-w是另存为的意思。若不输入并回车，那就是保存到原来的文件。这可以复制一个
+不想改原文件且改不了的文件（没有权限）。
+
+Emacs对"y"和"yes"的回答很挑剔。
+
+Emacs的TUTORIAL教程还可以。
+
+Emacs的M-a和M-e移动到句子的开头和结尾。
+用M-f时，光标是跳到单词的（中文是句子）的后面。
+用M-f时，光标是跳到单词的（中文是句子）的前面。
+
+代替C-u的方法：按住 META 键不放，然后输入数字
+
+退出是按一次C-g就可以了。如果你不小心按了一下 <ESC>，你也可以用 C-g 来取消它。
+【这个说法似乎有问题，因为按照这个按键顺序输入的应该是 C-M-g。
+  取消 <ESC> 的正确做法是再连按两次 <ESC>。】
+
+默认的情况下BackSpace(DelBack)是没有其它绑定键的。
+
 ==============================12/04/23==============================
 写一个强悍的debug_print函数，可以在一定的时间间隔打印单个变量和多维的变量。这个函数
 可以声明为static，这是因为里面应该有一个static变量，这样不同的进程都可以定义这个函数
@@ -457,6 +1933,131 @@ for (k=0; k < AI_PORT_NUM; k++)
 是参数的输入说明,若有些参数只作输出，就不在input中说明，input中还要有引
 用外部变量的说明.
 
+一般而言，那些可能消除很多文字的命令会把
+消除掉的文字记录下来（它们被设定成了“可召回”），而那些只消除一个字符
+或者只消除空白的命令就不会记录被消除的内容（自然你也就无法召回了）。
+sdC-k 处理数字参数的方式很特别，它会把参数指定的
+那么多行连同其后的换行符一起移除，而不仅仅是重复 C-k 而已。
+
+C-y 可以召回最近一次移除的内容，那如何召回前几次移除的内容呢？它们当然
+没有丢，你可以用 M-y 来召回它们。在用 C-y 召回最近移除的文字之后，紧接
+着再按 M-y 就可以召回再前一次被移除的内容，再按一次 M-y 又可以召回再上
+一次的……连续使用 M-y 直到找到你想要召回的东西.
+
+不要用一个手同时按下Ctrl和Alt加其它键，为了保护手指！
+
+从键盘输入的字符以组为单位――每组 20 个字符――来进行处理。
+（这是为了减少你在撤销“插入文字”动作时需要输入 C-x u 的次数）
+
+C-/、C-_、C-x u是一样的功能
+
+C-x s 会找出所有已被修改但尚未存盘的缓冲区，然后向你逐个询问：是否需要
+存盘？
+
+如果你已经修改了一个文件，但是还没来得及存盘你的计算机就罢工了，那么你
+所做的修改就很可能会丢失。为了避免这样的不幸发生，Emacs 会定期将正在编
+辑的文件写入一个“自动保存”文件中。自动保存文件的文件名的头尾各有一个
+“#”字符。
+假如不幸真的发生了，你大可以从容地打开原来的文件（注意不是自动保
+存文件）然后输入 M-x recover file<Return> 来恢复你的自动保存文件。在提
+示确认的时候，输入 yes<Return>。
+
+主模式通常会改变一些命令的行为。如注释。主模式都是可
+以用 M-x 启动的扩展命令，M-x fundamental-mode 就可以切换到 Fundamental
+模式。
+Text-mode模式中，M-f 和 M-b 现在把单引号（'）
+视为词的一部分了。而在先前的 Fundamental 模式中，M-f 和 M-b 都将单引号
+视为分隔单词的符号。
+
+主模式之所以称之为“主（major）”模式，是因为同时还有“辅模式”（minor
+mode）存在。辅模式并不能替代主模式，而是提供一些辅助的功能。每个辅模式
+都可以独立地开启和关闭，跟其它辅模式无关，跟主模式也无关。所以你可以不
+使用辅模式，也可以只使用一个或同时使用多个辅模式。
+
+用 M-x auto fill mode<Return> 启动自动折行模式。再用一次这条命令，自动
+折行模式会被关闭。也就是说，如果自动折行模式没有被开启，这个命令会开启
+它；如果已经开启了，这个命令会关闭它。所以我们说，这个命令可以用来“开
+关（toggle）”模式。必须敲一些空格，因为 Auto Fill 只在空白处进行断行。
+【输入空格对英文来说是必须的，而对中文则不必。】
+行边界通常被设定为 70 个字符【这里指英文字符】，你可以用 C-x f 命令配合
+数字参数来重新设定它。假如是70个字符，如果你之前有一行是超过70个字符的，
+且若在第70个字符之后按下回车，那么就会在第70个字符后自动加上换行符，且
+并在光处加上换行符。粘贴不会自动换行。
+如果你在段落的中间做了一些修改，那么自动折行模式不会替你把整个段落重新
+折行，你需要用 M-q 手动折行。注意，光标必须位于你需要折行的那一段里。
+
+当你在一个窗格中编辑，但用另一个窗格作为参考的时候，C-M-v 是很有用的命
+令。你可以始终处于编辑窗格中，然后用 C-M-v 命令滚动另外一个窗格。【比如
+翻译和校对就很适合用这种方式进行。】
+
+
+有时候你会进入所谓的“递归编辑”。递归编辑状态由位于状态栏的方括号所指
+示，其中包含了用小括号来指明的模式名称。比如说，你有时可能会看到
+[(Fundamental)]，而不是 (Fundamental)。【比如在用 M-% 进行交互式替换的
+时候你又用了 c-s 进行搜索，这时替换模式并没有结束，但你又进入了搜索模式，
+这就是所谓的递归编辑。】
+
+离开递归编辑可以用 ESc ESc ESc。这是一个最通用的“离开”命令，你甚至可
+以使用它来关掉多余的窗格，或者离开小缓冲。你不能用 C-g 退出递归编辑，因
+为 C-g 的作用是取消“本层递归编辑之内”的命令和其参数（arguments）。
+
+若auto-fill-mode模式打开，则在状态栏上显示Fill字样。
+
+==============================12/04/25==============================
+对于英文说，Emacs把一个'.'加一个空格作为一个句子分格符。
+
+也可以用ESC代替C-u，不同时是C-u有一个默认的4，连按C-u两次就是16
+
+C-l是重绘窗口
+
+ESC-C-k删除从光标处到行首的字符。
+
+shift-insert可以代替C-y。
+
+连续删除的东西可以了一个C-y找回来
+Emacs能把一组(所谓的组是这一组操作中没有其它的操作，包括光标移动)删除操
+作（ESC-d和ESC-DEL、C-k、ESC-k）所删除下来的东西，正确地拼成一个大段的文本。
+
+Emacs的插入点是在光标位置处字符与其前一个字符之间的夹缝里。 
+
+C-x C-x组合键作用是互换插入点和文本标记的位置。
+
+ESC-h可以标记当前光标当前所在的段落。C-x h可以标记整个缓冲区。
+
+启动输入法的快捷键改为Ctrl+Shift+space,使emacs的Ctrl+space为标记快捷键。
+
+C-t可以交换两个字符的位置，若在一行中间连续按下C-t，可以把一个字符一直往后移。
+ESC-t是交换两个单词的。
+
+sdf_abc这个字符串是两个单词，下划线相当于空格。Emacs把s与d、d与f、f与_、_与a之间
+的插入点看作是sdf与abc这两个单词区间，所以在这些插入点中按下ESC-t可以交换这两个单词。
+
+C-x C-t可以交换两个文本行，把光标处行与上一行交换。
+
+ESC-c 单词的首字母大写，从光标的插入点开始。
+ESC-u 单词全改为大写，从光标的插入点开始。
+ESC-l 单词全改为小写，从光标的插入点开始。
+
+revert-buffer可以恢复缓冲区。就是放弃修改并重读文件。
+
+emacs正在编辑的文件的临时文件有~结尾。
+
+有一个新的快捷键，就是M-z可以删除插入点到输入字符之间的字符串。
+加上(define-key global-map "\C-x?" 'help)
+(define-key global-map "\C-h" 'backword-delete-char)
+
+由于yong的输入法与emacs C-space冲突，所以以后用C-S-space代替emacs的
+C-space.
+
+用C-s C-w可以把从光标位置到下一个标点或空格符之间的文本复制到查找字符串
+中。C-r C-w也可以。用C-s C-y可以把从光标位置到行尾之间的文本复制到查找
+字符串中，并保证复制的大写字母转换为小写。
+
+用C-s ESC-y可以把删除环里的文本复制到查找字符串去。并可以ESC-p和ESC-n查
+看删除环中的上一条和下一条内容。
+
+简单查找:C-s RETRUN,输入字符串，按下回车开始查找，C-s查找下一个。
+
 ==============================12/04/26==============================
 写程序和改程序的时候，要首先注意保持更新的文档是缩写字典。
 
@@ -474,10 +2075,74 @@ http://topic.csdn.net/u/20100208/10/e67ed254-9129-4afa-bec6-1559f114d803.html
 
 在重构一个程序之前要先将其功能分析透彻，然后再将其功能重组（分离，合并）。
 
+编程卓越之道 第一卷：深入理解计算机 关于卓越代码的一些特征说得不错，写代码就应该
+那样（P6）
+
 ==============================12/04/28==============================
 word的有简体繁体互转
 
 M-S-( 可以输入一对括号并将插入点放置在括号中间
+
+.emacs已把C-w绑定到其它的功能上去了，所以单词查找的功能不能用快捷键去实现了，
+用word-search-forword的了。
+单词查找可以跳过标点符号和换行符。如下面可以搜索到"oiw sfe"的结果。
+sdfs sdf kd oiw fskdf lsdjfiw oiw?,
+sfe 
+单词搜索”the“时，可以区分thence,there, theater,theisi等。
+replace-string命令可以作基本的字符串替换，它是替换光标后面的字符串，它会自动处理
+大小写的问题。
+关于查找-替换的键盘操作：
+space或y - 替换并前进到下一个位置
+DEL或n   - 不替换并前进到下一个位置
+.       - 替换当前位置后退出
+,       - 替换并显示替换情况，再按下space或y才前进。
+!       - 对后面的文件内容全部替换。
+^       - 返回上一次进行替换的位置
+return或q - 退出
+C-r     - 进入递归编辑状态
+ESC C-c - 退出递归编辑状态，继续完成查询-替换操作
+
+C-x ESC ESC可以将最后一次的输入的复杂命令调出来，可以再用ESC p调出上一个命令。
+
+可以随时进入递归编辑 recursive-edit命令，用ESC C-c会退出递归编辑状态。
+
+==============================12/05/02==============================
+在各种查找操作中，变量case-fold-search设置为t,如果用户输入的字符串不是大小写
+混合的或全都是大写字母，就不区分大小写字母。设置为nil (t) 的方法:输入M-x set-variable
+回车，输入case-fold-search回车，输入nil (t)
+设置case-replace变量为nil意味着“不要对替换字符中的字母大小写情况进行调整”
+
+正则表达式的字符：'^',匹配首行，'$',匹配行尾，'.',匹配任意单个字符，'.*'匹
+配任意（零个或以上）个字符，'\<',匹配单词开头，'\>'匹配单词结尾。'[]'匹
+配方括号中的任何一个字符。如果要对以上的字符进行查找，则要在它们的前面加上'\'。
+
+正则表达式可用在递增查找和查询-替换中:ESC C-s RETURN向前查找一个正则表达式，
+ESC C-r RETURN向后查找一个正则表达式。ESC C-s 向前递增查找一个正则表达式，
+ESC C-r 向后递增查找一个正则表达式。
+命令：query-replace-regexp 查询-替换一个正则表达式
+
+简写模式可以用来处理经常写错字的问题。在输入一个单词不是简写的，但简写
+模式有它的简写短语，这时可以在输入完这个单词后输入ECS x
+unexpand-abbrev命令告诉emacs取消这个简写词定义。
+
+其实可以用C-x b跳到某个缓冲区。
+
+ESC x rename-buffer可以重命名编辑缓冲区。
+
+C-x C-q可以设置缓冲区为只读。
+
+可以用”ESC n C-x o“（"n"是一个数字）命令沿顺时针方向一次移动n个窗口。
+
+C-x ^可以加高当前窗口。
+
+可以用C-x -快捷键将窗口收缩到编辑缓冲区那么小。
+可以了C-x +快捷键将所有的窗口变成相同的大小。
+
+窗口的最小大小要看变量window-min-height（默认是4）和
+window-min-width（默认是10）的值
+
+C-x 4 f可以在另一个窗口打开文件。
+在另一个窗口打开另一个缓冲区用C-x 4 b
 
 ==============================12/05/03==============================
 在一个系统重构时，假设有模块1和模块2，模块1是上层模块，模块2是下层模块，现在模块2
@@ -593,6 +2258,21 @@ inline s8 get_decimal(u8 *const bits, s32 decimal, u8 len)
 重构一个东西之前，不管是大的东西还是小的东西，都应该先列出一个表要改的东西，然后再改，不
 然就会改着改着就乱了，接着问题就出现了，就算中途问题出现也可回朔去找，不至于忘了改哪里。
 
+compare命令可以对比两个文档的不同，要想用它，必须先把将进行比较的两个编
+辑缓冲区分别在两个窗口打开，可以左右或上下并排。命令以光标所在的插入点
+为标准检查其后的一个字符与第二个编辑缓冲区的插入点所在的后一个字符是否
+一样，若不一样，则移动第二个编辑缓冲区的插入点直到插入点后的连续4个字符
+与第一个缓冲区的插入点后的连续4个字符一样，并在第二个编辑缓冲区用高亮标
+出插入点所跳过的字符；若一样，则两个编辑缓冲区的插入点都向前移一个字符，
+若下一个字符又相等，则又向前移一个字符直到有不同的缓冲区。
+
+C-x C-b可以显示缓冲区列表。C-x o可以跳到列表，空格和C-n可以向下移动，
+C-p可以向上，d和k可以删除一个缓冲区，按下x才会执行，可以移到相应的行用
+u来去掉待删除标记，也可用Del键去掉上一行的待删除标记,保存一个缓冲区键一
+个s；~符号将给编辑缓冲区加上一个未修改标记,告诉Emacs不要自动保存这个编
+辑缓冲区的修改，%符号可以将缓冲区从读-写马上改变为只读，状态栏上有两个
+%%,可以用C-x C-q切换这两种状态；输入1光标处的缓冲区会最大化窗口。
+
 
 ==============================12/05/09==============================
 函数注释中的
@@ -601,6 +2281,10 @@ port    - 端口配置号
 第一行‘-’和第二行‘-’要绝对对齐，不管在什么情况下
 
 未进行处理转换的数据 改为 源数据 就舒服多了
+
+C-x r m设置书签，然后输入书签名，可有空格，直接回车就是默认的,若与之前
+设置的书签名一样，那么就会代替。不会自动补足。
+C-x r b跳到书签位置，可以到自动补足,有时候可以代替C-x C-f
 
 ==============================12/05/10==============================
 同一个模块的函数名要开头相同，用ECB的时候容易索引到同一模块的函数名，就如cfg_do,和outp_do
@@ -644,6 +2328,21 @@ d = a; /* d = b */
 	}
 以上的程序其实可以将if (OUTP_CFG_NONE != port[i])提取出来在for循环之外处理并加一个临时数组变量，这样
 程序看得就更容易明白了，且容易修改。
+
+用ESC x bookmark-rename给书签重命名
+ESC x bookmark-delete删除书签
+C-x r l可以显示书签清单，'d'删除标记，'x'执行删除（需要按下两次），可以按下Del撤消
+'r'对书签重命名，'s'保存，想进入某个书签文件，可以按'v'，也可以用'f',要看多个，
+可以在相应的书签上按下'm'，然后用'v'一起看,'q'退出书签列表，'u'去掉书签上的待操作
+标记，'t'切换列表显示方式.
+bookmark-write命令可以将书签写入文件，bookmark-load加载书签文件。
+
+jobs命令可以查看作业
+
+C-x 5 f可以在另一个Emacs中打开文件。
+C-x 5 2可以在另一个Emacs中重新打开当前Emacs光标所在文件。可用C-x 5 o进入另一个
+Emacs.
+C-x 5 0可以删除当前的Emacs。
 
 ==============================12/05/11==============================
 有个方法可以去掉一
@@ -798,6 +2497,20 @@ inline void t_inp(u8 *const raw_ti)
 
 在excel中可以用F2来修改表格中的文字。
 
+It could run on computer systems ranging from microcomputers to super
+minicomputers and mainframes.
+mainframe:主机，大型机
+
+This book explores the features of the most prominent shells available
+today.
+prominent 卓越的，显著的
+
+Due to the spartan nature of UNIX, a large number of small simple
+tools and utilities were developed。
+spartan ：简朴的
+
+不加班：换一个学习环境，换一种心情，换一种心态，学到不一样的东西。
+
 ==============================12/05/22==============================
 ao分层总结：main函数为第一层，main里用到的函数为第二层，第二层函数调用
 的是第三层函数，第三层函数调用的是第四层函数。。。第五层应该是一个程序
@@ -816,6 +2529,8 @@ ao分层总结：main函数为第一层，main里用到的函数为第二层，�
 函数的输入输出就是为了画图，画程序结构图的时候不要要求第一次就画出很完
 美的图，可以先画出函数的调用关系，再在图中插入代码块的模块) 。
 
+svn只可以checkout一个目录，目录名为最后一个路径名的名字。
+
 ==============================12/05/23==============================
 
 用emacs修改source insight文件的编码是只修改需要改变的地方，所以在svn差
@@ -831,6 +2546,8 @@ ao分层总结：main函数为第一层，main里用到的函数为第二层，�
 
 # grep accounts-daemon /var/log/audit/audit.log | audit2allow -M mypol
 # semodule -i mypol.pp
+
+通过就业协议这件事，我明白了有事需要其它部门办理时，先问最下层的人员。
 
 ==============================12/05/24==============================
 
@@ -940,6 +2657,242 @@ ltail=clusterA];这包就会使得有一条连接线从子图clusterA到子图cl
 
 
 重新载入文件快速输入rr,重新载入文件用revert-buffer命令。
+
+==============================12/05/27==============================
+
+7z这个命令原来参数前不用加'-'的，怪我没认真看好帮助。
+
+不要掉丢自己的坚持：不要在工作的地方来做与工作无关的事情。
+
+癶（xsa）登， 辰（gh）唇
+
+==============================12/05/29==============================
+
+学习任务有很多时，要分轻重缓急，不在学习某样东西的时候突然头脑发热又学
+习另一种东西。如看看《C语言接口与实现》又学习graphviz，其实这有另一个原
+因是估计学习graphviz的时间周期错误。这时要果断停止。
+
+应该在用户目录下建一个tmp目录，以后什么临时用的文件都放这里。
+
+从今天开始，我要重新回归自我了，就是对自己的时间进行精算，要保持每天至
+少3个小时的自学时间,所以晚上7点之前就要回到住所并洗完澡和衣服。10：30分
+睡觉。早上再学至少半个小时。
+
+==============================12/05/30==============================
+
+当有人问我为什么不加班的时候，我会这样回答：因为我老是觉得加班对于我这
+一行来说，是一条不值得做的事，结果大部分都是付出和收获差很远，这些是我
+听了很多别人的故事所感觉到的。
+
+一个人活着是为了可以舒服一下，死时可以舒服一点吗？
+
+过着平凡的生活，经历不平凡的人生。
+
+以下这段程序中，func有错，gcc提示的错误是向只读位置‘*t’赋值，但是
+func_t没错，但func_t_t和func有同样的错。所以编译器把type_t当作与int类似
+性质的类型了。所发func_t中的const修辞符其实是多余的。
+
+struct t{
+    int a;
+};
+
+typedef struct t *type_t;
+
+void func(const struct t *)
+{
+    t->a = 1;
+    return;
+}
+void func_t(const type_t t)
+{
+    t->a = 1;
+    return;
+}
+
+void func_t_t(const type_t *t)
+{
+    *t->a = 1;
+    return;
+}
+
+==============================12/06/01==============================
+
+在学习新知识的时候要时刻想着是否可以在工作上用。工作不一定是最好的学习
+环境，但一定是最好的练习环境。
+
+IT能力 = 知识量 + 工具运用能力。
+
+胡思乱想：真的不想作了，太什么了，每次讨论计划的时候总是很不爽，总是要
+你做多一点，就像什么事都是很顺利都会按所想的那样发生，然后再叫你做多一
+点。那你还要我作什么计划呢？计划本来就上你们上面定的，我们下面做，在正
+常的工作时间内完成不了就是你上面的问题，是你不考虑不周到，这也不能怪你
+们，你们都没什么社会经验的，就那二十多岁，没做过什么商业项目，没什么开
+发经验，除非你是一个较有天赋的人。看不到有经验人的价值，自然我的经验也
+是不值钱，看来我是迟早要走的了。我就是一个想以后靠经验吃饭的人，所以这
+里不合适我。总之一句话，我是不会加班的。你要怎么给我任务就随你便，我是
+在工作时间里，同时在保证高质量的情况下尽量去完成。所以在以后面试的时候
+要问清公司是不有开发经验丰富的员工，如果没有，则不用去了。我不喜欢在一
+个没有技术氛围的团队里工作，不喜欢在一个不看重工作经验的地方工作。这些
+地方不合适我。
+
+C语言中，最小负数值是不能求其绝对值的，因为二进制系统中负数比正数多一个。
+如signed char类型的变量为-128时，用abs()函数或直接用运算符'-'求绝对值时
+还是-128。这到底又是怎么得到-128的呢？自己推算的结果是：把-128的二进制
+去掉后，黑用类型为unsigned char的128减（tdaj）去它得到的值再转为signed
+char类型所以最后的结果还是-128。
+
+==============================12/06/02==============================
+
+胡思乱想：什么才叫努力工作；难道就是加班的吗？加班才叫努力工作吗？一个
+会写出上层程序的，又会写驱动的，基础又好的难道还不够吗？叫人做这做哪的，
+说到底管理的都是这样子的，无一例外，这本来就是人的天性，就想自己所拥有
+的东西发挥出最大的作用，说不好听的就是压za，说好听点就是资源最大利用化。
+如何做到最大利用化呢？分配任务给多一点，如果所有任务完成了就再给多一点，
+的确是这样，我自己给自己定计划的时候也是这样的。所以我不会太在乎计划是
+什么，而是在乎任务是什么。还是我也可以自己有两份计划的呢？一个是给上级
+看的，一个是给自己看的。这有点像公司做假账一样，账本有多份。我觉得这个
+方法可行，先按照自己的具体情况定一份详细的月或其它时间长度计划，如果所
+工作的公司它们要我订一个工作的计划，我就可以按照我自己已拟定的计划作修
+改。无论什么时候，我都是按照我自己给自己拟定的工作计划来执行，给公司的
+计划可以不作任何参考，注意了，给自己拟定的计划一定要尽可能的详细，给公
+司的计划要抽象一点。如果是上级说计划不行又怎么办呢？如果它说是时间问题
+的话，就先跟他讨价还价一下先，最后不管如何，我还是按自己的计划执行就可
+以了。如果是任务问题，要改任务，那么就改改自己的那份计划，然后按上面讨
+论的方法重新修改公司计划，如果是要加任务，这就要按照任务的轻重稍微修改
+一下自己的计划了，这很有可能在自己的计划中把其它任务给挤掉，然后再订公
+司计划。
+
+锻练不但是工作需要，也是家庭需要，总之是各方面的需要，所以锻炼是不是一
+件很值得做的事情，同时也是一件必须做的事情呢？
+
+
+==============================12/06/06==============================
+    return stk->count == 0;
+注意：返回值不是0或1，而是0或非0；
+
+一个.c文件只包含代码如下：
+typedef struct T *T;
+
+int main(void)
+{
+    T t;
+    return 0;
+}
+
+以上的源文件是可以编译通过的。
+
+typedef这个东西有点意思。
+
+struct T {
+    s32 count;
+    struct elem{
+        void *x;
+        struct elem *link;
+    } *head;
+};
+
+以上的定义的结构体语法实际定义了两个结构体类型，虽然struct elem被包含在
+一个结构体中声明也可以作为一个类型来使用。
+
+==============================12/06/11==============================
+
+做人就要像做软件一样，要遵守kiss原则，保持简单。
+
+我觉得每年学会使用一个大工具，几从小工具。所说的工具当然是与工作相关的
+可以提高工作效率的软件工具了。
+
+一定要记住要严格设计好自己每天的工作，要精确到半小时。要遵守“思考你的
+工作”，时时刻刻review自己。
+
+==============================12/06/19==============================
+
+喝 (jkry)
+
+==============================12/06/20==============================
+
+为了能阅读英文著作的方法就是大量地读它们，而不需要专门去学习英语，直接
+阅读它们就是最好的方法.在旁边写上不熟悉单词的解释，并且常常重新翻阅。
+
+document view的C-n快捷键可重新在另一个窗口打开当前文档，这样就可以同时
+查看同一文档的不同地方，C-l可以聚焦到输入页数的文本框。 
+
+==============================12/06/21==============================
+
+rc.local脚本文体的命令是以特权运行的。
+
+emacs修改本地特权文件的方法：用tramp插件，emacs >= 22自带这插件，
+http://groups.google.com/group/cn.bbs.comp.emacs/browse_thread/thread/a249ab639c601187?pli=1
+我的机子的emacs也不能用sudo，所以用了ssh绕个圈回来 /ssh:root@localhost:/
+
+==============================12/06/25==============================
+
+小燕 (earu 对于’燕‘这个字在郑码中认为是先写’口‘再写’丬‘)子和五点支撑，腰肌强大重要，
+可以预防
+
+北的笔画是 (竖横横撇折)
+
+==============================12/06/29==============================
+
+常做深腹呼吸，就用腹来叹气。倒着走，可以让腰向后倾，长期伏案工作的人可以使用。
+
+神门，内关，手三里这三个穴位可以提神。
+
+高纤维使排便习惯好，使多喝 (jkry)水。
+
+不可溶缮食纤维——粗纤维，麦 (cirs) 片和豆类。
+
+把所有的想法写到手机特定的地方，到晚上或一天中某个特定的时间就把它重新整理。
+
+我觉得很多关于想法的方案都可以实现的，但问题就是我没有坚持下去，所以方
+法老是无休止地改.
+
+看到一篇文章之后有自己的想法，那你怎么把它记下来呢？把网页的网址记下来
+并加上想法，但这样会有一个问题假如网页过期了怎么办，所以我还是觉得把它
+下载下来，然后在文本上除了记下网页的地址和想法，还附上下载下来后的文件
+标题。
+
+有不少的工作的工作时间有夜班的呢，所以自己应该感到幸福。
+
+零碎的时间可以整理电脑的桌面。
+
+必须有工作工作堆栈。
+
+==============================12/06/30==============================
+
+可以用邮件的方式记下在该文本写下东西，如在使用工作电脑或在使用别人的电脑。
+
+==============================12/07/05==============================
+
+早上checkout后有修改就马上修改相应的文档。
+
+零碎的时间可以为接下来要做的事做好思想准备，如果是看书就想想之前看到哪
+了还有什么疑惑之类 (这很好，可以防止到了看书时间反而有一种不知所措和没
+心情的情况) ，如果是做一件还没做过的事就想想步骤是什么，等等
+
+==============================12/07/06==============================
+
+我觉得vp比dio更易懂，为什么会有这种感觉？是因为我开始对这个项目一点都不
+懂，但现在了解了，我也不知道我做的所谓dio是个什么东西来的，但在这方面现
+在做vp切换比dio的好，而且，dio写得太乱了，一会访问本地共享内存，一会访
+问全局的共享内存，让人感觉里面有很多巧合，不敢轻易去修改，里面还有一个
+仿真的代码，本来仿真的代码放在简洁的代码中也会让人感觉混乱何况在一个已
+经够乱的代码中。还有一点就是哪些使用到的结构体也定义得乱七八糟的，修改
+这个才是根本的啊。
+
+==============================12/07/07==============================
+
+有一次用yum安装程序未完成就退出，再次用yum安装程序的时候就会有提示，然
+后按照提示的以下命令来处理就可以了
+
+yum-complete-transaction 
+package-cleanup --problems
+package-cleanup --dupes 
+rpm -Va --nofiles --nodigest
+
+==============================12/07/11==============================
+
+http://coolshell.cn/articles/7829.html
+安装了其中的dstat,dtach,multitail,nethack,powertop
 
 ==============================12/00/2==============================
 emacs的帮助文档快捷键不错：p-上一结点，n-下一结点，^-上一级目录，l-后退，r-前进，
@@ -1080,7 +3033,9 @@ machine code.google.com login yjie_life@163.com password Jf5vc5ZY9qR7
 
 可以用C-x r l <RET>来显示所有的书签，用d来标记删除，用x来执行删除。与dired-mode的相似。
 
-git 也可以实现像svn那样的杈限管理，可以在一个项目中把不同的模块做成不用的库，那么每个库的密码就是这个模块的密码了，对于负责人就有所有库的密码，那么他就可以将所有模块库合并到一个只有他自己知道的库。
+git 也可以实现像svn那样的杈限管理，可以在一个项目中把不同的模块做成不用
+的库，那么每个库的密码就是这个模块的密码了，对于负责人就有所有库的密码，
+那么他就可以将所有模块库合并到一个只有他自己知道的库。
 
 =============================<2012-10-06>==============================
 
@@ -1095,3 +3050,4 @@ ls怎么只显示第二级子目录的大小而不显示更低子目录的大小
 
 把sy的alias脚本放到一个bin目录下就不用每打开一个终端都要输入一次alias了
 
+每裤子要注意这裤子是不是窄了。
