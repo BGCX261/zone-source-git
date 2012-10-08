@@ -782,35 +782,183 @@ the range of possible values of an inexact quantity).
                                     (/ 1.0 (lower-bound y)))))
   #+END_EXAMPLE
 
+** 2.2 Hierarchical Data and the Closure Property
+- 
+
+** 2.2.1 Representing Sequences
+- One of the useful structures we can build with pairs is a "sequence"--an
+ordered collection of data objects.
+- The entire sequence is constructed by nested `cons'
+operations:
   #+BEGIN_EXAMPLE  
+
+     (cons 1
+           (cons 2
+                 (cons 3
+                       (cons 4 nil))))
+
+  #+END_EXAMPLE
+- Such a sequence of pairs, formed by nested `cons'es, is called a "list",
+and Scheme provides a primitive called `list' to help in constructing
+lists.
+  #+BEGIN_EXAMPLE  
+
+     (list <A_1> <A_2> ... <A_N>)
+
+     (cons <A_1>
+           (cons <A_2>
+                 (cons ...
+                       (cons <A_N>
+                             nil)
+     ...)))
+
+  #+END_EXAMPLE
+- Lisp systems conventionally print lists by printing the sequence of
+elements, enclosed in parentheses.
+  #+BEGIN_EXAMPLE  
+
+     (define one-through-four (list 1 2 3 4))
+
+     one-through-four
+     (1 2 3 4)
+  #+END_EXAMPLE
+- We can think of `car' as selecting the first item in the list, and of
+`cdr' as selecting the sublist consisting of all but the first item.
+  #+BEGIN_EXAMPLE  
+
+     (car one-through-four)
+     1
+
+     (cdr one-through-four)
+     (2 3 4)
+
+     (car (cdr one-through-four))
+     2
+
+     (cons 10 one-through-four)
+     (10 1 2 3 4)
+
+     (cons 5 one-through-four)
+     (5 1 2 3 4)
+
   #+END_EXAMPLE
 
+- The use of pairs to represent sequences of elements as lists is
+accompanied by conventional programming techniques for manipulating
+lists by successively "`cdr'ing down" the lists.
   #+BEGIN_EXAMPLE  
+
+     (define (list-ref items n)
+       (if (= n 0)
+           (car items)
+           (list-ref (cdr items) (- n 1))))
+
+     (define squares (list 1 4 9 16 25))
+
+     (list-ref squares 3)
+     16
   #+END_EXAMPLE
 
+- Scheme includes
+a primitive predicate `null?', which tests whether its argument is the
+empty list.  The procedure `length', which returns the number of items
+in a list,
   #+BEGIN_EXAMPLE  
+
+     (define (length items)
+       (if (null? items)
+           0
+           (+ 1 (length (cdr items)))))
+
+     (define odds (list 1 3 5 7))
+
+     (length odds)
+     4
+
   #+END_EXAMPLE
 
+- The `length' procedure implements a simple recursive plan. The
+reduction step is:
+-    We could also compute `length' in an iterative style:
   #+BEGIN_EXAMPLE  
+
+     (define (length items)
+       (define (length-iter a count)
+         (if (null? a)
+             count
+             (length-iter (cdr a) (+ 1 count))))
+       (length-iter items 0))
   #+END_EXAMPLE
 
+- Another conventional programming technique is to "`cons' up" an
+answer list while `cdr'ing down a list, as in the procedure `append',
   #+BEGIN_EXAMPLE  
+
+     (append squares odds)
+     (1 4 9 16 25 1 3 5 7)
+
+     (append odds squares)
+     (1 3 5 7 1 4 9 16 25)
+
+     (define (append list1 list2)
+       (if (null? list1)
+           list2
+           (cons (car list1) (append (cdr list1) list2))))
+
   #+END_EXAMPLE
 
+- One extremely useful operation is to apply some transformation to each
+element in a list and generate the list of results.
   #+BEGIN_EXAMPLE  
+
+     (define (scale-list items factor)
+       (if (null? items)
+           nil
+           (cons (* (car items) factor)
+                 (scale-list (cdr items) factor))))
+
+     (scale-list (list 1 2 3 4 5) 10)
+     (10 20 30 40 50)
   #+END_EXAMPLE
 
+- We can abstract this general idea and capture it as a common pattern
+expressed as a higher-order procedure,
+- `Map' takes as
+arguments a procedure of one argument and a list, and returns a list of
+the results produced by applying the procedure to each element in the
+list:
   #+BEGIN_EXAMPLE  
+
+     (define (map proc items)
+       (if (null? items)
+           nil
+           (cons (proc (car items))
+                 (map proc (cdr items)))))
+
+     (map abs (list -10 2.5 -11.6 17))
+     (10 2.5 11.6 17)
+
+     (map (lambda (x) (* x x))
+          (list 1 2 3 4))
+     (1 4 9 16)
+
+
+     (define (scale-list items factor)
+       (map (lambda (x) (* x factor))
+            items))
+
   #+END_EXAMPLE
 
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
-
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
-
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
+- `Map' is an important construct, not only because it captures a
+common pattern, but because it establishes a higher level of
+abstraction in dealing with lists.  In the original definition of
+`scale-list', the recursive structure of the program draws attention to
+the element-by-element processing of the list.  Defining `scale-list'
+in terms of `map' suppresses that level of detail and emphasizes that
+scaling transforms a list of elements to a list of results.  The
+difference between the two definitions is not that the computer is
+performing a different process (it isn't) but that we think about the
+process differently.
 
   #+BEGIN_EXAMPLE  
   #+END_EXAMPLE
