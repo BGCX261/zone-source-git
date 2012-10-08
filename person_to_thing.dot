@@ -1,0 +1,24 @@
+digraph g
+{
+        man -> house;
+        man -> clothes;
+        man -> food;
+        man -> foot_tool;
+        foot_tool -> car;
+        foot_tool -> bicycle;
+        foot_tool -> bus;
+        foot_tool -> train;
+        foot_tool -> plain;
+        foot_tool -> ship;
+        
+        man -> mobile_phone;
+        man -> computer;
+        man -> desk;
+        
+        mobile_phone[label="mobile-phone"];
+        mobile_phone -> touch_screen;
+        touch_screen -> film;
+        touch_screen -> size;
+        mobile_phone -> keyboard;
+        
+}
