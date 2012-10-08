@@ -1081,3 +1081,11 @@ machine code.google.com login yjie_life@163.com password Jf5vc5ZY9qR7
 可以用C-x r l <RET>来显示所有的书签，用d来标记删除，用x来执行删除。与dired-mode的相似。
 
 git 也可以实现像svn那样的杈限管理，可以在一个项目中把不同的模块做成不用的库，那么每个库的密码就是这个模块的密码了，对于负责人就有所有库的密码，那么他就可以将所有模块库合并到一个只有他自己知道的库。
+
+==============================12/10/08==============================
+
+在2.6.11的内核中有一句,commit是238628e
+if (unlikely((long long)now - next->timestamp < 0))
+now和timestamp都是unsigned long long，所以永远都不会为真。
+
+看linux源码时发现把static函数的实现放在.h文件中。
