@@ -3070,3 +3070,15 @@ if (unlikely((long long)now - next->timestamp < 0))
 now和timestamp都是unsigned long long，所以永远都不会为真。
 
 看linux源码时发现把static函数的实现放在.h文件中。
+
+git pull这后若有冲突，再用status -s查看会有一些文件的状态信息，这说明这个pull只执行
+到了fetch这一步，可以再用commit -a来提交就算有冲突。
+
+C-c s I 可以在当前创建cscope的数据库，关于cscope的其它功能可以看看菜单。
+
+在emacs的cedet中有一个cogre模式可以用来自动画UML图的。可以用菜单把它找出来。
+
+if (unlikely(in_atomic())) {
+以上的翻译出来就是“在原子情况下就..."，忽略unlikely来翻译。
+
+齿（io）
