@@ -3082,3 +3082,11 @@ if (unlikely(in_atomic())) {
 以上的翻译出来就是“在原子情况下就..."，忽略unlikely来翻译。
 
 齿（io）
+
+==============================<2012-10-09 二>==============================
+
+原来cscope中的C-c s a 的set initial directory是用来设置当前buffer的搜索目录的。
+
+可以直接用cscope来找函数的定义的，就是快捷键C-c s g, 还有用C-c s t来查找text string
+也是很有用的。
+
