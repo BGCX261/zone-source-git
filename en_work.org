@@ -438,3 +438,20 @@ and R_2 using the formula
 - postulates
   - Alyssa postulates the existence of an abstract object called an
 "interval" that has two endpoints:
+
+** 2.2.1 Representing Sequences
+- accompanied
+  - The use of pairs to represent sequences of elements as lists is
+accompanied by conventional programming techniques for manipulating
+lists by successively "`cdr'ing down" the lists.
+- customary
+  - It is customary to number the
+elements of the list beginning with 0.
+- capture
+  - We can abstract this general idea and capture it as a common pattern
+expressed as a higher-order procedure,
+- conceptual
+  - this
+abstraction gives us the flexibility to change the low-level details of
+how sequences are implemented, while preserving the conceptual
+framework of operations that transform sequences to sequences.
