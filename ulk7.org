@@ -226,45 +226,50 @@ who can exec here? system load is very high?
   3. sched_setschedule()
 
 	 :PROPERTIES:
-all of them are functions. just in these case set TIF\_NEED\_RESCHED ?
-:END:
+     all of them are functions. just in these case set TIF\_NEED\_RESCHED ?
+     :END:
 
 **** -7.4.4.3 actions performed by schedule() before a process switch
-1. next, prev, rq
-2. preempt_disable(), this_rq()
-3. check kernel lock
-4. get run_time, sched_clock()-prev->timestamp
-5. limit in 1s
+1. in exiting and in atomic then dump
+	 :PROPERTIES:
+	 task's stat is represented by bit.
+     :END:
+2. prifile_hit()
+3. next, prev, rq
+4. preempt_disable(), this_rq()
+5. check kernel lock
+6. get run_time, sched_clock()-prev->timestamp
+7. limit in 1s
 
    :PROPERTIES:
    why is 1s?
    :END:
-6. lock rq
-7. PF\_DEAD
+8. lock rq
+9. PF\_DEAD
 
    :PROPERTIES:
    A PF\_DEAD's process will also call schedule()?
    what is the relation between PF_DEAD(p->flags) and EXIT_DEAD(p->state)
    :END:
-8. not in running stat and not be preempt in kernel mode then remove from rq
+10. not in running stat and not be preempt in kernel mode then remove from rq
 
-   :PROPERTIES:
-  why remove from rq not active list, and where is also remove it from rq
-  :END:
-9. TASK_INTERRUPTIBLE(no TASK_STOPPED) and not pending by signal then
-   set RUNNING, and it will also be the next.
-
-   :PROPERTIES:
-   TASK_RUNNING may be set again in schedule().
+	:PROPERTIES:
+   why remove from rq not active list, and where is also remove it from rq
    :END:
-10. idle\_balance()
-11. active <-> expired
-12. bitmask
+11. TASK_INTERRUPTIBLE(no TASK_STOPPED) and not pending by signal then
+	set RUNNING, and it will also be the next.
+
+	:PROPERTIES:
+	TASK_RUNNING may be set again in schedule().
+	:END:
+12. idle\_balance()
+13. active <-> expired
+14. bitmask
 
 	:PROPERTIES:
 	bitmask is used in schedule(), it is firstly idle\_balance() then active <-> expired
 	:END:
-13. add sleeptime
+15. add sleeptime
 	- TASK_INTERRUPTIBLE or TASK_STOPPED
       1. by system call
       2. by interrupt or deferred function
