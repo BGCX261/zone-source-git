@@ -235,8 +235,8 @@ who can exec here? system load is very high?
 	 task's stat is represented by bit.
      :END:
 2. prifile_hit()
-3. next, prev, rq
-4. preempt_disable(), this_rq()
+3. preempt_disable(), release_kernel_lock(), this_rq()
+4. it's idle thread and not in running then dump_stack();
 5. check kernel lock
 6. get run_time, sched_clock()-prev->timestamp
 7. limit in 1s
