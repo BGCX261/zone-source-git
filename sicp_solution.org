@@ -24,30 +24,24 @@
 (define (largest_3 a b c)
   (if (> a b)
       (if (> a c)
-          (a)
-        (c))
+          a
+        c)
     (if (> b c)
-        (b)
-      (c))))
-
-(define (larger a b)
-  (if (> a b)
-      (a)
-    (b)))
+        b
+      c)))
 
 (define (larger_3 a b c)
-  (cond (and (larger a b) (larger c a)) a
-        (and (larger b a) (larger c b)) b
-        (and (larger c b) (larger a c)) c))
+  (cond ((and (> a b) (> c a)) a)
+        ((and (> b a) (> c b)) b)
+        ((and (> c b) (> a c)) c)))
 
-(define (square x) (* x x))
-
-(difine (ex_1_3 a b c)
+(define (ex_1_3 a b c)
         (+ 
          (square 
           (largest_3 a b c)) 
          (square 
           (larger_3 a b c))))
+		  
 #+END_EXAMPLE
 
 ** ex 1.4
