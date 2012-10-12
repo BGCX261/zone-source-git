@@ -105,6 +105,8 @@ applied.
 
    (not <E>)
    #+END_EXAMPLE
+- If none of the <P>'s is found to be true, the
+value of the `cond' is undefined.
 - Notice that `and' and `or' are special forms, not procedures, because
 the subexpressions are not necessarily all evaluated.  `Not' is an
 ordinary procedure.
@@ -125,6 +127,32 @@ ordinary procedure.
 - In mathematics we are usually concerned with declarative (what is)
 descriptions, whereas in computer science we are usually concerned with
 imperative (how to) descriptions.
+   #+BEGIN_EXAMPLE
+
+     (define (sqrt x)
+       (the y (and (>= y 0)
+                   (= (square y) x))))
+
+     (define (sqrt-iter guess x)
+       (if (good-enough? guess x)
+           guess
+           (sqrt-iter (improve guess x)
+                      x)))
+
+     (define (improve guess x)
+       (average guess (/ x guess)))
+
+     (define (average x y)
+       (/ (+ x y) 2))
+
+     (define (good-enough? guess x)
+       (< (abs (- (square guess) x)) 0.001))
+
+     (define (sqrt x)
+       (sqrt-iter 1.0 x))
+
+   #+END_EXAMPLE
+
 
 ** 1.1.8 Procedures as Black-Box Abstractions
 - when we define the

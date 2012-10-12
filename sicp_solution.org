@@ -1,6 +1,19 @@
 #+STARTUP: showall
 * charpter 1
 ** ex 1.1
+#+BEGIN_EXAMPLE
+10
+12
+8
+3
+6
+
+19
+0
+17
+6
+17
+#+END_EXAMPLE
 ** ex 1.2
 - (+ 5 4 (- 2 (- 3 (+ 6 (/ 4 5)))))
 - (* 3 (- 6 2) (- 2 7))
@@ -38,5 +51,12 @@
 #+END_EXAMPLE
 
 ** ex 1.4
-- if the interpreter is the normal-order one ,then the code will be die-cycle.
+- if b is great than 0, the operator of the combinations is '+' ,or is '-'.
+  then the operator will apply to a and b.
+** ex 1.5
+- if the interpreter is the normal-order one ,
+  then the code will be die-cycle.
 
+** ex 1.6
+- before evalute the predicate, the new-if procedure will evalute the then-
+  clause or else-clause.
