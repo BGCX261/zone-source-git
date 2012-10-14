@@ -58,5 +58,114 @@
   then the code will be die-cycle.
 
 ** ex 1.6
-- before evalute the predicate, the new-if procedure will evalute the then-
-  clause or else-clause.
+- before evaluting the predicate, the new-if procedure will evalute the then-
+  clause or else-clause, so died-cycle will come out.
+
+** ex 1.7 
+  #+BEGIN_EXAMPLE
+
+     (define (sqrt-iter guess x)
+       (if (good-enough? guess x)
+           guess
+           (if (small-enough? guess (improve guess x))
+               guess
+               (sqrt-iter (improve guess x)
+                      x))))
+
+      (define (small-enough? x y)
+        (< (abs(- x y)) 0.0000000000000000000000000000000000000000000000001))
+
+     (sqrt 99999999999999999999999999999999999999999999999999999999999999999)
+
+  #+END_EXAMPLE
+
+** ex 1.8
+  #+BEGIN_EXAMPLE
+  
+(define (cube x)
+  (* x x x))
+
+     (define (cube-root-iter guess x)
+       (if (good-enough? guess x)
+           guess
+           (cube-root-iter (improve guess x)
+                      x)))
+
+(define (improve guess x)
+  (/ (+(/ x (* guess guess)) (* 2 guess)) 3))
+
+     (define (good-enough? guess x)
+       (< (abs (- (cube guess) x)) 0.001))
+
+     (define (cube-root x)
+       (cube-root-iter 1.0 x))
+
+        (cube-root 9)
+
+
+  #+END_EXAMPLE
+
+** ex 1.9
+   - the former is recursive process, the later is iterative
+
+     (+ 4 5)
+     (inc (+ 3 5))
+     (inc (inc (+ 2 5)))
+     (inc (inc (inc (+ 1 5))))
+     (inc (inc (inc (inc (+ 0 5)))))
+     (inc (inc (inc (inc 5))))
+     (inc (inc (inc 6)))
+     (inc (inc 7))
+     (inc 8)
+     9
+
+     (+ 4 5)
+     (+ 3 6)
+     (+ 2 7)
+     (+ 1 8)
+     (+ 0 9)
+     9
+     
+** ex 1.10
+   - (f n) computes 2*y;
+     (g n) computes 2^n;
+     (h n) computes 2^(2^(2^(2...^2)...)) (the number of 2 is n) if n > 0
+           computes 0 if n = 0;
+
+** ex 1.11
+  #+BEGIN_EXAMPLE
+
+(define (pro x)
+  (+ 1 x))
+
+(define (ex_1_11_iterative x)
+  (ex_1_11_iter 1 1 x))
+
+(define (>= x y)
+  (or (> x y) (= x y)))
+
+(define (ex_1_11_iter product counter max-count)
+  (if (>= counter max-count)
+      product
+      (if (> 3 counter)
+          (ex_1_11_iter (+ counter 1) (+ counter 1) max-count)
+          (ex_1_11_iter
+           (+
+            (pro (- counter 1))
+            (* 2 (pro (- counter 2)))
+            (* 3 (pro (- counter 3))))
+           (+ counter 1)
+           max-count))))
+
+(ex_1_11_iterative 3)
+
+  #+END_EXAMPLE
+
+** ex 1.14
+
+** ex 1.15
+     - 5 times
+     - the space is [theta](n), the number of steps is [theta](n).
+       
+
+
