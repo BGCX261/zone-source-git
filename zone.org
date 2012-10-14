@@ -3092,6 +3092,19 @@ if (unlikely(in_atomic())) {
 
 ==============================[2012-10-10 三]==============================
 
+在终端输入命令前都要先用C-r快捷键。
+
+在内核看到__builtin_return_address，以下是文档说明。
+void * __builtin_return_address (unsigned int level )
+[Built-in Function]
+This function returns the return address of the current function, or of one of its callers.
+The level argument is number of frames to scan up the call stack.
+
+kernel:	run_time /= (CURRENT_BONUS(prev) ? : 1);
+这一句对吗？
+
+在日志中输入中文就注意了，小心对齐文题，因为很多不是等宽的显示的,所以我建议还是用英文的好。
+
 看sicp的时候，可以想想scheme有的语言特性对于C语言是否也有，若有，那有什么区别若没有，C语
 又是如何用一些技巧来实现的。
 
