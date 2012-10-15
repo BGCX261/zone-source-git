@@ -269,7 +269,7 @@ who can exec here? system load is very high?
 	:PROPERTIES:
 	bitmask is used in schedule(), it is firstly idle\_balance() then active <-> expired
 	:END:
-15. add sleeptime
+15. add sleeptime then reinster to rq->active
 	- TASK_INTERRUPTIBLE or TASK_STOPPED
       1. by system call
       2. by interrupt or deferred function

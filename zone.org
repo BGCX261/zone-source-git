@@ -3110,3 +3110,66 @@ kernel:	run_time /= (CURRENT_BONUS(prev) ? : 1);
 
 有时间可以在求职网上找找想要的职位，我现在有点明白我想做什么了，就是解决计算机领域的问题。
 如操作系统，编译器。
+
+==============================[2012-10-12 五]==============================
+
+昨天调试ao总结一下：程序的目的就是对数据做处理，所以只要你对数据从源头
+到结束都可以掌控的话，你就可以找出问题所在了，找到问题点就调试成功了一
+半，把数据流的处理看作一个一维数组，那么就用折半查找法把问题点找到。
+
+星哥就电压数据有规律的变化就说明有数据传入但是马上对被清掉了，这句话是对的。
+
+我觉得调试的代码也应该用git来管理，这样就可以追溯每个调试出现的提示。
+
+有freopen函数, fopen64是什么来的？
+
+
+    `w'
+          Open the file for writing only.  If the file already exists,
+          it is truncated to zero length.  Otherwise a new file is
+          created.
+		  可以把原来的内容都删掉。
+
+    `w+'
+          Open a file for both reading and writing.  If the file
+          already exists, it is truncated to zero length.  Otherwise, a
+          new file is created.
+
+
+    `a+'
+          Open or create file for both reading and appending.  If the
+          file exists, its initial contents are unchanged.  Otherwise,
+          a new file is created.  The initial file position for reading
+          is at the beginning of the file, but output is always
+          appended to the end of the file.
+
+以后一定要加-Wall啊
+[yj@localhost code]$ gcc fflush.c -Wall
+fflush.c: 在函数‘main’中:
+fflush.c:12:3: 警告：隐式声明函数‘alarm’ [-Wimplicit-function-declaration]
+fflush.c:18:2: 警告：在有返回值的的函数中，‘return’不带返回值 [-Wreturn-type]
+
+emacs scheme的方法：用quack，下载scheme解释器mit-scheme或racket,下载quack.el
+用C-c C-l来编译.ss文件
+
+
+int main(void)
+{
+	FILE *fp = NULL;
+	int i=0;
+
+	fp = fopen("test.dat", "w");
+
+	while(1)
+	{
+		sleep(1);
+		fprintf(fp, "%10d\n", i++);
+		printf("write\n");
+		fflush(fp);
+	}
+	
+	fclose(fp);
+
+	return 0;
+}
+如果没有fflush(fp),在执行几秒时中断退出程序后文件是没有被写入内容的。w是可以截掉原来的内容的。
