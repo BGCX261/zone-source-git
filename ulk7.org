@@ -43,6 +43,8 @@
 - 选择运行
 - max(100, min(静态优先级-bouns+5, 130))
 - 平均睡眠时间，bouns与时间粒度关系
+  - TASK_INTERRUPTE and TASK_UNINTERRUPT add in difference way, TASK_RUNNING
+	minus.
 - 交互公式
 
 **** -7.2.1.3 活动和过期进程
@@ -186,20 +188,91 @@ where the lower prio process will be replaced ?
 - unlock rq
 
 *** -7.4.3 recalc\_task\_prio() 函数
-- calc avg sleeptime and dynamic prio
-- min(now - p->timestamp, 10^9)
-- not greater than 0
-- p->sleep_avg = 900
-
-  :PROPERTIES:
-who can exec here? system load is very high?
+- it's a static function
+:PROPERTIES:
+the struction of the func should change to that categorised as process's type
+like
 :END:
-- CURRENT\_BONUS
-- 大于或等于
-- 大于或等于
-- sleep_time add sleep_avg
-- must smaller than 1000
-- effective_prio
+- step:
+  1. calc avg sleeptime and dynamic prio
+  2. min(now - p->timestamp, 109)
+  3. not greater than 0
+  4. p->sleep_avg = 900(empirical, max sleep time subtract timeslice), if not
+	 thread not TASK_UNIT and great INTERACTIVE_SLEEP(); go [[__a]]
+     :PROPERTIES:
+     who can exec here? system load is very high?
+     :END:
+  5. CURRENT\_BONUS, sleep_time mult (MAX_BONUS - CURRENT_BONUS)
+  6. is not thread, is TASK_UNINT
+	 :PROPERTIES:
+	 is possible greater than INTERACTIVE_SLEEP()?
+	 Tasks waking from uninterruptible sleep are
+	 limited in their sleep_avg rise as they
+	 are likely to be waiting on I/O
+	 :END:
+  7. sleep_time add to p->sleep_avg
+  8. must smaller than 1000
+  9. __a effective_prio
+- rewrite
+#+BEGINE_EXAMPLE
+static void recalc_task_prio(task_t *p, unsigned long long now)
+{
+	/* Caller must always ensure 'now >= p->timestamp' */
+	unsigned long long __sleep_time = now - p->timestamp;
+	unsigned long sleep_time;
+
+	if (__sleep_time > NS_MAX_SLEEP_AVG)
+		sleep_time = NS_MAX_SLEEP_AVG;
+	else
+		sleep_time = (unsigned long)__sleep_time;
+
+	if (likely(sleep_time > 0)) {
+		/* normal, TASK_UNINTERRUPT */
+		if (p->mm && p->activated == -1){
+			sleep_time *= (MAX_BONUS - CURRENT_BONUS(p)) ? : 1;
+			
+			if (p->sleep_avg >= INTERACTIVE_SLEEP(p)){
+				sleep_time = 0;
+			}
+			else if (p->sleep_avg + sleep_time >=
+					 INTERACTIVE_SLEEP(p)) {
+				p->sleep_avg = INTERACTIVE_SLEEP(p);
+				sleep_time = 0;
+			}
+			
+			p->sleep_avg += sleep_time;
+			if (p->sleep_avg > NS_MAX_SLEEP_AVG)
+				p->sleep_avg = NS_MAX_SLEEP_AVG;
+
+		}
+		/* normal, not TASK_UNINTERRUPT */
+		else if (p->mm && p->activated != -1)
+		{
+			if (sleep_time > INTERACTIVE_SLEEP(p)){
+				p->sleep_avg = JIFFIES_TO_NS(MAX_SLEEP_AVG -
+						DEF_TIMESLICE);
+			}
+			else{
+				sleep_time *= (MAX_BONUS - CURRENT_BONUS(p)) ? : 1;
+				
+				p->sleep_avg += sleep_time;
+				if (p->sleep_avg > NS_MAX_SLEEP_AVG)
+					p->sleep_avg = NS_MAX_SLEEP_AVG;
+				
+			}
+		}else{		/* thread (!p->mm) and other */
+			sleep_time *= (MAX_BONUS - CURRENT_BONUS(p)) ? : 1;
+			
+			p->sleep_avg += sleep_time;
+			if (p->sleep_avg > NS_MAX_SLEEP_AVG)
+				p->sleep_avg = NS_MAX_SLEEP_AVG;
+		}
+
+		p->prio = effective_prio(p);
+	}
+}
+
+#+END_EXAMPLE
 
 *** -7.4.4 schedule()
 
