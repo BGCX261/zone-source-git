@@ -978,8 +978,8 @@ elements, enclosed in parentheses.
   #+END_EXAMPLE
 
 - The use of pairs to represent sequences of elements as lists is
-accompanied by conventional programming techniques for manipulating
-lists by successively "`cdr'ing down" the lists.
+  accompanied by conventional programming techniques for manipulating
+  lists by successively "`cdr'ing down" the lists.
   #+BEGIN_EXAMPLE  
 
      (define (list-ref items n)
@@ -993,11 +993,10 @@ lists by successively "`cdr'ing down" the lists.
      16
   #+END_EXAMPLE
 
-- Scheme includes
-a primitive predicate `null?', which tests whether its argument is the
-empty list.  The procedure `length', which returns the number of items
-in a list,
-  #+BEGIN_EXAMPLE  
+- Scheme includes a primitive predicate `null?', which tests whether
+  its argument is the empty list.  The procedure `length', which
+  returns the number of items in a list,
+  #+BEGIN_EXAMPLE
 
      (define (length items)
        (if (null? items)
@@ -1012,8 +1011,8 @@ in a list,
   #+END_EXAMPLE
 
 - The `length' procedure implements a simple recursive plan. The
-reduction step is:
--    We could also compute `length' in an iterative style:
+  reduction step is:
+- We could also compute `length' in an iterative style:
   #+BEGIN_EXAMPLE  
 
      (define (length items)
@@ -1025,7 +1024,8 @@ reduction step is:
   #+END_EXAMPLE
 
 - Another conventional programming technique is to "`cons' up" an
-answer list while `cdr'ing down a list, as in the procedure `append',
+  answer list while `cdr'ing down a list, as in the procedure
+  `append',
   #+BEGIN_EXAMPLE  
 
      (append squares odds)
@@ -1041,8 +1041,8 @@ answer list while `cdr'ing down a list, as in the procedure `append',
 
   #+END_EXAMPLE
 
-- One extremely useful operation is to apply some transformation to each
-element in a list and generate the list of results.
+- One extremely useful operation is to apply some transformation to
+  each element in a list and generate the list of results.
   #+BEGIN_EXAMPLE  
 
      (define (scale-list items factor)
@@ -1056,11 +1056,10 @@ element in a list and generate the list of results.
   #+END_EXAMPLE
 
 - We can abstract this general idea and capture it as a common pattern
-expressed as a higher-order procedure,
-- `Map' takes as
-arguments a procedure of one argument and a list, and returns a list of
-the results produced by applying the procedure to each element in the
-list:
+  expressed as a higher-order procedure,
+- `Map' takes as arguments a procedure of one argument and a list, and
+  returns a list of the results produced by applying the procedure to
+  each element in the list:
   #+BEGIN_EXAMPLE  
 
      (define (map proc items)
@@ -1084,30 +1083,456 @@ list:
   #+END_EXAMPLE
 
 - `Map' is an important construct, not only because it captures a
-common pattern, but because it establishes a higher level of
-abstraction in dealing with lists.  In the original definition of
-`scale-list', the recursive structure of the program draws attention to
-the element-by-element processing of the list.  Defining `scale-list'
-in terms of `map' suppresses that level of detail and emphasizes that
-scaling transforms a list of elements to a list of results.  The
-difference between the two definitions is not that the computer is
-performing a different process (it isn't) but that we think about the
-process differently.
+  common pattern, but because it establishes a higher level of
+  abstraction in dealing with lists.  In the original definition of
+  `scale-list', the recursive structure of the program draws attention
+  to the element-by-element processing of the list.  Defining
+  `scale-list' in terms of `map' suppresses that level of detail and
+  emphasizes that scaling transforms a list of elements to a list of
+  results.  The difference between the two definitions is not that the
+  computer is performing a different process (it isn't) but that we
+  think about the process differently.
 
+** 2.2.2 Hierarchical Structures
+- The representation of sequences in terms of lists generalizes
+  naturally to represent sequences whose elements may themselves be
+  sequences.
+- we can regard the object `((1 2) 3 4)' constructed by
   #+BEGIN_EXAMPLE  
+
+     (cons (list 1 2) (list 3 4))
+  #+END_EXAMPLE
+
+     as a list of three items, the first of which is itself a list, `(1 2)'.
+- Another way to think of sequences whose elements are sequences is as
+  "trees".
+  #+BEGIN_EXAMPLE  
+
+           ((1 2) 3 4)
+               /\\
+              /  | \
+          (1 2)  3 4
+           / \
+           1 2
   #+END_EXAMPLE
 
   #+BEGIN_EXAMPLE  
+
+     (define x (cons (list 1 2) (list 3 4)))
+
+     (length x)
+     3
+
+     (count-leaves x)
+     4
+
+     (list x x)
+     (((1 2) 3 4) ((1 2) 3 4))
+
+     (length (list x x))
+     2
+
+     (count-leaves (list x x))
+     8
+
+     
+     (define (count-leaves x)
+       (cond ((null? x) 0)
+             ((not (pair? x)) 1)
+             (else (+ (count-leaves (car x))
+                      (count-leaves (cdr x))))))
+
   #+END_EXAMPLE
 
+** 2.2.3 Sequences as Conventional Interfaces
   #+BEGIN_EXAMPLE  
+(define (if-pair p)
+  (if (pair? p)
+      1
+      0))
+
+(if-pair (list 1))
+
+  #+END_EXAMPLE
+- The key to organizing programs so as to more clearly reflect the
+  signal-flow structure is to concentrate on the "signals" that flow
+  from one stage in the process to the next.
+- takes a tree as argument and computes the sum of the squares of the
+  leaves that are odd:
+  #+BEGIN_EXAMPLE  
+  
+     (define (sum-odd-squares tree)
+       (cond ((null? tree) 0)
+             ((not (pair? tree))
+              (if (odd? tree) (square tree) 0))
+             (else (+ (sum-odd-squares (car tree))
+                      (sum-odd-squares (cdr tree))))))
+
+   * enumerates the leaves of a tree;
+
+   * filters them, selecting the odd ones;
+
+   * squares each of the selected ones; and
+
+   * accumulates the results using `+', starting with 0.
+                      
+  #+END_EXAMPLE
+- constructs a list of all the even Fibonacci numbers _Fib_(k), where
+  k is less than or equal to a given integer n:
+  #+BEGIN_EXAMPLE  
+
+     (define (even-fibs n)
+       (define (next k)
+         (if (> k n)
+             nil
+             (let ((f (fib k)))
+               (if (even? f)
+                   (cons f (next (+ k 1)))
+                   (next (+ k 1))))))
+       (next 0))
+
+   * enumerates the integers from 0 to n;
+
+   * computes the Fibonacci number for each integer;
+
+   * filters them, selecting the even ones; and
+
+   * accumulates the results using `cons',  starting with the empty
+     list.
+
+  #+END_EXAMPLE
+- A signal-processing engineer would find it natural to conceptualize
+  these processes in terms of signals flowing through a cascade of
+  stages, each of which implements part of the program plan,
+  #+BEGIN_EXAMPLE  
+
+          +-------------+   +-------------+   +-------------+   +-------------+
+          | enumerate:  |-->| filter:     |-->| map:        |-->| accumulate: |
+          | tree leaves |   | odd?        |   | square      |   | +, 0        |
+          +-------------+   +-------------+   +-------------+   +-------------+
+
+          +-------------+   +-------------+   +-------------+   +-------------+
+          | enumerate:  |-->| map:        |-->| filter:     |-->| accumulate: |
+          | integers    |   | fib         |   | even?       |   | cons, ()    |
+          +-------------+   +-------------+   +-------------+   +-------------+
   #+END_EXAMPLE
 
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
+- Sequence Operations
+  - The key to organizing programs so as to more clearly reflect the
+    signal-flow structure is to concentrate on the "signals" that flow
+    from one stage in the process to the next.
+    #+BEGIN_EXAMPLE  
 
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
+     (map square (list 1 2 3 4 5))
+     (1 4 9 16 25)
 
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
+     (define (filter predicate sequence)
+       (cond ((null? sequence) nil)
+             ((predicate (car sequence))
+              (cons (car sequence)
+                    (filter predicate (cdr sequence))))
+             (else (filter predicate (cdr sequence)))))
+
+     (define (accumulate op initial sequence)
+       (if (null? sequence)
+           initial
+           (op (car sequence)
+               (accumulate op initial (cdr sequence)))))
+
+     (define (enumerate-interval low high)
+       (if (> low high)
+           nil
+           (cons low (enumerate-interval (+ low 1) high))))
+
+     (enumerate-interval 2 7)
+     (2 3 4 5 6 7)
+
+     (define (enumerate-tree tree)
+       (cond ((null? tree) nil)
+             ((not (pair? tree)) (list tree))
+             (else (append (enumerate-tree (car tree))
+                           (enumerate-tree (cdr tree))))))
+
+     (enumerate-tree (list 1 (list 2 (list 3 4)) 5))
+     (1 2 3 4 5)
+
+     (define (sum-odd-squares tree)
+       (accumulate +
+                   0
+                   (map square
+                        (filter odd?
+                                (enumerate-tree tree)))))
+
+     (define (even-fibs n)
+       (accumulate cons
+                   nil
+                   (filter even?
+                           (map fib
+                                (enumerate-interval 0 n)))))
+
+     (define (sum-odd-squares tree)
+       (accumulate +
+                   0
+                   (map square
+                        (filter odd?
+                                (enumerate-tree tree)))))
+
+     (define (even-fibs n)
+       (accumulate cons
+                   nil
+                   (filter even?
+                           (map fib
+                                (enumerate-interval 0 n)))))
+
+    #+END_EXAMPLE
+  - The value of expressing programs as sequence operations is that this
+    helps us make program designs that are modular, that is, designs
+    that are constructed by combining relatively independent pieces.
+  - Modular construction is a powerful strategy for controlling
+    complexity in engineering design.
+  - Similarly, sequence operations provide a library of standard program
+    elements that we can mix and match.
+      #+BEGIN_EXAMPLE  
+
+       (define (list-fib-squares n)
+         (accumulate cons
+                     nil
+                     (map square
+                          (map fib
+                               (enumerate-interval 0 n)))))
+      #+END_EXAMPLE
+  - We can rearrange the pieces and use them in computing the product of
+    the odd integers in a sequence:
+      #+BEGIN_EXAMPLE  
+
+       (define (product-of-squares-of-odd-elements sequence)
+         (accumulate *
+                     1
+                     (map square
+                          (filter odd? sequence))))
+      #+END_EXAMPLE
+
+- Nested Mappings
+  - Given a positive integer n, find all ordered pairs of distinct
+    positive integers i and j, where 1 <= j< i<= n, such that i + j is
+    prime.  For example, if n is 6, then the pairs are the following:
+    #+BEGIN_EXAMPLE  
+
+     (accumulate append
+                 nil
+                 (map (lambda (i)
+                        (map (lambda (j) (list i j))
+                             (enumerate-interval 1 (- i 1))))
+                      (enumerate-interval 1 n)))
+    #+END_EXAMPLE
+  - A natural way to organize this computation is to generate the
+    sequence of all ordered pairs of positive integers less than or
+    equal to n, filter to select those pairs whose sum is prime, and
+    then, for each pair (i, j) that passes through the filter, produce
+    the triple (i,j,i + j).
+
+  - Here is a way to generate the sequence of pairs: For each integer
+    i <= n, enumerate the integers j<i, and for each such i and j
+    generate the pair (i,j).
+
+  - Combining all the sequences for all the i (by accumulating with
+    `append') produces the required sequence of pairs:
+
+    #+BEGIN_EXAMPLE  
+
+   (accumulate append
+               nil
+               (map (lambda (i)
+                      (map (lambda (j) (list i j))
+                           (enumerate-interval 1 (- i 1))))
+                    (enumerate-interval 1 n)))
+
+
+   (define (flatmap proc seq)
+     (accumulate append nil (map proc seq)))
+
+     (define (prime-sum? pair)
+       (prime? (+ (car pair) (cadr pair))))
+
+     (define (make-pair-sum pair)
+       (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+
+     (define (prime-sum-pairs n)
+       (map make-pair-sum
+            (filter prime-sum?
+                    (flatmap
+                     (lambda (i)
+                       (map (lambda (j) (list i j))
+                            (enumerate-interval 1 (- i 1))))
+                     (enumerate-interval 1 n)))))
+    #+END_EXAMPLE
+  - Nested mappings are also useful for sequences other than those
+    that enumerate intervals.
+  - Suppose we wish to generate all the permutations of a set S; that
+    is, all the ways of ordering the items in the set.
+       #+BEGIN_EXAMPLE  
+
+     (define (permutations s)
+       (if (null? s)                    ; empty set?
+           (list nil)                   ; sequence containing empty set
+           (flatmap (lambda (x)
+                      (map (lambda (p) (cons x p))
+                           (permutations (remove x s))))
+                    s)))
+
+     (define (remove item sequence)
+       (filter (lambda (x) (not (= x item)))
+               sequence))
+       #+END_EXAMPLE
+
+       #+BEGIN_EXAMPLE  
+       #+END_EXAMPLE
+
+       #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+

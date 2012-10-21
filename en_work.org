@@ -455,3 +455,162 @@ expressed as a higher-order procedure,
 abstraction gives us the flexibility to change the low-level details of
 how sequences are implemented, while preserving the conceptual
 framework of operations that transform sequences to sequences.
+
+** 2.2.3
+- enmeshed
+  - In working with compound data, we've stressed how data abstraction
+    permits us to design programs without becoming enmeshed in the
+    details of data representations, and how abstraction preserves for
+    us the flexibility to experiment with alternative representations.
+- crucially
+  - Our ability to formulate analogous operations for working with
+    compound data depends crucially on the style in which we
+    manipulate our data structures.
+- enumerates
+  - enumerates the leaves of a tree;
+- cascade
+  - A signal-processing engineer would find it natural to
+    conceptualize these processes in terms of signals flowing through
+    a cascade of stages, each of which implements part of the program
+    plan, as shown in *Note Figure 2-7.
+- accumulation
+  - Similarly, the accumulation is found partly in the tests and partly
+    in the addition used in the recursion.
+- decompose, mingling
+  - Our two procedures decompose the computations in a different way,
+    spreading the enumeration over the program and mingling it with
+    the map, the filter, and the accumulation.
+- manifest, conceptual, clarity
+  - If we could organize our programs to make the signal-flow
+    structure manifest in the procedures we write, this would increase
+    the conceptual clarity of the resulting code.
+- regularly, cascading
+  - In real signal-processing applications, for example, designers
+    regularly build systems by cascading elements selected from
+    standardized families of filters and transducers.
+- intact
+  - By changing these, we can experiment with alternative
+    representations of sequences, while leaving the overall design of
+    our programs intact.
+- paradigm
+  - We will exploit this capability in section *Note 3-5::, when we
+    generalize the sequence-processing paradigm to admit infinite
+    sequences.
+** 2.2.4 Example: A Picture Language
+- closure
+  - This section presents a simple language for drawing pictures that
+    illustrates the power of data abstraction and closure, and also
+    exploits higher-order procedures in an essential way.
+- elegance
+  - Part of the elegance of this picture language is that there is
+    only one kind of element, called a "painter".
+- designated
+  - A painter draws an image that is shifted and scaled to fit within
+    a designated parallelogram-shaped frame.
+- elaborate
+  - Painters can be more elaborate than this:
+- balanced
+  - We can produce balanced patterns by branching upwards as well as
+    towards the right
+- orient
+  - `flipped-pairs' and `square-limit' each arrange four copies of a
+    painter's image in a square pattern; they differ only in how they
+    orient the copies.
+- origin, plane
+  - The origin vector specifies the offset of the frame's origin from
+    some absolute origin in the plane, and the edge vectors specify
+    the offsets of the frame's corners from its origin.
+- perpendicular
+  - If the edges are perpendicular, the frame will be rectangular.
+- vertex
+  - For example, (0,0) is mapped to the origin of the frame, (1,1) to
+    the vertex diagonally opposite the origin, and (0.5,0.5) to the
+    center of the frame.
+- segments
+  - from lists of line segments as follows:
+- erects
+  - Representing painters as procedures erects a powerful abstraction
+    barrier in the picture language.
+- intermix
+  - We can create and intermix all sorts of primitive painters, based
+    on a variety of graphics capabilities.
+- upper-right
+  - For example, we can define a painter that shrinks its image to the
+    upper-right quarter of the frame it is given:
+- rotate
+  - Other transformations rotate images counterclockwise by 90 degrees
+- squash
+  - squash images towards the center of the frame
+- robust
+  - Levels of language for robust design
+- glimpse
+  - We have also obtained a glimpse of another crucial idea about
+    languages and program design.
+- stratified
+  - This is the approach of "stratified design", the notion that a
+    complex system should be structured as a sequence of levels that
+    are described using a sequence of languages.
+- pervades
+  - Stratified design pervades the engineering of complex systems.
+- resistors, transistors
+  - For example, in computer engineering, resistors and transistors
+    are combined (and described using a language of analog circuits)
+    to produce parts such as and-gates and or-gates, which form the
+    primitives of a language for digital-circuit design.
+- using languages appropriate to computer, (what does appropriate
+  describ for)
+  - which are in turn combined to form computers, using languages
+    appropriate to computer architecture.
+- tiny
+  - As a tiny example of stratification, our picture language uses
+    primitive elements (primitive painters) that are created using a
+    language that specifies points and lines to provide the lists of
+    line segments for `segments->painter', or the shading details for
+    a painter like `rogers'.
+- vocabulary
+  - In general, each level of a stratified design provides a different
+    vocabulary for expressing the characteristics of the system, and a
+    different kind of ability to change it.
+
+** 2.3.1 Quotation
+- Quotation
+- type in
+  - Quotation also allows us to type in compound objects,
+- dispense
+  - In keeping with this, we can obtain the empty list by evaluating
+    `'()', and thus dispense with the variable `nil'.
+** 2.3.2 Example: Symbolic Differentiation
+- differentiation
+- algebraic
+  - As an illustration of symbol manipulation and a further
+    illustration of data abstraction, consider the design of a
+    procedure that performs symbolic differentiation of algebraic
+    expressions.
+- derivative, with respect to
+  - We would like the procedure to take as arguments an algebraic
+    expression and a variable and to return the derivative of the
+    expression with respect to the variable.
+- afterward
+  - Only afterward will we address the representation problem.
+- embody, indulge
+  - To embody these rules in a procedure we indulge in a little
+    wishful thinking, as we did in designing the rational-number
+    implementation.
+- addend
+  - For a sum, for example we want to be able to extract the addend
+    (first term) and the augend (second term).
+- incorporates
+  - This `deriv' procedure incorporates the complete differentiation
+    algorithm.
+- representation
+** 2.3.3 Example: Representing Sets
+- transactions
+  - Consider a data base containing a large number of individual
+    records, such as the personnel files for a company or the
+    transactions in an accounting system.
+- sophisticated
+  - Later on, the data representation can be modified to be more
+    sophisticated.
+- methodology
+  - In designing such a system the methodology of data abstraction can
+    be a great help.
