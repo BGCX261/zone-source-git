@@ -3118,6 +3118,70 @@ kernel:	run_time /= (CURRENT_BONUS(prev) ? : 1);
 今天使用了 wget来 下 载东西
 wget http://www.neilvandyke.org/quack/quack.el
 
+
+==============================[2012-10-12 五]==============================
+
+昨天调试ao总结一下：程序的目的就是对数据做处理，所以只要你对数据从源头
+到结束都可以掌控的话，你就可以找出问题所在了，找到问题点就调试成功了一
+半，把数据流的处理看作一个一维数组，那么就用折半查找法把问题点找到。
+
+星哥就电压数据有规律的变化就说明有数据传入但是马上对被清掉了，这句话是对的。
+
+我觉得调试的代码也应该用git来管理，这样就可以追溯每个调试出现的提示。
+
+有freopen函数, fopen64是什么来的？
+
+
+    `w'
+          Open the file for writing only.  If the file already exists,
+          it is truncated to zero length.  Otherwise a new file is
+          created.
+		  可以把原来的内容都删掉。
+
+    `w+'
+          Open a file for both reading and writing.  If the file
+          already exists, it is truncated to zero length.  Otherwise, a
+          new file is created.
+
+
+    `a+'
+          Open or create file for both reading and appending.  If the
+          file exists, its initial contents are unchanged.  Otherwise,
+          a new file is created.  The initial file position for reading
+          is at the beginning of the file, but output is always
+          appended to the end of the file.
+
+以后一定要加-Wall啊
+[yj@localhost code]$ gcc fflush.c -Wall
+fflush.c: 在函数‘main’中:
+fflush.c:12:3: 警告：隐式声明函数‘alarm’ [-Wimplicit-function-declaration]
+fflush.c:18:2: 警告：在有返回值的的函数中，‘return’不带返回值 [-Wreturn-type]
+
+emacs scheme的方法：用quack，下载scheme解释器mit-scheme或racket,下载quack.el
+用C-c C-l来编译.ss文件
+
+
+int main(void)
+{
+	FILE *fp = NULL;
+	int i=0;
+
+	fp = fopen("test.dat", "w");
+
+	while(1)
+	{
+		sleep(1);
+		fprintf(fp, "%10d\n", i++);
+		printf("write\n");
+		fflush(fp);
+	}
+	
+	fclose(fp);
+
+	return 0;
+}
+如果没有fflush(fp),在执行几秒时中断退出程序后文件是没有被写入内容的。w是可以截掉原来的内容的。
+
 ==============================[2012-10-13 六]==============================
 
 一个没有女朋友或妻子和孩子的人工作时的心态和有女朋友或妻子或孩子的心态
@@ -3137,6 +3201,79 @@ sicp 中说到的recursive process和iterative process的主要区别是一个�
 可以用wget来保存网页
 [yj@localhost tmp]$ wget http://www.cs.arizona.edu/~mccann/cstyle.html
 
+==============================[2012-10-15 一]==============================
+
+printf没有newline的东西时可以用fflush();
+
+在用for循环打印连续的数据时，要在每一个数据的前面或者后面加上一个空格以防数据重合。
+
+float f = 0.3; /* OK, throw away bits to convert 0.3 from double to float */
+assert ( f == 0.3 ); /* not OK, f is converted from float to double
+   and the value of 0.3 depends on how many bits you use to represent it. */
+assert ( f == 0.3f ); /* OK, comparing two floats, although == is finicky. */
+
+3.0f -> float
+3.0 -> double
+3 -> integer
+
+设计框架时把最不可能变的东西放在最外层，就像注塑机的时序程序，阶段是很
+小可能被改变的，所以按照时序来设辛程序。
+
+今天调试了一个东西：任务说要将一个写文件的功能从一个进程移到另一个进程B中，在进程B中完成了编码，
+但原来的进程没有删除，所以运行的时候有两个地方写文件。
+
+今天调试了一个BUG：vpprocess.c和writer.c都用到一个头文件的一个宏，
+修改了宏编译了writer.c但没编译vpprocess.c导致写文件时错乱。
+
+==============================[2012-10-16 二]==============================
+
+
+int
+main(void)
+{
+	printf("(3 - 1)? : 1  = %d\n", (3 - 1)? : 1);
+	printf("(1 - 3)? : 1  = %d\n", (1 - 3)? : 1);
+	printf("(1 - 1)? : 1  = %d\n", (1 - 1)? : 1);
+
+	return 1;
+}
+
+这样用法有点使用技巧。
+
+Markdown emacs org
+
+在cscope管理的项目中添加了一个文件之后要在该文件的buffer窗口输入C-s a设置项目目录，
+再输入C-s L添加文件路径到索引。
+
+在cscope中使用C-s c之后，可以用C-s u跳到被搜索的函数名的地方。
+
+注释一个函数可以先用C-M-a 再用C-c C-c
+
+可以用cscope的C-s C来找到某个函数调用的所有函数的顺序。
+
+==============================[2012-10-17 三]==============================
+
+http://emacswiki.org/emacs/IndentingC
+    (setq c-default-style "linux"
+          c-basic-offset 4)
+
+A partial list of the better known C styles:
+
+    “gnu”: The default style for GNU projects
+    “k&r”: What Kernighan and Ritchie, the authors of C used in their book
+    “bsd”: What BSD developers use, aka “Allman style” after Eric Allman.
+    “whitesmith”: Popularized by the examples that came with Whitesmiths C, an early commercial C compiler.
+    “stroustrup”: What Stroustrup, the author of C++ used in his book
+    “ellemtel”: Popular C++ coding standards as defined by “Programming in C++, Rules and Recommendations,” Erik Nyquist and Mats Henricson, Ellemtel
+    “linux”: What the Linux developers use for kernel development
+    “python”: What Python developers use for extension modules
+    “java”: The default style for java-mode (see below)
+    “user”: When you want to define your own style
+
+In short, 8-char indents make things easier to read, and have the added
+benefit of warning you when you're nesting your functions too deep.
+Heed that warning.
+
 ==============================[2012-10-18 四]==============================
 
 看书学习分三类：一、专业的书，看这些书，不去记忆就好像真的没学过一样，
@@ -3148,3 +3285,4 @@ sicp 中说到的recursive process和iterative process的主要区别是一个�
 ==============================[2012-10-20 六]==============================
 
 org 中M-S-LEFT/RIGHT可以改变等级。 
+
