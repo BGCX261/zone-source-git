@@ -3246,3 +3246,249 @@ A partial list of the better known C styles:
 In short, 8-char indents make things easier to read, and have the added
 benefit of warning you when you're nesting your functions too deep.
 Heed that warning.
+
+# define schedstat_inc(rq, field)	do { (rq)->field++; } while (0)
+这样使用结构体成员可以的。
+
+
+==============================[2012-10-18 四]==============================
+
+今天用了M-x customize-group ecb 修改了ecb的默认layout配置,还可以修改除
+了ecb的其它（用TAB来看）东西，的 ecb-minor-mode可以打开ECB.
+
+gcc manual
+6.6 Referring to a Type with typeof
+Another way to refer to the type of an expression is with typeof. The syntax of using of
+this keyword looks like sizeof, but the construct acts semantically like a type name defined
+with typedef.
+There are two ways of writing the argument to typeof: with an expression or with a
+type. Here is an example with an expression:
+typeof (x[0](1))
+This assumes that x is an array of pointers to functions; the type described is that of the
+values of the functions.
+Here is an example with a typename as the argument:
+typeof (int *)
+Here the type described is that of pointers to int.
+
+typeof is often useful in conjunction with the statements-within-expressions feature.
+Here is how the two together can be used to define a safe “maximum” macro that operates
+on any arithmetic type and evaluates each of its arguments exactly once:
+
+#define max(a,b) \
+({ typeof (a) _a = (a); \
+typeof (b) _b = (b); \
+_a > _b ? _a : _b; })
+
+kernel.h有这些东西
+
+/*
+ * min()/max() macros that also do
+ * strict type-checking.. See the
+ * "unnecessary" pointer comparison.
+ */
+#define min(x,y) ({ \
+	typeof(x) _x = (x);	\
+	typeof(y) _y = (y);	\
+	(void) (&_x == &_y);		\
+	_x < _y ? _x : _y; })
+
+#define max(x,y) ({ \
+	typeof(x) _x = (x);	\
+	typeof(y) _y = (y);	\
+	(void) (&_x == &_y);		\
+	_x > _y ? _x : _y; })
+
+/*
+ * ..and if you can't take the strict
+ * types, you can specify one yourself.
+ *
+ * Or not use min/max at all, of course.
+ */
+#define min_t(type,x,y) \
+	({ type __x = (x); type __y = (y); __x < __y ? __x: __y; })
+#define max_t(type,x,y) \
+	({ type __x = (x); type __y = (y); __x > __y ? __x: __y; })
+
+
+/**
+ * container_of - cast a member of a structure out to the containing structure
+ *
+ * @ptr:	the pointer to the member.
+ * @type:	the type of the container struct this is embedded in.
+ * @member:	the name of the member within the struct.
+ *
+ */
+#define container_of(ptr, type, member) ({			\
+        const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+        (type *)( (char *)__mptr - offsetof(type,member) );})
+
+/*
+ * Check at compile time that something is of a particular type.
+ * Always evaluates to 1 so you may use it easily in comparisons.
+ */
+#define typecheck(type,x) \
+({	type __dummy; \
+	typeof(x) __dummy2; \
+	(void)(&__dummy == &__dummy2); \
+	1; \
+})
+
+
+git: revert (reset) a single file
+
+08 April 2008 — By JD
+
+This one is hard to find out there so here it is. If you have an
+uncommitted change (its only in your working copy) that you wish to
+revert (in SVN terms) to the copy in your latest commit, do the
+following:
+
+git checkout filename
+
+This will checkout the file from HEAD, overwriting your change. This
+command is also used to checkout branches, and you could happen to
+have a file with the same name as a branch. All is not lost, you will
+simply need to type:
+
+git checkout -- filename
+
+You can also do this with files from other branches, and such. man
+git-checkout has the details.
+
+The rest of the Internet will tell you to use git reset --hard, but
+this resets all uncommitted changes you’ve made in your working
+copy. Type this with care.
+
+ln -s /bin/ls /bin/s
+
+可以到以下的网站看看CPU load是怎么计算的。
+en.wikipedia.org/wiki/Load_(computing)
+
+An idle computer has a load number of 0 and each process using or
+waiting for CPU (the ready queue or run queue) increments the load
+number by 1. Most UNIX systems count only processes in the running (on
+CPU) or runnable (waiting for CPU) states. However, Linux also
+includes processes in uninterruptible sleep states (usually waiting
+for disk activity), which can lead to markedly different results if
+many processes remain blocked in I/O due to a busy or stalled I/O
+system. This, for example, includes processes blocking due to an NFS
+server failure or to slow media (e.g., USB 1.x storage devices). Such
+circumstances can result in an elevated load average, which does not
+reflect an actual increase in CPU use (but still gives an idea on how
+long users have to wait).
+
+
+In a system with four CPUs, a load average of 3.73 would indicate that
+there were, on average, 3.73 processes ready to run, and each one
+could be scheduled into a CPU.
+
+要这样用
+#if !defined(__smp_processor_id) || !defined(CONFIG_PREEMPT)
+
+内核有一句：
+#if defined(ARCH_HAS_SCHED_WAKE_IDLE)
+这句有点看不懂。
+
+Difference between #ifdef and #if defined
+http://forums.codeguru.com/showthread.php?382173-Difference-between-ifdef-and-if-defined&s=6b75d03f97f6cc4b6bff50353814d926
+There is no real difference, except that #ifndef allow pretty alignment in header guards.
+
+What about while chaining them like below.
+Code:
+
+#if defined(_AFXEXT) && !defined(_AFXDLL)
+	#define _AFXDLL
+#endif
+
+Code:
+
+#ifdef(_AFXEXT) && #ifndef(_AFXDLL)
+     #define _AFXDLL
+#endif
+
+http://stackoverflow.com/questions/135069/ifdef-vs-if-which-is-better-safer
+My initial reaction was '#ifdef, of course', but I think #if actually
+has some significant advantages for this - here's why:
+
+First, you can use 'DEBUG_ENABLED' in preprocessor and compiled
+tests. Example - Often, I want longer timeouts when debug is enabled,
+so using #if, I can write this
+
+  DoSomethingSlowWithTimeout(DEBUG_ENABLED? 5000 : 1000);
+
+... instead of ...
+
+#ifdef DEBUG_MODE
+  DoSomethingSlowWithTimeout(5000);
+#else
+  DoSomethingSlowWithTimeout(1000);
+#endif
+
+Second, you're in a better position if you want to migrate from
+a #define to a global constant. #defines are usually frowned on by
+most C++ programmers.
+
+And, Third, you say you've a divide in your team. My guess is this
+means different members have already adopted different approaches, and
+you need to standardise. Ruling that #if is the preferred choice means
+that code using #ifdef will compile -and run- even when DEBUG_ENABLED
+is false. And it's much easier to track down and remove debug output
+that is produced when it shouldn't be than vice-versa.
+
+Oh, and a minor readability point. You should be able to use
+true/false rather than 0/1 in your #define, and because the value is a
+single lexical token, it's the one time you don't need parentheses
+around it.
+
+#define DEBUG_ENABLED true
+
+instead of
+
+#define DEBUG_ENABLED (1)
+
+
+==============================[2012-10-19 五]==============================
+
+http://www.linuxjournal.com/article/9001
+
+load averages do not include any processes or threads waiting on I/O,
+networking, databases or anything else not demanding the CPU.It
+narrowly focuses on what is actively demanding CPU time.
+
+再次强调：将全局变量转为参数传入时要注章如果不是数组而是一个其它变量时，
+且该它会被修改，那么就要以指针的形式传入。
+
+一个程序的执行若有时间相关的，可以用数字来标明程序块的执行顺序。
+	power_off_threshold[zone] = set_point[zone] - shut_down_distance[zone];
+	if (barrelTemper[zone] >= power_off_threshold[zone]) /* 开机加热到阀值 */
+	{ 
+		startup_done[zone] = 1;
+		if (power_off_tick[zone]*T_BASE_PERIOD >= power_off_interval[zone])
+			/* 4 : 开始全关加热时间到 */
+		{ 
+			feedback_start_flag[zone] = 1;
+			Data_hisuout[zone] = ini_u[zone];		// initial u value
+			u_output[zone]=ini_u[zone];
+		}
+		else 					/* 3 : 全关 */
+		{
+			power_off_tick[zone] += 1;
+			u_output[zone]= 0;
+		}
+	}
+	else 
+	{
+		if (delay_tick[zone]*T_BASE_PERIOD >= heating_delay[zone])		// start heating after delay time
+			/* 2：全开加热 */
+		{
+			u_output[zone] = full_heating_power[zone];		// decrease to get the identical heating up speed
+		}
+		else  					/* 1：全开加热前有时滞 */
+		{
+			u_output[zone] = 0;
+			delay_tick[zone] +=1;	
+		}
+	}
+	
+
+	return;
