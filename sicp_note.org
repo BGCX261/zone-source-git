@@ -54,6 +54,21 @@ applied.
        (sum-of-squares (+ a 1) (* a 2)))
  
 ** 1.1.5 The Substitution Model for Procedure Application
+- The process we have just described is called the "substitution model"
+for procedure application.
+  - The purpose of the substitution is to help us think about procedure
+     application, not to provide a description of how the interpreter
+     really works.  Typical interpreters do not evaluate procedure
+     applications by manipulating the text of a procedure to substitute
+     values for the formal parameters.  In practice, the "substitution"
+     is accomplished by using a local environment for the formal
+     parameters.
+  - Over the course of this book, we will present a sequence of
+     increasingly elaborate models of how interpreters work,
+     culminating with a complete implementation of an interpreter and
+     compiler in *Note Chapter 5::.  The substitution model is only the
+     first of these models--a way to get started thinking formally
+     about the evaluation process.
 - applicative order versus normal order
 - applicative order
    #+BEGIN_EXAMPLE
@@ -78,7 +93,17 @@ applied.
 
                          136
 #+END_EXAMPLE
-
+- the evaluations of `(+ 5 1)' and
+`(* 5 2)' are each performed twice here,
+- in contrast to the "evaluate the
+arguments and then apply" method that the interpreter actually uses,
+which is called "applicative-order evaluation".(interpreter actually uses)
+- Lisp uses applicative-order evaluation, partly because of the
+additional efficiency obtained from avoiding multiple evaluations of
+expressions such as those illustrated with `(+ 5 1)' and `(* 5 2)'
+above and, more significantly, because normal-order evaluation becomes
+much more complicated to deal with when we leave the realm of
+procedures that can be modeled by substitution.
 
 ** 1.1.6 Conditional Expressions and Predicates
 -  
@@ -155,28 +180,36 @@ imperative (how to) descriptions.
 
 
 ** 1.1.8 Procedures as Black-Box Abstractions
-- when we define the
-`good-enough?' procedure in terms of `square', we are able to regard
-the `square' procedure as a "black box.
-- Indeed, as far as the `good-enough?' procedure is concerned, `square' is not
-quite a procedure but rather an abstraction of a procedure, a so-called "procedural
-abstraction".
+- summarize : procedural abstract, local name(bound variable and bind,
+  scope),intrenal definitions and block structure,name-packaging,
+  lexical scoping
+  
+- when we define the `good-enough?' procedure in terms of `square', we
+  are able to regard the `square' procedure as a "black box.
+  
+- Indeed, as far as the `good-enough?' procedure is concerned,
+  `square' is not quite a procedure but rather an abstraction of a
+  procedure, a so-called "procedural abstraction".
+  
 - local names
-  - One detail of a procedure's implementation that should not matter to
-the user of the procedure is the implementer's choice of names for the
-procedure's formal parameters.
+  - One detail of a procedure's implementation that should not matter
+    to the user of the procedure is the implementer's choice of names
+    for the procedure's formal parameters.
+
   - bound variable and bind
     - A formal parameter of a procedure has a very special role in the
-procedure definition, in that it doesn't matter what name the formal
-parameter has.  Such a name is called a "bound variable", and we say
-that the procedure definition "binds" its formal parameters.
+      procedure definition, in that it doesn't matter what name the
+      formal parameter has.  Such a name is called a "bound variable",
+      and we say that the procedure definition "binds" its formal
+      parameters.
+
   - scope
-    - The set of expressions for which
-a binding defines a name is called the "scope" of that name.
+    - The set of expressions for which a binding defines a name is
+      called the "scope" of that name.
 
 - Internal definitions and block structure
-  - To make this possible, we allow a procedure to have internal definitions that are local to that procedure.Such nesting of definitions, called "block structure", is basically
-the right solution to the simplest name-packaging problem.
+  - To make this possible, we allow a procedure to have internal
+    definitions that are local to that procedure.
 #+BEGIN_EXAMPLE
      (define (sqrt x)
        (define (good-enough? guess x)
@@ -189,7 +222,9 @@ the right solution to the simplest name-packaging problem.
              (sqrt-iter (improve guess x) x)))
        (sqrt-iter 1.0 x))
 #+END_EXAMPLE
-  - This discipline is called "lexical scoping".
+  - Such nesting of definitions, called "block structure", is
+    basically the right solution to the simplest name-packaging
+    problem.
 #+BEGIN_EXAMPLE
      (define (sqrt x)
        (define (good-enough? guess)
@@ -202,8 +237,12 @@ the right solution to the simplest name-packaging problem.
              (sqrt-iter (improve guess))))
        (sqrt-iter 1.0))
 #+END_EXAMPLE
+  - This discipline is called "lexical scoping".
 
 ** 1.2.1 Linear Recursion and Iteration
+- summarize: recursive process, deferred operation, linear recursive process,
+  iterative process, linear iterative process
+  
 #+BEGIN_EXAMPLE
           (factorial 6)        ------------------------.
           (* 6 (factorial 5))                          |
@@ -222,8 +261,9 @@ the right solution to the simplest name-packaging problem.
        (if (= n 1)
            1
            (* n (factorial (- n 1)))))
+#+END_EXAMPLE
 
-
+#+BEGIN_EXAMPLE
           (factorial 6)   -----.
           (fact-iter   1 1 6)  |
           (fact-iter   1 2 6)  |
@@ -246,32 +286,47 @@ the right solution to the simplest name-packaging problem.
                       max-count)))
 #+END_EXAMPLE
 - recursive process
-  - This type
-of process, characterized by a chain of deferred operations, is called
-a "recursive process".
+  - This type of process, characterized by a chain of deferred
+    operations, is called a "recursive process".
 - deferred operations
   - The expansion occurs as the process builds up a chain of operations
 "deferred operations" (in this case, a chain of multiplications).
 - linear recursive process
-  - hence the amount of information needed to keep
-track of it, grows linearly with n (is proportional to n), just like
-the number of steps.  Such a process is called a "linear recursive
-process".
+  - hence the amount of information needed to keep track of it, grows
+    linearly with n (is proportional to n), just like the number of
+    steps.  Such a process is called a "linear recursive process".
 - iterative process
-  - We call this an "iterative process".
+  - By contrast, the second process does not grow and shrink.  At each
+    step, all we need to keep track of, for any n, are the current
+    values of the variables `product', `counter', and `max-count'.  We
+    call this an "iterative process".
 - linear iterative process
-  - In computing n!, the number of steps required grows linearly with n.  Such
-a process is called a "linear iterative process".
+  - In computing n!, the number of steps required grows linearly with
+    n.  Such a process is called a "linear iterative process".
 - In the iterative case, the program variables provide a complete
-description of the state of the process at any point.
+  description of the state of the process at any point.
+- In the iterative case, the program variables provide a complete
+  description of the state of the process at any point.  If we stopped
+  the computation between steps, all we would need to do to resume the
+  computation is to supply the interpreter with the values of the
+  three program variables.
 - a recursive "process" and a a recursive "procedure"
-  - When we describe a procedure as recursive, we
-are referring to the syntactic fact that the procedure definition
-refers (either directly or indirectly) to the procedure itself.  But
-when we describe a process as following a pattern that is, say,
-linearly recursive, we are speaking about how the process evolves, not
-about the syntax of how a procedure is written.
-
+  - When we describe a procedure as recursive, we are referring to the
+    syntactic fact that the procedure definition refers (either
+    directly or indirectly) to the procedure itself.  But when we
+    describe a process as following a pattern that is, say, linearly
+    recursive, we are speaking about how the process evolves, not
+    about the syntax of how a procedure is written.
+- One reason that the distinction between process and procedure may be
+  confusing is that most implementations of common languages
+  (including Ada, Pascal, and C) are designed in such a way that the
+  interpretation of any recursive procedure consumes an amount of
+  memory that grows with the number of procedure calls, even when the
+  process described is, in principle, iterative.  As a consequence,
+  these languages can describe iterative processes only by resorting
+  to special-purpose "looping constructs" such as `do', `repeat',
+  `until', `for', and `while'.  The implementation of Scheme we shall
+  consider in *Note Chapter 5:: does not share this defect.
 ** 1.2.2 Tree Recursion
 - Fibonacci numbers
 #+BEGIN_EXAMPLE
@@ -303,12 +358,62 @@ about the syntax of how a procedure is written.
        .>.       ..
 
 #+END_EXAMPLE
-  - In general,
-the number of steps required by a tree-recursive process will be
-proportional to the number of nodes in the tree, while the space
-required will be proportional to the maximum depth of the tree.
+- the `fib' procedure calls itself twice each time it is invoked.
+- In general, the number of steps required by a tree-recursive process
+  will be proportional to the number of nodes in the tree, while the
+  space required will be proportional to the maximum depth of the
+  tree.
+-  can compute Fibonacci numbers iteratively using the procedure
+#+BEGIN_EXAMPLE
 
+     (define (fib n)
+       (fib-iter 1 0 n))
+
+     (define (fib-iter a b count)
+       (if (= count 0)
+           b
+           (fib-iter (+ a b) a (- count 1))))
+
+#+END_EXAMPLE
+- Example: Counting change
+- consider the following problem: How many different ways can we make
+  change of $ 1.00, given half-dollars, quarters, dimes, nickels, and
+  pennies?
+- The number of ways to change amount a using n kinds of coins equals
+
+   - the number of ways to change amount a using all but the first kind
+     of coin, plus
+
+   - the number of ways to change amount a - d using all n kinds of
+     coins, where d is the denomination of the first kind of coin.
+     
+  #+BEGIN_EXAMPLE
+
+     (define (count-change amount)
+       (cc amount 5))
+
+     (define (cc amount kinds-of-coins)
+       (cond ((= amount 0) 1)
+             ((or (< amount 0) (= kinds-of-coins 0)) 0)
+             (else (+ (cc amount
+                          (- kinds-of-coins 1))
+                      (cc (- amount
+                             (first-denomination kinds-of-coins))
+                          kinds-of-coins)))))
+
+     (define (first-denomination kinds-of-coins)
+       (cond ((= kinds-of-coins 1) 1)
+             ((= kinds-of-coins 2) 5)
+             ((= kinds-of-coins 3) 10)
+             ((= kinds-of-coins 4) 25)
+             ((= kinds-of-coins 5) 50)))
+  #+END_EXAMPLE
+- `Count-change' generates a tree-recursive process with redundancies
+similar to those in our first implementation of `fib'.  (It will take
+quite a while for that 292 to be computed.AMD 5000+ fedora 14 can't
+figure out 1432 in soon or may take a lot of time. 1000 takes few seconds)
 ** 1.2.3 Orders of Growth
+- summarize:
 - Let n be a parameter that measures the size of the problem, and let
 R(n) be the amount of resources the process requires for a problem of
 size n.
@@ -329,7 +434,7 @@ a process.
      b^0 = 1
   #+END_EXAMPLE
 - This is a linear recursive process, which requires [theta](n) steps
-and [theta](n) space.
+  and [theta](n) space.
   #+BEGIN_EXAMPLE  
      (define (expt b n)
        (if (= n 0)
@@ -348,12 +453,11 @@ and [theta](n) space.
                      (- counter 1)
                      (* b product))))
   #+END_EXAMPLE
-- We can
-also take advantage of successive squaring in computing exponentials in
-general if we use the rule
+- We can also take advantage of successive squaring in computing
+  exponentials in general if we use the rule
   #+BEGIN_EXAMPLE  
 
-     b^n = (b^(b/2))^2    if n is even
+     b^n = (b^(n/2))^2    if n is even
      b^n = b * b^(n - 1)  if n is odd
 
      (define (fast-expt b n)
@@ -363,11 +467,12 @@ general if we use the rule
 
   #+END_EXAMPLE
   - The process evolved by `fast-expt' grows logarithmically with n in
-both space and number of steps.
+    both space and number of steps.
 
 ** 1.2.5 Greatest Common Divisors
-- The greatest common divisor (GCD) of two integers a and b is defined to
-be the largest integer that divides both a and b with no remainder.
+- The greatest common divisor (GCD) of two integers a and b is defined
+  to be the largest integer that divides both a and b with no
+  remainder.
 
   #+BEGIN_EXAMPLE  
      GCD(206,40) = GCD(40,6)
@@ -382,14 +487,14 @@ be the largest integer that divides both a and b with no remainder.
            (gcd b (remainder a b))))
   #+END_EXAMPLE
 - The fact that the number of steps required by Euclid's Algorithm has
-logarithmic growth bears an interesting relation to the Fibonacci
-numbers
+  logarithmic growth bears an interesting relation to the Fibonacci
+  numbers
 
 ** 1.3 Formulating Abstractions with Higher-Order Procedures
-- To express such patterns
-as concepts, we will need to construct procedures that can accept
-procedures as arguments or return procedures as values.  Procedures
-that manipulate procedures are called "higher-order procedures".
+- To express such patterns as concepts, we will need to construct
+  procedures that can accept procedures as arguments or return
+  procedures as values.  Procedures that manipulate procedures are
+  called "higher-order procedures".
 
 ** 1.3.1 Procedures as Arguments
 -
@@ -467,13 +572,13 @@ that manipulate procedures are called "higher-order procedures".
   #+END_EXAMPLE
 
 - In general, `lambda' is used to create procedures in the same way as
-`define', except that no name is specified for the procedure:
+  `define', except that no name is specified for the procedure:
   #+BEGIN_EXAMPLE  
      (lambda (<FORMAL-PARAMETERS>) <BODY>)
   #+END_EXAMPLE
--  The resulting procedure is just as much a procedure as one that is
-created using `define'.  The only difference is that it has not been
-associated with any name in the environment.
+- The resulting procedure is just as much a procedure as one that is
+  created using `define'.  The only difference is that it has not been
+  associated with any name in the environment.
   #+BEGIN_EXAMPLE  
      (define (plus4 x) (+ x 4))
      is equivalent to
@@ -481,7 +586,7 @@ associated with any name in the environment.
 
   #+END_EXAMPLE
 - Like any expression that has a procedure as its value, a `lambda'
-expression can be used as the operator in a combination such as
+  expression can be used as the operator in a combination such as
   #+BEGIN_EXAMPLE  
      ((lambda (x y z) (+ x y (square z))) 1 2 3)
   #+END_EXAMPLE
@@ -511,7 +616,7 @@ expression can be used as the operator in a combination such as
         (- 1 y)))
   #+END_EXAMPLE
 - This construct is so useful that there is a special form called
-`let' to make its use more convenient.
+  `let' to make its use more convenient.
   #+BEGIN_EXAMPLE  
 
      (define (f x y)
@@ -528,24 +633,23 @@ expression can be used as the operator in a combination such as
         <BODY>)
   #+END_EXAMPLE
 - `Let' allows one to bind variables as locally as possible to where
-     they are to be used.
+  they are to be used.
   #+BEGIN_EXAMPLE  
 
           (+ (let ((x 3))
                (+ x (* x 10)))
              x)
   #+END_EXAMPLE
--   This
-     matters when the expressions that provide the values for the local
-     variables depend upon variables having the same names as the local
-     variables themselves.
+- This matters when the expressions that provide the values for the
+  local variables depend upon variables having the same names as the
+  local variables themselves.
   #+BEGIN_EXAMPLE  
           (let ((x 3)
                 (y (+ x 2)))
             (* x y))
   #+END_EXAMPLE
 - Sometimes we can use internal definitions to get the same effect as
-with `let'.
+  with `let'.
   #+BEGIN_EXAMPLE  
 
      (define (f x y)
@@ -556,7 +660,7 @@ with `let'.
           (* a b)))
   #+END_EXAMPLE
 - We prefer, however, to use `let' in situations like this and to use
-internal `define' only for internal procedures.
+  internal `define' only for internal procedures.
 
 ** 1.3.3 Procedures as General Methods
 - can define lambda as a parameter.
@@ -575,9 +679,9 @@ internal `define' only for internal procedures.
        (lambda (x) (average x (f x))))
   #+END_EXAMPLE
 - `Average-damp' is a procedure that takes as its argument a procedure
-`f' and returns as its value a procedure (produced by the `lambda')
-that, when applied to a number `x', produces the average of `x' and `(f
-x)'.
+  `f' and returns as its value a procedure (produced by the `lambda')
+  that, when applied to a number `x', produces the average of `x' and
+  `(f x)'.
 
   #+BEGIN_EXAMPLE  
 
@@ -585,11 +689,12 @@ x)'.
      55
   #+END_EXAMPLE
 
-- Elements with the fewest restrictions are said to have "first-class" status.
+- Elements with the fewest restrictions are said to have "first-class"
+  status.
   
 ** 2.1.1 Example: Arithmetic Operations for Rational Numbers
-- Let us further assume
-that the constructor and selectors are available as procedures:
+- Let us further assume that the constructor and selectors are
+  available as procedures:
   #+BEGIN_EXAMPLE  
 
    * `(make-rat <N> <D>)' returns therational number whose numerator is
@@ -645,12 +750,13 @@ that the constructor and selectors are available as procedures:
           (* (numer y) (denom x))))
 
   #+END_EXAMPLE
-- To enable us to implement the concrete level of our data abstraction,
-our language provides a compound structure called a "pair", which can be
-constructed with the primitive procedure `cons'.  This procedure takes
-two arguments and returns a compound data object that contains the two
-arguments as parts.  Given a pair, we can extract the parts using the
-primitive procedures `car' and `cdr'.
+- To enable us to implement the concrete level of our data
+  abstraction, our language provides a compound structure called a
+  "pair", which can be constructed with the primitive procedure
+  `cons'.  This procedure takes two arguments and returns a compound
+  data object that contains the two arguments as parts.  Given a pair,
+  we can extract the parts using the primitive procedures `car' and
+  `cdr'.
   #+BEGIN_EXAMPLE  
 
      (define x (cons 1 2))
@@ -718,16 +824,16 @@ primitive procedures `car' and `cdr'.
   #+END_EXAMPLE
 
 ** 2.1.2 Abstraction Barriers
-- In general, the underlying idea of data abstraction is to identify for
-each type of data object a basic set of operations in terms of which
-all manipulations of data objects of that type will be expressed, and
-then to use only those operations in manipulating the data.
-- One advantage is that it
-makes programs much easier to maintain and to modify.
-- the
-choice of representation influences the programs that operate on it;
-thus, if the representation were to be changed at some later time, all
-such programs might have to be modified accordingly.
+- In general, the underlying idea of data abstraction is to identify
+  for each type of data object a basic set of operations in terms of
+  which all manipulations of data objects of that type will be
+  expressed, and then to use only those operations in manipulating the
+  data.
+- One advantage is that it makes programs much easier to maintain and
+  to modify.
+- the choice of representation influences the programs that operate on
+  it; thus, if the representation were to be changed at some later
+  time, all such programs might have to be modified accordingly.
   #+BEGIN_EXAMPLE  
 
      (define (make-rat n d)
@@ -741,9 +847,9 @@ such programs might have to be modified accordingly.
        (let ((g (gcd (car x) (cdr x))))
          (/ (cdr x) g)))
   #+END_EXAMPLE
-- In any case, when we
-change from one representation to the other, the procedures `add-rat',
-`sub-rat', and so on do not have to be modified at all.
+- In any case, when we change from one representation to the other,
+  the procedures `add-rat', `sub-rat', and so on do not have to be
+  modified at all.
 
 ** 2.1.3 What Is Meant by Data?
 - This example also
@@ -872,8 +978,8 @@ elements, enclosed in parentheses.
   #+END_EXAMPLE
 
 - The use of pairs to represent sequences of elements as lists is
-accompanied by conventional programming techniques for manipulating
-lists by successively "`cdr'ing down" the lists.
+  accompanied by conventional programming techniques for manipulating
+  lists by successively "`cdr'ing down" the lists.
   #+BEGIN_EXAMPLE  
 
      (define (list-ref items n)
@@ -887,11 +993,10 @@ lists by successively "`cdr'ing down" the lists.
      16
   #+END_EXAMPLE
 
-- Scheme includes
-a primitive predicate `null?', which tests whether its argument is the
-empty list.  The procedure `length', which returns the number of items
-in a list,
-  #+BEGIN_EXAMPLE  
+- Scheme includes a primitive predicate `null?', which tests whether
+  its argument is the empty list.  The procedure `length', which
+  returns the number of items in a list,
+  #+BEGIN_EXAMPLE
 
      (define (length items)
        (if (null? items)
@@ -906,8 +1011,8 @@ in a list,
   #+END_EXAMPLE
 
 - The `length' procedure implements a simple recursive plan. The
-reduction step is:
--    We could also compute `length' in an iterative style:
+  reduction step is:
+- We could also compute `length' in an iterative style:
   #+BEGIN_EXAMPLE  
 
      (define (length items)
@@ -919,7 +1024,8 @@ reduction step is:
   #+END_EXAMPLE
 
 - Another conventional programming technique is to "`cons' up" an
-answer list while `cdr'ing down a list, as in the procedure `append',
+  answer list while `cdr'ing down a list, as in the procedure
+  `append',
   #+BEGIN_EXAMPLE  
 
      (append squares odds)
@@ -935,8 +1041,8 @@ answer list while `cdr'ing down a list, as in the procedure `append',
 
   #+END_EXAMPLE
 
-- One extremely useful operation is to apply some transformation to each
-element in a list and generate the list of results.
+- One extremely useful operation is to apply some transformation to
+  each element in a list and generate the list of results.
   #+BEGIN_EXAMPLE  
 
      (define (scale-list items factor)
@@ -950,11 +1056,10 @@ element in a list and generate the list of results.
   #+END_EXAMPLE
 
 - We can abstract this general idea and capture it as a common pattern
-expressed as a higher-order procedure,
-- `Map' takes as
-arguments a procedure of one argument and a list, and returns a list of
-the results produced by applying the procedure to each element in the
-list:
+  expressed as a higher-order procedure,
+- `Map' takes as arguments a procedure of one argument and a list, and
+  returns a list of the results produced by applying the procedure to
+  each element in the list:
   #+BEGIN_EXAMPLE  
 
      (define (map proc items)
@@ -978,30 +1083,456 @@ list:
   #+END_EXAMPLE
 
 - `Map' is an important construct, not only because it captures a
-common pattern, but because it establishes a higher level of
-abstraction in dealing with lists.  In the original definition of
-`scale-list', the recursive structure of the program draws attention to
-the element-by-element processing of the list.  Defining `scale-list'
-in terms of `map' suppresses that level of detail and emphasizes that
-scaling transforms a list of elements to a list of results.  The
-difference between the two definitions is not that the computer is
-performing a different process (it isn't) but that we think about the
-process differently.
+  common pattern, but because it establishes a higher level of
+  abstraction in dealing with lists.  In the original definition of
+  `scale-list', the recursive structure of the program draws attention
+  to the element-by-element processing of the list.  Defining
+  `scale-list' in terms of `map' suppresses that level of detail and
+  emphasizes that scaling transforms a list of elements to a list of
+  results.  The difference between the two definitions is not that the
+  computer is performing a different process (it isn't) but that we
+  think about the process differently.
 
+** 2.2.2 Hierarchical Structures
+- The representation of sequences in terms of lists generalizes
+  naturally to represent sequences whose elements may themselves be
+  sequences.
+- we can regard the object `((1 2) 3 4)' constructed by
   #+BEGIN_EXAMPLE  
+
+     (cons (list 1 2) (list 3 4))
+  #+END_EXAMPLE
+
+     as a list of three items, the first of which is itself a list, `(1 2)'.
+- Another way to think of sequences whose elements are sequences is as
+  "trees".
+  #+BEGIN_EXAMPLE  
+
+           ((1 2) 3 4)
+               /\\
+              /  | \
+          (1 2)  3 4
+           / \
+           1 2
   #+END_EXAMPLE
 
   #+BEGIN_EXAMPLE  
+
+     (define x (cons (list 1 2) (list 3 4)))
+
+     (length x)
+     3
+
+     (count-leaves x)
+     4
+
+     (list x x)
+     (((1 2) 3 4) ((1 2) 3 4))
+
+     (length (list x x))
+     2
+
+     (count-leaves (list x x))
+     8
+
+     
+     (define (count-leaves x)
+       (cond ((null? x) 0)
+             ((not (pair? x)) 1)
+             (else (+ (count-leaves (car x))
+                      (count-leaves (cdr x))))))
+
   #+END_EXAMPLE
 
+** 2.2.3 Sequences as Conventional Interfaces
   #+BEGIN_EXAMPLE  
+(define (if-pair p)
+  (if (pair? p)
+      1
+      0))
+
+(if-pair (list 1))
+
+  #+END_EXAMPLE
+- The key to organizing programs so as to more clearly reflect the
+  signal-flow structure is to concentrate on the "signals" that flow
+  from one stage in the process to the next.
+- takes a tree as argument and computes the sum of the squares of the
+  leaves that are odd:
+  #+BEGIN_EXAMPLE  
+  
+     (define (sum-odd-squares tree)
+       (cond ((null? tree) 0)
+             ((not (pair? tree))
+              (if (odd? tree) (square tree) 0))
+             (else (+ (sum-odd-squares (car tree))
+                      (sum-odd-squares (cdr tree))))))
+
+   * enumerates the leaves of a tree;
+
+   * filters them, selecting the odd ones;
+
+   * squares each of the selected ones; and
+
+   * accumulates the results using `+', starting with 0.
+                      
+  #+END_EXAMPLE
+- constructs a list of all the even Fibonacci numbers _Fib_(k), where
+  k is less than or equal to a given integer n:
+  #+BEGIN_EXAMPLE  
+
+     (define (even-fibs n)
+       (define (next k)
+         (if (> k n)
+             nil
+             (let ((f (fib k)))
+               (if (even? f)
+                   (cons f (next (+ k 1)))
+                   (next (+ k 1))))))
+       (next 0))
+
+   * enumerates the integers from 0 to n;
+
+   * computes the Fibonacci number for each integer;
+
+   * filters them, selecting the even ones; and
+
+   * accumulates the results using `cons',  starting with the empty
+     list.
+
+  #+END_EXAMPLE
+- A signal-processing engineer would find it natural to conceptualize
+  these processes in terms of signals flowing through a cascade of
+  stages, each of which implements part of the program plan,
+  #+BEGIN_EXAMPLE  
+
+          +-------------+   +-------------+   +-------------+   +-------------+
+          | enumerate:  |-->| filter:     |-->| map:        |-->| accumulate: |
+          | tree leaves |   | odd?        |   | square      |   | +, 0        |
+          +-------------+   +-------------+   +-------------+   +-------------+
+
+          +-------------+   +-------------+   +-------------+   +-------------+
+          | enumerate:  |-->| map:        |-->| filter:     |-->| accumulate: |
+          | integers    |   | fib         |   | even?       |   | cons, ()    |
+          +-------------+   +-------------+   +-------------+   +-------------+
   #+END_EXAMPLE
 
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
+- Sequence Operations
+  - The key to organizing programs so as to more clearly reflect the
+    signal-flow structure is to concentrate on the "signals" that flow
+    from one stage in the process to the next.
+    #+BEGIN_EXAMPLE  
 
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
+     (map square (list 1 2 3 4 5))
+     (1 4 9 16 25)
 
-  #+BEGIN_EXAMPLE  
-  #+END_EXAMPLE
+     (define (filter predicate sequence)
+       (cond ((null? sequence) nil)
+             ((predicate (car sequence))
+              (cons (car sequence)
+                    (filter predicate (cdr sequence))))
+             (else (filter predicate (cdr sequence)))))
+
+     (define (accumulate op initial sequence)
+       (if (null? sequence)
+           initial
+           (op (car sequence)
+               (accumulate op initial (cdr sequence)))))
+
+     (define (enumerate-interval low high)
+       (if (> low high)
+           nil
+           (cons low (enumerate-interval (+ low 1) high))))
+
+     (enumerate-interval 2 7)
+     (2 3 4 5 6 7)
+
+     (define (enumerate-tree tree)
+       (cond ((null? tree) nil)
+             ((not (pair? tree)) (list tree))
+             (else (append (enumerate-tree (car tree))
+                           (enumerate-tree (cdr tree))))))
+
+     (enumerate-tree (list 1 (list 2 (list 3 4)) 5))
+     (1 2 3 4 5)
+
+     (define (sum-odd-squares tree)
+       (accumulate +
+                   0
+                   (map square
+                        (filter odd?
+                                (enumerate-tree tree)))))
+
+     (define (even-fibs n)
+       (accumulate cons
+                   nil
+                   (filter even?
+                           (map fib
+                                (enumerate-interval 0 n)))))
+
+     (define (sum-odd-squares tree)
+       (accumulate +
+                   0
+                   (map square
+                        (filter odd?
+                                (enumerate-tree tree)))))
+
+     (define (even-fibs n)
+       (accumulate cons
+                   nil
+                   (filter even?
+                           (map fib
+                                (enumerate-interval 0 n)))))
+
+    #+END_EXAMPLE
+  - The value of expressing programs as sequence operations is that this
+    helps us make program designs that are modular, that is, designs
+    that are constructed by combining relatively independent pieces.
+  - Modular construction is a powerful strategy for controlling
+    complexity in engineering design.
+  - Similarly, sequence operations provide a library of standard program
+    elements that we can mix and match.
+      #+BEGIN_EXAMPLE  
+
+       (define (list-fib-squares n)
+         (accumulate cons
+                     nil
+                     (map square
+                          (map fib
+                               (enumerate-interval 0 n)))))
+      #+END_EXAMPLE
+  - We can rearrange the pieces and use them in computing the product of
+    the odd integers in a sequence:
+      #+BEGIN_EXAMPLE  
+
+       (define (product-of-squares-of-odd-elements sequence)
+         (accumulate *
+                     1
+                     (map square
+                          (filter odd? sequence))))
+      #+END_EXAMPLE
+
+- Nested Mappings
+  - Given a positive integer n, find all ordered pairs of distinct
+    positive integers i and j, where 1 <= j< i<= n, such that i + j is
+    prime.  For example, if n is 6, then the pairs are the following:
+    #+BEGIN_EXAMPLE  
+
+     (accumulate append
+                 nil
+                 (map (lambda (i)
+                        (map (lambda (j) (list i j))
+                             (enumerate-interval 1 (- i 1))))
+                      (enumerate-interval 1 n)))
+    #+END_EXAMPLE
+  - A natural way to organize this computation is to generate the
+    sequence of all ordered pairs of positive integers less than or
+    equal to n, filter to select those pairs whose sum is prime, and
+    then, for each pair (i, j) that passes through the filter, produce
+    the triple (i,j,i + j).
+
+  - Here is a way to generate the sequence of pairs: For each integer
+    i <= n, enumerate the integers j<i, and for each such i and j
+    generate the pair (i,j).
+
+  - Combining all the sequences for all the i (by accumulating with
+    `append') produces the required sequence of pairs:
+
+    #+BEGIN_EXAMPLE  
+
+   (accumulate append
+               nil
+               (map (lambda (i)
+                      (map (lambda (j) (list i j))
+                           (enumerate-interval 1 (- i 1))))
+                    (enumerate-interval 1 n)))
+
+
+   (define (flatmap proc seq)
+     (accumulate append nil (map proc seq)))
+
+     (define (prime-sum? pair)
+       (prime? (+ (car pair) (cadr pair))))
+
+     (define (make-pair-sum pair)
+       (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+
+     (define (prime-sum-pairs n)
+       (map make-pair-sum
+            (filter prime-sum?
+                    (flatmap
+                     (lambda (i)
+                       (map (lambda (j) (list i j))
+                            (enumerate-interval 1 (- i 1))))
+                     (enumerate-interval 1 n)))))
+    #+END_EXAMPLE
+  - Nested mappings are also useful for sequences other than those
+    that enumerate intervals.
+  - Suppose we wish to generate all the permutations of a set S; that
+    is, all the ways of ordering the items in the set.
+       #+BEGIN_EXAMPLE  
+
+     (define (permutations s)
+       (if (null? s)                    ; empty set?
+           (list nil)                   ; sequence containing empty set
+           (flatmap (lambda (x)
+                      (map (lambda (p) (cons x p))
+                           (permutations (remove x s))))
+                    s)))
+
+     (define (remove item sequence)
+       (filter (lambda (x) (not (= x item)))
+               sequence))
+       #+END_EXAMPLE
+
+       #+BEGIN_EXAMPLE  
+       #+END_EXAMPLE
+
+       #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
+            #+BEGIN_EXAMPLE  
+            #+END_EXAMPLE
+
