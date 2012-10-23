@@ -137,18 +137,24 @@ why doest't it modify the timestamp field?
 - TIMESILE\_GRANULARITY
 
 *** -7.4.2 try\_to\_wake\_up() 函数
-task\_rq\_lock()
+	:PROPERTIES:
+	just exec the out_activate code block can return 1(success), even
+	it can't schedule right now, in the out_activate code block it will
+	set actived field timestamp field, sleep_avg, prio(recalc_task_prio)
+	:END:
+	
+1) task\_rq\_lock()
 
-   :PROPERTIES:
-   disable irq and acquire lock of rq
-   :END:
-1) stat_mask
+	:PROPERTIES:
+	disable irq and acquire lock of rq
+	:END:
+2) stat_mask
 
    :PROPERTIES:
    so it can wake up any process in defference statuse, even
    TASK_UNINTERRUPTIBLE.
    :END:
-2) p->array null
+3) p->array null
    1. move to CPU
 
       :PROPERTIES:
@@ -161,31 +167,39 @@ task\_rq\_lock()
       :PROPERTIES:
       why doesn't set first_time_slice?
       :END:
-      - sched\_clock()
-      - recalc\_task\_prio(), p->actived, p->stimestamp.
-
-		:PROPERTIES:
-         why actived field is set again, it had been set in step 2.
-		:END:
-   4. timestamp
-
-      :PROPERTIES:
-         when it is waked up, also set timestamp
-      :END:
-   5. insert active list
-
-	  :PROPERTIES:
-	  it always insert into the active list
-	  :END:
-3) local CPU或sync, resched\_task(), uni/multiprocessor
+      1) sched\_clock()
+      2) recalc\_task\_prio()
+      3) p->actived evaluate 2 or 1
+		 :PROPERTIES:
+          why actived field is set again, it had been set in step 2, because
+		  it's set -1 here.
+		  Actived field can be evaluate 2 so it can schedule in interrupt.
+		  Uninterruptible task can't be set actived field, because it is set
+		  in try_to_wake_up().
+		 :END:
+      4) p->stimestamp.
+		 :PROPERTIES:
+		 when it is waked up, also set timestamp
+		 :END:
+	  5) insert active list
+		 :PROPERTIES:
+		 it always insert into the active list
+		 :END:
+4) local CPU或sync and TASK_PREEMPTS_CURR()(task can preempt curr),
+   resched\_task(), uni/multiprocessor
 
    :PROPERTIES:
    why call resched_task() in the func, but not in scheduler_tick()? because
    scheduler_tick() also set TIF_NEED_RESCHED in uniprocessor.
    where the lower prio process will be replaced ?
    :END:
-4) TASK\_RUNNIGN
-5) unlock rq
+5) TASK\_RUNNIGN
+6) unlock rq
+
+   :PROPERTIES:
+   task_running() is "task is running",
+   p->array is null, but p->thread_info->cpu can't be null.
+   :END:
 
 *** -7.4.3 recalc\_task\_prio() 函数
 - it's a static function

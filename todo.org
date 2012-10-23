@@ -1,0 +1,3 @@
+#+STARTUP: showall
+* [2012-10-22 一]
+** emacs show 全局 variables of function.
