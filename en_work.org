@@ -659,3 +659,154 @@ framework of operations that transform sequences to sequences.
     implementation of `add-complex', `sub-complex', `mul-complex', and
     `div-complex' will work with either Ben's representation or
     Alyssa's representation.
+
+** 2.4.2 Tagged data
+- retain
+  - The abstraction
+barrier formed by the selectors and constructors permits us to defer to
+the last possible moment the choice of a concrete representation for
+our data objects and thus retain maximum flexibility in our system
+design.
+- extremes
+  - The principle of least commitment can be carried to even further
+extremes.
+- ambiguity
+  - If we desire, we can maintain the ambiguity of
+representation even _after_ we have designed the selectors and
+constructors, and elect to use both Ben's representation _and_ Alyssa's
+representation.
+- postulate
+  - We will also postulate a procedure
+`attach-tag' that takes a tag and contents and produces a tagged data
+object.
+- suffix
+  - One way to do this is for Ben to append
+the suffix `rectangular' to the name of each of his representation
+procedures and for Alyssa to append `polar' to the names of hers.
+
+** 2.4.3 Data-Directed Programming and Additivity
+- Data-Directed, Additivity
+- dispatching
+  - The general strategy of checking the type of a datum and calling
+    an appropriate procedure is called "dispatching on type".
+- modularity
+  - This is a powerful strategy for obtaining modularity in system
+    design.
+- clause
+  - We would need to identify this new representation with a type, and
+    then add a clause to each of the generic interface procedures to
+    check for the new type and apply the appropriate selector for that
+    representation.
+- incorporate
+  - For instance, suppose we wanted to incorporate a new
+    representation for complex numbers into our complex-number system.
+- underlying
+  - The issue underlying both of these weaknesses is that the
+    technique for implementing generic interfaces is not "additive".
+- straightforward, nonetheless, inconvenience
+  - In each of these cases, the changes that must be made to the code
+    are straightforward, but they must be made nonetheless, and this
+    is a source of inconvenience and error.
+- large-scale
+  - The problem is real and must be addressed in such programs as
+    large-scale data-base-management systems.
+- explicit
+  - Previously, we implemented the mechanism that interfaces the
+    complex-arithmetic code with the two representation packages as a
+    set of procedures that each perform an explicit dispatch on type.
+- look up
+  - Here we will implement the interface as a single procedure that
+    looks up the combination of the operation name and argument type
+    in the table to find the correct procedure to apply, and then
+    applies it to the contents of the argument.
+
+** 2.5 Systems with Generic Operations
+- For now
+  - For now, we can assume that `put' and `get' are included in our
+    language.
+
+- perspective, supplied
+  - From the perspective of someone using "numbers," there is a single
+    procedure `add' that operates on whatever numbers are supplied.
+
+** 2.5.1 Generic Arithmetic Operations
+- 
+
+** 2.5.2 Combining Data of Different Types
+- unified, encompasses
+  - We have seen how to define a unified arithmetic system that
+    encompasses ordinary numbers, complex numbers, rational numbers,
+    and any other type of number we might decide to invent, but we
+    have ignored an important issue.
+- cross
+  - What we have not yet considered is the fact that it is meaningful
+    to define operations that cross the type boundaries, such as the
+    addition of a complex number to an ordinary number.
+- violating
+  - We would like to introduce the cross-type operations in some
+    carefully controlled way, so that we can support them without
+    seriously violating our module boundaries.
+- cumbersome
+  - This technique works, but it is cumbersome.
+- undermines
+  - The method also undermines our ability to combine separate
+    packages additively, or least to limit the extent to which the
+    implementors of the individual packages need to take account of
+    other packages.
+- take account of
+  - The method also undermines our ability to combine separate
+    packages additively, or least to limit the extent to which the
+    implementors of the individual packages need to take account of
+    other packages.
+- extent
+  - The method also undermines our ability to combine separate
+    packages additively, or least to limit the extent to which the
+    implementors of the individual packages need to take account of
+    other packages.
+- Formulating, coherent, overwhelming
+  - Formulating coherent policies on the division of responsibility
+    among packages can be an overwhelming task in designing systems
+    with many packages and many cross-type operations.
+- Coercion
+- hope for the best
+  - In the general situation of completely unrelated operations acting
+    on completely unrelated types, implementing explicit cross-type
+    operations, cumbersome though it may be, is the best that one can
+    hope for.
+- latent
+  - Fortunately, we can usually do better by taking advantage of
+    additional structure that may be latent in our type system.
+- count on
+  - What we are counting on here is the fact that the appropriate
+    transformation between types depends only on the types themselves,
+    not on the operation to be applied.
+- still
+  - In order to deal with such complexity and still preserve
+    modularity in our programs, it is usually necessary to build
+    systems that take advantage of still further structure in the
+    relations among types, as we discuss next.
+- in turn
+  - In such a system, it is quite natural to regard an integer as a
+    special kind of rational number, which is in turn a special kind
+    of real number, which is in turn a special kind of complex number.
+- nevertheless, virtue
+  - For instance, if we do not supply a special procedure for finding
+    the real part of an integer, we should nevertheless expect that
+    `real-part' will be defined for integers by virtue of the fact
+    that integers are a subtype of complex numbers.
+- crawl
+  - We thus crawl up the tower, transforming our argument as we go,
+    until we either find a level at which the desired operation can be
+    performed or hit the top (in which case we give up).
+- arranged
+  - If the data types in our system can be naturally arranged in a
+    tower, this greatly simplifies the problems of dealing with
+    generic operations on different types, as we have seen.
+- thorny
+  - This multiple-supertypes issue is particularly thorny, since it
+    means that there is no unique way to "raise" a type in the
+    hierarchy.
+- interrelated
+  - Dealing with large numbers of interrelated types while still
+    preserving modularity in the design of large systems is very
+    difficult, and is an area of much current research.
