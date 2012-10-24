@@ -3529,3 +3529,238 @@ narrowly focuses on what is actively demanding CPU time.
 
 org 中M-S-LEFT/RIGHT可以改变等级。 
 
+==============================[2012-10-22 一]==============================
+
+远程开GUI后断网会死机是做么原因呢？
+
+cscope有一个BUG，一个这样声明的函数
+
+void design_gpc(int zone,
+				u32 model_delay[],
+				u32 t_smpl_time[],
+				float Controller_lambda[],
+				float conservative[],
+				float (*Controller_f)[MAXN][MAXORDER],
+				float *Controller_K[MAXN],
+				int Model_orderA[],
+				u32 Controller_N[],
+				int Model_orderB[],
+				float *Model_A[AORDER],
+				float *model_b[AORDER],
+				int Controller_Nu[],
+				int singular)
+找不到定义，因为参数分行了。
+
+uptime和top的load average是个/proc/loadavg中来的
+
+More often than not
+
+More often than not, the process will give up
+control before the 10ms are up through socket calls, I/O calls or
+calls back to the kernel.
+
+On an Intel 2.6GHz processor, 10ms is enough time for approximately
+50-million instructions to occur. That's more than enough processing
+time for most application cycles.)
+
+warrant
+The 10ms time slice is an important enough concept to warrant a name
+for itself: quantum value.
+
+inherently
+There is not necessarily anything inherently special about 10ms, but
+there is about the quantum value in general, because whatever value it
+is set to (it is configurable, but 10ms is the default), it controls
+how often at a minimum the kernel takes control of the system back
+from the applications.
+
+HZ is not to be confused with the processor's MHz rating. This
+variable sets the pulse rate of particular Linux kernel activity and
+1HZ equals one quantum or 10ms by default.
+
+the timer.c:calc_load() function will run the averaging algorithm
+every 5 * HZ, or roughly every five seconds.
+
+nonetheless
+But it is an average nonetheless.
+
+decay
+Technically, it is an exponential decay function and is the moving
+average of choice for most UNIX systems as well as Linux.
+
+是在一定的时间计算load average的，在time.c可以看到，以HZ为标准，
+HZ和CPU的频率MHZ是不一样的。求平均值有一个公式，公式是在sched.h中
+
+load average是与在运行队列中的active和uninterrupt进程数有关。
+
+consultant
+Ray Walker is a consultant specializing in UNIX kernel-level code.
+
+有以下一段代码：
+				openLoopTestEnable = 1;
+				initULearningEnable = 1;
+				for (zone=startZone; zone<num_zone; zone++)
+				{
+					fb_fl_off_steps[zone] = 0;
+					fb_steady_steps[zone] = 0;
+					fb_ctr_base_steps[zone] = 0;
+					startup_done[zone] = 0;	
+					
+					stopTemperReach[zone] = 0;					
+					ot_switch_step[zone] = 0;
+					ot_switch_temp[zone] = 0.0;
+					ot_max_temp_step[zone] = 0;
+					ot_max_temp[zone] = 0.0;
+					
+					firstSteadyContr[zone] = 1;
+					holding_time[zone] = 0;			
+					if (barrelTemper[zone] <= (set_point[zone] - shut_down_distance[zone]- 20.0))
+						feedback_start_flag[zone] = 0;
+					else
+						feedback_start_flag[zone] = 1;
+					if (barrelTemper[zone]>50)
+					{
+						selfLearningEnable = 0;
+						openLoopTestEnable = 0;
+					}
+				}
+			}	
+我会改成
+				openLoopTestEnable = 1;
+				initULearningEnable = 1;
+				for (zone=startZone; zone<num_zone; zone++)
+				{
+					if (barrelTemper[zone]>50)
+					{
+						selfLearningEnable = 0;
+						openLoopTestEnable = 0;
+						break;
+					}
+				}
+				for (zone=startZone; zone<num_zone; zone++)
+				{
+					fb_fl_off_steps[zone] = 0;
+					fb_steady_steps[zone] = 0;
+					fb_ctr_base_steps[zone] = 0;
+					startup_done[zone] = 0;	
+					
+					stopTemperReach[zone] = 0;					
+					ot_switch_step[zone] = 0;
+					ot_switch_temp[zone] = 0.0;
+					ot_max_temp_step[zone] = 0;
+					ot_max_temp[zone] = 0.0;
+					
+					firstSteadyContr[zone] = 1;
+					holding_time[zone] = 0;			
+					if (barrelTemper[zone] <= (set_point[zone] - shut_down_distance[zone]- 20.0))
+						feedback_start_flag[zone] = 0;
+					else
+						feedback_start_flag[zone] = 1;
+				}
+			}	
+这样的程序会看得舒服一点。
+
+找出用emacs找出一个函数全局变量的方法。
+
+The configuration item CONFIG_SCHEDSTATS:If you say Y here, additional
+code will be inserted into the scheduler and related routines to
+collect statistics about scheduler behavior and provide them in
+/proc/schedstat. These stats may be useful for both tuning and
+debugging the scheduler If you aren't debugging the scheduler or
+trying to tune a specific application, you can say N to avoid the very
+slight overhead this adds.
+
+	for_each_domain(this_cpu, sd) {
+		unsigned int imbalance;
+		/*
+		 * Start passive balancing when half the imbalance_pct
+		 * limit is reached.
+		 */
+		imbalance = sd->imbalance_pct + (sd->imbalance_pct - 100) / 2;
+
+		if ((sd->flags & SD_WAKE_AFFINE) &&
+				!task_hot(p, rq->timestamp_last_tick, sd)) {
+			/*
+			 * This domain has SD_WAKE_AFFINE and p is cache cold
+			 * in this domain.
+			 */
+			if (cpu_isset(cpu, sd->span)) {
+				schedstat_inc(sd, ttwu_move_affine);
+				goto out_set_cpu;
+			}
+		} else if ((sd->flags & SD_WAKE_BALANCE) &&
+				imbalance*this_load <= 100*load) {
+			/*
+			 * This domain has SD_WAKE_BALANCE and there is
+			 * an imbalance.
+			 */
+			if (cpu_isset(cpu, sd->span)) {
+				schedstat_inc(sd, ttwu_move_balance);
+				goto out_set_cpu;
+			}
+		}
+	}
+内核也在for循环中声明变量。
+
+
+以下的这一段代码fb_stable_zone是多余的贷，可以用zone来代替
+
+						fb_stable_zone = 0;
+						for (zone=startZone; zone<num_zone; zone++)
+						{
+							if(fabs(barrelTemper[zone]-set_point[zone])
+							   <ff_learn_threshold[zone])
+							{
+								fb_stable_zone++;
+								stable_u[fb_stable_step][zone] =
+									u_output[zone];
+							}
+						}
+						fb_stable_step =
+							(fb_stable_zone == (num_zone-startZone))
+							?(fb_stable_step+1):0;
+
+
+以下这句可以防止温度抖动，
+						fb_stable_step =
+							(fb_stable_zone == (num_zone-startZone))
+							?(fb_stable_step+1):0;
+
+要把一个函数的所有全局变量改成参数传入，也要注意它调用的函数的参数传递。
+
+==============================[2012-10-23 二]==============================
+
+cscope在设置当前buffer的时候默认是从bufferd的文件目录开始向上找出
+
+sched.c中的try_to_wake_up函数中的out_XXX标签中的out表示是goto用到的标签，
+而XX表示跳出的目的。明白这个东西之后看程序就容易多了。
+
+sched.c有一段代码：
+	if (!sync || cpu != this_cpu) {
+		if (TASK_PREEMPTS_CURR(p, rq))
+			resched_task(rq->curr);
+	}
+为什么要写两个if而不合成一个if呢？不过感觉还是这种方式看得舒服一上,理解这个逻辑没那么费劲。
+
+ls可以用 -S来按照大小分
+
+p->timestamp, rq->timestamp_last_tick都可能
+
+在用fprintf写文件的时候把文件删除会是什么情况呢？
+
+在text-mode下是折行显示的，所以可以直接换org-mode
+
+当要在emacs和其它的东西切换时，且切换主要是看一眼界面而已，那么可以截图那个界面然后用emacs来
+
+static void rebalance_tick(int this_cpu, runqueue_t *this_rq,
+			   enum idle_type idle)
+传枚举类型还是挺有新意的
+
+星哥今天发现硬件的程序写错了加了一个多余的延时，所以实时性不好，所以以后写这些底层的程序就要
+时时可以观察程序的运行时间。
+
+==============================[2012-10-24 三]==============================
+
+C-, M-w之后， 再按C-, C-y 是粘贴函数签名，而按C-y就是整个函数。
+
+C-, C-y有一个问题，不能粘贴有多维参数的函数签名，多维会变成一维。
