@@ -73,22 +73,32 @@
 ** -7.4 调度器所使用的函数
 
 *** -7.4.1 scheduler\_tick()函数
+  :PROPERTIES:
+  sched_clock():Scheduler clock - returns current time in nanosec units.
+  :END:
 - timestamp\_last\_tick
-:PROPERTIES:
-timestamp\_last\_tick just like a static value, it will be changed every time
-when the function is called.
-:END:
+  :PROPERTIES:
+  timestamp\_last\_tick just like a static value, it will be changed
+  every time when the function is called, and it is just modified here.
+  the runqueue has an idle process.
+  :END:
 - swap process
   * TIF\_NEED\_RESCHED
-:PROPERTIES:
-TIF\_NEED\_RESCHED of swap process can also be set. can it be set many times?
-where it will be switched at last?
-:END:
+  :PROPERTIES:
+  TIF\_NEED\_RESCHED of swap process can also be set. can it be set
+  many times?  where it will be switched at last?
+
+  CONFIG_SCHED_SMT
+  SMT scheduler support improves the CPU scheduler's decision making
+  when dealing with Intel Pentium 4 chips with HyperThreading at a
+  cost of slightly increased overhead in some places. If unsure say N
+  here.
+  :END:
   * hyper_threading
 - haven't replace, TIF\_NEED\_RESCHED
-:PROPERTIES:
-Is it necessary to set TIF\_NEED\_RESCHED?
-:END:
+  :PROPERTIES:
+  Is it necessary to set TIF\_NEED\_RESCHED?
+  :END:
 - lock rq
 - unlock rq
 - reblance\_tick()
@@ -105,10 +115,13 @@ lower or equal prio, but how are higher ones?
   - moving to the tail if timeout
 
 	:PROPERTIES:
-so if realtime process is in running statuse, none of the normal
-process can run even it is in running statuse. never set TIF_NEED_RESCHED, but
-it can yield himself.
-:END:
+	so if realtime process is in running statuse, none of the normal
+	process can run even it is in running statuse. never set
+	TIF_NEED_RESCHED, but it can yield himself.
+
+	when time_slice is 0 , reset first_time_slice
+
+	:END:
 
 **** -7.4.1.2 更新普通进程的时间片
 - decrease timeslice

@@ -3743,3 +3743,18 @@ sched.c有一段代码：
 为什么要写两个if而不合成一个if呢？不过感觉还是这种方式看得舒服一上,理解这个逻辑没那么费劲。
 
 ls可以用 -S来按照大小分
+
+p->timestamp, rq->timestamp_last_tick都可能
+
+在用fprintf写文件的时候把文件删除会是什么情况呢？
+
+在text-mode下是折行显示的，所以可以直接换org-mode
+
+当要在emacs和其它的东西切换时，且切换主要是看一眼界面而已，那么可以截图那个界面然后用emacs来
+
+static void rebalance_tick(int this_cpu, runqueue_t *this_rq,
+			   enum idle_type idle)
+传枚举类型还是挺有新意的
+
+星哥今天发现硬件的程序写错了加了一个多余的延时，所以实时性不好，所以以后写这些底层的程序就要
+时时可以观察程序的运行时间。
