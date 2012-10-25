@@ -148,8 +148,8 @@
 
 ** 1.1.7 Example: Square Roots by Newton's Method
 - In mathematics we are usually concerned with declarative (what is)
-descriptions, whereas in computer science we are usually concerned with
-imperative (how to) descriptions.
+  descriptions, whereas in computer science we are usually concerned
+  with imperative (how to) descriptions.
    #+BEGIN_EXAMPLE
 
      (define (sqrt x)
