@@ -389,38 +389,39 @@ static void recalc_task_prio(task_t *p, unsigned long long now)
 3. preempt_disable(), release_kernel_lock(), this_rq()
 4. it's idle thread and not in running then dump_stack();
 5. check kernel lock
-6. get run_time, sched_clock()-prev->timestamp
-7. limit in 1s
+6. idle thread is not allowed to schedule, dump_stack()
+7. get run_time, sched_clock()-prev->timestamp
+8. limit in 1s
 
    :PROPERTIES:
    why is 1s?
    :END:
-8. lock rq
-9. PF\_DEAD
+9. lock rq
+10. PF\_DEAD
 
-   :PROPERTIES:
-   A PF\_DEAD's process will also call schedule()?
-   what is the relation between PF_DEAD(p->flags) and EXIT_DEAD(p->state)
-   :END:
-10. not in running stat and not be preempt in kernel mode then remove from rq
+	:PROPERTIES:
+	A PF\_DEAD's process will also call schedule()?
+	what is the relation between PF_DEAD(p->flags) and EXIT_DEAD(p->state)
+	:END:
+11. not in running stat and not be preempt in kernel mode then remove from rq
 
 	:PROPERTIES:
    why remove from rq not active list, and where is also remove it from rq
    :END:
-11. TASK_INTERRUPTIBLE(no TASK_STOPPED) and not pending by signal then
+12. TASK_INTERRUPTIBLE(no TASK_STOPPED) and not pending by signal then
 	set RUNNING, and it will also be the next.
 
 	:PROPERTIES:
 	TASK_RUNNING may be set again in schedule().
 	:END:
-12. idle\_balance()
-13. active <-> expired
-14. bitmask
+13. idle\_balance()
+14. active <-> expired
+15. bitmask
 
 	:PROPERTIES:
 	bitmask is used in schedule(), it is firstly idle\_balance() then active <-> expired
 	:END:
-15. add sleeptime then reinster to rq->active
+16. add sleeptime then reinster to rq->active
 	- TASK_INTERRUPTIBLE or TASK_STOPPED
       1. by system call
       2. by interrupt or deferred function
@@ -586,3 +587,43 @@ static void recalc_task_prio(task_t *p, unsigned long long now)
 #define TASK_USER_PRIO(p)	USER_PRIO((p)->static_prio)
 #define MAX_USER_PRIO		(USER_PRIO(MAX_PRIO))
 #+END_EXAMPLE
+
+- min timeslice 5ms, default 100ms, max 800ms
+
+#+BEGIN_EXAMPLE
+ /*
+  * These are the 'tuning knobs' of the scheduler:
+  *
+  * Minimum timeslice is 5 msecs (or 1 jiffy, whichever is larger),
+  * default timeslice is 100 msecs, maximum timeslice is 800 msecs.
+  * Timeslices get refilled after they expire.
+  */
+ #define MIN_TIMESLICE		max(5 * HZ / 1000, 1)
+ #define DEF_TIMESLICE		(100 * HZ / 1000)
+ #define ON_RUNQUEUE_WEIGHT	 30
+ #define CHILD_PENALTY		 95
+ #define PARENT_PENALTY		100
+ #define EXIT_WEIGHT		  3
+ #define PRIO_BONUS_RATIO	 25
+ #define MAX_BONUS		(MAX_USER_PRIO * PRIO_BONUS_RATIO / 100)
+ #define INTERACTIVE_DELTA	  2
+ #define MAX_SLEEP_AVG		(DEF_TIMESLICE * MAX_BONUS)
+ #define STARVATION_LIMIT	(MAX_SLEEP_AVG)
+ #define NS_MAX_SLEEP_AVG	(JIFFIES_TO_NS(MAX_SLEEP_AVG))
+#+END_EXAMPLE
+
+- one tick, jiffies increase one, 100HZ means that 1s 100tick
+  - http://adrianhuang.blogspot.com/2007/10/linux-kernel-hz-tick-and-jiffies.html
+    Linux核心每隔固定週期會發出timer interrupt (IRQ 0)，HZ是用來定義每
+    一秒有幾次timer interrupts。舉例來說，HZ為1000，代表每秒有1000次
+    timer interrupts。HZ可在編譯核心時設定，
+	
+   - Tick是HZ的倒數，意即timer interrupt每發生一次中斷的時間。如HZ為
+     250時，tick為4毫秒 (millisecond)。
+
+   - jiffies為Linux核心變數(32位元變數，unsigned long)，它被用來紀錄系
+     統自開幾以來，已經過多少的tick。每發生一次timer interrupt，
+     Jiffies變數會被加一。
+- sched.c文件中show_schedstat()函数输出东西会在/proc/schedstat中显示
+- 
+
