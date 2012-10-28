@@ -3764,3 +3764,12 @@ static void rebalance_tick(int this_cpu, runqueue_t *this_rq,
 C-, M-w之后， 再按C-, C-y 是粘贴函数签名，而按C-y就是整个函数。
 
 C-, C-y有一个问题，不能粘贴有多维参数的函数签名，多维会变成一维。
+
+==============================[2012-10-28 Sun]==============================
+
+可以gitk来查看一行代码的第一出现的地方，是用diff的格式感觉显示的，可以在diff,old version
+new version切换之间切换。还可以用关键字搜索commit
+
+韩（edby）
+
+用yum装texlive-latex来转org到pdf
