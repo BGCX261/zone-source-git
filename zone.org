@@ -3669,6 +3669,7 @@ collect statistics about scheduler behavior and provide them in
 debugging the scheduler If you aren't debugging the scheduler or
 trying to tune a specific application, you can say N to avoid the very
 slight overhead this adds.
+sched.c 文件中的函数名有info标识的都与这个标识有关。
 
 	for_each_domain(this_cpu, sd) {
 		unsigned int imbalance;
@@ -3765,6 +3766,17 @@ C-, M-w之后， 再按C-, C-y 是粘贴函数签名，而按C-y就是整个函�
 
 C-, C-y有一个问题，不能粘贴有多维参数的函数签名，多维会变成一维。
 
+前面的文件权限不会因为用户的改变而改变
+-rwxr-xr-x 1 root root 1008 Sep 20 18:16 ai_clbr.dat
+
+==============================[2012-10-25 四]==============================
+
+写 input和output,但不要忘了return;
+
+1000000000 / HZ翻译技巧
+1000000000的单位是ns,HZ的单位是Hz
+所以翻译是每Hz有多少ns.
+
 ==============================[2012-10-28 Sun]==============================
 
 可以gitk来查看一行代码的第一出现的地方，是用diff的格式感觉显示的，可以在diff,old version
@@ -3773,3 +3785,4 @@ new version切换之间切换。还可以用关键字搜索commit
 韩（edby）
 
 用yum装texlive-latex来转org到pdf
+
