@@ -3829,4 +3829,12 @@ rec_len_cfg = (struct rec_len_cfg_st *) rt_shm_alloc (nam2num(REC_LEN_CFG_ST), s
 这样的定义和使用。
 
 
+==============================[2012-10-28 Sun]==============================
+
+可以gitk来查看一行代码的第一出现的地方，是用diff的格式感觉显示的，可以在diff,old version
+new version切换之间切换。还可以用关键字搜索commit
+
+韩（edby）
+
+用yum装texlive-latex来转org到pdf
 

@@ -225,19 +225,20 @@ Chapter 4::.
 
 ** 1.1.6 Conditional Expressions and Predicates
 - expressive, class
-  - The expressive power of the class of procedures that we can define at
-this point is very limited, because we have no way to make tests and to
-perform different operations depending on the result of a test.
+  - The expressive power of the class of procedures that we can define
+    at this point is very limited, because we have no way to make
+    tests and to perform different operations depending on the result
+    of a test.
 - in which case
-  - This process continues until a predicate is found whose value is true,
-in which case the interpreter returns the value of the corresponding expression
-"consequent expression" <E> of the clause as the value of the
-conditional expression.
+  - This process continues until a predicate is found whose value is
+    true, in which case the interpreter returns the value of the
+    corresponding expression "consequent expression" <E> of the clause
+    as the value of the conditional expression.
 
 ** 1.1.7 Example: Square Roots by Newton's Method
 - rephrase, pseudo
    - It will not help matters to rephrase this definition in
-pseudo-Lisp:
+     pseudo-Lisp:
 - imperative
   - the distinction between declarative knowledge and imperative knowledge.
 - radicand
@@ -246,76 +247,77 @@ trying to compute) and a value for the guess.
 
 ** 1.1.8 Procedures as Black-Box Abstractions
 - cluster, decomposition
-  - The entire `sqrt' program can be
-viewed as a cluster of procedures (shown in *Note Figure 1-2::) that
-mirrors the decomposition of the problem into subproblems.
+  - The entire `sqrt' program can be viewed as a cluster of procedures
+    (shown in *Note Figure 1-2::) that mirrors the decomposition of
+    the problem into subproblems.
 - 
-  - One detail of a procedure's implementation that should not matter to
-the user of the procedure is the implementer's choice of names for the
-procedure's formal parameters.
+  - One detail of a procedure's implementation that should not matter
+    to the user of the procedure is the implementer's choice of names
+    for the procedure's formal parameters.
 - profound
   - This principle--that the meaning of a procedure should be
-independent of the parameter names used by its author--seems on the
-surface to be self-evident, but its consequences are profound.
+    independent of the parameter names used by its author--seems on
+    the surface to be self-evident, but its consequences are profound.
 - formal/
-  - In a procedure definition, the bound variables declared as the formal
-parameters of the procedure have the body of the procedure as their
-scope.
+  - In a procedure definition, the bound variables declared as the
+    formal parameters of the procedure have the body of the procedure
+    as their scope.
 - auxiliary
-  -  many numerical functions are computed as successive
-approximations and thus might have procedures named `good-enough?' and
-`improve' as auxiliary procedures.
+  - many numerical functions are computed as successive approximations
+    and thus might have procedures named `good-enough?' and `improve'
+    as auxiliary procedures.
 - lurking
   - But there is a better idea lurking here.
 - tractable
   - We will use block structure extensively to help us break up large
-programs into tractable pieces.
+    programs into tractable pieces.
 - discipline
   - This discipline is called "lexical
 scoping".
 
 ** 1.2 Procedures and the Processes They Generate
 - analogous, tactics
-  - Our situation is analogous to that of someone
-who has learned the rules for how the pieces move in chess but knows
-nothing of typical openings, tactics, or strategy.
+  - Our situation is analogous to that of someone who has learned the
+    rules for how the pieces move in chess but knows nothing of
+    typical openings, tactics, or strategy.
 - novice, domain
-  - Like the novice
-chess player, we don't yet know the common patterns of usage in the
-domain.
+  - Like the novice chess player, we don't yet know the common
+    patterns of usage in the domain.
 - synthetic
   - just as it is in any synthetic, creative activity.
 - So it is with 
   - So it is with programming,
 - investigate
-  - We will also investigate the rates at
-which these processes consume the important computational resources of
-time and space.
+  - We will also investigate the rates at which these processes
+    consume the important computational resources of time and space.
 ** 1.2.1 Linear Recursion and Iteration
 - stipulation
   - If we add the stipulation that 1! is equal to 1,
 - recast
   - Once again, we can recast our description as a procedure for
-computing factorials:
+    computing factorials:
 - evolve
-  - On the other hand, when we consider the "shapes" of the two processes, we
-find that they evolve quite differently.
+  - On the other hand, when we consider the "shapes" of the two
+    processes, we find that they evolve quite differently.
 - occurs
   - The contraction occurs as the operations are actually performed.
 - simultaneously
-  - We can describe
-the computation by saying that the counter and the product
-simultaneously change from one step to the next according to the rule
+  - We can describe the computation by saying that the counter and the
+    product simultaneously change from one step to the next according
+    to the rule
 ** 1.2.2 Tree Recursion
 - instructive, prototypical, redundant
   - This procedure is instructive as a prototypical tree recursion, but
 it is a terrible way to compute Fibonacci numbers because it does so
 much redundant computation.
+- redundancies
+  - `Count-change' generates a tree-recursive process with
+    redundancies similar to those in our first implementation of
+    `fib'.
 - gross
-  - One
-convenient way to describe this difference is to use the notion of "order
-of growth" to obtain a gross measure of the resources required by a
-process as the inputs become larger.
+  - One convenient way to describe this difference is to use the
+    notion of "order of growth" to obtain a gross measure of the
+    resources required by a process as the inputs become larger.
 - elementary
   - Similarly, R(n) might measure the number of internal
 storage registers used, the number of elementary machine operations
@@ -335,7 +337,8 @@ factor.
   - In the remainder of section *Note 1-2:: we will examine two
 algorithms whose order of growth is logarithmic, so that doubling the
 problem size increases the resource requirement by a constant amount.
-
+** 1.2.3 Orders of Growth
+- Order
 ** 1.2.4 Exponentiation
 - evolved
   - The process evolved by `fast-expt' grows logarithmically with n in
@@ -810,3 +813,75 @@ procedures and for Alyssa to append `polar' to the names of hers.
   - Dealing with large numbers of interrelated types while still
     preserving modularity in the design of large systems is very
     difficult, and is an area of much current research.
+** 2.5.3 Example: Symbolic Algebra
+- terms
+  - As in other languages, we form abstractions that enable us to
+    refer to compound objects in simple terms.
+- terms, indeterminate
+  - We will define a polynomial to be a sum of terms, each of which is
+    either a coefficient, a power of the indeterminate, or a product
+    of a coefficient and a power of the indeterminate.
+- finesse
+  - We can finesse these questions by deciding that in our
+    algebraic-manipulation system a "polynomial" will be a particular
+    syntactic form, not its underlying mathematical meaning.
+- insist
+  - Moreover, we will insist that two polynomials to be combined must
+    have the same indeterminate.
+- confront
+  - Finally, we must confront the job of implementing a good
+    representation for term lists.
+- density
+  - One consideration is the "density" of the polynomials we intend to
+    manipulate.
+- sparse
+  - If it has many zero terms it is said to be "sparse".
+- efficiently
+  - The term lists of dense polynomials are most efficiently
+    represented as lists of the coefficients.
+- impose
+  - One can impose a towerlike structure on this by ordering the
+    variables and thus always converting any polynomial to a
+    "canonical form" with the highest-priority variable dominant and
+    the lower-priority variables buried in the coefficients.
+- diverse
+  - Much of the complexity of such systems is concerned with
+    relationships among diverse types.
+
+** 3.1 Assignment and Local State
+- populated
+  - We ordinarily view the world as populated by independent objects,
+    each of which has a state that changes over time.
+- influenced
+  - An object is said to "have state" if its behavior is influenced by
+    its history.
+- deposit, transactions
+  - depends upon the history of deposit and withdrawal transactions.
+- characterize
+  - We can characterize an object's state by one or more "state
+    variables", which among them maintain enough information about
+    history to determine the object's current behavior.
+- compose
+  - In a system composed of many objects, the objects are rarely
+    completely independent.
+- elapsed
+  - If we choose to model the flow of time in the system by the
+    elapsed time in the computer, then we must have a way to construct
+    computational objects whose behaviors change as our programs run.
+- specifications
+  - Until now, all our procedures could be viewed as specifications
+    for computing mathematical functions.
+- cause
+  - `Withdraw' also uses the `begin' special form to cause two
+    expressions to be evaluated in the case where the `if' test is
+    true:
+- somehow
+  - It would be much better if we could somehow make `balance'
+    internal to `withdraw', so that `withdraw' would be the only
+    procedure that could access `balance' directly and any other
+    procedure could access `balance' only indirectly (through calls to
+    `withdraw').
+- conjunction
+  - This is precisely the "message-passing" style of programming that
+    we saw in section *Note 2-4-3::, although here we are using it in
+    conjunction with the ability to modify local variables.
