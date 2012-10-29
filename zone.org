@@ -3838,3 +3838,5 @@ new version切换之间切换。还可以用关键字搜索commit
 
 用yum装texlive-latex来转org到pdf
 
+要texinfo-tex这个包org才可以生成pdf
+
