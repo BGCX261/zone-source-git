@@ -1,0 +1,683 @@
+% Created 2012-10-29 一 16:09
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+
+\title{ulk7}
+\author{杨杰}
+\date{29 十月 2012}
+
+\begin{document}
+
+\maketitle
+
+\setcounter{tocdepth}{3}
+\tableofcontents
+\vspace*{1cm}
+\section{说明}
+\label{sec-1}
+
+\begin{itemize}
+\item 之前对《Understanding Linux Kernel》作过大量纸质的笔记和摘录，但还是感觉内容太
+  多了，大概有近200页的A4纸，想再把它读得更薄点，所以用了Emacs的org-mode来对它作
+  一下极简摘录。
+\end{itemize}
+\section{进程调度}
+\label{sec-2}
+
+\subsection{- 7.1 调度策略}
+\label{sec-2.1}
+
+\begin{itemize}
+\item I/O /CPU受限
+\item 交互式/批处理/实时
+\item nice(),
+\item getpriority(), setpriority()
+\item sched\_getschrdule(), sched\_setscheduler()
+\item sched\_getpara(), sched\_setpara()
+\item sched\_yield()
+\item sched\_set\_priority\_max()
+\item sched\_rr\_get\_interval()
+\item sched\_setaffinity()
+\item sched\_getaffinity()
+\end{itemize}
+\subsubsection{-7.1.1 进程抢占}
+\label{sec-2.1.1}
+
+\begin{itemize}
+\item 大于
+\item TIF\_NEED\_RESCHED
+\item 仍是TASK\_RUNNINT
+\end{itemize}
+\subsubsection{-7.1.2 一个时间片必须持续多久}
+\label{sec-2.1.2}
+
+\begin{itemize}
+\item 尽可能长
+\end{itemize}
+\subsection{7.2 调度算法}
+\label{sec-2.2}
+
+\begin{itemize}
+\item SCHED\_FIFO，SCHED\_RR定时
+\item SCHED\_NORMAL
+\end{itemize}
+\subsubsection{-7.2.1 普通进程的调度}
+\label{sec-2.2.1}
+
+\begin{itemize}
+\item 100-139
+\item 继承
+\end{itemize}
+\begin{itemize}
+
+\item -7.2.1.1 基本时间片\\
+\label{sec-2.2.1.1}
+
+\begin{itemize}
+\item (140 - 静态优先级) * 20(<120)
+\item (140 - 静态优先级) * 5 (>=120)
+\end{itemize}
+
+\item -7.2.1.2 动态优先级和平均睡眠时间\\
+\label{sec-2.2.1.2}
+
+\begin{itemize}
+\item 100-139
+\item 选择运行
+\item max(100, min(静态优先级-bouns+5, 130))
+\item 平均睡眠时间，bouns与时间粒度关系
+
+\begin{itemize}
+\item TASK$_{\mathrm{INTERRUPTE}}$ and TASK$_{\mathrm{UNINTERRUPT}}$ add in difference way, TASK$_{\mathrm{RUNNING}}$
+    minus.
+\end{itemize}
+
+\item 交互公式
+\end{itemize}
+
+\item -7.2.1.3 活动和过期进程\\
+\label{sec-2.2.1.3}
+
+\begin{itemize}
+\item 时间片
+\item 移交互
+\end{itemize}
+
+\item -7.2.1.4 实时进程调度\\
+\label{sec-2.2.1.4}
+
+\begin{itemize}
+\item 1-99, 总是
+\item 第一个
+\item 优先级，阻塞停止，放弃，SCHED\_RR
+\end{itemize}
+\end{itemize} % ends low level
+\subsection{-7.3调度程序所使用的数据结构}
+\label{sec-2.3}
+
+
+\subsubsection{-7.3.1 数据结构runqueue}
+\label{sec-2.3.1}
+
+\begin{itemize}
+\item runqueues
+\item this\_rq(), cpu\_rq(n)
+\item 所属CPU
+\item arrays域
+\item 周期交换
+\end{itemize}
+\subsubsection{-7.3.2 进程描述符}
+\label{sec-2.3.2}
+
+\begin{itemize}
+\item 相关域
+\item sched\_fork()
+\item sched\_clock()
+\end{itemize}
+\subsection{-7.4 调度器所使用的函数}
+\label{sec-2.4}
+
+
+\subsubsection{-7.4.1 scheduler\_tick()函数}
+\label{sec-2.4.1}
+
+\begin{itemize}
+\item timestamp\_last\_tick
+\item swap process
+  * TIF\_NEED\_RESCHED
+  * hyper$_{\mathrm{threading}}$
+\item haven't replace? set TIF\_NEED\_RESCHED, go out
+\item update time, RT or normal
+\item lock rq
+\item unlock rq
+\item reblance\_tick()
+\end{itemize}
+\begin{itemize}
+
+\item -7.4.1.1 更新实时进程时间片\\
+\label{sec-2.4.1.1}
+
+\begin{itemize}
+\item FIFO
+
+\begin{itemize}
+\item nothing to do
+\end{itemize}
+
+\item RR
+
+\begin{itemize}
+\item decrease timeslice
+\item moving to the active list tail if timeout
+\end{itemize}
+
+\end{itemize}
+
+\item -7.4.1.2 更新普通进程的时间片\\
+\label{sec-2.4.1.2}
+
+\begin{itemize}
+\item decrease timeslice
+\item if timeout
+
+\begin{itemize}
+\item however, dequeue\_task() from active list
+\item set TIF\_NEED\_RESCHED
+\item effective\_prio() for getting dynamic prio with avg sleeptime
+\item reset timeslice(base on the last step)
+\item clean first\_time\_slice
+\item set expired\_timestamp if 0
+\item insert active or expired
+
+\begin{itemize}
+\item insert expried
+
+\begin{itemize}
+\item not TASK\_INTERACTIVE
+\item EXPIRED\_STARVING
+\end{itemize}
+
+\item insert active
+\end{itemize}
+
+\end{itemize}
+
+\item not out
+
+\begin{itemize}
+\item TIMESILE\_GRANULARITY
+\end{itemize}
+
+\end{itemize}
+\end{itemize} % ends low level
+\subsubsection{-7.4.2 try\_to\_wake\_up() 函数}
+\label{sec-2.4.2}
+
+    
+\begin{enumerate}
+\item task\_rq\_lock()
+\item stat$_{\mathrm{mask}}$
+\item p->array null
+
+\begin{enumerate}
+\item move to CPU
+\item nr$_{\mathrm{uninterruptible}}$, p->actived = -1
+\item active\_task()
+
+\begin{enumerate}
+\item sched\_clock()
+\item recalc\_task\_prio()
+\item p->actived evaluate 2 or 1
+\item p->stimestamp.
+\item insert active list
+\end{enumerate}
+
+\end{enumerate}
+
+\item local CPU或sync and TASK$_{\mathrm{PREEMPTS}}$$_{\mathrm{CURR}}$()(task can preempt curr),
+   resched\_task(), uni/multiprocessor
+\item TASK\_RUNNIGN
+\item unlock rq
+\end{enumerate}
+\subsubsection{-7.4.3 recalc\_task\_prio() 函数}
+\label{sec-2.4.3}
+
+\begin{itemize}
+\item it's a static function
+\item step:
+
+\begin{enumerate}
+\item calc avg sleeptime and dynamic prio
+\item min(now - p->timestamp, 109)
+\item not greater than 0
+\item p->sleep$_{\mathrm{avg}}$ = 900(empirical, max sleep time subtract timeslice), if not
+     thread not TASK$_{\mathrm{UNIT}}$ and great INTERACTIVE$_{\mathrm{SLEEP}}$(); go \hyperref[sec-2.4.3]{__a}
+\item CURRENT\_BONUS, sleep$_{\mathrm{time}}$ mult (MAX$_{\mathrm{BONUS}}$ - CURRENT$_{\mathrm{BONUS}}$)
+\item is not thread, is TASK$_{\mathrm{UNINT}}$
+\item sleep$_{\mathrm{time}}$ add to p->sleep$_{\mathrm{avg}}$
+\item must smaller than 1000
+\item __a effective$_{\mathrm{prio}}$
+\end{enumerate}
+
+\item rewrite
+\end{itemize}
+\begin{verbatim}
+static void recalc_task_prio(task_t *p, unsigned long long now)
+
+{
+
+    /* Caller must always ensure 'now >= p->timestamp' */
+
+    unsigned long long __sleep_time = now - p->timestamp;
+
+    unsigned long sleep_time;
+
+
+    if (__sleep_time > NS_MAX_SLEEP_AVG)
+
+        sleep_time = NS_MAX_SLEEP_AVG;
+    else
+        sleep_time = (unsigned long)__sleep_time;
+
+    if (likely(sleep_time > 0)) {
+        /* normal, TASK_UNINTERRUPT */
+        if (p->mm && p->activated == -1){
+            sleep_time *= (MAX_BONUS - CURRENT_BONUS(p)) ? : 1;
+            
+            if (p->sleep_avg >= INTERACTIVE_SLEEP(p)){
+                sleep_time = 0;
+            }
+            else if (p->sleep_avg + sleep_time >=
+                     INTERACTIVE_SLEEP(p)) {
+                p->sleep_avg = INTERACTIVE_SLEEP(p);
+                sleep_time = 0;
+            }
+            
+            p->sleep_avg += sleep_time;
+            if (p->sleep_avg > NS_MAX_SLEEP_AVG)
+                p->sleep_avg = NS_MAX_SLEEP_AVG;
+
+        }
+        /* normal, not TASK_UNINTERRUPT */
+        else if (p->mm && p->activated != -1)
+        {
+            if (sleep_time > INTERACTIVE_SLEEP(p)){
+                p->sleep_avg = JIFFIES_TO_NS(MAX_SLEEP_AVG -
+                        DEF_TIMESLICE);
+            }
+            else{
+                sleep_time *= (MAX_BONUS - CURRENT_BONUS(p)) ? : 1;
+                
+                p->sleep_avg += sleep_time;
+                if (p->sleep_avg > NS_MAX_SLEEP_AVG)
+                    p->sleep_avg = NS_MAX_SLEEP_AVG;
+                
+            }
+        }else{      /* thread (!p->mm) and other */
+            sleep_time *= (MAX_BONUS - CURRENT_BONUS(p)) ? : 1;
+            
+            p->sleep_avg += sleep_time;
+            if (p->sleep_avg > NS_MAX_SLEEP_AVG)
+                p->sleep_avg = NS_MAX_SLEEP_AVG;
+        }
+
+        p->prio = effective_prio(p);
+    }
+}
+\end{verbatim}
+
+
+
+\subsubsection{-7.4.4 schedule()}
+\label{sec-2.4.4}
+
+
+\begin{itemize}
+
+\item -7.4.4.1 direct invocation\\
+\label{sec-2.4.4.1}
+
+\begin{itemize}
+\item for resource
+\item 5 steps
+
+\begin{enumerate}
+\item insert wait list
+\item TASK$_{\mathrm{UN}}$INTERRUPTIBLE
+\item schedule()
+\item check resource
+\item remove from list
+\end{enumerate}
+
+\end{itemize}
+
+\item -7.4.4.2 lazy invocation\\
+\label{sec-2.4.4.2}
+
+\begin{itemize}
+\item TIF\_NEED\_RESCHED
+\item example
+
+\begin{enumerate}
+\item scheduler$_{\mathrm{tick}}$()
+\item try$_{\mathrm{to}}$$_{\mathrm{wake}}$$_{\mathrm{up}}$()
+\item sched$_{\mathrm{setschedule}}$()
+\end{enumerate}
+
+\end{itemize}
+
+\item -7.4.4.3 actions performed by schedule() before a process switch\\
+\label{sec-2.4.4.3}
+
+\begin{enumerate}
+\item in exiting and in atomic then dump
+\item prifile$_{\mathrm{hit}}$()
+\item preempt$_{\mathrm{disable}}$(), release$_{\mathrm{kernel}}$$_{\mathrm{lock}}$(), this$_{\mathrm{rq}}$()
+\item it's idle thread and not in running then dump$_{\mathrm{stack}}$();
+\item check kernel lock
+\item idle thread is not allowed to schedule, dump$_{\mathrm{stack}}$()
+\item get run$_{\mathrm{time}}$, sched$_{\mathrm{clock}}$()-prev->timestamp
+\item limit in 1s
+\item lock rq
+\item PF\_DEAD
+\item not in running stat and not be preempt in kernel mode then remove from rq
+\item TASK$_{\mathrm{INTERRUPTIBLE}}$(no TASK$_{\mathrm{STOPPED}}$) and not pending by signal then
+    set RUNNING, and it will also be the next.
+\item idle\_balance()
+\item active <-> expired
+\item bitmask
+\item add sleeptime then reinster to rq->active
+
+\begin{itemize}
+\item TASK$_{\mathrm{INTERRUPTIBLE}}$ or TASK$_{\mathrm{STOPPED}}$
+
+\begin{enumerate}
+\item by system call
+\item by interrupt or deferred function
+\end{enumerate}
+
+\end{itemize}
+
+\end{enumerate}
+
+\item -7.4.4.4 完成进程切换时所执行的操作\\
+\label{sec-2.4.4.4}
+
+\begin{enumerate}
+\item prefetch
+\item clear next's  TIF\_NEED\_RESCHED
+\item rcq$_{\mathrm{qsctr}}$$_{\mathrm{inc}}$
+\item minus next't sleeptime, timestamps
+\item prev == next
+\item active$_{\mathrm{mm}}$(using) and mm(own) field.
+\item prev is kernel thread or a exit process
+
+\begin{itemize}
+\item set prev\_mm field
+\end{itemize}
+
+\end{enumerate}
+
+\item -7.4.4.5 进程切换后schedule()执行的操作\\
+\label{sec-2.4.4.5}
+
+\begin{enumerate}
+\item barrier()
+\item finish\_task\_switch()
+
+\begin{enumerate}
+\item unlock rq, enable irq
+\item put\_task\_struct() if prev is zombie
+\end{enumerate}
+
+\item kernel lock, enabel preempt, check TIF\_NEED\_RESCHED
+\end{enumerate}
+\end{itemize} % ends low level
+\subsection{-7.4 多处理器系统中进行队列的平衡}
+\label{sec-2.5}
+
+\begin{itemize}
+\item flavous
+\item 典型超线程NUMA
+\item 调度域
+\end{itemize}
+\subsubsection{-7.5.1 调度域}
+\label{sec-2.5.1}
+
+\begin{itemize}
+\item CPU集合， 分层
+\item 组间
+\item sched\_domain, sched\_group, groups, parent
+\item phys\_domains, sd
+\end{itemize}
+\subsubsection{-7.5.2 rebalance\_tick()}
+\label{sec-2.5.2}
+
+\begin{itemize}
+\item scheduler\_tick
+\item 3参数
+\item cpu\_load域
+\item 迭代load\_balance(), 频率
+\end{itemize}
+\subsubsection{-7.5.3 load\_balance() 函数}
+\label{sec-2.5.3}
+
+\begin{itemize}
+\item 移到本地
+\item find\_busest\_group()
+\item 调整
+\item find\_busiest\_queue(), 最忙
+\item move\_tasks()
+\item 锁
+\item active\_balance, migrtion\_thread
+\item 放锁
+\end{itemize}
+\subsubsection{-7.5.4 move\_tasks()}
+\label{sec-2.5.4}
+
+\begin{itemize}
+\item NEWLY\_IDLE
+\item expired, 高优先级
+\item active， can\_migrate\_task()
+\item 远程CPU，cpus,allowed,idle,反复,''cache hot''
+\item pull\_task(), dequeue/enqueue\_task(), resched\_task
+\end{itemize}
+\subsection{-7.6 与调度相关的系统调用}
+\label{sec-2.6}
+
+
+\subsubsection{-7.6.1 nice() 系统调用}
+\label{sec-2.6.1}
+
+\begin{itemize}
+\item sys\_nice()
+\item 40
+\item capable()
+\item security\_task\_setnice()
+\item static\_prio
+\item setuser\_nice()
+\item resched\_task()
+\end{itemize}
+\subsubsection{-7.6.2 getpriority() 和setpriority()调用}
+\label{sec-2.6.2}
+
+\begin{itemize}
+\item 20减
+\item PRIO\_PROCESS/PGRP/USER
+\end{itemize}
+\subsubsection{-7.6.3 sched\_get(SET)AFFINITY()}
+\label{sec-2.6.3}
+
+\begin{itemize}
+\item cpus\_allows, 位图
+\item 移进程
+\end{itemize}
+\subsubsection{-7.6.4 与实时进程相关的系统调用}
+\label{sec-2.6.4}
+
+
+\begin{itemize}
+
+\item -7.6.4.1 sched\_get(set)scheduler()\\
+\label{sec-2.6.4.1}
+
+\begin{itemize}
+\item sys\_sched\_getschedule()
+\item policy域
+\item do\_sched\_setscheduler()
+\item 删，更新，插
+\end{itemize}
+
+\item -7.6.4.2 sched\_get(set)param()\\
+\label{sec-2.6.4.2}
+
+\begin{itemize}
+\item rt\_priority域
+\item expired或runqueue
+\end{itemize}
+
+\item -7.6.4.3 sched\_yield()\\
+\label{sec-2.6.4.3}
+
+\begin{itemize}
+\item expired或runqueue
+\end{itemize}
+
+\item -7.6.4.4\\
+\label{sec-2.6.4.4}
+
+
+
+\item -7.6.4.5 sched\_rr\_get\_interval()\\
+\label{sec-2.6.4.5}
+
+\begin{itemize}
+\item 实时进程
+\item 纳秒
+\item FIFO
+\end{itemize}
+\end{itemize} % ends low level
+\section{other}
+\label{sec-3}
+
+\subsection{effective$_{\mathrm{prio}}$()}
+\label{sec-3.1}
+
+\begin{itemize}
+\item the dynamic prio of process(rt or normal) get from this function.
+\item if it's rt process , just return the dynamic prio without bonuse and penalty
+\item formula for get current bonus : current bonus / MAX$_{\mathrm{BONUS}}$ = current sleep$_{\mathrm{avg}}$ /
+  MAX$_{\mathrm{SLEEP}}$$_{\mathrm{AVG}}$
+\item formala for get MAX$_{\mathrm{BONUS}}$: MAX$_{\mathrm{BONUS}}$ / MAX$_{\mathrm{USER}}$$_{\mathrm{PRIO}}$ = PRIO$_{\mathrm{BONUS}}$$_{\mathrm{RATIO}}$ / 100
+\item the dynamic prio always get with static prio subtract current bonus.
+\item USER$_{\mathrm{PRIO}}$ macro does not include the rt, so it is MAX$_{\mathrm{PRIO}}$ subtract
+  MAX$_{\mathrm{RT}}$$_{\mathrm{PRIO}}$,
+\item there is an express in ulk:
+  and effective$_{\mathrm{prio}}$ has a code block:
+
+   so MAX$_{\mathrm{BONUS}}$ is 10, CURRENT$_{\mathrm{BONUS}}$(p) is between 0 and 10.
+\end{itemize}
+\subsection{NICE AND PRIO}
+\label{sec-3.2}
+
+
+\begin{verbatim}
+/*
+ * Convert user-nice values [ -20 ... 0 ... 19 ]
+ * to static priority [ MAX_RT_PRIO..MAX_PRIO-1 ],
+ * and back.
+ */
+#define NICE_TO_PRIO(nice) (MAX_RT_PRIO + (nice) + 20)
+#define PRIO_TO_NICE(prio) ((prio) - MAX_RT_PRIO - 20)
+#define TASK_NICE(p)       PRIO_TO_NICE((p)->static_prio)
+\end{verbatim}
+
+
+\begin{itemize}
+\item we can learn that when prio increase by 1 , nice increase by 1.
+\item start form MAX$_{\mathrm{RT}}$$_{\mathrm{PRIO}}$.
+\item relate to the static prio, not dynamic prio
+\item the rt task's nice is smaller than -20.
+\end{itemize}
+\begin{verbatim}
+/*
+ * 'User priority' is the nice value converted to something we
+ * can work with better when scaling various scheduler parameters,
+ * it's a [ 0 ... 39 ] range.
+ */
+#define USER_PRIO(p)        ((p)-MAX_RT_PRIO)
+#define TASK_USER_PRIO(p)   USER_PRIO((p)->static_prio)
+#define MAX_USER_PRIO       (USER_PRIO(MAX_PRIO))
+\end{verbatim}
+
+
+
+\begin{itemize}
+\item min timeslice 5ms, default 100ms, max 800ms
+\end{itemize}
+\begin{verbatim}
+/*
+ * These are the 'tuning knobs' of the scheduler:
+ *
+ * Minimum timeslice is 5 msecs (or 1 jiffy, whichever is larger),
+ * default timeslice is 100 msecs, maximum timeslice is 800 msecs.
+ * Timeslices get refilled after they expire.
+ */
+#define MIN_TIMESLICE      max(5 * HZ / 1000, 1)
+#define DEF_TIMESLICE      (100 * HZ / 1000)
+#define ON_RUNQUEUE_WEIGHT  30
+#define CHILD_PENALTY       95
+#define PARENT_PENALTY     100
+#define EXIT_WEIGHT          3
+#define PRIO_BONUS_RATIO    25
+#define MAX_BONUS      (MAX_USER_PRIO * PRIO_BONUS_RATIO / 100)
+#define INTERACTIVE_DELTA    2
+#define MAX_SLEEP_AVG      (DEF_TIMESLICE * MAX_BONUS)
+#define STARVATION_LIMIT   (MAX_SLEEP_AVG)
+#define NS_MAX_SLEEP_AVG   (JIFFIES_TO_NS(MAX_SLEEP_AVG))
+\end{verbatim}
+
+
+
+\begin{itemize}
+\item one tick, jiffies increase one, 100HZ means that 1s 100tick
+
+\begin{itemize}
+\item Linux核心每隔固定週期會發出timer interrupt (IRQ 0)，HZ是用來定義每
+    一秒有幾次timer interrupts。舉例來說，HZ為1000，代表每秒有1000次
+    timer interrupts。HZ可在編譯核心時設定，
+
+    \href{http://adrianhuang.blogspot.com/2007/10/linux-kernel-hz-tick-and-jiffies.html}{http://adrianhuang.blogspot.com/2007/10/linux-kernel-hz-tick-and-jiffies.html}
+
+\begin{itemize}
+\item Tick是HZ的倒數，意即timer interrupt每發生一次中斷的時間。如HZ為
+     250時，tick為4毫秒 (millisecond)。
+\item jiffies為Linux核心變數(32位元變數，unsigned long)，它被用來紀錄系
+     統自開幾以來，已經過多少的tick。每發生一次timer interrupt，
+     Jiffies變數會被加一。
+\end{itemize}
+
+\end{itemize}
+
+\item sched.c文件中show$_{\mathrm{schedstat}}$()函数输出东西会在/proc/schedstat中显示
+\item SCHEDSTAT$_{\mathrm{VERSION}}$是什么来的，只是被打印一次而已。
+\item yld$_{\mathrm{both}}$$_{\mathrm{empty}}$?
+\item yld$_{\mathrm{act}}$$_{\mathrm{empty}}$? yld$_{\mathrm{exp}}$$_{\mathrm{empty}}$?yld$_{\mathrm{cnt}}$?
+\end{itemize}
+\section{all function in sched.c}
+\label{sec-4}
+
+\subsection{task$_{\mathrm{rq}}$$_{\mathrm{unlock}}$()}
+\label{sec-4.1}
+
+
+\end{document}

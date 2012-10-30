@@ -625,5 +625,84 @@ static void recalc_task_prio(task_t *p, unsigned long long now)
      統自開幾以來，已經過多少的tick。每發生一次timer interrupt，
      Jiffies變數會被加一。
 - sched.c文件中show_schedstat()函数输出东西会在/proc/schedstat中显示
-- 
+- SCHEDSTAT_VERSION是什么来的，只是被打印一次而已。
+- yld_both_empty?
+- yld_act_empty? yld_exp_empty?yld_cnt? 
 
+* all function in sched.c
+** task_rq_unlock()
+** task_rq_lock()
+#+BEGIN_EXAMPLE
+we can safely lookup the task_rq without explicitly disabling preemption.
+禁止中断不是就已经禁止抢占了吗？
+
+   repeat_lock_task:
+	local_irq_save(*flags);
+	rq = task_rq(p);
+	spin_lock(&rq->lock);
+	if (unlikely(rq != task_rq(p))) {
+		spin_unlock_irqrestore(&rq->lock, *flags);
+		goto repeat_lock_task;
+	}
+	return rq;
+}
+#+END_EXAMPLE
+** show_schedstat()
+** schedstat_open()
+** schedstat_inc()
+** schedstat_add()
+** this_rq_lock()
+   :PROPERTIES:
+   和task_rq_lock()有什么区别？只在sys_sched_yield()调用
+   :END:
+** cpu_and_siblings_are_idle()
+- are idle then return 1
+** void sched_info_dequeued()
+- set last_queued. when task hit the cpu, set it to 0.
+
+** sched_info_arrive()
+- Called when a task finally hits the cpu.
+- Calculate how long it was waiting to run.
+
+** sched_info_queued()
+- Called when a process is queued into either the active or expired array.
+- It is unusual but not impossible for tasks to be dequeued and immediately
+  requeued in the same or another array: this can happen in sched_yield(),
+  set_user_nice(), and even load_balance() as it moves tasks from runqueue
+  to runqueue.
+- only called by enqueue_task().
+- It is unusual but not impossible for tasks to be dequeued and immediately
+  requeued in the same or another array: this can happen in sched_yield(),
+  set_user_nice(), and even load_balance() as it moves tasks from runqueue
+  to runqueue.
+
+** sched_info_depart()
+- Called when a process ceases being the active-running process, either
+  voluntarily or involuntarily.
+- update the sched_info.cpu_time.
+
+** sched_info_switch()
+- Called when tasks are switched involuntarily due, typically, to expiring
+  their time slice. only called by schedule()
+- We are only called when prev != next.
+
+** dequeue_task()
+
+** enqueue_task()
+
+** requeue_task()
+- Put task to the end of the run list without the overhead of dequeue
+  followed by enqueue.
+
+** enqueue_task_head()
+
+** __activate_task()
+- call enqueue_task()
+
+** __activate_idle_task()
+- move idle task to the _front_ of runqueue.
+- calls enqueue_task_head()
+
+** activate_task()
+- move a task to the runqueue and do priority recalculation
+- 
