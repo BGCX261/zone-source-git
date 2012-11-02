@@ -3881,3 +3881,149 @@ printf(a[j][i])
 
 改函数的形参的维数一定要注意如果是把一个数组类型的改成非数组或指针类型的就要判断它是函数
 的输入还是输出。
+
+==============================[2012-10-31 三]==============================
+
+在开始绩效考核的时候还要讨论很多細节，如开会时间，但现在很多东西都是很自然的，万事开头难。
+
+==============================[2012-11-01 四]==============================
+
+模块化一个东西时，就要确定被模块的是什么，不但要关注模块内部函数之间的交互和输入和输出，更
+重要的是模块它对于其它模块的输入和输出，在模块化vp的时候还是很注意这个。
+
+
+/* compile error */
+void modify_pointer_content_10(const int array[1])
+{
+}
+
+
+int
+main(void)
+{
+	int a[10];
+
+	modify_pointer_content_10(a);
+
+	return 1;
+}
+
+数组元素个数不一样也可以传。
+
+
+/* compile error */
+void modify_pointer_content_10(const int *array)
+{
+	array[10] = 1;
+}
+这样是报错的：错误：向只读位置‘*(array + 40u)’赋值
+
+以下的程序居然不报越界。
+/* compile error */
+void modify_pointer_content_10(int array[1])
+{
+	array[10] = 1;
+}
+
+
+int
+main(void)
+{
+	int a[10];
+
+	modify_pointer_content_10(a);
+
+	return 1;
+}
+
+
+以下的程序报的是这样的错误modify_array.c:23:6: 附注：需要类型‘const int (*)[10]’，
+但实参的类型为‘int (*)[10]’ 
+可见int const array[10][10]被解析成了const int (*)[10]。
+/* compile error */
+void modify_pointer_content_10(int const array[10][10])
+{
+	/* array[10] = 1; */
+}
+
+
+int
+main(void)
+{
+	int a[10][10];
+
+	modify_pointer_content_10(a);
+
+	return 1;
+}
+
+
+以下的程序报的是这样的错误:modify_array.c:23:6: 附注：需要类型‘int (*)(const int *)’，但
+实参的类型为‘int (*)[10]’
+可见int (const *array)[10]被解析成了int (*)(const int *)。
+
+/* compile error */
+void modify_pointer_content_10(int (const *array)[10])
+{
+	
+	/* array[10] = 1; */
+}
+
+int
+main(void)
+{
+	int a[10][10];
+
+	modify_pointer_content_10(a);
+
+	return 1;
+}
+
+多维的数组是不能用const阻止来修改数组的内容的。
+
+void modify_pointer_content_10(int const array[10])
+可以
+void modify_pointer_content_10(int const array[10][10])
+不可以
+
+比较运算符是会做隐式转换的.C专家编程不熟啊。
+
+以下的程序是有警告的：
+警告：assignment discards ‘const’ qualifier from pointer target type
+void modify_pointer_content_10(int const array[10])
+{
+	int *a = array+1;
+
+}
+
+以下的程序是没有上面的那个警告的。
+void modify_pointer_content_10(int const array[10])
+{
+	int const *a = array+1;
+
+	/* a = array+1; */
+	/* a = 1; */
+}
+
+以下的程序也是有以上的警告的。还是骗不过编译器的啊。
+void modify_pointer_content_10(int const array[10])
+{
+	int const *a = array+1;
+	int *b;
+
+	b = a+1;
+	/* a = array+1; */
+	/* a = 1; */
+}
+
+
+==============================[2012-11-02 五]==============================
+
+semaphore.h中有LOCK指令：
+http://stackoverflow.com/questions/8891067/what-does-the-lock-instruction-mean-in-x86-assembly
+    LOCK is not an instruction itself: it is an instruction prefix, which applies to the following instruction. That instruction must be something that does a read-modify-write on memory (INC, XCHG, CMPXCHG etc.) --- in this case it is the incl (%ecx) instruction which increments the long word at the address held in the ecx register.
+
+    The LOCK prefix ensures that the CPU has exclusive ownership of the appropriate cache line for the duration of the operation, and provides certain additional ordering guarantees. This may be achieved by asserting a bus lock, but the CPU will avoid this where possible. If the bus is locked then it is only for the duration of the locked instruction.
+
+    This code copies the address of the variable to be incremented off the stack into the ecx register, then it does lock incl (%ecx) to atomically increment that variable by 1. The next two instructions set the eax register (which holds the return value from the function) to 0 if the new value of the variable is 0, and 1 otherwise. The operation is an increment, not an add (hence the name).
+

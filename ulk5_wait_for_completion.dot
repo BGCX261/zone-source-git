@@ -1,0 +1,35 @@
+digraph wait_for_completion{
+        label="completion";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		might_sleep[label="might_sleep()"];
+		spin_lock_irq_1[label="spin_lock_irq()"];
+		done_null_1;
+		done_null_2;
+		create_ex_wq;
+		__add_wait_queue_tail[label="__add_wait_queue_tail()"];
+		set_UNINTERRUPTIBLE;
+		spin_unlock_irq_1[label="spin_unlock_irq()"];
+		schedule[label="schedule()"];
+		spin_lock_irq_2[label="spin_lock_irq()"];
+		__remove_wait_queue[label="__remove_wait_queue()"];
+		dec_done;
+		spin_unlock_irq_2[label="spin_unlock_irq()"];
+		
+		might_sleep -> spin_lock_irq_1;
+		spin_lock_irq_1 -> done_null_1;
+		done_null_1 -> create_ex_wq[color=red];
+		create_ex_wq -> __add_wait_queue_tail;
+		__add_wait_queue_tail -> set_UNINTERRUPTIBLE;
+		set_UNINTERRUPTIBLE -> spin_unlock_irq_1;
+		spin_unlock_irq_1 -> schedule;
+		schedule -> spin_lock_irq_2;
+		spin_lock_irq_2 -> done_null_2;
+		done_null_2 -> set_UNINTERRUPTIBLE:w[color=red];
+		done_null_2 -> __remove_wait_queue;
+		__remove_wait_queue -> dec_done;
+		done_null_1 -> dec_done;
+		dec_done -> spin_unlock_irq_2;
+}

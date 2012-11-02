@@ -384,6 +384,7 @@ static void recalc_task_prio(task_t *p, unsigned long long now)
 1. in exiting and in atomic then dump
 	 :PROPERTIES:
 	 task's stat is represented by bit.
+   this will happen with do_exit() calls schedule(), but in atomic.
      :END:
 2. prifile_hit()
 3. preempt_disable(), release_kernel_lock(), this_rq()
@@ -391,7 +392,7 @@ static void recalc_task_prio(task_t *p, unsigned long long now)
 5. check kernel lock
 6. idle thread is not allowed to schedule, dump_stack()
 7. get run_time, sched_clock()-prev->timestamp
-8. limit in 1s
+8. limit in 1s(MAX_SLEEP_AVG) if the defalut timeslice is 100ms
 
    :PROPERTIES:
    why is 1s?
@@ -706,3 +707,6 @@ we can safely lookup the task_rq without explicitly disabling preemption.
 ** activate_task()
 - move a task to the runqueue and do priority recalculation
 - 
+
+** deactivate_task()
+- remove a task from the runqueue.

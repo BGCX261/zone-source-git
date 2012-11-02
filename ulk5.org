@@ -250,3 +250,11 @@
 - cache\_chain\_sem
 
 *** -5.4.4 Inode信号量
+
+* other
+- The real difference between completions and semaphores is how the
+  spin lock included in the wait queue is used. In completions, the
+  spin lock is used to ensure that complete( ) and
+  wait_for_completion( ) cannot execute concurrently. In semaphores,
+  the spin lock is used to avoid letting concurrent down( )'s
+  functions mess up the semaphore data structure.
