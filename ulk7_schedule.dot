@@ -3,10 +3,21 @@ digraph ulk7_schedule{
         size="10,18";
         ratio=filled;
         
-        node[style=filled,shape=box,fillcolor=gray];
-        preempt;
-        check_kernel_lock[label="check kernel lock"];
+		node[style=filled, shape = box, margin="0.05,0.005",
+			 height="0.1",width="0.1"];
+
+		exiting_atomic;
+		dump_stack[label="dump_stack()"];
+		dump_stack_1[label="dump_stack()"];
+		profile_hit[label="profile_hit()"];
+		preempt_disable[label="preempt_disable()"];
+		
+        release_kernel_lock[label="release_kernel_lock()"];
+		idle_running;
+		
         sched_clock[label="calc cpu time, limit in 1s"];
+		schedstat_inc_rq_sched_cnt;
+		
         disable_irq_lock[label="disalbe_irq, lock rq"];
         PF_DEAD[label="check PF_DEAD, set EXIT_DEAD"];
         deactivate_task[label="deactivate_task"];
@@ -29,8 +40,14 @@ digraph ulk7_schedule{
         barrier[label="barrier()"];
         finish_task_switch[label="finish_task_switch()"];
         
-        preempt -> check_kernel_lock;
-        check_kernel_lock -> sched_clock;
+		exiting_atomic -> dump_stack[color=red];
+		exiting_atomic -> profile_hit;
+		profile_hit -> preempt_disable;
+        preempt_disable -> release_kernel_lock;
+        release_kernel_lock -> idle_running;
+		idle_running -> schedstat_inc_rq_sched_cnt;
+		idle_running -> dump_stack_1[color=red];
+		schedstat_inc_rq_sched_cnt -> sched_clock;
         sched_clock -> disable_irq_lock;
         disable_irq_lock -> PF_DEAD;
         PF_DEAD -> deactivate_task[label="NOT TASK_RUNNINT\land not preempt in kernel mode"];

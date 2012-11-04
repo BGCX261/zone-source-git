@@ -1,0 +1,45 @@
+digraph down{
+        label="semphore down";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		down[label="down() (asm)"];
+		__down_failed[label="__down_failed()"];
+		__down[label="__down()"];
+
+		down -> __down_failed;
+		__down_failed -> __down;
+
+		subgraph cluster_down{
+				label="down()";
+
+				dec_count;
+				down_1[label="down() asm"];
+
+				dec_count -> down_1;
+		}
+
+		subgraph cluster___down_failed{
+				label="__donw_failed()";
+
+				__down_failed_1[label="__down_failed() asm"];
+				__down_1[label="__down()"];
+
+				__down_failed_1 -> __down_1;
+		}
+
+		subgraph cluster___down{
+				label="__down()";
+
+				set_UNINTERRUPTIBLE;
+				spin_lock_irqsave[label="spin_lock_irqsave()"];
+				add_wait_queue_exclusive_locked[label="spin_lock_irqsave()"];
+				inc_sem_sleepers;
+
+				
+				
+				
+		}
+}

@@ -1,0 +1,15 @@
+digraph completion{
+		label="semphore up";
+        size="10,18";
+        ratio=filled;
+
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		spin_lock_irqsave[label="spin_lock_irqsave()"];
+		__wake_up_common[label="__wake_up_common()"];
+		spin_unlock_irqrestroe[label="spin_unlock_irqrestroe"];
+
+		spin_lock_irqsave -> __wake_up_common;
+		__wake_up_common -> spin_unlock_irqrestroe;
+		
+		}

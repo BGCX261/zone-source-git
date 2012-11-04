@@ -1,0 +1,36 @@
+digraph up
+{
+        label="semphore up";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		up[label="up() (asm)"];
+		__up_wake[label="__up_wake() (asm)"];
+		__up[label="__up()"];
+		wake_up[label="wake_up()"];
+		
+		up ->__up_wake;
+		__up_wake -> __up;
+		__up -> wake_up;
+		
+		subgraph cluster_up
+		{
+				label="up()";
+				cluster_up_inc_counter[label="inc counter"];
+				cluster_up__up_wake[label="__up_wake asm"];
+				cluster_up_inc_counter -> cluster_up__up_wake;};
+				
+				subgraph cluster___up_wake{
+						label="__up_wake()";
+						// cluster___up_wake___up_wake[label="__up_wake"];
+						cluster___up[label="__up"];
+						// cluster___up_wake___up_wake -> cluster___up;
+						};
+						subgraph cluster___up{
+								label="__up()";
+								cluster___up_wake_up[label="wake_up()"];
+						};
+						
+				}
+				
