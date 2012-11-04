@@ -6,8 +6,8 @@ digraph wait_for_completion{
 		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
 		might_sleep[label="might_sleep()"];
 		spin_lock_irq_1[label="spin_lock_irq()"];
-		done_null_1;
-		done_null_2;
+		done_null_1[label="done_null"];
+		done_null_2[label="done_null"];
 		create_ex_wq;
 		__add_wait_queue_tail[label="__add_wait_queue_tail()"];
 		set_UNINTERRUPTIBLE;
