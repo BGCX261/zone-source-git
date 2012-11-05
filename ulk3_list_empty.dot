@@ -1,0 +1,9 @@
+digraph list_empty{
+        label="list_empty(head)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		head_next_head;
+}

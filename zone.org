@@ -4029,3 +4029,7 @@ http://stackoverflow.com/questions/8891067/what-does-the-lock-instruction-mean-i
 
     This code copies the address of the variable to be incremented off the stack into the ecx register, then it does lock incl (%ecx) to atomically increment that variable by 1. The next two instructions set the eax register (which holds the return value from the function) to 0 if the new value of the variable is 0, and 1 otherwise. The operation is an increment, not an add (hence the name).
 
+
+==============================[2012-11-05 一]==============================
+
+void 类型的返回值也可以有return;是为了return;

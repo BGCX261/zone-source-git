@@ -1,0 +1,13 @@
+digraph list_entry{
+		// Returns the address of the data structure of type t in which the list_head field that has the name m and the address p is included.
+		// list_entry(p,t,m)
+        label="list_entry(ptr, type, member) macro"; //		// type has the type of ptr, and its name is member in type. return type address.
+
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		
+		container_of;
+		
+}
