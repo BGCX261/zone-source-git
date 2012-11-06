@@ -206,3 +206,21 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
 struct list_head {
 	struct list_head *next, *prev;
 };
+
+/* include/linux/list.h */
+/*
+ * Double linked lists with a single pointer list head.
+ * Mostly useful for hash tables where the two pointer list head is
+ * too wasteful.
+ * You lose the ability to access the tail in O(1).
+ */
+
+struct hlist_head {
+	struct hlist_node *first;
+};
+
+struct hlist_node {
+	struct hlist_node *next, **pprev;
+};
+
+

@@ -4033,3 +4033,56 @@ http://stackoverflow.com/questions/8891067/what-does-the-lock-instruction-mean-i
 ==============================[2012-11-05 一]==============================
 
 void 类型的返回值也可以有return;是为了return;
+
+==============================[2012-11-06 二]==============================
+
+要结点指向子图，要用
+compound=true;
+
+居然忘记了calloc()
+
+malloc函数改成了
+if (!(ti_dat = rt_shm_malloc(TI_DATA,
+								 sizeof(struct ti_data)))
+		|| !(tif_para_cfg= rt_shm_malloc(TIF_PARA_CFG_ST,
+										 sizeof(struct tif_para_cfg_st)))
+		|| !(BT_DATA = rt_shm_malloc(BT_SHM,
+									 sizeof(struct BT_Struct)))
+		|| !(done_flag = rt_shm_malloc(DONE_FLAG_SHM,
+									   sizeof(struct done_flag_struct)))
+		|| !(WM_SHM_Data = rt_shm_malloc(WARNING_MESSAGE_SHM,
+										 sizeof(struct warnMessShmStruct)))
+		|| !(rec_len_cfg = rt_shm_malloc(REC_LEN_CFG_ST,
+										 sizeof(struct rec_len_cfg_st)))
+		|| !(do_dat = rt_shm_malloc(DO_DATA,
+									sizeof(struct do_data)))
+		|| !(do_set_cfg = rt_shm_malloc(DO_SET_CFG_ST,
+										sizeof(struct do_set_cfg_st)))
+		|| !(semBin = rt_shm_malloc(SEM_BIN_SHM,
+									sizeof(struct sem_bin_struct)))
+		|| !(proxyshm = rt_shm_malloc(PROXY_SHM,
+									  sizeof(struct proxy_struct)))
+		|| !(ky_dat = rt_shm_malloc(KY_DATA,
+									sizeof(struct ky_data)))
+		|| !(func_opt_cfg = rt_shm_malloc(FUNC_OPT_CFG_ST,
+										  sizeof(struct func_opt_cfg_st)))
+		|| !(t_set_cfg = rt_shm_malloc(T_SET_CFG_ST,
+									   sizeof(struct t_set_cfg_st)))
+		|| !(t_para_set_cfg = rt_shm_malloc(T_PARA_SET_CFG_ST,
+											sizeof (struct t_para_set_cfg_st)))
+		|| !(gui_act = rt_shm_malloc( GUI_ACT_ST,
+									  sizeof(struct gui_act_st)))
+		|| !(wdog_shm = rt_shm_malloc(WDOG_SHM,
+									  sizeof(struct wdog_struct)))
+		|| !(t_ot_data = rt_shm_malloc(T_OT_DATA_SHM,
+									   sizeof(struct t_ot_data_shm)))
+		|| !(t_ot_result = rt_shm_malloc(T_OT_RESULT_SHM,
+										 sizeof(struct t_ot_result_shm)*TI_PORT_NUM))
+		|| !(gpc_dsgn = rt_shm_malloc(GPC_DSGN_ST,
+									  sizeof(struct gpc_dsgn_st)*TI_PORT_NUM)))
+	{
+		return 3;
+	}
+还是很好的。
+
+sha256sum Fedora-17-i386-DVD.iso 会生成一个sha码可能要用1，2分钟（4g）

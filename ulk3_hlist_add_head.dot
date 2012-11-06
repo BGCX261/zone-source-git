@@ -1,0 +1,40 @@
+digraph hlist_add_head{
+		label="hlist_add_head(struct hlist_node *n, struct hlist_head *h)";
+        size="10,18";
+        ratio=filled;
+        
+	node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+	compound=true;
+	edge[decorate=true];
+	
+
+	// h_first[label="h->first"];
+	// h_first_pprev[label="h->first->pprev"];
+	subgraph cluster_n{
+			label="n";
+			
+			n_next[label="next"];
+			n_pprev[label="pprve"];
+			
+	}
+	subgraph cluster_h
+	{
+			label="h";
+			h_first[label="first"];
+	}
+
+	subgraph cluster_h_first{
+			label="h_first";
+			h_first_next[label="next"];
+			h_first_pprev[label="pprev"];
+	}
+	
+	n_next -> h_first_next[lhead=cluster_h_first];
+	h_first_pprev -> n_next[label="&"];
+	h_first -> h_first_next[lhead=cluster_h_first, color=red];
+	h_first -> n_next[lhead=cluster_n];
+	n_pprev -> h_first[label="&"];
+	h_first_pprev -> h_first[label="&", color=red];
+
+}
+

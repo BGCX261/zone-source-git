@@ -1,0 +1,12 @@
+digraph hlist_add_head{
+		label="hlist_empty(const struct hlist_head *h)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		compound=true;
+		edge[decorate=true];
+
+		not_h_first;
+		
+		}

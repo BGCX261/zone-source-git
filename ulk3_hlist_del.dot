@@ -1,0 +1,29 @@
+digraph hlist_add_head{
+		label="hlist_del(struct hlist_node *n)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		compound=true;
+		edge[decorate=true];
+
+		n_next_to_LIST_POISON1;
+		n_pprev_to_LIST_POISON2;
+		
+		subgraph cluster___hlist_del{
+				label="__hlist_del(n)";
+				
+				n_pprev_pointer_to_n_next;
+				n_next_not_null;
+				n_next_pprev_to_n_pprev;
+
+				n_pprev_pointer_to_n_next -> n_next_not_null;
+				n_next_not_null -> n_next_pprev_to_n_pprev;
+		}
+
+		n_next_not_null -> n_next_to_LIST_POISON1[color=red];
+		
+		n_next_pprev_to_n_pprev -> n_next_to_LIST_POISON1[ltail=cluster___hlist_del];
+		n_next_to_LIST_POISON1 -> n_pprev_to_LIST_POISON2;
+}
