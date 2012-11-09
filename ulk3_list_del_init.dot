@@ -1,0 +1,12 @@
+digraph list_del_init{
+        label="list_del_init(entry)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		__list_del[label="__list_del()"];
+		INIT_LIST_HEAD[label="INIT_LIST_HEAD()"];
+
+		__list_del -> INIT_LIST_HEAD;
+}

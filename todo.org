@@ -9,3 +9,6 @@
 ** TODO install chrome
 ** TODO pidmap_array
 ** TODO ln enviroment
+
+* [2012-11-08 四]
+** TODO linux 电路设计,单片机开发。

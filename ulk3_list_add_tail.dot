@@ -1,4 +1,5 @@
 digraph list_add_tail{
+		// 之所以名字有tail是因为第二个参数被认为是链表的头。
         label="list_add_tail()";
         size="10,18";
         ratio=filled;

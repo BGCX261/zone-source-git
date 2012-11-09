@@ -1,0 +1,13 @@
+digraph hlist_for_each_entry{
+        label="hlist_for_each_entry(tpos, pos, head, member) macro";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		
+		for[label="	for (pos = (head)->first;
+	     pos && ({ prefetch(pos->next); 1;}) &&
+		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;});
+	     pos = pos->next)"];
+		
+}

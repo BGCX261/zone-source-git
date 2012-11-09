@@ -1,0 +1,18 @@
+digraph enqueue_task{
+        label="enqueue_task(struct task_struct *p, prio_array_t *array)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		sched_info_queued[label="sched_info_queued()"];
+		list_add_tail[label="list_add_tail(&p->run_list, array->queue + p->prio)"];
+		__set_bit[label="__set_bit(p->prio, array->bitmap)"];
+		array_nr_active_inc;
+		p_array_array[label="p->array = array"];
+
+		sched_info_queued -> list_add_tail;
+		list_add_tail -> __set_bit;
+		__set_bit -> array_nr_active_inc;
+		array_nr_active_inc -> p_array_array;
+}

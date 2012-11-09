@@ -1,0 +1,10 @@
+digraph find_pid{
+        label="find_pid(enum pid_type type, int nr)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		hlist_for_each_entry[label="]hlist_for_each_entry(pid, elem,
+		&pid_hash[type][pid_hashfn(nr);"];
+}

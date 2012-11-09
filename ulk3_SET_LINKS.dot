@@ -1,0 +1,16 @@
+digraph SET_LINKS{
+        label="SET_LINKS(p)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		
+		thread_group_leader[label="thread_group_leader()"];
+		list_add_tail[label="list_add_tail()\ladd task to tail of task list"];
+		add_parent[label="add_parent()\ladd task to the head of his parent's childen list"];
+
+		thread_group_leader -> list_add_tail[label="is thread group_leader"];
+		thread_group_leader -> add_parent;
+		list_add_tail -> add_parent;
+		
+}

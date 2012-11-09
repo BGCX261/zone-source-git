@@ -9,7 +9,7 @@ struct task_struct {
 	int lock_depth;		/* BKL lock depth */
 
 	int prio, static_prio;
-	struct list_head run_list;
+	struct list_head run_list;	/* where the process is in the run list. */
 	prio_array_t *array;
 
 	unsigned long sleep_avg;
@@ -25,13 +25,23 @@ struct task_struct {
 	struct sched_info sched_info;
 #endif
 
-	struct list_head tasks;
+	struct list_head tasks;		/**
+								   process list
+								*/
 	/*
 	 * ptrace_list/ptrace_children forms the list of my children
 	 * that were stolen by a ptracer.
 	 */
-	struct list_head ptrace_children;
-	struct list_head ptrace_list;
+	struct list_head ptrace_children; /**
+									   The head of a list containing all
+									   children of P being traced by a debugger
+									  */
+	struct list_head ptrace_list; /**
+								   The pointers to the next and previous
+								   elements in the real parent's list of
+								   traced processes (used when P is being
+								   traced)
+								  */
 
 	struct mm_struct *mm, *active_mm;
 
@@ -44,7 +54,9 @@ struct task_struct {
 	unsigned long personality;
 	unsigned did_exec:1;
 	pid_t pid;
-	pid_t tgid;
+	pid_t tgid;					/**
+								   PID of the thread group leader of P
+								 */
 	/* 
 	 * pointers to (original) parent process, youngest child, younger sibling,
 	 * older sibling, respectively.  (p->father can be replaced with 
@@ -223,4 +235,129 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
+struct prio_array {
+	unsigned int nr_active;
+	unsigned long bitmap[BITMAP_SIZE];
+	struct list_head queue[MAX_PRIO];
+};
 
+
+/*
+ * NOTE! "signal_struct" does not have it's own
+ * locking, because a shared signal_struct always
+ * implies a shared sighand_struct, so locking
+ * sighand_struct is always a proper superset of
+ * the locking of signal_struct.
+ */
+struct signal_struct {
+	atomic_t		count;
+	atomic_t		live;
+
+	wait_queue_head_t	wait_chldexit;	/* for wait4() */
+
+	/* current thread group signal load-balancing target: */
+	task_t			*curr_target;
+
+	/* shared signal handling: */
+	struct sigpending	shared_pending;
+
+	/* thread group exit support */
+	int			group_exit_code;
+	/* overloaded:
+	 * - notify group_exit_task when ->count is equal to notify_count
+	 * - everyone except group_exit_task is stopped during signal delivery
+	 *   of fatal signals, group_exit_task processes the signal.
+	 */
+	struct task_struct	*group_exit_task;
+	int			notify_count;
+
+	/* thread group stop support, overloads group_exit_code too */
+	int			group_stop_count;
+	unsigned int		flags; /* see SIGNAL_* flags below */
+
+	/* POSIX.1b Interval Timers */
+	struct list_head posix_timers;
+
+	/* ITIMER_REAL timer for the process */
+	struct timer_list real_timer;
+	unsigned long it_real_value, it_real_incr;
+
+	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
+	cputime_t it_prof_expires, it_virt_expires;
+	cputime_t it_prof_incr, it_virt_incr;
+
+	/* job control IDs */
+	pid_t pgrp;					/**
+								 PID of the group leader of P
+								 */
+	pid_t tty_old_pgrp;
+	pid_t session;				/**
+								 PID of the login session leader of P
+								*/
+	/* boolean value for session group leader */
+	int leader;
+
+	struct tty_struct *tty; /* NULL if no tty */
+
+	/*
+	 * Cumulative resource counters for dead threads in the group,
+	 * and for reaped dead child processes forked by this group.
+	 * Live threads maintain their own counters and add to these
+	 * in __exit_signal, except for the group leader.
+	 */
+	cputime_t utime, stime, cutime, cstime;
+	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
+	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+
+	/*
+	 * Cumulative ns of scheduled CPU time for dead threads in the
+	 * group, not including a zombie group leader.  (This only differs
+	 * from jiffies_to_ns(utime + stime) if sched_clock uses something
+	 * other than jiffies.)
+	 */
+	unsigned long long sched_time;
+
+	/*
+	 * We don't bother to synchronize most readers of this at all,
+	 * because there is no reader checking a limit that actually needs
+	 * to get both rlim_cur and rlim_max atomically, and either one
+	 * alone is a single word that can safely be read normally.
+	 * getrlimit/setrlimit use task_lock(current->group_leader) to
+	 * protect this instead of the siglock, because they really
+	 * have no need to disable irqs.
+	 */
+	struct rlimit rlim[RLIM_NLIMITS];
+
+	struct list_head cpu_timers[3];
+
+	/* keep the process-shared keyrings here so that they do the right
+	 * thing in threads created with CLONE_THREAD */
+#ifdef CONFIG_KEYS
+	struct key *session_keyring;	/* keyring inherited over fork */
+	struct key *process_keyring;	/* keyring private to this process */
+#endif
+};
+
+/* 这样定义MAX的 */
+enum pid_type
+{
+	PIDTYPE_PID,
+	PIDTYPE_TGID,
+	PIDTYPE_PGID,
+	PIDTYPE_SID,
+	PIDTYPE_MAX
+};
+
+/* task_struct->pids */
+struct pid
+{
+	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
+	int nr;						/**
+								 The PID number
+								*/
+	struct hlist_node pid_chain;
+	/* list of pids with the same nr, only one of them is in the hash */
+	struct list_head pid_list;
+};
+
+static struct hlist_head *pid_hash[PIDTYPE_MAX];

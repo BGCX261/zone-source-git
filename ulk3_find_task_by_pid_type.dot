@@ -1,0 +1,9 @@
+digraph find_task_by_pid_type{
+        label="find_task_by_pid_type(int type, int nr)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		
+}

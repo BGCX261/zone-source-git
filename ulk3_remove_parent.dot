@@ -1,0 +1,9 @@
+digraph remove_parent{
+        label="remove_parent(p) marco";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		list_del_init[label="list_del_init()\lp->sibling"]
+}

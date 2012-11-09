@@ -1,0 +1,14 @@
+digraph do_while_each_task_pid{
+        label="do_each_task_pid(who, type, task),\l
+		while_each_task_pid(who, type, task)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		do[label="]find_task_by_pid_type(type, who)"];
+		while[label="pid_task((task)->pids[type].pid_list.next, type)\l
+		hlist_unhashed(&(task)->pids[type].pid_chain)"];
+
+		do -> while;
+}

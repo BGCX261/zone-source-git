@@ -1,0 +1,16 @@
+digraph hash_long{
+        label="hash_long(unsigned long val, unsigned int bits)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		_64bit;
+		shift_minus;
+		mutiple_GOLDEN_RATIO_PRIME;
+		shift_bits;
+
+		_64bit -> shift_minus[label="yes"];
+		shift_minus -> shift_bits;
+		_64bit -> mutiple_GOLDEN_RATIO_PRIME;
+}

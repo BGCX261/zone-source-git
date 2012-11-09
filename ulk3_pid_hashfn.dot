@@ -1,0 +1,9 @@
+digraph pid_hashfn{
+        label="pid_hashfn(x) macro";
+        size="10,18";
+        ratio=filled;
+        
+	node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+	hash_long[label="hash_long((unsigned long) x, pidhash_shift)"];
+	}

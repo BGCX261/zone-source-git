@@ -1,0 +1,19 @@
+digraph dequeue_task{
+        label="dequeue_task(struct task_struct *p, prio_array_t *array)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		array_nr_active_dec;
+		list_del[label="list_del()"];
+		list_empty[label="list_empty(array->queue + p->prio)"];
+		__clear_bit[label="__clear_bit(p->prio, array->bitmap)"];
+		end;
+
+		array_nr_active_dec -> list_del;
+		list_del -> list_empty;
+		list_empty -> __clear_bit[label="is empty"];
+		list_empty -> end;
+		__clear_bit -> end;
+}
