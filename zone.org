@@ -3998,7 +3998,8 @@ void modify_pointer_content_10(int const array[10])
 
 }
 
-以下的程序是没有上面的那个警告的。
+以下的程
+序是没有上面的那个警告的。
 void modify_pointer_content_10(int const array[10])
 {
 	int const *a = array+1;
@@ -4106,3 +4107,17 @@ sha256sum Fedora-17-i386-DVD.iso 会生成一个sha码可能要用1，2分钟（
 linux内核有很多这样的do{}while(0);为什么要这样做呢？
 
 RTAI的一个周期内是不可以写文件的。
+
+==============================[2012-11-12 一]==============================
+
+dot也可以用senator-complete就是
+C-c , TAB	senator-complete-symbol
+C-c , SPC	senator-completion-menu-popup
+
+dired没有创建文件的快捷键。
+
+去掉全局变量时是先把全局变量马上改为局部的还是先把别去掉全局变量而是一个一个函数不使用全局
+变量而是使用参数将全局变量传入，一个函数改好就测试一个，这样更保险。这样的话就要注意修改完成
+后的那些不是用指针传入的参数了，以防退出函数后没被修改成功。
+
+去全局变量最怕函数嵌套调用。

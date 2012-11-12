@@ -1,0 +1,24 @@
+digraph find_task_by_pid_type{
+        label="attach_pid(task_t *task, enum pid_type type, int nr)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		find_pid[label="find_pid(type, nr);"];
+		pid_null;
+		hlist_add_heade[label="hlist_add_head(&task_pid->pid_chain,\l&pid_hash[type][pid_hashfn(nr)]);"];
+		INIT_LIST_HEAD[label="NIT_LIST_HEAD(&task_pid->pid_list);"];
+		INIT_HLIST_NODE[label="INIT_HLIST_NODE(&task_pid->pid_chain);"];
+		list_add_tail[label="list_add_tail(&task_pid->pid_list, &pid->pid_list);"];
+		update_pid_nr;
+
+		find_pid -> pid_null;
+		pid_null -> hlist_add_heade[label="null"];
+		hlist_add_heade -> INIT_LIST_HEAD;
+		pid_null -> INIT_HLIST_NODE;
+		INIT_HLIST_NODE -> list_add_tail;
+
+		INIT_LIST_HEAD -> update_pid_nr;
+		list_add_tail -> update_pid_nr;
+}

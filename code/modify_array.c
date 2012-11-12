@@ -20,12 +20,13 @@
 
 
 /* compile error */
-void modify_pointer_content_10(int const array[10])
+void modify_pointer_content_10(const int *const array)
 {
-	int const *a = array+1;
+	/* int *a = array+1; */
 	int *b;
 
-	b = a+1;
+	/* b = a+1; */
+	array[1] = 1;
 	/* a = array+1; */
 	/* a = 1; */
 }

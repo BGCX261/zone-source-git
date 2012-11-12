@@ -1,0 +1,9 @@
+digraph detach_pid__detach_pid{
+        label="detach_pid__detach_pid(task_t *task, enum pid_type type)";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		pid_list_not_null[label="__detach_pid(task, type);"];
+		
+		}

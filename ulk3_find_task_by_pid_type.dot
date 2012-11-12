@@ -5,5 +5,7 @@ digraph find_task_by_pid_type{
         
 		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
 
-		
+		find_pid[label="find_pid(type, nr)"];
+		pid_null;
+		pid_task[label="pid_task(&pid->pid_list, type)"];
 }

@@ -1,0 +1,30 @@
+digraph __detach_pid{
+        label="__detach_pid(task_t *task, enum pid_type type)";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		hlist_unhashed[label="hlist_unhashed(&pid->pid_chain)"];
+		hlist_del[label="hlist_del(&pid->pid_chain);"];
+		list_empty[label="list_empty(&pid->pid_list)"];
+		get_pid_nr;
+		list_entry[label="list_entry(pid->pid_list.next,struct pid, pid_list);"];
+		hlist_add_head[label="hlist_add_head(&pid_next->pid_chain,&pid_hash[type][pid_hashfn(pid_next->nr)]);"];
+		list_del[label="list_del(&pid->pid_list);"];
+		set_pid_nr;
+		
+		return_nr;
+
+		hlist_unhashed -> hlist_del[label="hash"];
+		hlist_del -> list_empty;
+		list_empty -> get_pid_nr[label="empty"];
+		get_pid_nr -> list_del;
+		list_del -> set_pid_nr;
+		set_pid_nr -> return_nr;
+		list_empty -> list_entry;
+		list_entry -> hlist_add_head[label="insert next pid from pid_list to hash"];
+		hlist_add_head -> list_del;
+
+		hlist_unhashed -> list_del;
+		
+}
