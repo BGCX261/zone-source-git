@@ -1,0 +1,10 @@
+digraph wake_up_nr{
+        label="wake_up(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, void *key)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		wake_up_nr[label="__wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, 0, NULL)"];
+		
+		}

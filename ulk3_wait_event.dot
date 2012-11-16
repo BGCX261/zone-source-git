@@ -1,0 +1,13 @@
+digraph wait_event{
+        label="wait_event(wq, condition)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		condition_null;
+		__wait_event[label="__wait_event(wq, condition);"];
+
+		condition_null -> __wait_event[label="null"];
+		
+		}

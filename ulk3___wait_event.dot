@@ -1,0 +1,18 @@
+digraph __wait_event{
+        label="__wait_event(wq, condition)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		DEFINE_WAIT[label="DEFINE_WAIT(__wait);"];
+		prepare_to_wait[label="prepare_to_wait(&wq, &__wait, TASK_UNINTERRUPTIBLE);"];
+		condition_null[label="condition_null"];
+		schedule[label="schedule ()"];
+		finish_wait[label="finish_wait(&wq, &__wait);"];
+
+		DEFINE_WAIT -> prepare_to_wait;
+		prepare_to_wait -> condition_null;
+		condition_null -> schedule;
+		schedule -> finish_wait;
+}

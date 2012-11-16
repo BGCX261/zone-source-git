@@ -5,8 +5,8 @@ digraph list_del_init{
         
 		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
 
-		__list_del[label="__list_del()"];
-		INIT_LIST_HEAD[label="INIT_LIST_HEAD()"];
+		__list_del[label="__list_del(entry->prev, entry->next);;"];
+		INIT_LIST_HEAD[label="INIT_LIST_HEAD(entry);"];
 
 		__list_del -> INIT_LIST_HEAD;
 }

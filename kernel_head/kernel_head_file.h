@@ -361,3 +361,56 @@ struct pid
 };
 
 static struct hlist_head *pid_hash[PIDTYPE_MAX];
+
+
+struct __wait_queue_head {
+	spinlock_t lock;
+	struct list_head task_list;
+};
+typedef struct __wait_queue_head wait_queue_head_t;
+
+
+struct __wait_queue {
+	unsigned int flags;			/* 1 - exclusive; 0 - nonexclusive */
+#define WQ_FLAG_EXCLUSIVE	0x01
+	struct task_struct * task;
+	wait_queue_func_t func;		/* used to specify how the processes sleeping
+								   in the wait queue should be woken up. */
+	struct list_head task_list;
+};
+
+
+/*
+ * cloning flags:
+ */
+#define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
+#define CLONE_VM	0x00000100	/* set if VM shared between processes */
+#define CLONE_FS	0x00000200	/* set if fs info shared between processes */
+#define CLONE_FILES	0x00000400	/* set if open files shared between processes */
+#define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
+#define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
+#define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
+#define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
+#define CLONE_THREAD	0x00010000	/* Same thread group? */
+#define CLONE_NEWNS	0x00020000	/* New namespace group? */
+#define CLONE_SYSVSEM	0x00040000	/* share system V SEM_UNDO semantics */
+#define CLONE_SETTLS	0x00080000	/* create a new TLS for the child */
+#define CLONE_PARENT_SETTID	0x00100000	/* set the TID in the parent */
+#define CLONE_CHILD_CLEARTID	0x00200000	/* clear the TID in the child */
+#define CLONE_DETACHED		0x00400000	/* Unused, ignored */
+#define CLONE_UNTRACED		0x00800000	/* set if the tracing process can't force CLONE_PTRACE on this clone */
+#define CLONE_CHILD_SETTID	0x01000000	/* set the TID in the child */
+#define CLONE_STOPPED		0x02000000	/* Start in stopped state */
+
+
+
+/*
+ * PID-map pages start out as NULL, they get allocated upon
+ * first use and are never deallocated. This way a low pid_max
+ * value does not cause lots of bitmaps to be allocated, but
+ * the scheme scales to up to 4 million PIDs, runtime.
+ */
+typedef struct pidmap {
+	atomic_t nr_free;
+	void *page;
+} pidmap_t;

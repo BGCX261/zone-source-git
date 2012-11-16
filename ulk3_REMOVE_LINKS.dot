@@ -11,5 +11,5 @@ digraph list_REMOVE_LINKS{
 
 	thread_group_leader -> list_del_init[label="is thread group leader"];
 	list_del_init -> remove_parent;
-	
+	thread_group_leader -> remove_parent;
 }

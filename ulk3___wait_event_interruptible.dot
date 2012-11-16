@@ -1,0 +1,21 @@
+digraph __wait_event_interruptible{
+        label="__wait_event_interruptible(wq, condition)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		DEFINE_WAIT[label="DEFINE_WAIT(__wait);"];
+		prepare_to_wait[label="prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);"];
+		condition_null[label="condition_null"];
+		signal_pending[label="signal_pending(current)"];
+		schedule[label="schedule()"];
+		finish_wait[label="finish_wait(&wq, &__wait);"];
+
+		DEFINE_WAIT -> prepare_to_wait;
+		condition_null -> signal_pending[label="not null"];
+		signal_pending -> schedule[label="not signal"];
+		schedule -> prepare_to_wait;
+		schedule -> finish_wait[label=""];
+		
+		}

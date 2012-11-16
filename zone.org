@@ -4121,3 +4121,73 @@ dired没有创建文件的快捷键。
 后的那些不是用指针传入的参数了，以防退出函数后没被修改成功。
 
 去全局变量最怕函数嵌套调用。
+
+==============================[2012-11-13 二]==============================
+
+kernel:hash表中的pprev的值是前一个节点的的next域的地址，pprev是一个指针的指针。
+
+去掉全局变量时传参数要注意保留(rhyk)原来的参数，特别原来是把全局变量作为参数传入的很容易改错。
+
+*tick_sscontrol++;
+这样是先++再取地址。
+
+ps aux输出的内存是包括共享内存的。
+
+
+用cscope -q可以建立数据库来加快搜索。
+
+ulk 中一直说的per-PID list 原来是指struct pid 中的pid list域（有相同的pidx）
+
+与进程相关的链表有sibling, children, tasks, pid->pid_chain, pid->pid_list, array,
+
+以下的结果体赋值可以学着点：
+#define __WAIT_QUEUE_HEAD_INITIALIZER(name) {				\
+	.lock		= SPIN_LOCK_UNLOCKED,				\
+	.task_list	= { &(name).task_list, &(name).task_list } }
+
+
+==============================[2012-11-15 四]==============================
+
+sleep_on, sleep_on_interrupt, sleep_on_timeout, sleep_on_timeout_interrupt
+这些函数有很多语句是相同的，所以把那些相同的语句做成了三个宏。这可以学着点。
+
+git 可不可以查找历史版本中某一段代码没被修改过，不仅仅是一个文件。
+
+__wake_up_common里用实现唤醒所有进程的方法很巧妙--nr,nr为0就是唤醒所有了。
+
+==============================[2012-11-16 五]==============================
+
+The set of data that must be loaded into the registers before the process
+resumes its execution on the CPU is called the hardware context .
+
+The hardware context is a subset of the process execution context,
+which includes all information needed for the process execution.
+
+In Linux, a part of the hardware context of a process is stored in the
+process descriptor, while the remaining part is saved in the Kernel Mode
+stack.
+
+each process descriptor includes a field called thread of type
+thread_struct, in which the kernel saves the hardware context whenever
+the process is being switched out. As we'll see later, this data
+structure includes fields for most of the CPU registers, except the
+general-purpose registers such as eax, ebx, etc., which are stored in
+the Kernel Mode stack.
+
+	
+
+PUSH -- Push Operand onto the Stack
+pushl m32 Push memory dword	pushl m32
+
+第一个宏中的pushfl指令是把标志寄存器的值压栈。而popl是把栈顶的值（刚压
+入栈的flags）弹出到变量
+
+mini-buffer里也可以用搜索的。
+
+clone() fork()等等这些不能在内核源代码中找到声明
+
+==============================[2012-11-16 五]==============================
+
+看书笔记有书本，笔记原本，笔记补充本。三本一齐看。
+
+PIDMAP_ENTRIES这个宏定义是指所有的pid位图一共占了多少个页框。

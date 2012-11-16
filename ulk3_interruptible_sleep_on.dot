@@ -1,0 +1,28 @@
+digraph interruptible_sleep_on_timeout{
+        label="interruptible_sleep_on(wait_queue_head_t *q)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		
+		init_waitqueue_entry[label="init_waitqueue_entry(&wait, current);"];
+		set_INTERRUPTIBLE[label="set_INTERRUPTIBLE"];
+		spin_lock_irqsave_1[label="spin_lock_irqsave(&q->lock,flags);"];
+		__add_wait_queue[label="__add_wait_queue(q, &wait);"];
+		spin_unlock_1[label="spin_unlock_restore(&q->lock);"];
+		schedule[label="schedule()"];
+		spin_lock_irqsave_2[label="spin_lock_irqsave(&q->lock,flags);"];
+		spin_unlock_2[label="spin_unlock(&q->lock);"];
+		__remove_wait_queue[label="__remove_wait_queue(q, &wait);"];
+
+
+		init_waitqueue_entry -> set_INTERRUPTIBLE;
+		set_INTERRUPTIBLE -> spin_lock_irqsave_1;
+		spin_lock_irqsave_1 -> __add_wait_queue;
+		__add_wait_queue -> spin_unlock_1;
+		spin_unlock_1 -> schedule;
+		schedule -> spin_lock_irqsave_2;
+		spin_lock_irqsave_2 -> __remove_wait_queue;
+		__remove_wait_queue -> spin_unlock_2;
+}

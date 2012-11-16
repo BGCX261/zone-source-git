@@ -1,0 +1,24 @@
+digraph prepare_to_wait_exclusive{
+        label="prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		set_ex;
+		spin_lock_irqsave[label="spin_lock_irqsave(&q->lock, flags);"];
+		list_empty[label="list_empty(&wait->task_list)"];
+		__add_wait_queue[label="__add_wait_queue(q, wait);"];
+		is_sync_wait[label="is_sync_wait(wait)"];
+		set_current_state[label="set_current_state(state);"];
+		spin_unlock_irqrestore[label="spin_unlock_irqrestore(&q->lock, flags);"];
+
+		set_non_ex -> spin_lock_irqsave;
+		spin_lock_irqsave -> list_empty;
+		list_empty -> __add_wait_queue[label="empty"];
+		__add_wait_queue -> is_sync_wait;
+		is_sync_wait -> set_current_state[label="sync"];
+		set_current_state -> spin_unlock_irqrestore;
+		list_empty -> is_sync_wait;
+		is_sync_wait -> spin_unlock_irqrestore;
+}

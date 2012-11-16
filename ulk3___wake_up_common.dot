@@ -1,0 +1,23 @@
+digraph __wake_up_common{
+        label="__wake_up_common(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, int sync, void *key)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		
+		list_for_each_safe[label="list_for_each_safe(tmp, next, &q->task_list)"];
+		list_entry[label="list_entry(tmp, wait_queue_t, task_list);"];
+		wake_up_success[label="curr->func(curr, mode, sync, key)"];
+		flags_WQ_FLAG_EXCLUSIVE[label="flags & WQ_FLAG_EXCLUSIVE"];
+		nr[label="!--nr_exclusive"];
+
+		list_for_each_safe -> list_entry;
+		list_entry -> wake_up_success;
+		wake_up_success -> flags_WQ_FLAG_EXCLUSIVE[label="true"];
+		wake_up_success -> list_for_each_safe[label="flase"];
+		flags_WQ_FLAG_EXCLUSIVE -> nr[label="true"];
+		flags_WQ_FLAG_EXCLUSIVE -> list_for_each_safe[label="flase"];
+		nr -> end[label="true"];
+		nr -> list_for_each_safe[label="flase"];
+}

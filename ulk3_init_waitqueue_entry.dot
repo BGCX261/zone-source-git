@@ -1,0 +1,14 @@
+digraph init_waitqueue_entry{
+        label="init_waitqueue_entry(wait_queue_t *q, struct task_struct *p)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		flags_0;
+		task_p;
+		func_default_wake_function;
+
+		flags_0 -> task_p;
+		task_p -> func_default_wake_function;
+}

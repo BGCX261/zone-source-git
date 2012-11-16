@@ -1,0 +1,10 @@
+digraph init_waitqueue_head{
+        label="static inline void init_waitqueue_head(wait_queue_head_t *q)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		spin_lock_init[label="spin_lock_init(&q->lock);"];
+		INIT_LIST_HEAD[label="INIT_LIST_HEAD(&q->task_list);"];
+}

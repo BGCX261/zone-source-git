@@ -1,0 +1,13 @@
+digraph autoremove_wake_function{
+        label="int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		default_wake_function[label="default_wake_function(wait, mode, sync, key)"];
+		list_del_init[label="list_del_init(&wait->task_list);"];
+
+		default_wake_function -> list_del_init;
+		
+}

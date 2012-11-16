@@ -1,0 +1,15 @@
+digraph init_waitqueue_func_entry{
+        label="init_waitqueue_func_entry(wait_queue_t *q,
+					wait_queue_func_t func)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		flags_0;
+		task_null;
+		func_func;
+
+		flags_0 -> task_null;
+		task_null -> func_func;
+		}

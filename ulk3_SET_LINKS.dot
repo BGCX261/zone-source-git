@@ -12,5 +12,4 @@ digraph SET_LINKS{
 		thread_group_leader -> list_add_tail[label="is thread group_leader"];
 		thread_group_leader -> add_parent;
 		list_add_tail -> add_parent;
-		
 }

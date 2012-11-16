@@ -1,0 +1,32 @@
+digraph fork_traceflag{
+        label="int fork_traceflag (unsigned clone_flags)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		CLONE_UNTRACED[label="CLONE_UNTRACED"];
+		CLONE_VFORK[label="CLONE_VFORK"];
+		current_PT_TRACE_VFORK[label="current_PT_TRACE_VFORK"];
+		not_SIGCHLD[label="not_SIGCHLD"];
+		current_PT_TRACE_CLONE[label="current_PT_TRACE_CLONE"];
+		current_PT_TRACE_FORK[label="current_PT_TRACE_FORK"];
+		return_0_1[label="return_0"];
+		return_0_2[label="return_0"];
+		return_PTRACE_EVENT_VFORK[label="return_PTRACE_EVENT_VFORK"];
+		return_PTRACE_EVENT_CLONE[label="return_PTRACE_EVENT_CLONE"];
+		return_PTRACE_EVENT_FORK[label="return_PTRACE_EVENT_FORK"];
+
+		CLONE_UNTRACED -> return_0_1[label="ture"];
+		CLONE_UNTRACED -> CLONE_VFORK[label="false"];
+		CLONE_VFORK -> current_PT_TRACE_VFORK[label="ture"];
+		CLONE_VFORK -> not_SIGCHLD[label="false"];
+		current_PT_TRACE_VFORK -> return_PTRACE_EVENT_VFORK[label="ture"];
+		current_PT_TRACE_VFORK -> not_SIGCHLD[label="false"];
+		not_SIGCHLD -> current_PT_TRACE_CLONE[label="ture"];
+		not_SIGCHLD -> current_PT_TRACE_FORK[label="falsee"];
+		current_PT_TRACE_CLONE -> return_PTRACE_EVENT_CLONE[label="ture"];
+		current_PT_TRACE_CLONE -> current_PT_TRACE_FORK[label="false"];
+		current_PT_TRACE_FORK -> return_PTRACE_EVENT_FORK[label="ture"];
+		current_PT_TRACE_FORK -> return_0_2[label="false"];
+}

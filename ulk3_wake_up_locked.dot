@@ -1,0 +1,9 @@
+digraph wake_up_locked{
+        label="wake_up_locked(x)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		__wake_up[label="__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)"];
+}

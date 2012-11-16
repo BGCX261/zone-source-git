@@ -1,0 +1,24 @@
+digraph sys_clone{
+        label="int sys_clone(struct pt_regs regs)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		get_clone_flags[label="get_clone_flags"];
+		get_newsp_ecx[label="get_newsp_ecx"];
+		get_parent_tidptr[label="get_parent_tidptr"];
+		get_child_tidptr[label="get_child_tidptr"];
+		newsp_null[label="newsp_null"];
+		get_newsp_esp[label="get_newsp_esp"];
+		do_fork[label="do_fork(clone_flags, newsp, &regs, 0, parent_tidptr, child_tidptr);"];
+
+		get_clone_flags -> get_newsp_ecx;
+		get_newsp_ecx -> get_parent_tidptr;
+		get_parent_tidptr -> get_child_tidptr;
+		get_child_tidptr -> newsp_null;
+		newsp_null -> get_newsp_esp[label="null"];
+		newsp_null -> do_fork;
+		get_newsp_esp -> do_fork;
+		
+}

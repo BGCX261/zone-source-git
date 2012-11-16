@@ -1,0 +1,16 @@
+digraph add_wait_queue_exclusive{
+        label="void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		
+		set_flags_last;
+		spin_lock_irqsave[label="spin_lock_irqsave"];
+		__add_wait_queue_tail[label="__add_wait_queue_tail(q, wait);"];
+		spin_unlock_irqrestore[label="spin_unlock_irqrestore"];
+
+		clear_flags_last -> spin_lock_irqsave;
+		spin_lock_irqsave -> __add_wait_queue_tail;
+		__add_wait_queue_tail -> spin_unlock_irqrestore;
+}

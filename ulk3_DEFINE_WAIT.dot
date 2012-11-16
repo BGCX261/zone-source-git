@@ -1,0 +1,15 @@
+digraph DEFINE_WAIT{
+        label="DEFINE_WAIT(name)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		task_current;
+		func_autoremove_wake_function;
+		task_list_LIST_HEAD_INIT;
+
+		task_current -> func_autoremove_wake_function;
+		func_autoremove_wake_function -> task_list_LIST_HEAD_INIT;
+		
+}

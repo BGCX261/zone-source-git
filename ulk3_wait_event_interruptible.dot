@@ -1,0 +1,13 @@
+digraph wait_event_interruptible{
+        label="wait_event_interruptible(wq, condition)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		condition_null[label="condition_null"];
+		__wait_event_interruptible[label="__wait_event_interruptible(wq, condition, __ret);"];
+
+		condition_null -> __wait_event_interruptible[label="null"];
+		
+		}

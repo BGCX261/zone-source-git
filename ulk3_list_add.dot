@@ -1,11 +1,11 @@
 digraph list_add{
-        label="completion";
+        label="list_add(struct list_head *new, struct list_head *head)";
         size="10,18";
         ratio=filled;
         
 	node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
 
-        list_add_tail[label="list_add_tail()"];
+        // list_add_tail[label="list_add_tail()"];
         __list_add[label="__list_add()"];
 
         list_add -> __list_add[label="two para to thread para"];

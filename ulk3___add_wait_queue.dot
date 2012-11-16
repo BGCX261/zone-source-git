@@ -1,0 +1,9 @@
+digraph __add_wait_queue{
+        label="__add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		list_add[label="list_add(&new->task_list, &head->task_list);"];
+}

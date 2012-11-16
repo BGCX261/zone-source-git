@@ -1,9 +1,18 @@
-digraph detach_pid__detach_pid{
-        label="detach_pid__detach_pid(task_t *task, enum pid_type type)";
+digraph detach_pid{
+        label="detach_pid(task_t *task, enum pid_type type)";
         ratio=filled;
         
 		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
 
-		pid_list_not_null[label="__detach_pid(task, type);"];
-		
+		__detach_pid[label="__detach_pid(task, type);"];
+		// per_PID_list_null;
+		task_not_in_other_hash_list[label="task_not_in_other_hash_list"];
+		free_pidmap[label="free_pidmap(nr)"];
+		return;
+
+		__detach_pid -> task_not_in_other_hash_list[label="per-PID list is empty return nr"];
+		__detach_pid -> return;
+		task_not_in_other_hash_list -> return[label="true"];
+		task_not_in_other_hash_list -> free_pidmap;
+		free_pidmap -> return;
 		}
