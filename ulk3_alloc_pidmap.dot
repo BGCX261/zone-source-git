@@ -1,8 +1,45 @@
 digraph alloc_pidmap{
         label="int alloc_pidmap(void)";
-		  
+	
         size="10,18";
         ratio=filled;
-
+        
+        node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+        
+        larger_pid_max[label="larger_pid_max"];
+        get_offset_in_page[label="get_offset_in_page"];
+        init_pid[label="init_pid"];
+        get_map;
+        get_max_scan;
+        map_page_null;
+        get_zeroed_page;
+        free_other_page;
+        put_page;
+        nr_free_null;
+        test_set_offset_bit;
+        dec_nr_free;
+        update_last_pid;
+        return_pid;
+        find_next_offset;
+        mk_pid_from_offset_1;
+        while[label="offset_in_range\lsmaller_pid_max\lnot_eq_max_scan\lfeforelast"];
+        last_map;
+        get_0_map;
+        inc_map;
+        reset_offset;
+        init_offset;
+        mk_pid_from_offset_2;
+        
+        larger_pid_max -> get_offset_in_page[label="true"];
+        larger_pid_max -> init_pid;
+        init_pid -> get_off_in_page;
+        get_off_in_page -> get_map;
+        get_max -> get_max_scan
+        get_max_scan -> map_page_null;
+        map_page_null -> free_other[label="null"];
+        free_other -> put_page;
+        put_page -> nr_free_null;
+        map_page_null -> nr_free_null;
+        
         
 }
