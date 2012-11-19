@@ -414,3 +414,7 @@ typedef struct pidmap {
 	atomic_t nr_free;
 	void *page;
 } pidmap_t;
+
+int pid_max = PID_MAX_DEFAULT;  /**
+                                   最大的PID号/数，至少一页
+                                 */

@@ -4191,3 +4191,24 @@ clone() fork()等等这些不能在内核源代码中找到声明
 看书笔记有书本，笔记原本，笔记补充本。三本一齐看。
 
 PIDMAP_ENTRIES这个宏定义是指所有的pid位图一共占了多少个页框。
+
+==============================[2012-11-18 Sun]==============================
+
+有时间真的可以去学习一下cedet的功能。
+
+配置emacs：cedet, cscope, color-theme, dot, ecb
+cedet，cscope都要编译，cscope其实是一个独立的软件
+
+gnome3一定要装tweak-tool,用yum
+
+还要装字典, tweak-tool, gnome的扩展，openoffice, 
+
+是service sshd restart
+不是ssh restart
+
+fedora17 的rc.local
+python /home/yj/goagent-goagent-546de84/local/proxy.py &
+chmod 777 /sys/power/state
+要这个顺序才可以？
+
+emacs 的帮助文档有semantic
