@@ -1,0 +1,8 @@
+digraph alloc_pidmap{
+        label="int alloc_pidmap(void)";
+		  
+        size="10,18";
+        ratio=filled;
+
+        
+}
