@@ -112,3 +112,7 @@ static inline int list_empty_careful(const struct list_head *head);
 
 /* calling list_empty_careful, didn't  */
 void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait);
+
+/* max_scan是max_pid所占的页数，就是说offset一开始不是在一页的开始位置的，
+ max_scan这个循环就要做max_pid+1次 */
+int alloc_pidmap(void);
