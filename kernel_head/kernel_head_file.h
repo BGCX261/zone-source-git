@@ -360,9 +360,12 @@ struct pid
 	struct list_head pid_list;
 };
 
+/* include/linux/list.h:
+   第二维在开机时根据内存大小来初始化
+*/
 static struct hlist_head *pid_hash[PIDTYPE_MAX];
 
-
+/* linux/wait.h: */
 struct __wait_queue_head {
 	spinlock_t lock;
 	struct list_head task_list;
