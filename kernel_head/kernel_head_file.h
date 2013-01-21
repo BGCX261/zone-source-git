@@ -52,7 +52,9 @@ struct task_struct {
 	int pdeath_signal;  /*  The signal sent when the parent dies  */
 	/* ??? */
 	unsigned long personality;
-	unsigned did_exec:1;
+	unsigned did_exec:1;		/* 按POSIX要求设计的布尔量，
+								   区分进程是正在执行老程序代码，
+								   还是在执行execve装入的新代码 */
 	pid_t pid;
 	pid_t tgid;					/**
 								   PID of the thread group leader of P
@@ -75,7 +77,9 @@ struct task_struct {
 	/* PID/PID hash table linkage. */
 	struct pid pids[PIDTYPE_MAX];
 
-	struct completion *vfork_done;		/* for vfork() */
+	struct completion *vfork_done;		/* for vfork(),
+										   在do_fork中置1 
+										 */
 	int __user *set_child_tid;		/* CLONE_CHILD_SETTID */
 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
 
@@ -387,7 +391,9 @@ struct __wait_queue {
  * cloning flags:
  */
 #define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
-#define CLONE_VM	0x00000100	/* set if VM shared between processes */
+#define CLONE_VM	0x00000100	/* set if VM shared between processes,
+								 Shares the memory descriptor and all Page
+								 Tables*/
 #define CLONE_FS	0x00000200	/* set if fs info shared between processes */
 #define CLONE_FILES	0x00000400	/* set if open files shared between processes */
 #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
@@ -395,7 +401,12 @@ struct __wait_queue {
 #define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
 #define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
 #define CLONE_THREAD	0x00010000	/* Same thread group? */
-#define CLONE_NEWNS	0x00020000	/* New namespace group? */
+#define CLONE_NEWNS	0x00020000	/* New namespace group?
+								 Set if the clone needs its own namespace,
+								 that is, its own view of the mounted
+								 filesystems (see Chapter 12); it
+								 is not possible to specify both CLONE_NEWNS
+								 and CLONE_FS.*/
 #define CLONE_SYSVSEM	0x00040000	/* share system V SEM_UNDO semantics */
 #define CLONE_SETTLS	0x00080000	/* create a new TLS for the child */
 #define CLONE_PARENT_SETTID	0x00100000	/* set the TID in the parent */
@@ -421,3 +432,92 @@ typedef struct pidmap {
 int pid_max = PID_MAX_DEFAULT;  /**
                                    最大的PID号/数，至少一页
                                  */
+
+/* personality.h */
+struct exec_domain {
+	const char		*name;		/* name of the execdomain */
+	handler_t		handler;	/* handler for syscalls */
+	unsigned char		pers_low;	/* lowest personality */
+	unsigned char		pers_high;	/* highest personality */
+	unsigned long		*signal_map;	/* signal mapping */
+	unsigned long		*signal_invmap;	/* reverse signal mapping */
+	struct map_segment	*err_map;	/* error mapping */
+	struct map_segment	*socktype_map;	/* socket type mapping */
+	struct map_segment	*sockopt_map;	/* socket option mapping */
+	struct map_segment	*af_map;	/* address family mapping */
+	struct module		*module;	/* module context of the ed. */
+	struct exec_domain	*next;		/* linked list (internal) */
+};
+
+
+/*
+ * Per process flags
+ */
+#define PF_ALIGNWARN	0x00000001	/* Print alignment warning msgs */
+					/* Not implemented yet, only for 486*/
+#define PF_STARTING	0x00000002	/* being created */
+#define PF_EXITING	0x00000004	/* getting shut down */
+#define PF_DEAD		0x00000008	/* Dead */
+#define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
+#define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
+#define PF_DUMPCORE	0x00000200	/* dumped core */
+#define PF_SIGNALED	0x00000400	/* killed by a signal */
+#define PF_MEMALLOC	0x00000800	/* Allocating memory */
+#define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
+#define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
+#define PF_FREEZE	0x00004000	/* this task is being frozen for suspend now */
+#define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
+#define PF_FROZEN	0x00010000	/* frozen for system suspend */
+#define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+#define PF_KSWAPD	0x00040000	/* I am kswapd */
+#define PF_SWAPOFF	0x00080000	/* I am in swapoff */
+#define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
+#define PF_SYNCWRITE	0x00200000	/* I am doing a sync write */
+#define PF_BORROWED_MM	0x00400000	/* I am a kthread doing use_mm */
+#define PF_RANDOMIZE	0x00800000	/* randomize virtual address space */
+
+/* include/asm-i386/ptrace.h: */
+struct pt_regs {
+	long ebx;
+	long ecx;
+	long edx;
+	long esi;
+	long edi;
+	long ebp;
+	long eax;
+	int  xds;
+	int  xes;
+	long orig_eax;
+	long eip;
+	int  xcs;
+	long eflags;
+	long esp;
+	int  xss;
+};
+
+/* each process descriptor includes a field called thread of type thread_struct, in which the kernel saves the hardware context whenever the process is being switched out. */
+	struct thread_struct {
+/* cached TLS descriptors. */
+	struct desc_struct tls_array[GDT_ENTRY_TLS_ENTRIES];
+	unsigned long	esp0;
+	unsigned long	sysenter_cs;
+	unsigned long	eip;
+	unsigned long	esp;
+	unsigned long	fs;
+	unsigned long	gs;
+/* Hardware debugging registers */
+	unsigned long	debugreg[8];  /* %%db0-7 debug registers */
+/* fault info */
+	unsigned long	cr2, trap_no, error_code;
+/* floating point info */
+	union i387_union	i387;
+/* virtual 86 mode info */
+	struct vm86_struct __user * vm86_info;
+	unsigned long		screen_bitmap;
+	unsigned long		v86flags, v86mask, saved_esp0;
+	unsigned int		saved_fs, saved_gs;
+/* IO permissions */
+	unsigned long	*io_bitmap_ptr;
+/* max allowed port in the bitmap, in bytes: */
+	unsigned long	io_bitmap_max;
+};

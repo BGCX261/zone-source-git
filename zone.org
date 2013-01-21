@@ -4501,3 +4501,230 @@ pushd这个是什么命令来的？
 git init .
 git add .
 git commit -m "..."
+
+==============================[2013-01-08 二]==============================
+
+没有alias也一样可以加个ll，在/bin下加一个脚本就可以了。
+
+omapl138 是用了 /device/i2c/下的i2c.c的设备注删函数来来实现i2c设备注删的，不是用自己的
+
+页表是占一页的，globale等等。
+
+the master kernel Page Global Directory就的init进程的Page Global Directory
+
+什么叫内存静态映射：
+http://blog.chinaunix.net/uid-26583794-id-3199883.html
+通常来说，BSP需要提供芯片级驱动，并要为板级驱动提供一
+些服务，在为具体芯片移植linux内核时，通常都会建立芯片级外设I/O内存物理
+地址到虚拟地址的静态映射，这通常是通过板文件中的MACHINE_START宏中的
+map_io函数来实现的，
+
+http://www.233.com/linux/fudao/20100221/094013157.html
+
+Linux内核访问外设I/O内存资源的方式有两种：动态映射(ioremap（是一个函数）)和静态映射
+(map_desc（是一个结构体，在开机时使用来初始化）),从上面网址的文章也可以看出，像
+readl(),writel()这些函数是使用虚拟地址来访问外设的。
+
+http://blog.chinaunix.net/uid-25314629-id-3229330.html
+
+request_region()函数用于申请IO端口，而request_mem_region用于申请IO内存
+(一般为控制寄存器)。申请之后还要通过ioremap函数去映射到内核虚拟地址。
+由此可见在调用ioremap之前还要调用以上两个函数中的一个。
+request_mem_region(),request_region()这两个函数是用来申请一段指定的
+物理地址段，而ioremap()就是用已申请的物理地址再映射，映射到ioremap()函数返回的虚拟地址。
+所谓的request_region(),request_mem_region()申请物理地址空间就是内核的物理地址资源
+中标记一下某一段地址被使用了。
+
+不要以管理者的角度来工作，要以自己的能力来工作。听身体的信号来工作，该休息就休息啊。
+
+==============================[2013-01-09 三]==============================
+
+有struct a{
+};
+然后可以struct a a;
+
+像这样小公司，应该总结工作时的思想和想法，写日记吧。
+
+num_reg = (num_irq + 3) >> 2;	/* 4 channels per register */
+这种写法是和num_irq求2模加num_irq求2余是一样的结果
+
+还可以这样初始化的
+static u8 da850_default_priorities[DA850_N_CP_INTC_IRQ] = {
+	[IRQ_DA8XX_COMMTX]		= 7,
+	[IRQ_DA8XX_COMMRX]		= 7,
+	[IRQ_DA8XX_NINT]		= 7,
+	[IRQ_DA8XX_EVTOUT0]		= 7,
+	[IRQ_DA8XX_EVTOUT1]		= 7,
+	[IRQ_DA8XX_EVTOUT2]		= 7,
+	[IRQ_DA8XX_EVTOUT3]		= 7,
+	[IRQ_DA8XX_EVTOUT4]		= 7,
+	[IRQ_DA8XX_EVTOUT5]		= 7,
+	[IRQ_DA8XX_EVTOUT6]		= 7,
+	[IRQ_DA8XX_EVTOUT7]		= 7,
+	[IRQ_DA8XX_CCINT0]		= 7,
+	[IRQ_DA8XX_CCERRINT]		= 7,
+	[IRQ_DA8XX_TCERRINT0]		= 7
+};
+用[a]=b,
+
+这是先从高向低写，每写一次是8个位。irq_prio不大于8
+			for (val = j = 0; j < 4; j++, k++) {
+				val >>= 8;
+				if (k < num_irq)
+					val |= irq_prio[k] << 24;
+			}
+
+看与平台相关的kernel源码时，在查某个takon时一定要注意是不是这个平台的
+这个可以修改cscope的搜索文件来达到目的。
+
+在linux中，omapl138是把所有的中断的都做成一个优先级的，其实linux的内核也是这样子来简单要求实现的。
+
+看看Linux内核设计与实现这本书的评价。
+
+linux的中断向量默认是245个的，那硬件可以支持更多的中断号怎么办呢？
+
+struct irq_chip这个结构体里的函数有很多是默认配置的。
+
+linux 的中断处理函数也有handle_edge_irq，handle_level_irq,等这些分的。
+
+==============================[2013-01-10 四]==============================
+
+看linux源码时，就是要先定一个区，就是所要理解的区，再找涉及该区的所有文件.
+
+kernel的打印信息是放在缓冲区中等初始化好串口（终端）后一起打印
+
+==============================[2013-01-11 五]==============================
+
+readl()和writel()这类函数不是写入物理地址的啊，好像是写入虚拟地址的啊。
+看了omapl138的东西才知道。
+
+内核显里debug信息
+pr_debug()
+
+    Some files call pr_debug(), which is ordinarily an empty macro that discards
+    its arguments at compile time.  To enable debugging output, build the
+    appropriate file with -DDEBUG by adding
+
+      CFLAGS_[filename].o := -DDEBUG
+
+    to the makefile.
+
+    For example, to see all attempts to spawn a usermode helper (such as
+    /sbin/hotplug), add to lib/Makefile the line:
+
+        CFLAGS_kobject_uevent.o := -DDEBUG
+
+    Then boot the new kernel, do something that spawns a usermode helper, and
+    use the "dmesg" command to view the pr_debug() output.
+
+kernel 的assert()http://stackoverflow.com/questions/6359700/assertion-in-the-kernel
+
+The corresponding kernel macros are BUG_ON and WARN_ON. The former is
+for when you want to make the kernel panic and bring the system down
+(i.e., unrecoverable error). The latter is for when you want to log
+something to the kernel log (viewable via dmesg).
+
+在omap138中是u-boot设置好pll和域、设备的时钟，而在linux里只是读一些寄存
+器来计算出现CPU和设备在使用的时钟来填充内核数据结构。
+
+在omap138中使能时钟就是把体眠模式关掉，这是时钟和体眠的关系统。
+
+的确，__raw_readl()这些函就是使用ioremap所返回的虚拟地址。
+
+在omap138的内核中，关于时钟的一些设置函数就有了实现，所以写驱动可以使用，所以在写一个平台的
+驱动时要先了解内核提供了什么。
+
+==============================[2013-01-14 一]==============================
+
+adobe在linux下看pdf是不用钱的吗？
+
+要建立用emacs画数据结构的图，特别是在看内核时很有用，不用老是记住结构体之间的包含关系。
+
+linux内核有ARRAY_SIZE这个东西。
+
+linux内核的时钟机制又改了，很多到西要看啊。
+
+==============================[2013-01-15 二]==============================
+
+原来Makefile 的$这个符号用的是shell的环境变量，如
+make -C $(KERNEL) M=$(shell pwd) modules
+
+由于没有指定交叉编译器，所以有一个这样的错误：
+/home/yj/AM1808/Kernel/driver/i2c.c:1:0: 错误：代码模式‘kernel’在 32 位模式下不受支持
+/home/yj/AM1808/Kernel/driver/i2c.c:1:0: 对不起，尚未实现：未编译入对 64 位模式的支持
+
+命令是这样的
+make -C $KERNEL M=/home/yj/AM1808/Kernel/driver modules
+但是应该是这样的
+make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- -C $KERNEL M=/home/yj/AM1808/Kernel/driver modules
+
+
+==============================[2013-01-16 三]==============================
+
+vbox可以用linux host的串口
+
+FLASHMAGICE可以设置UCFG1的
+
+指出两点
+
+1 引导向量确认为0（从地址0开始执行），这个不对，引导向量是可以改为0，但是没有必要，改了你就没有办法使用ISP，再之，如何不使能引导状态字，也用不上引导向量。
+
+ 
+
+2你并没有说引导状态字如何设置，不过，无论怎样，你的配置应该总是从0开始跑程序。
+
+ 
+
+ 
+
+【单片机上电不运行情况的分析】
+1.单片机是没有运行，还是运行不正确？
+2.如果是没有运行，检测单片机的基本参数是否已经满足<工作电压要在芯片的引脚处测量><复位引脚的复位曲线如何><晶振是否已经起振><芯片损坏，或者部分功能损坏>。
+3.如果是运行不正确，检测<用了看门狗，没有处理好，芯片上电后处于不停的复位状态，看起来就象没有没有工作起来><是否进入了ISP状态><对单片机写入对所有的IO口以1秒取反一次的程序进行测试>
+
+
+【单片机调试办法】
+用LED进行状态指示，用串口进行数据指示，比用其它外设指示更可靠；
+加入断点，烧写时是在不同的语句后面加入WHILE（1）；
+分模块调试，把每个小功能先调试通过，再进行组合。
+
+LPC900系列单片机具有ISP（In System Programming：在系统编程）/ICP（In Circuit Programming：在电路编程）功能，可以实现多次编程/简易调试。
+
+==============================[2013-01-17 四]==============================
+
+下载完一个东西之后，就算是临时的也要加上有意义的名字，以后删除也方便的。。
+
+LPC900系列的单片机用FLASHMAGIC在烧写时一定要选上protect isp code
+
+上电复位，RESET
+http://baike.baidu.com/view/2288977.htm
+
+首先RST保持两个机器周期以上的高电平时自动复位
+
+1、上电复位：上电瞬间，电容充电电流最大，电容相当于短路，RST端为高电平，自动复位；电容两端
+的电压达到电源电压时，电容充电电流为零，电容相当于开路，RST端为低电平，程序正常运行。
+
+2、手动复位：首先经过上电复位，当按下按键时，RST直接与VCC相连，为高电平形成复位，同时电解电
+容被短路放电；按键松开时，VCC对电容充电，充电电流在电阻上，RST依然为高电平，仍然是复位，充
+电完成后，电容相当于开路，RST为低电平，正常工作。
+
+搞了好久终于可以有一个灯亮了，但是在用ISP烧写和用ISP读一个寄存器的时候才会
+亮，这时的下一步调试思路是：排除是ISP才可以让它亮的，而不是程序。所以修改
+程序不让它亮。
+
+李工这家伙也多少会有批漏的啊。
+
+调硬件的时候，用最简单的程序测试，这个程序要保证：时钟对了，看门狗关了，
+所有中断关了，用循环点一个灯和开蜂鸣器。
+
+==============================[2013-01-18 五]==============================
+
+与链表相关的增删改都是有一个这样的大概思路：从链表中增删后修改与这个链表相关的数据结构。
+
+以后就把一个摄像头放在旁边才行，调试这个问题有点郁闷。
+
+烧写之前最最好要全刷。
+
+有时烧写不成功还要全部断电。
+
+今天被#define DEBUG弄了一下，就是在.c文件define了，但是在其它文件使用了。
