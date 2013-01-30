@@ -4728,3 +4728,174 @@ http://baike.baidu.com/view/2288977.htm
 有时烧写不成功还要全部断电。
 
 今天被#define DEBUG弄了一下，就是在.c文件define了，但是在其它文件使用了。
+
+==============================[2013-01-21 一]==============================
+
+keil的编译器不支##的宏，错的，是支持的，要前后加才可以：
+#define PXMY(port, pin, x_val, y_val) (x_val ? (P##port##M1 |= 1 << pin) : (P##port##M1 &= ~(1<<pin)); \
+									   y_val ? (P##port##M2 |= 1 << pin) : (P##port##M2 &= ~(1<<pin)))
+
+
+虚拟机开串口，真机LINUX也开串口都可以但是通信乱了。
+
+烧录器不接电源时烧录，可以用这种方法来看波形是否有变化来测试烧录器。
+
+{(1 ? (P3M2 |= 1 << 0) : (P3M2 &= ~(1<<0)))};这是错的
+{(1 ? (P3M2 |= 1 << 0) : (P3M2 &= ~(1<<0)));};这是对的
+
+#define PXMY(port,pin,x_val,y_val) {(x_val ? (P##port##M1 |= 1 << pin) : (P##port##M1 &= ~(1<<pin))); \
+		(y_val ? (P##port##M2 |= 1 << pin) : (P##port##M2 &= ~(1<<pin)));};
+这个宏写了我不少时间
+
+端口配置成Input only之后是没有输出的，无论给端口写什么
+Input only (high-impedance)
+
+写单片机的main函数时首先要写while(1);
+
+==============================[2013-01-22 二]==============================
+
+如果在一开始就写很多代码没经过上机测试的话，不能一开始就把所有的代码放在一起
+运行测试，而是一个函数一个函数先测试，就像今天测试的单片机按键板程序。
+
+void coor_down_nr(unsigned char (*coor)[2], char nr)
+{
+	switch (coor[nr][0])
+	{
+	case 0:
+		P0 &= ~(1 << coor[nr][1]);
+		break;
+	case 1:
+		P1 &= ~(1 << coor[nr][1]);
+		break;
+	case 2:
+		P2 &= ~(1 << coor[nr][1]);
+		break;
+	case 3:
+		P3 &= ~(1 << coor[nr][1]);
+		break;
+	default:
+		break;
+	}
+
+}
+在用循环调用这个函数给所有的端口输出时，由于很大一部分的端口是在P2口的，一小
+部分的端口是在P4口的，所以示波器测端口的波形时抖动是很不一样的，P2口的波形
+比较明显而P4口的则是很不明显的。
+
+
+#define BRG0_1   (*((unsigned char volatile xdata*)0xFFB4))
+#define BRG1_1   (*((unsigned char volatile xdata*)0xFFB5))
+和
+sfr BRGR0_0  = 0xBE;
+sfr BRGR1_0  = 0xBF;
+被这两种不同的东西弄死了。
+
+==============================[2013-01-23 三]==============================
+
+蜂鸣器要用PUSH-PULL驱动，用双向不能驱动。
+
+调键盘程序时只有1-8的数字，有经验的就会知道只接了一个坐标值
+
+if ((key = ((P0 & (1 << coor[i][1])) ? 0 : (i+1)) > 0))
+怎么说老是返回1，原来。。。。
+
+按了很多个相同的键，看有没有不一样的值就用emacs的搜索方法：输入01，02，03等等
+04 FF FF FF 04 04 04 04 04 04 FF 04 04 04 04 04 04 04 FF FF 04 FF FF 04 04 FF 04 04 FF FF 04 FF 04 04 FF FF 04 04 FF 04 04 FF FF 04 04 04 FF 04 04 FF 04 04 04 FF 04 04 04 FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 04 FF 04 04 04 FF FF 04 04 FF FF 04 FF FF FF FF FF FF FF FF 04 04 04 04 FF FF FF FF FF FF FF FF 04 04 04 FF FF FF 04 04 04 04 04 04 04 04 04 04 04 FF FF 04 04 FF FF 04 04 04 F
+
+在键盘扫描时用了判断输出，导致不同的引脚输出的脉冲宽度不一样。
+
+有些编译器是不可以在函数的中间声明一个变量的。如KEIL
+
+==============================[2013-01-24 四]==============================
+
+IE1 Interrupt 1 Edge flag. Set by hardware when external interrupt 1 edge is detected. Cleared by hardware
+when the interrupt is processed, or by software.
+外部中断标志是这个意思，但是在用边沿触发时如果在中断处理过程中还有边沿发生的
+话硬件也会把中断标志设置的。
+
+今天发现按键板有一个问题就是返回的值是
+return ((i+1) * temp);
+其实是
+return ((i+1) * 8 + temp);
+
+在扫描键的时候发现一开始扫描的那几键与相近键的键值是一样的，所以要用延时。
+
+用U盘装XP都很可能有问题，说文件找不到，可能是IOS文件的问题。
+
+要找几个不一样的字符可以这样：用EMACS把一样的字符替换成空格就会剩下你要找的了。
+
+
+==============================[2013-01-25 五]==============================
+
+如果用串口发完一个数据后在串口中断处理中没有清接收标志伪证，那么会导致运行速度减慢。
+
+在中断处理函数中一定要清标志位，就像今天不在串口服务例程中清标志位，导致退出中断还进入
+中断。
+
+在用中断时来扫描键盘时会影响串口数据的发送!!!
+
+发现一个问题，就是将串口发送数据写入BUFFER后马上进入中断对64个按键进行扫描，
+那么可能因为对多个引脚进行上下拉使BUFFER出现了错误。这种问题还是用CRC检验
+比较好解决。
+
+keil的extern变量好像不能使用一样，一个值改了但是另外一个值没有被改。
+
+Emacs的C mode可以用Alt+/来作为关键字的补全的。
+
+==============================[2013-01-28 一]==============================
+
+ComTools这个串口调试工具的硬DTS和RTS比较好用
+
+uart_transmit(1<<((cd)&(~0x80)));
+在KEIL里有问题。。。
+
+在KEIL里
+void led_update(unsigned char cd)
+{
+	uart_transmit(1<<((unsigned char)(0x81)&(~0x80)));
+	/* uart_transmit(cd); */
+}
+会发送2
+
+void led_update(unsigned char cd)
+{
+    uart_transmit(cd);
+}
+会发送0x81若cd是0x81
+
+void led_update(unsigned char cd)
+{
+	uart_transmit(1<<(cd&(~0x80)));
+}
+但这个发送0若cd是0x81，为什么会这样子啊。。。。
+uart_transmit((cd&(~0x80)));是1若cd是0x81.
+
+==============================[2013-01-29 二]==============================
+
+KEIL函数库
+http://www.baidu.com/s?ie=utf-8&bs=%E5%8D%95%E7%89%87%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E5%BA%93&f=8&rsv_bp=1&wd=KEIL%E5%87%BD%E6%95%B0%E5%BA%93&rsv_sug3=8&rsv_sug4=458&rsv_sug1=6&inputT=3959
+
+以后打算工作每工作两年之后就休息和学习半年，只有民工的工作才可以这样子，要善于利用的哦。
+
+create-destroy, alloc-free
+
+http://download.csdn.net/download/sironline/356610
+回去下载。
+
+9600的波特率大概是50毫移一个字节的数据对吗？好像是把。
+
+做按键板真心不能用死循环来扫描的，这会影响串口的接收和发送数据的，不知道是不是单片机的设计有问题?
+
+原来除了KEIL还有IAR的
+
+单片机有一个掉电模式：The Brownout Detect function determines if the power supply voltage drops below a
+certain level
+
+让单片机进入空闲模式的目的通常是为了降低系统的功耗
+
+这个单片机要在某个特定的地方才可以休眠的？其它的位置会一直让串口发送数据0？？
+
+	S0BUF = get_crc8(value);
+	delay(10);					/* delay(1)的时间太短 */
+	UART_ENABLE_RX;
+时间太短的话会发送一些FE啊FF之类字符，就是发漏的那些位会被用1补上。
