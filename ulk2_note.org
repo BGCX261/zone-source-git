@@ -1,0 +1,53 @@
+#+STARTUP: showall
+* 2. Memory Addressing
+** 2.1. Memory Addresses
+- 3 types of address
+- MMU
+- memory arbiter
+- uniprocessor systems also use
+
+** 2.2. Segmentation in Hardware
+
+*** 2.2.1. Segment Selectors and Segmentation Registers
+- content of segmentation registers
+- cs, CPL
+
+*** 2.2.2. Segment Descriptors
+- 8 byts
+- store in GDT or LDT
+- one GDT, one process one LDT
+- gdtr, ldtr store address and size
+- segment descriptors' fields
+- different descriptor types
+
+*** 2.2.3. Fast Access to Segment Descriptors
+- the fields of the segmemt selectors, RPL
+
+*** 2.2.4. Segmentation Unit
+
+** 2.3. Segmentation in Linux
+- limit way
+- different between segmentation and paging
+- the reasons of choosing paging
+- __USER/KERNEL_CS/DS
+
+*** 2.3.1. The Linux GDT
+- cpu_gdt_table, cpu_gdt_desc
+- 18 and 14
+- 4, 1, 1, 3, 3, 5
+
+** 2.4. Paging in Hardware
+- what is page
+- contiguous linear addresses within a page are mapped into contiguous physical addresses
+- page frame
+
+*** 2.4.1. Regular Paging
+- three parts: directory, table, offset
+- two steps
+- reduce the memory
+- alloc directory
+- cr3
+- the fields of Page Directory and Page Table
+
+*** 2.4.2. Extended Paging
+- 
