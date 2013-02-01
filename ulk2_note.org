@@ -50,4 +50,88 @@
 - the fields of Page Directory and Page Table
 
 *** 2.4.2. Extended Paging
-- 
+- 4MB, remove middle
+- Page Size, Directory and offset
+- two different points
+- CR4 PSE
+
+*** 2.4.3. Hardware Protection Scheme
+- 4 and 2
+- 3 and 2
+
+*** 2.4.4. An Example of Regular Paging
+- filled with 0
+
+*** 2.4.5. The Physical Address Extension (PAE) Paging Mechanism
+- 36 pin
+- CR4 PAE
+- 2M
+- 32 to 36, 1024 to 512
+- PDPT
+- linear address doesn't extern
+- user mode limit in 4GB
+
+*** 2.4.6. Paging for 64-bit Architectures
+- more than 2 level
+
+*** 2.4.7. Hardware Cache
+- the cache is subdivided into subsets of lines
+- between paging unit and DRAM main memory
+- include hardware cache memory and a cache controller
+- write-through, write-back
+- PCD, PWT
+
+*** 2.4.8. Translation Lookaside Buffers (TLB)
+- reduce paging times
+
+** 2.5. Paging in Linux
+- 32-bit and 64-bit is the same
+- 4 level
+- 32-bit non PAE, Page Upper Directory Page Middle Directory
+- 32-bit PAE, PGD-PDPT, non-PUD, PMD
+
+*** 2.5.1. The Linear Address Fields
+- PAGE/PMD/PUD/PGDIR_SHIFT/SIZE/MASK
+- PTRS_PER_PTE/PMD/PUD/PGD
+
+*** 2.5.2. Page Table Handling
+- pte/pmd/pud/pgd_t
+- __pte/pmd/pud/pgd, pte/pmd/pud/pgd_val
+- pte/pmd/pud/pgd_none
+- pte/pmd/pud/pgd_clear
+- set_pte/pmd/pud/pgd
+- pte_same
+- pmd_large
+- pmd_bad
+- pud/pgd_bad
+- pte_present, page size
+- pmd_present
+- pte_user, pte_read, pte_write, pte_exec, pte_dirty, pte_young, pte_file
+- mk_pte_huge/wrprotect/rdprotect/exprotect/mkwrite/mkread/mkexec/mkclean/mkdirty/mkold/mkyoung/modify
+- pgd/pud/pmd/pte_index/offset/page, mk_pte, pte_offset_kernel, pte_offset_map, pte_page
+- functions:pgd/pud/pmd_alloc, pgd/pud/pmd_free, pte_alloc_map/kernel, pte_free, pte_free_kernel, clear_page_range
+
+*** 2.5.3. Physical Memory Layout
+- physical address map in startup, unavailable physical address, I/O shared memory 
+- reserved page frames 
+- won't dynamic alloc or swap out
+- 3MB
+- setup_memory(), machine_specific_memory_setup(), num_physpages, totalram_pages,
+  min_low_pfn, max_pfn, max_low_pfn, totalhigh_page, highstart_pfn, highend_pfn
+- system_map file
+
+*** 2.5.4. Process Page Tables
+- two parts of process page table
+- PAGE_OFFSET
+- tow parts of PDG
+
+*** 2.5.5. Kernel Page Tables
+**** 2.5.5.1. Provisional kernel Page Tables
+- PGD static initial
+- PGD in swapper_pg_dir, pg0
+- 0,1 and 0x301,0x301
+**** 2.5.5.2. Final kernel Page Table when RAM size is less than 896 MB
+- __pa, __va
+- paging_init(), pagetable_init(), swapper_pg_dir
+
+
