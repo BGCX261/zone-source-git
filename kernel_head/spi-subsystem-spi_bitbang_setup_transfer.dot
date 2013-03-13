@@ -1,0 +1,38 @@
+digraph spi_bitbang_setup_transfer{
+        label="int spi_bitbang_setup_transfer(struct spi_device *spi, struct spi_transfer *t)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		spi_transfer_not_null[label="spi_transfer_not_null"];
+		get_transfer_bits_per_word[label="get_transfer_bits_per_word"];
+		get_transfer_speed_hz[label="get_transfer_speed_hz"];
+
+		clean_bits_per_word[label="clean_bits_per_word"];
+		clean_hz[label="clean_hz"];
+
+		bits_per_word_null[label="bits_per_word_null"];
+		get_spi_device_bits_per_word[label="get_spi_device_bits_per_word"];
+		set_spi_bitbang_cs_txrx_bufs[label="set_spi_bitbang_cs_txrx_bufs"];
+
+		hz_not_null[label="hz_not_null"];
+		get_spi_device_max_speed_hz[label="get_spi_device_max_speed_hz"];
+		
+		set_spi_bitbang_cs_nsecs[label="set_spi_bitbang_cs_nsecs"];
+		
+		spi_transfer_not_null -> get_transfer_bits_per_word;
+		get_transfer_bits_per_word -> get_transfer_speed_hz;
+		spi_transfer_not_null -> clean_bits_per_word;
+		clean_bits_per_word -> clean_hz;
+		clean_hz -> bits_per_word_null;
+		get_transfer_speed_hz -> bits_per_word_null;
+		bits_per_word_null -> get_transfer_bits_per_word;
+		get_transfer_bits_per_word -> set_spi_bitbang_cs_txrx_bufs;
+		bits_per_word_null -> set_spi_bitbang_cs_txrx_bufs;
+		set_spi_bitbang_cs_txrx_bufs -> hz_not_null;
+		hz_not_null -> get_spi_device_max_speed_hz;
+		hz_not_null -> set_spi_bitbang_cs_nsecs;
+		
+}

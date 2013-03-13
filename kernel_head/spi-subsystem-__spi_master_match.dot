@@ -1,0 +1,15 @@
+digraph __spi_master_match{
+		label="static int __spi_master_match(struct device *dev, void *data);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		container_of[label="container_of(dev, struct spi_master, dev);"];
+
+		equal_bus_id[label="m->bus_num == *bus_num;"];
+
+		container_of -> equal_bus_id;
+		
+}

@@ -1,0 +1,32 @@
+digraph spi_register_master{
+		label="int spi_register_master(struct spi_master *master)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		alloc_atomic_dyn_bus_id[label="alloc_atomic_dyn_bus_id"];
+		get_master_parent[label="get_master_parent"];
+
+		num_chipselect_greater_0[label="num_chipselect_greater_0"];
+		get_dynamical_bus_id[label="get_dynamical_bus_id"];
+
+		init_bus_lock_flag[label="	master->bus_lock_flag = 0;"];
+		dev_set_name[label="dev_set_name(&master->dev, "spi%u", master->bus_num);"];
+		device_add[label="device_add(&master->dev);"];
+		list_add_tail[label="list_add_tail(&master->list, &spi_master_list);"];
+		add_all_device[label="add_all_device:spi_match_master_to_boardinfo(master, &bi->board_info);"];
+		of_register_spi_devices[label="of_register_spi_devices(master);"];
+
+		alloc_atomic_dyn_bus_id -> get_master_parent;
+		get_master_parent -> num_chipselect_greater_0;
+		num_chipselect_greater_0 -> get_dynamical_bus_id;
+		get_dynamical_bus_id -> init_bus_lock_flag;
+		init_bus_lock_flag -> dev_set_name;
+		dev_set_name -> device_add;
+		device_add -> list_add_tail;
+		list_add_tail -> add_all_device;
+		add_all_device -> of_register_spi_devices;
+		
+		}

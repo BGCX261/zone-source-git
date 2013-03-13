@@ -1,0 +1,19 @@
+digraph spi_bus_lock{
+		label="int spi_bus_lock(struct spi_master *master);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		lock_master_bus_lock_mutex[label="lock_master_bus_lock_mutex"];
+		lock_master_bus_lock_spinlock[label="lock_master_bus_lock_spinlock"];
+		set_master_bus_lock_flag[label="set_master_bus_lock_flag"];
+		
+		unlock_master_bus_lock_spinlock[label="unlock_master_bus_lock_spinlock"];
+
+		lock_master_bus_lock_mutex -> lock_master_bus_lock_spinlock;
+		lock_master_bus_lock_spinlock -> set_master_bus_lock_flag;
+		set_master_bus_lock_flag -> unlock_master_bus_lock_spinlock;
+		
+		}

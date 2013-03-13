@@ -1,0 +1,19 @@
+digraph spi_register_driver{
+        label="int spi_register_driver(struct spi_driver *sdrv);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		get_bus[label="sdrv->driver.bus = &spi_bus_type;"];
+		get_probe[label="sdrv->driver.probe = spi_drv_probe;"];
+		get_remove[label="sdrv->driver.remove = spi_drv_remove;"];
+		get_shutdown[label="sdrv->driver.shutdown = spi_drv_shutdonw;"];
+	    driver_register[label="driver_register(&sdrv->driver);"];
+
+		get_bus -> get_probe;
+		get_probe -> get_remove;
+		get_remove -> get_shutdown;
+		get_shutdown -> driver_register;
+}

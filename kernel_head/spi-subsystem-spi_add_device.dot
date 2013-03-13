@@ -1,0 +1,44 @@
+digraph spi_add_device{
+        label="int spi_add_device(struct spi_device *spi);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+
+		get_parent[label="spi->master->dev.parent;"];
+		verify_chipselects_num;
+
+		set_the_bus_id_string[label="dev_set_name()"];
+		bus_find_device_by_name[label="bus_find_device_by_name"];
+		not_null;
+		put_device[label="put_device"];
+		return_EBUSY;
+
+		spi_setup[label="spi_setup()"];
+		spi_setup_fail;
+		return_spi_setup;
+
+		device_add[label="device_add(&spi->dev);"];
+		device_add_fail;
+		return_device_add;
+
+		return;
+
+		get_parent -> verify_chipselects_num;
+		verify_chipselects_num -> set_the_bus_id_string;
+		set_the_bus_id_string -> bus_find_device_by_name;
+
+		bus_find_device_by_name -> not_null;
+		not_null -> put_device;
+		put_device -> return_EBUSY;
+		bus_find_device_by_name -> spi_setup;
+		spi_setup -> spi_setup_fail;
+		spi_setup_fail -> return_spi_setup;
+		spi_setup -> device_add;
+		device_add -> device_add_fail;
+		device_add_fail -> return_device_add;
+		device_add -> return;
+		
+		}

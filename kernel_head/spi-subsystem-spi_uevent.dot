@@ -1,0 +1,11 @@
+digraph spi_match_device{
+        label="static int spi_uevent(struct device *dev, struct kobj_uevent_env *env);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		add_uevent_var[label="add_uevent_var(env, "MODALIAS=%s%s", SPI_MODULE_PREFIX, spi->modalias);"];
+		
+}

@@ -1,0 +1,29 @@
+digraph spi_busnum_to_master{
+		label="struct spi_master *spi_busnum_to_master(u16 bus_num)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		flag_SPI_MASTER_HALF_DUPLEX_or_mode_SPI_3WIRE[label="flag_SPI_MASTER_HALF_DUPLEX_or_mode_SPI_3WIRE"];
+
+		scan_spi_transfer[label="scan_spi_transfer"];
+		not_rx_and_tx_buffer_null[label="not_rx_and_tx_buffer_null"];
+		flags_SPI_MASTER_NO_TX_and_tx_buff_not_null[label="flags_SPI_MASTER_NO_TX_and_tx_buff_not_null"];
+		flags_SPI_MASTER_NO_RX_and_rx_buff_not_null[label="flags_SPI_MASTER_NO_RX_and_rx_buff_not_null"];
+
+		set_message_spi[label="set_master_spi"];
+		set_message_status[label="set_message_status"];
+		transfer[label="master->transfer(spi, message);"];
+		
+		flag_SPI_MASTER_HALF_DUPLEX_or_mode_SPI_3WIRE -> scan_spi_transfer;
+		scan_spi_transfer -> not_rx_and_tx_buffer_null;
+		not_rx_and_tx_buffer_null -> flags_SPI_MASTER_NO_TX_and_tx_buff_not_null;
+		flags_SPI_MASTER_NO_TX_and_tx_buff_not_null -> flags_SPI_MASTER_NO_RX_and_rx_buff_not_null;
+
+		flag_SPI_MASTER_HALF_DUPLEX_or_mode_SPI_3WIRE -> set_message_spi;
+		set_message_spi -> set_message_status;
+		set_message_status -> transfer;
+		
+		}

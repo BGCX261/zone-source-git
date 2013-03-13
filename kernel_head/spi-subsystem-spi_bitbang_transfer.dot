@@ -1,0 +1,22 @@
+digraph spi_bitbang_transfer{
+        label="int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m)";
+		
+        size="10,18";
+        ratio=filled;
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		spi_master_get_devdata[label="spi_master_get_devdata(spi->master);"];
+
+		lock_bitbang_lock[label="lock_bitbang_lock"];
+		spi_max_speed_hz_not_null[label="spi_max_speed_hz_not_null"];
+		list_add_spi_message_queue_to_bitbang_queue_tail[label="list_add_spi_message_queue_to_bitbang_queue_tail"];
+		queue_bitbang_work_to_bitbang_workqueuework[label="queue_bitbang_work_to_bitbang_workqueuework"];
+		unlock_bitbang_lock[label="unlock_bitbang_lock"];
+
+		spi_master_get_devdata -> lock_bitbang_lock;
+		lock_bitbang_lock -> spi_max_speed_hz_not_null;
+		spi_max_speed_hz_not_null -> list_add_spi_message_queue_to_bitbang_queue_tail;
+		list_add_spi_message_queue_to_bitbang_queue_tail -> queue_bitbang_work_to_bitbang_workqueuework;
+		queue_bitbang_work_to_bitbang_workqueuework -> unlock_bitbang_lock;
+		spi_max_speed_hz_not_null -> unlock_bitbang_lock;
+}

@@ -1,0 +1,54 @@
+digraph spi_bitbang_start{
+        label="int spi_bitbang_start(struct spi_bitbang *bitbang)";
+		
+        size="10,18";
+        ratio=filled;
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		bitbang_master_or_chipselect_null[label="bitbang_master_or_chipselect_null"];
+		return_EINVAL[label="return_EINVAL"];
+		init_bitbang_work_with_bitbang_work[label="init_bitbang_work_with_bitbang_work"];
+		init_bitbang_queue[label="init_bitbang_queue"];
+		bitbang_master_mode_bits_null[label="bitbang_master_mode_bits_null"];
+		set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage[label="set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage"];
+		bitbang_master_transfer_null[label="bitbang_master_transfer_null"];
+		set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func[label="set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func"];
+		bitbang_txrx_bufs_null[label="bitbang_txrx_bufs_null"];
+		clean_bitbang_use_dma[label="clean_bitbang_use_dma"];
+		set_bitbang_txrx_bufs_to_spi_bitbang_bufs[label="set_bitbang_txrx_bufs_to_spi_bitbang_bufs"];
+		bitbang_master_setup_null[label="bitbang_master_setup_null"];
+		bitbang_setup_transfer_null[label="bitbang_setup_transfer"];
+		set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer[label="set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer"];
+		set_bitbang_master_setup_to_spi_bitbang_setup[label="set_bitbang_master_setup_to_spi_bitbang_setup"];
+		set_bitbang_master_cleanup_to_spi_bitbang_cleanup[label="set_bitbang_master_cleanup_to_spi_bitbang_cleanup"];
+		bitbang_master_setup_null_1[label="bitbang_master_setup_null"];
+		return_EINVAL_1[label="return_EINVAL"];
+		clean_bitbang_busy[label="clean_bitbang_busy"];
+		create_singlethread_workqueue_for_bitbang_workqueue[label="create_singlethread_workqueue_for_bitbang_workqueue"];
+		spi_register_master[label="spi_register_master(bitbang->master);"];
+
+		bitbang_master_or_chipselect_null -> return_EINVAL;
+		bitbang_master_or_chipselect_null -> init_bitbang_work_with_bitbang_work;
+		init_bitbang_work_with_bitbang_work -> init_bitbang_queue;
+		init_bitbang_queue -> bitbang_master_mode_bits_null;
+		bitbang_master_mode_bits_null -> set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage;
+		bitbang_master_mode_bits_null -> bitbang_master_transfer_null;
+		set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage -> bitbang_master_transfer_null;
+		bitbang_master_transfer_null -> set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func;
+		bitbang_master_transfer_null -> bitbang_txrx_bufs_null;
+		set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func -> bitbang_txrx_bufs_null;
+		bitbang_txrx_bufs_null -> clean_bitbang_use_dma;
+		clean_bitbang_use_dma -> set_bitbang_txrx_bufs_to_spi_bitbang_bufs;
+		set_bitbang_txrx_bufs_to_spi_bitbang_bufs -> bitbang_master_setup_null;
+		bitbang_master_setup_null -> bitbang_setup_transfer_null;
+		bitbang_setup_transfer_null -> set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer;
+		set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer -> set_bitbang_master_setup_to_spi_bitbang_setup;
+		set_bitbang_master_setup_to_spi_bitbang_setup -> set_bitbang_master_cleanup_to_spi_bitbang_cleanup;
+		bitbang_setup_transfer_null -> set_bitbang_master_setup_to_spi_bitbang_setup;
+		set_bitbang_master_cleanup_to_spi_bitbang_cleanup -> bitbang_master_setup_null_1;
+		bitbang_master_setup_null_1 -> return_EINVAL_1;
+		return_EINVAL_1 -> clean_bitbang_busy;
+		bitbang_txrx_bufs_null -> clean_bitbang_busy;
+		clean_bitbang_busy -> create_singlethread_workqueue_for_bitbang_workqueue;
+		create_singlethread_workqueue_for_bitbang_workqueue -> spi_register_master;
+}

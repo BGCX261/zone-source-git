@@ -1,0 +1,15 @@
+digraph spi_init{
+		label="static int __init spi_init(void);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		alloc_global_buf[label="alloc_global_buf"];
+		bus_register[label="bus_register(&spi_bus_type);"];
+		class_register[label="class_register(&spi_master_class);"];
+		
+		
+		
+		}

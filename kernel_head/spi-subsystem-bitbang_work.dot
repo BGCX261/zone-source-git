@@ -1,0 +1,75 @@
+digraph spi_bitbang_bufs{
+        label="static void bitbang_work(struct work_struct *work)";
+		
+        size="10,18";
+        ratio=filled;
+
+		lock_bitbang_lock[label="lock_bitbang_lock"];
+		set_bitbang_busy[label="set_bitbang_busy"];
+		bitbang_not_empty[label="bitbang_not_empty"];
+		get_next_spi_message[label="get_next_spi_message"];
+		del_spi_message_from_spi_bitbang_queue[label="del_spi_message_from_spi_bitbang_queue"];
+		unlock_bitbang_lock[label="unlock_bitbang_lock"];
+		set_cs_change_true[label="set_cs_change_true"];
+		set_nsecs[label="set_nsecs"];
+        list_for_spi_transfer[label="list_for_spi_transfer"];
+		spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func[label="spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func"];
+		cs_change_true[label="cs_change_true"];
+		call_bit_bang_chipselect_active[label="call_bitbang_chipselect_active"];
+		ndelay_nsecs[label="ndelay_nsecs"];
+		get_spi_cs_change_for_cs_change[label="get_spi_cs_change_for_cs_change"];
+		
+		call_bit_bang_txrx_bufs[label="call_bit_bang_txrx_bufs"];
+		update_actual_length[label="update_actual_length"];
+		spi_transfer_delay_usecs_not_null[label="spi_transfer_delay_usecs_not_null"];
+		udelay_spi_transfer_delay_usecs[label="udelay_spi_transfer_delay_usecs"];
+		cs_change_true_1[label="cs_change_true"];
+		queue_empty[label="queue_empty"];
+		ndelay_nsecs_1[label="ndelay_nsecs"];
+		bit_bang_chipselect_inactive[label="bit_bang_chipselect_inactive"];
+		ndelay_ncecs_2[label="ndelay_ncecs"];
+		set_spi_message_status[label="set_spi_message_status"];
+		call_spi_message_complete[label="call_spi_message_complete"];
+		no_error_and_cs_change_not_true[label="no_error_and_cs_change_not_true"];
+		ndelay_ncecs_3[label="ndelay_ncecs"];
+		bit_bang_chipselect_inactive_1[label="bit_bang_chipselect_inactive"];
+		ndelay_ncecs_4[label="ndelay_ncecs"];
+		lock_bitbang_lock_1[label="lock_bitbang_lock"];
+		clear_bit_bang_busy[label="clear_bit_bang_busy"];
+		
+		lock_bitbang_lock -> set_bitbang_busy;
+		set_bitbang_busy -> bitbang_not_empty;
+		bitbang_not_empty -> get_next_spi_message;
+		get_next_spi_message -> del_spi_message_from_spi_bitbang_queue;
+		del_spi_message_from_spi_bitbang_queue -> unlock_bitbang_lock;
+		unlock_bitbang_lock -> set_cs_change_true;
+		set_cs_change_true -> set_nsecs;
+		set_nsecs -> list_for_spi_transfer;
+		list_for_spi_transfer -> spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func;
+		spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func -> cs_change_true;
+		cs_change_true -> call_bit_bang_chipselect_active;
+		call_bit_bang_chipselect_active -> ndelay_nsecs;
+		ndelay_nsecs -> get_spi_cs_change_for_cs_change;
+		get_spi_cs_change_for_cs_change -> call_bit_bang_txrx_bufs;
+		call_bit_bang_txrx_bufs -> update_actual_length;
+		update_actual_length -> spi_transfer_delay_usecs_not_null;
+		spi_transfer_delay_usecs_not_null -> udelay_spi_transfer_delay_usecs;
+		udelay_spi_transfer_delay_usecs -> cs_change_true_1;
+		cs_change_true_1 -> list_for_spi_transfer;
+		cs_change_true_1 -> queue_empty;
+		queue_empty -> bitbang_not_empty;
+		queue_empty -> ndelay_nsecs_1;
+		ndelay_nsecs_1 -> bit_bang_chipselect_inactive;
+		bit_bang_chipselect_inactive -> ndelay_ncecs_2;
+		ndelay_ncecs_2 -> list_for_spi_transfer;
+		ndelay_ncecs_2 -> set_spi_message_status;
+		set_spi_message_status -> call_spi_message_complete;
+		call_spi_message_complete -> no_error_and_cs_change_not_true;
+		no_error_and_cs_change_not_true -> ndelay_ncecs_3;
+		ndelay_ncecs_3 -> bit_bang_chipselect_inactive_1;
+		3 -> bit_bang_chipselect_inactive_1 -> ndelay_ncecs_4;
+		ndelay_ncecs_4 -> lock_bitbang_lock_1;
+		no_error_and_cs_change_not_true -> lock_bitbang_lock_1;
+		lock_bitbang_lock_1 -> queue_empty;
+		queue_empty -> clear_bit_bang_busy;
+}

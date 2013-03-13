@@ -1,0 +1,13 @@
+digraph spi_drv_shutdown{
+        label="static int spi_drv_shutdown(struct device *dev);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		to_spi_driver[label="to_spi_driver(dev->driver);"];
+		shutdown[label="sdrv->shutdown(to_spi_device(dev));"];
+
+		to_spi_driver -> shutdown;
+}

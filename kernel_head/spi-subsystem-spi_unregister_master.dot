@@ -1,0 +1,13 @@
+digraph spi_unregister_master{
+		label="void spi_unregister_master(struct spi_master *master);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		list_del[label="list_del(&master->list);"];
+		device_for_each_child[label="device_for_each_child(&master->dev, NULL, __unregister);"];
+		device_unregister[label="device_unregister(&master->dev);"];
+
+}

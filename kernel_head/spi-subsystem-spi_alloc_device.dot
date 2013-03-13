@@ -1,0 +1,20 @@
+digraph spi_alloc_device{
+        label="struct spi_device *spi_alloc_device(struct spi_master *master);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		get_parent[label="master->dev.parent;"];
+		spi_master_get[label="spi_master_get(master)"];
+		alloc_spi[label="kzalloc()"];
+		spi_master_put[label="spi_master_put(master);"];
+		get_master[label="spi->master = master;"];
+		get_parent[label="	spi->dev.parent = dev;"];
+		get_bus[label="	spi->dev.bus = &spi_bus_type;"];
+		get_release[label="spi->dev.release = spidev_release;"];
+		device_initialize[label="device_initialize(&spi->dev);"];
+		
+
+}
