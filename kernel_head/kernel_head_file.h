@@ -1,3 +1,63 @@
+/* page.h */
+/* PAGE_SHIFT determines the page size */
+#define PAGE_SHIFT		12
+#define PAGE_SIZE		(1UL << PAGE_SHIFT)
+#define PAGE_MASK		(~(PAGE_SIZE-1))
+
+/* include/asm-i386/pgtable-3level-defs.h: */
+#define PMD_SHIFT 21
+#define PTRS_PER_PMD	512 	/* 2^(32-PMD_SHIFT) */
+#define PGDIR_SHIFT	30
+#define PTRS_PER_PGD	4 		/*  2^(32-PGDIR_SHIFT) */
+
+/* include/asm-i386/pgtable-2level-defs.h: */
+#define PGDIR_SHIFT 22
+
+/* include/asm-i386/pgtable.h: */
+#define _PAGE_BIT_PRESENT	0
+#define _PAGE_BIT_RW		1
+#define _PAGE_BIT_USER		2
+#define _PAGE_BIT_PWT		3
+#define _PAGE_BIT_PCD		4
+#define _PAGE_BIT_ACCESSED	5
+#define _PAGE_BIT_DIRTY		6
+#define _PAGE_BIT_PSE		7	/* 4 MB (or 2MB) page, Pentium+, if present.. */
+#define _PAGE_BIT_GLOBAL	8	/* Global TLB entry PPro+ */
+#define _PAGE_BIT_UNUSED1	9	/* available for programmer */
+#define _PAGE_BIT_UNUSED2	10
+#define _PAGE_BIT_UNUSED3	11
+#define _PAGE_BIT_NX		63
+
+#define _PAGE_PRESENT	0x001
+#define _PAGE_RW	0x002
+#define _PAGE_USER	0x004
+#define _PAGE_PWT	0x008
+#define _PAGE_PCD	0x010
+#define _PAGE_ACCESSED	0x020
+#define _PAGE_DIRTY	0x040
+#define _PAGE_PSE	0x080	/* 4 MB (or 2MB) page, Pentium+, if present.. */
+#define _PAGE_GLOBAL	0x100	/* Global TLB entry PPro+ */
+#define _PAGE_UNUSED1	0x200	/* available for programmer */
+#define _PAGE_UNUSED2	0x400
+#define _PAGE_UNUSED3	0x800
+
+
+/* include/asm-i386/page.h: */
+#ifdef CONFIG_X86_PAE
+extern unsigned long long __supported_pte_mask;
+typedef struct { unsigned long pte_low, pte_high; } pte_t;
+typedef struct { unsigned long long pmd; } pmd_t;
+typedef struct { unsigned long long pgd; } pgd_t;
+typedef struct { unsigned long long pgprot; } pgprot_t;
+#define pmd_val(x)	((x).pmd)
+#define pte_val(x)	((x).pte_low | ((unsigned long long)(x).pte_high << 32))
+
+/* include/asm-i386/page.h: */
+#define __pte(x) ((pte_t) { (x) } )
+#define __pgd(x) ((pgd_t) { (x) } )
+#define __pgprot(x)	((pgprot_t) { (x) } )
+
+
 /* sched.h */
 struct task_struct {
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */

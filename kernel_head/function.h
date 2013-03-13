@@ -1,14 +1,135 @@
+/* include/asm-i386/pgtable-3level.h: */
+/* pgd,pmd,pud,pte是一个整型值 */
+/* 页框号就是mem_map的下标 */
+/* 一些宏是的page参数就是mem_map数组中某个元素的地址,理解mk_pte就明白了不少东西了 */
+#define pmd_val(x)	((x).pmd)
+#define pte_val(x)	((x).pte_low | ((unsigned long long)(x).pte_high << 32))
+
+#define pud_none(pud)				0
+#define pud_bad(pud)				0
+#define pud_present(pud)			1
+
+/* low and high is none */
+static inline int pte_none(pte_t pte)
+#define pmd_none(x)	(!pmd_val(x))
+/* include/asm-i386/pgtable.h: */
+#define pte_clear(mm,addr,xp) do { set_pte_at(mm, addr, xp, __pte(0)); } while (0)
+/* include/asm-i386/pgtable-3level.h: */
+#define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
+/* include/asm-i386/pgtable-2level.h: */
+#define set_pte(pteptr, pteval) (*(pteptr) = pteval)
+/* include/asm-i386/pgtable-3level.h: */
+/* set high then set low , it's very different with arm */
+static inline void set_pte(pte_t *ptep, pte_t pte)
+/* include/asm-i386/pgtable-2level.h: */
+#define set_pmd(pmdptr, pmdval) (*(pmdptr) = (pmdval))
+/* include/asm-i386/pgtable-3level.h: */
+#define set_pmd(pmdptr,pmdval) set_64bit((unsigned long long *)(pmdptr),pmd_val(pmdval))
+/* include/asm-i386/pgtable-3level.h: */
+#define set_pud(pudptr,pudval) set_64bit((unsigned long long *)(pudptr),pud_val(pudval))
+/* include/asm-i386/pgtable-2level.h: */
+#define pte_same(a, b) ((a).pte_low == (b).pte_low)
+/* include/asm-i386/pgtable-3level.h: */
+/* high and low all the same */
+static inline int pte_same(pte_t a, pte_t b)
+/* include/asm-i386/pgtable.h: , 只有一个地方使用 */
+/* 可以用这种方法来判断某特定的几位是否设置 */
+#define pmd_large(pmd) ((pmd_val(pmd) & (_PAGE_PSE|_PAGE_PRESENT)) == (_PAGE_PSE|_PAGE_PRESENT))
+/* include/asm-i386/pgtable.h: */
+#define pte_present(x) ((x).pte_low & (_PAGE_PRESENT | _PAGE_PROTNONE))
+/* include/asm-i386/pgtable.h: */
+#define pmd_present(x) (pmd_val(x) & _PAGE_PRESENT)
+/* include/asm-i386/pgtable.h: */
+static inline int pte_user(pte_t pte) { return (pte).pte_low & _PAGE_USER; }
+/* include/asm-i386/pgtable.h: */
+static inline int pte_read(pte_t pte) { return (pte).pte_low & _PAGE_USER; }
+/* include/asm-i386/pgtable.h: */
+static inline int pte_write(pte_t pte) { return (pte).pte_low & _PAGE_RW; }
+/* include/asm-i386/pgtable-2level.h: */
+/* pte_user() */
+static inline int pte_exec(pte_t pte)
+/* include/asm-i386/pgtable.h: */
+static inline int pte_dirty(pte_t pte) { return (pte).pte_low & _PAGE_DIRTY; }
+/* include/asm-i386/pgtable.h: */
+static inline int pte_young(pte_t pte) { return (pte).pte_low & _PAGE_ACCESSED; }
+/* include/asm-i386/pgtable.h: */
+static inline int pte_file(pte_t pte) { return (pte).pte_low & _PAGE_FILE; }
+/* include/asm-i386/pgtable.h: */
+#define mk_pte_huge(entry) ((entry).pte_low |= _PAGE_PRESENT | _PAGE_PSE)
+/* include/asm-i386/pgtable.h: */
+#define pte_index(address) (((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1)) /* index of the page table */
+/* include/asm-i386/pgtable.h: */
+#define pgd_index(address) (((address) >> PGDIR_SHIFT) & (PTRS_PER_PGD-1))
+/* include/asm-i386/pgtable.h: */
+#define pte_offset_kernel(dir, address) ((pte_t *) pmd_page_kernel(*(dir)) +  pte_index(address))
+/* include/asm-i386/pgtable.h: */
+#define pmd_index(address) (((address) >> PMD_SHIFT) & (PTRS_PER_PMD-1))
+/* include/asm-i386/pgtable.h: */
+#define pgd_offset(mm, address) ((mm)->pgd+pgd_index(address))
+/* include/asm-i386/pgtable-3level.h: */
+#define pmd_page_kernel(pmd) ((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
+#define pud_page(pud) ((struct page *) __va(pud_val(pud) & PAGE_MASK))
+#define pud_page_kernel(pud) ((unsigned long) __va(pud_val(pud) & PAGE_MASK))
+#define pmd_offset(pud, address) ((pmd_t *) pud_page(*(pud)) + pmd_index(address))
+/* include/asm-i386/pgtable-2level.h: */
+#define pte_page(x) pfn_to_page(pte_pfn(x))
+/* include/asm-i386/pgtable-2level.h: */
+/* 将类型为pte的变量转成页框号 */
+#define pte_pfn(x) ((unsigned long )(((x).pte_low >> PAGE_SHIFT)))
+/* CONFIG_DISCONTIGMEM
+   Say Y to support efficient handling of discontiguous physical memory,
+   for architectures which are either NUMA (Non-Uniform Memory Access)
+   or have huge holes in the physical address space for other reasons.  */
+/* include/asm-i386/mmzone.h: */
+#ifdef CONFIG_DISCONTIGMEM
+/* 用页框号转成该页的描述符的变量的地址 */
+#define pfn_to_page(pfn)						\
+({									\
+	unsigned long __pfn = pfn;					\
+	int __node  = pfn_to_nid(__pfn);				\
+	&node_mem_map(__node)[node_localnr(__pfn,__node)];		\
+})
+#define page_to_pfn(pg)							\
+({									\
+	struct page *__page = pg;					\
+	struct zone *__zone = page_zone(__page);			\
+	(unsigned long)(__page - __zone->zone_mem_map)			\
+		+ __zone->zone_start_pfn;				\
+})
+#else
+#define pfn_to_page(pfn)	(mem_map + (pfn))
+#define page_to_pfn(page) ((unsigned long )((page) - mem_map))
+/* include/asm-i386/pgtable-2level.h: */
+#define pmd_page(pmd) (pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
+/* include/asm-i386/pgtable.h: */
+#define mk_pte(page, pgprot) pfn_pte(page_to_pfn(page), (pgprot))
+/* include/asm-i386/pgtable-2level.h: */
+#define pfn_pte(pfn, prot) __pte(((pfn) << PAGE_SHIFT) | pgprot_val(prot))
+/* include/asm-i386/pgtable-3level.h: */
+static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
+/* include/asm-i386/pgtable.h: */
+#define pte_offset_map(dir, address) \
+	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
+#define pte_offset_map(dir, address) \
+	((pte_t *)page_address(pmd_page(*(dir))) + pte_index(address))
+/* include/asm-i386/page.h: */
+#define __pa(x)			((unsigned long)(x)-PAGE_OFFSET)
+#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+/* arch/i386/mm/pgtable.c: */
+pgd_t *pgd_alloc(struct mm_struct *mm)
+
+
 /* 从address_space中删除的页是怎么被回收的呢？
  对于要加一个东西就要注意是否分配，计数器，对其它数据结构的影响等问题 */
 
 #define LIST_HEAD_INIT(name)
-#define LIST_HEAD(name)
+#define LIST_HEAD(name)			/* using LIST_HEAD_INIT */
 #define INIT_LIST_HEAD(ptr)
 static inline void __list_add(struct list_head*,struct list_head* prev,struct list_head* next);
-static inline void list_add(struct list_head *new, struct list_head *head);
-static inline void list_add_tail(struct list_head *new, struct list_head *head);
+static inline void list_add(struct list_head *new, struct list_head *head); /* new after head */
+static inline void list_add_tail(struct list_head *new, struct list_head *head); /* new before head */
 static inline void __list_add_rcu(struct list_head * new,
-								  struct list_head * prev, struct list_head * next);
+								  struct list_head * prev, struct list_head * next); /* add smp_wmb */
 static inline void list_add_rcu(struct list_head *new, struct list_head *head);
 static inline void list_add_tail_rcu(struct list_head *new,
 									 struct list_head *head);
@@ -53,10 +174,10 @@ static inline void list_replace_rcu(struct list_head *old, struct list_head *new
  * @list: the entry to move
  * @head: the head that will precede our entry
  */
-static inline void list_move(struct list_head *list, struct list_head *head);
+static inline void list_move(struct list_head *list, struct list_head *head); /* 把list从原来链表中删掉，再把它加到head链表中 */
 static inline void list_move_tail(struct list_head *list,
 								  struct list_head *head);
-static inline int list_empty(const struct list_head *head);
+static inline int list_empty(const struct list_head *head); /* next 等于 head */
 /* 如果函数返回1，那么一定是空的，所以不用加锁来判数是否为空 */
 static inline int list_empty_careful(const struct list_head *head);
 /* list指向一个链表的头，head又指向另一个链表的头
@@ -71,7 +192,7 @@ static inline void list_splice_init(struct list_head *list,
 									struct list_head *head);
 /* list_del把删除的点prev,next指向一个指定的地址
  list_del_init把删除的点prev,next指向自已 */
-static inline void list_del_init(struct list_head *entry);#define list_entry(ptr, type, member);
+static inline void list_del_init(struct list_head *entry);
 #define list_entry(ptr, type, member)
 /* head的next为第一个 */
 #define list_for_each(pos, head);
@@ -81,7 +202,6 @@ static inline void list_del_init(struct list_head *entry);#define list_entry(ptr
 #define list_for_each_prev(pos, head);
 /* 循环过程中可以把pos删除掉 */
 #define list_for_each_safe(pos, n, head)
-#define list_for_each_entry(pos, head, member)
 /* 反方向 */
 #define list_for_each_entry_reverse(pos, head, member)
 #define list_prepare_entry(pos, head, member)
@@ -142,7 +262,7 @@ static inline int hlist_empty(const struct hlist_head *h);
 */
 #define SET_LINKS(p);
 #define thread_group_leader(p);	/* 判断p是否是thread group leader */
-#define add_parent(p, parent);
+#define add_parent(p, parent);	/* add p to parent's children list */
 #define REMOVE_LINKS(p);
 /* remove from the list of parent's children */
 #define remove_parent(p);
