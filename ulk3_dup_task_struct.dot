@@ -1,0 +1,33 @@
+digraph dup_task_struct{
+        label="struct task_struct *dup_task_struct(struct task_struct *orig)";
+	
+        size="10,18";
+        ratio=filled;
+        
+        
+        node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+        
+        prepare_to_copy[label="	prepare_to_copy(orig);"];
+        alloc_task_struct[label="alloc_task_struct();"];
+        alloc_thread_info[label="alloc_thread_info(tsk);"];
+        free_task_struct[label="free_task_struct(tsk);"];
+        get_ti;
+        get_tsk;
+        put_ti;
+        put_task;
+        atomic_set[label="atomic_set(&tsk->usage,2);"];
+        return_null;
+        return_tsk;
+        
+        prepare_to_copy -> alloc_task_struct;
+        alloc_task_struct -> alloc_thread_info[label="true"];
+        alloc_task_struct -> return_null;
+        alloc_thread_info -> free_task_struct[label="flase"];
+        free_task_struct -> return_null;
+        alloc_thread_info -> get_ti;
+        get_ti -> get_tsk;
+        get_tsk -> put_ti;
+        put_ti -> put_task;
+        put_task -> atomic_set;
+        atomic_set -> return_tsk;
+}
