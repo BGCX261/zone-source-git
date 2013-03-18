@@ -1,0 +1,46 @@
+NPP_GetValue is called
+NPP_GetValue is called
+NPP_Initialize : called
+NPP_GetValue is called
+NPP_SetWindow : called for instance ac825ac8
+Window from browser - 58720257
+NPP_SetWindow : called for instance ac825ac8
+Window from browser - 58720257
+NPP_SetWindow : called for instance ac825ac8
+Window from browser - 58720257
+NPP_NewStream : called for instance ac825ac8, stream 8894de60, URL http://www.zlgmcu.com/philips/yingrong/lpc900/LPC900_ISP_2.pdf, stream size 161336, seekable 1
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 0, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 16384, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 32768, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 49152, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 65536, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 81920, length = 7867, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 89787, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 106171, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 122555, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 138939, length = 16384, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_Write : called for instance ac825ac8, stream 8894de60, offset = 155323, length = 6013, streamlength = 161336
+Trying for window attributes
+Trying for query tree
+NPP_GetValue is called
+NPP_GetValue is called

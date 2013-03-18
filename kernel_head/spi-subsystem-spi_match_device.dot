@@ -1,0 +1,24 @@
+digraph spi_match_device{
+        label="static int spi_match_device(struct device *dev, struct device_driver *drv);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		to_spi_device[label="to_spi_device(dev)"];
+		to_spi_driver[label="to_spi_driver(drv)"];
+
+		of_driver_match_device[label="of_driver_match_device(dev, drv)"];
+		return_true;
+
+		spi_match_id[label="spi_match_id(sdrv->id_table, spi);"];
+		strcmp[label="strcmp(spi->modalias, drv->name) == 0;"];
+
+		of_driver_match_device -> retrun_true;
+		of_driver_match_device -> spi_match_id;
+		spi_match_id -> return_true;
+		spi_match_id -> strcmp;
+		strcmp -> return;
+		
+}

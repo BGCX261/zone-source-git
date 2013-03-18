@@ -1,0 +1,13 @@
+digraph spi_busnum_to_master{
+		label="struct spi_master *spi_busnum_to_master(u16 bus_num)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		class_find_device[label="class_find_device(&spi_master_class, NULL, &bus_num, __spi_master_match);"];
+		container_of[label="container_of(dev, struct spi_master, dev);"];
+
+		class_find_device -> container_of;
+}

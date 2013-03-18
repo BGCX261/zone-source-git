@@ -1,0 +1,20 @@
+digraph spi_busnum_to_master{
+		label="struct spi_master *spi_busnum_to_master(u16 bus_num)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		get_master_bus_lock_spinlock[label="get_master_bus_lock_spinlock"];
+		bus_lock_flag[label="master->bus_lock_flag"];
+		return_EBUSY[label="return_EBUSY"];
+		__spi_async[label="__spi_async(spi, message);"]
+		put_master_bus_lock_spinlock[label="put_master_bus_lock_spinlock"];
+
+		get_master_bus_lock_spinlock -> bus_lock_flag;
+		bus_lock_flag -> return_EBUSY;
+		bus_lock_flag -> __spi_async;
+		__spi_async -> put_master_bus_lock_spinlock;
+		
+}

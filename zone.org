@@ -17,8 +17,7 @@ kernel_init+0x0/0x23c
 kernel_thread_helper+0x6/0x10
 
 ==============================12/02/03==============================
-和公司谈薪资：http://topic.csdn.net/u/20120116/15/8e76bb33-342f-4149-
-a2e3-2ff618e81acf.html
+和公司谈薪资：http://topic.csdn.net/u/20120116/15/8e76bb33-342f-4149-a2e3-2ff618e81acf.html
 总结:反问，第一次叫价要尽量高。
 
 ==============================12/02/04==============================
@@ -37,8 +36,7 @@ exit()函数在stdlib.h中
 代码管理工具有:cvs,svn,git,hg
 
 如何提高程序员生产效率：
-http://www.cnblogs.com/mindsbook/archive/2009/11/09/improve_porgammer
-_productivity_1.html
+http://www.cnblogs.com/mindsbook/archive/2009/11/09/improve_porgammer_productivity_1.html
 
 mplayer的播放列表：http://blog.csdn.net/yhguo2008/article/details/6362
 213
@@ -1107,6 +1105,7 @@ http://mirrors.163.com/fedora/releases/  这个地址有fedora的安装包下载
 
 查看设备或端口等等被哪个程序使用的命令:lsof
 http://lelong.iteye.com/blog/844808
+lsof - list open files
 
 ==============================12/02/23==============================
 
@@ -4213,6 +4212,33 @@ chmod 777 /sys/power/state
 
 emacs 的帮助文档有semantic
 
+==============================[2012-11-20 二]==============================
+
+(内核)可以用list来实现堆栈
+
+==============================[2012-11-21 三]==============================
+
+这种周期型的程序并发时是不能加锁的，加锁之后周期就难预测了。
+
+把所有做的东西一一列出来，并做好顺序真的不错，想好了所有可能的情况之后才动手，就像今天改
+温度测试的程序一样。
+
+看看主管的分配的任务的时间经常是多少，如果是一天，
+
+==============================[2012-11-23 五]==============================
+
+如果有报链接的错误，要注意是不是链接顺序的问题。
+
+==============================[2012-11-26 一]==============================
+
+在exit.c中没有nr_threads的声明，可以用semantic-ia-fast-jump来找到，但是不知道是不是
+include目录文件的配置问题，所以有些emacs跳不到。
+
+在看内核时，看到一句不明白的时候，理解的方法是首先弄懂所有涉及到的变量。
+
+gcc 报了一个这样的错'ssa_name' not supported by pp_c_expression
+后来改了不用优化编译就不会有错了。这个答案是个google上找的。
+
 ==============================[2012-12-01 Sat]==============================
 
 sudo !!
@@ -4308,6 +4334,109 @@ managers)。所谓干活不由东，累死也无功。因为和上司的不和�
 学到了核心技术或者较高层的管理经验，遭遇人生的天花板的时候，反而会选择
 跳到一些中等的公司进行半创业或者索性自主创业，以期人生获得更大成功。
 
+==============================[2012-12-04 二]==============================
+
+CLONE_PARENT_SETTID_set和set_CLONE_PARENT_SETTID，前者是状态，后者是动作，在写
+ulk的dot时要注意。
+
+无论是全局的还是局部的结构体中的数组的初始化可以这样子的：
+struct bt_cpy cpy = {
+	.FFApply = 0,
+	.barrelTemper = {[0 ... TI_PORT_NUM-1] = 0.0},
+	.t_smpl_time = {[0 ... TI_PORT_NUM-1] = 0},
+	.num_zone = TI_PORT_NUM,
+	// ========== for MPC design ==============
+	.model_delay = {2, 6, 7, 8, 8, 8, 8, 8},	// 20s control
+	/* .Model_A[TI_PORT_NUM][MAXAORDER], */
+	.Controller_N = {[0 ... TI_PORT_NUM-1] = 20},/* {20, 20, 20, 20, 20, 20, 20, 20}, */
+	.aggressive = {2.0, 2.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0},
+	.conservative = {20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0},	// 2 lambda values used for transient and steady state, respectively
+	// ============== for startup control =================
+	// add for the purpose of ILC (solve for not synchronize problem)
+	.idle_stbl_u={0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+	.full_heating_power = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0},
+	.shut_down_distance = {[0 ... TI_PORT_NUM-1] = 0},
+	.power_off_interval = {[0 ... TI_PORT_NUM-1] = 0},
+	.manualBTU = {[0 ... TI_PORT_NUM-1] = 0.0},
+	// ============== for feedforward design ================
+	.operation_stbl_u = {0.3, 7.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0},
+	.ff_learn_threshold = {0, 0, 0, 0, 0, 0, 0, 0},
+	.feedback_start_flag = {0, 0, 0, 0, 0, 0, 0, 0},
+	// ============== for open-loop test ===================
+	.estimated_threshold = {20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0},	// for open-loop heating test
+	.u_output = {[0 ... TI_PORT_NUM-1] = 0.0},
+	.set_point = {[0 ... TI_PORT_NUM-1] = 0.0},
+	// ============== for control mode ================
+	.ky_heat_pressed = 0,
+	.ky_auto_pressed = 0,
+	.bt_ctr_mode = 0,
+	.nz_zone_ol_ctr = 0,
+	.nz_zone_heating_rate = 0,
+	.high = {0,0,0,0,0,0,0,0},	 /* between  0 - 10000 */
+};
+
+
+==============================[2012-12-06 四]==============================
+
+可以用cscope来在本文件搜索一个takon的
+
+可以用svn diff来把不小心删的东西找回来,与emacs合用时比较好。
+
+==============================[2012-12-07 五]==============================
+
+以后用fopen等等打开文件时要同时写上fclose，这个很容易忘，不然会出现一个错
+误就是打开过多的文件之后就会受到linux的限制打不开文件，因为打开文件数已是非大的了。
+
+开发版的makefile不要用优化编译
+
+==============================[2012-12-10 一]==============================
+
+判断后应该马上把保存，把临界区时间窗口缩小 
+
+谷歌搜索技巧
+
+==============================[2012-12-11 二]==============================
+
+dmesg 可以查看有什么命令
+
+==============================[2012-12-13 四]==============================
+
+linux内核最终还是要回归到源码和函数去。
+
+像list_entry这种函数，它的参数的不太看得懂的，但是如果理解了它的原理就会很明白了，甚至不用
+去记住它的参数。
+
+记住函数的功能，参数的含意
+
+
+今天写单片机键盘程序的时候，由于不太熟悉51了，所以想写个简单的再用封装的方法去做，但后来
+直接用模块化的方法，其实也不难，这个还是一步到位的好。
+
+有空记一下51的寄存器
+
+
+==============================[2012-12-14 五]==============================
+
+输出是不能周期输出的，要中断输出。
+
+	pidhash_shift = max(4, fls(megabytes * 4));
+	pidhash_shift = min(12, pidhash_shift);
+
+4 < pidhash_shift < 12
+
+信息还是集中的好，就像关于内核函数的说明，要把它放在function.h这个头文件中.
+
+要看一个比较复杂的函数，就可以举个例子，如generic_fls。
+
+mkdir 后可以建多个文件夹的
+
+一般单片机的A/D转换时间都可以到微秒级
+P89LPC952/954 User manual
+10-bit conversion time of 4 μs at an A/D clock of 9 MHz
+
+供应商评估表
+
+
 ==============================[2013-01-16 Wed]==============================
 
 用陈醋便秘
@@ -4317,11 +4446,603 @@ managers)。所谓干活不由东，累死也无功。因为和上司的不和�
 姜御百邪，男子不可百日无姜，早吃三片姜，胜过人参汤。冬吃萝卜夏吃姜，不
 劳医生开药方
 
-==============================[2013-01-17 Thu]==============================
+==============================[2012-12-17 一]==============================
+
+51的中断程序处理过程中要注意关和开中断。处理过程是关中断-》保护现场-》中断服务程序-》恢复现场
+-》开中断.
+
+51的外部中断要不要清的呢
+
+可以这样子的？
+fprintf(stderr, "Warning" "divider == 0" "/n");
+
+这样子是不行的吗？
+#define LED_BIT_X(X,data) ((data) ? (LED_BIT_X_PORT |= 1 << LED_BIT_X_BIT) : (LED_BIT_X_PORT &= ~(1 << LED_BIT_X_BIT)))
+
+
+==============================[2012-12-18 二]==============================
+
+graphviz这东西还是要经常用啊。
+
+发现graphviz有一个缺点就是箭头往回走的时候没有图的布局有问题，解决的方法是用反箭头。
+
+在同一个subgraph中的node要同rank时，不能在subgraph之外处理：
+		subgraph cluster_collection{
+				filter;
+				input;
+				output;
+				
+						{ rank=same;
+								input;
+								output;
+								}
+				};
+
+==============================[2012-12-19 三]==============================
+
+原来graphviz的“}”是不用分号的
+
+		gui -> btc[dir=both,lhead="cluster_lower_computer",label="上位机：时序控制参数,\l温度控制参数,\l注射保压控制参数,\l滤波控制参数\
+				   \l\l下位机：时序控制结果，\l温度控制结果，\l注射控制结果，\l采集数据，\l输入输出数据\l"];
+在最后加一个\l可以对齐
+
+find -name *.dot 不对
+要find -name \*.dot
+
+画图时可以用包含的关系来表示函数调用。
+
+==============================[2012-12-20 四]==============================
+
+像听早会这东西要不要，不要自己决定，而是问你的上级，你没有权决定这东西。
+
+顿hdzg
+
+
+==============================[2012-12-25 二]==============================
+
+ubuntu 不能直接用su而是用sudo su 
+
+
+export
+export
+export
+export
+export
+export
+export
+PRJROOT=$HOME/AM1808
+ARCHIVE=$PRJROOT/Archive
+KERNEL=$PRJROOT/Kernel
+ROOTFS=$PRJROOT/RootFS
+UBOOT=$PRJROOT/U-Boot
+TOOLS=$PRJROOT/Tools
+IMAGES=$PRJROOT/Images
+虽然只是一两层的目录，但是这还是有用的
+
+==============================[2012-12-26 三]==============================
+
+struct machine_desc
+这个结构体可以知道内核启动时的与平台相关的函数。
+
+OMAP的文档的地址为：
+FFFE E000h 
+但我即看错也搜错了。。。。
+
+深呼吸还真的挺有用的。
+
+==============================[2012-12-27 四]==============================
+
+evinc用鼠标双击两个单词的中间位置时可以选中从双击位置到结尾的的字符。
+
+==============================[2012-12-28 五]==============================
+
+主管说就一天的假不用请了，这不能这样，这其实是主管给你甜头，不要接受哦
+
+
+==============================[2013-01-04 五]==============================
+
+移位时不要移N位是移到了n-1bit的，小心。
+
+code在keil里是关键字来的
+
+今天遇到了一个错误，
+ERROR 107 (ADDRESS SPACE OVERFLOW)
+单片机的程序写得太大了。
+
+把一个字节的某一位置指定的0或1如何做呢？
+
+不应答就算是接收到了。
+
+以后写键盘程序要注意有没有一直按下的按键。
+
+strcmp的参数的命名就是用S1和S2的
+
+==============================[2013-01-05 六]==============================
+
+在51上写了一个函数没调用，编译的数据段大小是123.4但在main函数调用之后就是110了，很是奇怪
+
+注释掉那个函数后还是一样很大，就少了一个局部变量的大小。
+
+因为单片机的data段太小，所以把for循环的i放到了全局，这样中断就不能用了i，这个要注意
+
+crc啊
+
+单片机的中断是阻塞型的还是屏
+
+用边沿和电平触发的交替来实现按键的扫描和中断方式同时使用。
+
+串口的中断是软件清的，而外部中断则不是。
+
+keil的C不能用({});的表达式，所以定义它的宏函数有点问题。
+
+找一些设计协议的书看看。
+
+
+==============================[2013-01-06 日]==============================
+
+在C51中，正在处理一个外部中断时，在上断中要从串口发两个字节，那么发完第一个后发送中断标志
+会产生吗？我觉得应该产生但没有跳到发送中断处理函数。
+
+还是要弄清楚C51的电路才可以啊。
+
+这样在vbox 中guest linux就可以有权限访问共享目录了
+sudo mount -t vboxsf -o uid=1000,gid=1000 share ~/host
+
+在unbutu虚拟机下建了项目，但后来又想放到主机上，这时可以把项目目录复制到主机上，再一共享文件
+用挂载的方式来做。
+
+==============================[2013-01-07 一]==============================
+
+用ssh将虚拟机的东西复制到主机再将其挂到虚拟机不要用cp的方法，因为可能有符号链接的文件，
+所以打包了再解压。
+
+netstat -a | grep tftp
+ps ax | grep tftp
+这可以查看tftp是否运行。
+
+pushd这个是什么命令来的？
+
+三条命令来建当前目录本地git库
+git init .
+git add .
+git commit -m "..."
+
+==============================[2013-01-08 二]==============================
+
+没有alias也一样可以加个ll，在/bin下加一个脚本就可以了。
+
+omapl138 是用了 /device/i2c/下的i2c.c的设备注删函数来来实现i2c设备注删的，不是用自己的
+
+页表是占一页的，globale等等。
+
+the master kernel Page Global Directory就的init进程的Page Global Directory
+
+什么叫内存静态映射：
+http://blog.chinaunix.net/uid-26583794-id-3199883.html
+通常来说，BSP需要提供芯片级驱动，并要为板级驱动提供一
+些服务，在为具体芯片移植linux内核时，通常都会建立芯片级外设I/O内存物理
+地址到虚拟地址的静态映射，这通常是通过板文件中的MACHINE_START宏中的
+map_io函数来实现的，
+
+http://www.233.com/linux/fudao/20100221/094013157.html
+
+Linux内核访问外设I/O内存资源的方式有两种：动态映射(ioremap（是一个函数）)和静态映射
+(map_desc（是一个结构体，在开机时使用来初始化）),从上面网址的文章也可以看出，像
+readl(),writel()这些函数是使用虚拟地址来访问外设的。
+
+http://blog.chinaunix.net/uid-25314629-id-3229330.html
+
+request_region()函数用于申请IO端口，而request_mem_region用于申请IO内存
+(一般为控制寄存器)。申请之后还要通过ioremap函数去映射到内核虚拟地址。
+由此可见在调用ioremap之前还要调用以上两个函数中的一个。
+request_mem_region(),request_region()这两个函数是用来申请一段指定的
+物理地址段，而ioremap()就是用已申请的物理地址再映射，映射到ioremap()函数返回的虚拟地址。
+所谓的request_region(),request_mem_region()申请物理地址空间就是内核的物理地址资源
+中标记一下某一段地址被使用了。
+
+不要以管理者的角度来工作，要以自己的能力来工作。听身体的信号来工作，该休息就休息啊。
+
+==============================[2013-01-09 三]==============================
+
+有struct a{
+};
+然后可以struct a a;
+
+像这样小公司，应该总结工作时的思想和想法，写日记吧。
+
+num_reg = (num_irq + 3) >> 2;	/* 4 channels per register */
+这种写法是和num_irq求2模加num_irq求2余是一样的结果
+
+还可以这样初始化的
+static u8 da850_default_priorities[DA850_N_CP_INTC_IRQ] = {
+	[IRQ_DA8XX_COMMTX]		= 7,
+	[IRQ_DA8XX_COMMRX]		= 7,
+	[IRQ_DA8XX_NINT]		= 7,
+	[IRQ_DA8XX_EVTOUT0]		= 7,
+	[IRQ_DA8XX_EVTOUT1]		= 7,
+	[IRQ_DA8XX_EVTOUT2]		= 7,
+	[IRQ_DA8XX_EVTOUT3]		= 7,
+	[IRQ_DA8XX_EVTOUT4]		= 7,
+	[IRQ_DA8XX_EVTOUT5]		= 7,
+	[IRQ_DA8XX_EVTOUT6]		= 7,
+	[IRQ_DA8XX_EVTOUT7]		= 7,
+	[IRQ_DA8XX_CCINT0]		= 7,
+	[IRQ_DA8XX_CCERRINT]		= 7,
+	[IRQ_DA8XX_TCERRINT0]		= 7
+};
+用[a]=b,
+
+这是先从高向低写，每写一次是8个位。irq_prio不大于8
+			for (val = j = 0; j < 4; j++, k++) {
+				val >>= 8;
+				if (k < num_irq)
+					val |= irq_prio[k] << 24;
+			}
+
+看与平台相关的kernel源码时，在查某个takon时一定要注意是不是这个平台的
+这个可以修改cscope的搜索文件来达到目的。
+
+在linux中，omapl138是把所有的中断的都做成一个优先级的，其实linux的内核也是这样子来简单要求实现的。
+
+看看Linux内核设计与实现这本书的评价。
+
+linux的中断向量默认是245个的，那硬件可以支持更多的中断号怎么办呢？
+
+struct irq_chip这个结构体里的函数有很多是默认配置的。
+
+linux 的中断处理函数也有handle_edge_irq，handle_level_irq,等这些分的。
+
+==============================[2013-01-10 四]==============================
+
+看linux源码时，就是要先定一个区，就是所要理解的区，再找涉及该区的所有文件.
+
+kernel的打印信息是放在缓冲区中等初始化好串口（终端）后一起打印
+
+==============================[2013-01-11 五]==============================
+
+readl()和writel()这类函数不是写入物理地址的啊，好像是写入虚拟地址的啊。
+看了omapl138的东西才知道。
+
+内核显里debug信息
+pr_debug()
+
+    Some files call pr_debug(), which is ordinarily an empty macro that discards
+    its arguments at compile time.  To enable debugging output, build the
+    appropriate file with -DDEBUG by adding
+
+      CFLAGS_[filename].o := -DDEBUG
+
+    to the makefile.
+
+    For example, to see all attempts to spawn a usermode helper (such as
+    /sbin/hotplug), add to lib/Makefile the line:
+
+        CFLAGS_kobject_uevent.o := -DDEBUG
+
+    Then boot the new kernel, do something that spawns a usermode helper, and
+    use the "dmesg" command to view the pr_debug() output.
+
+kernel 的assert()http://stackoverflow.com/questions/6359700/assertion-in-the-kernel
+
+The corresponding kernel macros are BUG_ON and WARN_ON. The former is
+for when you want to make the kernel panic and bring the system down
+(i.e., unrecoverable error). The latter is for when you want to log
+something to the kernel log (viewable via dmesg).
+
+在omap138中是u-boot设置好pll和域、设备的时钟，而在linux里只是读一些寄存
+器来计算出现CPU和设备在使用的时钟来填充内核数据结构。
+
+在omap138中使能时钟就是把体眠模式关掉，这是时钟和体眠的关系统。
+
+的确，__raw_readl()这些函就是使用ioremap所返回的虚拟地址。
+
+在omap138的内核中，关于时钟的一些设置函数就有了实现，所以写驱动可以使用，所以在写一个平台的
+驱动时要先了解内核提供了什么。
+
+==============================[2013-01-14 一]==============================
+
+adobe在linux下看pdf是不用钱的吗？
+
+要建立用emacs画数据结构的图，特别是在看内核时很有用，不用老是记住结构体之间的包含关系。
+
+linux内核有ARRAY_SIZE这个东西。
+
+linux内核的时钟机制又改了，很多到西要看啊。
+
+==============================[2013-01-15 二]==============================
+
+原来Makefile 的$这个符号用的是shell的环境变量，如
+make -C $(KERNEL) M=$(shell pwd) modules
+
+由于没有指定交叉编译器，所以有一个这样的错误：
+/home/yj/AM1808/Kernel/driver/i2c.c:1:0: 错误：代码模式‘kernel’在 32 位模式下不受支持
+/home/yj/AM1808/Kernel/driver/i2c.c:1:0: 对不起，尚未实现：未编译入对 64 位模式的支持
+
+命令是这样的
+make -C $KERNEL M=/home/yj/AM1808/Kernel/driver modules
+但是应该是这样的
+make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- -C $KERNEL M=/home/yj/AM1808/Kernel/driver modules
+
+
+==============================[2013-01-16 三]==============================
+
+vbox可以用linux host的串口
+
+FLASHMAGICE可以设置UCFG1的
+
+指出两点
+
+1 引导向量确认为0（从地址0开始执行），这个不对，引导向量是可以改为0，但是没有必要，改了你就没有办法使用ISP，再之，如何不使能引导状态字，也用不上引导向量。
+
+ 
+
+2你并没有说引导状态字如何设置，不过，无论怎样，你的配置应该总是从0开始跑程序。
+
+ 
+
+ 
+
+【单片机上电不运行情况的分析】
+1.单片机是没有运行，还是运行不正确？
+2.如果是没有运行，检测单片机的基本参数是否已经满足<工作电压要在芯片的引脚处测量><复位引脚的复位曲线如何><晶振是否已经起振><芯片损坏，或者部分功能损坏>。
+3.如果是运行不正确，检测<用了看门狗，没有处理好，芯片上电后处于不停的复位状态，看起来就象没有没有工作起来><是否进入了ISP状态><对单片机写入对所有的IO口以1秒取反一次的程序进行测试>
+
+
+【单片机调试办法】
+用LED进行状态指示，用串口进行数据指示，比用其它外设指示更可靠；
+加入断点，烧写时是在不同的语句后面加入WHILE（1）；
+分模块调试，把每个小功能先调试通过，再进行组合。
+
+LPC900系列单片机具有ISP（In System Programming：在系统编程）/ICP（In Circuit Programming：在电路编程）功能，可以实现多次编程/简易调试。
+
+==============================[2013-01-17 四]==============================
 
 养生堂：
 研究表明并世界公认：一天只要喝3杯绿茶就可以有效预防肿瘤，因为茶的EGCG直接进入肿瘤细胞并
 攻击肿瘤里的双氢叶酸还原梅，使肿瘤細胞失活。
+
+
+下载完一个东西之后，就算是临时的也要加上有意义的名字，以后删除也方便的。。
+
+LPC900系列的单片机用FLASHMAGIC在烧写时一定要选上protect isp code
+
+上电复位，RESET
+http://baike.baidu.com/view/2288977.htm
+
+首先RST保持两个机器周期以上的高电平时自动复位
+
+1、上电复位：上电瞬间，电容充电电流最大，电容相当于短路，RST端为高电平，自动复位；电容两端
+的电压达到电源电压时，电容充电电流为零，电容相当于开路，RST端为低电平，程序正常运行。
+
+2、手动复位：首先经过上电复位，当按下按键时，RST直接与VCC相连，为高电平形成复位，同时电解电
+容被短路放电；按键松开时，VCC对电容充电，充电电流在电阻上，RST依然为高电平，仍然是复位，充
+电完成后，电容相当于开路，RST为低电平，正常工作。
+
+搞了好久终于可以有一个灯亮了，但是在用ISP烧写和用ISP读一个寄存器的时候才会
+亮，这时的下一步调试思路是：排除是ISP才可以让它亮的，而不是程序。所以修改
+程序不让它亮。
+
+李工这家伙也多少会有批漏的啊。
+
+调硬件的时候，用最简单的程序测试，这个程序要保证：时钟对了，看门狗关了，
+所有中断关了，用循环点一个灯和开蜂鸣器。
+
+==============================[2013-01-18 五]==============================
+
+与链表相关的增删改都是有一个这样的大概思路：从链表中增删后修改与这个链表相关的数据结构。
+
+以后就把一个摄像头放在旁边才行，调试这个问题有点郁闷。
+
+烧写之前最最好要全刷。
+
+有时烧写不成功还要全部断电。
+
+今天被#define DEBUG弄了一下，就是在.c文件define了，但是在其它文件使用了。
+
+==============================[2013-01-21 一]==============================
+
+keil的编译器不支##的宏，错的，是支持的，要前后加才可以：
+#define PXMY(port, pin, x_val, y_val) (x_val ? (P##port##M1 |= 1 << pin) : (P##port##M1 &= ~(1<<pin)); \
+									   y_val ? (P##port##M2 |= 1 << pin) : (P##port##M2 &= ~(1<<pin)))
+
+
+虚拟机开串口，真机LINUX也开串口都可以但是通信乱了。
+
+烧录器不接电源时烧录，可以用这种方法来看波形是否有变化来测试烧录器。
+
+{(1 ? (P3M2 |= 1 << 0) : (P3M2 &= ~(1<<0)))};这是错的
+{(1 ? (P3M2 |= 1 << 0) : (P3M2 &= ~(1<<0)));};这是对的
+
+#define PXMY(port,pin,x_val,y_val) {(x_val ? (P##port##M1 |= 1 << pin) : (P##port##M1 &= ~(1<<pin))); \
+		(y_val ? (P##port##M2 |= 1 << pin) : (P##port##M2 &= ~(1<<pin)));};
+这个宏写了我不少时间
+
+端口配置成Input only之后是没有输出的，无论给端口写什么
+Input only (high-impedance)
+
+写单片机的main函数时首先要写while(1);
+
+==============================[2013-01-22 二]==============================
+
+如果在一开始就写很多代码没经过上机测试的话，不能一开始就把所有的代码放在一起
+运行测试，而是一个函数一个函数先测试，就像今天测试的单片机按键板程序。
+
+void coor_down_nr(unsigned char (*coor)[2], char nr)
+{
+	switch (coor[nr][0])
+	{
+	case 0:
+		P0 &= ~(1 << coor[nr][1]);
+		break;
+	case 1:
+		P1 &= ~(1 << coor[nr][1]);
+		break;
+	case 2:
+		P2 &= ~(1 << coor[nr][1]);
+		break;
+	case 3:
+		P3 &= ~(1 << coor[nr][1]);
+		break;
+	default:
+		break;
+	}
+
+}
+在用循环调用这个函数给所有的端口输出时，由于很大一部分的端口是在P2口的，一小
+部分的端口是在P4口的，所以示波器测端口的波形时抖动是很不一样的，P2口的波形
+比较明显而P4口的则是很不明显的。
+
+
+#define BRG0_1   (*((unsigned char volatile xdata*)0xFFB4))
+#define BRG1_1   (*((unsigned char volatile xdata*)0xFFB5))
+和
+sfr BRGR0_0  = 0xBE;
+sfr BRGR1_0  = 0xBF;
+被这两种不同的东西弄死了。
+
+==============================[2013-01-23 三]==============================
+
+蜂鸣器要用PUSH-PULL驱动，用双向不能驱动。
+
+调键盘程序时只有1-8的数字，有经验的就会知道只接了一个坐标值
+
+if ((key = ((P0 & (1 << coor[i][1])) ? 0 : (i+1)) > 0))
+怎么说老是返回1，原来。。。。
+
+按了很多个相同的键，看有没有不一样的值就用emacs的搜索方法：输入01，02，03等等
+04 FF FF FF 04 04 04 04 04 04 FF 04 04 04 04 04 04 04 FF FF 04 FF FF 04 04 FF 04 04 FF FF 04 FF 04 04 FF FF 04 04 FF 04 04 FF FF 04 04 04 FF 04 04 FF 04 04 04 FF 04 04 04 FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 FF FF 04 04 04 FF 04 04 04 FF FF 04 04 FF FF 04 FF FF FF FF FF FF FF FF 04 04 04 04 FF FF FF FF FF FF FF FF 04 04 04 FF FF FF 04 04 04 04 04 04 04 04 04 04 04 FF FF 04 04 FF FF 04 04 04 F
+
+在键盘扫描时用了判断输出，导致不同的引脚输出的脉冲宽度不一样。
+
+有些编译器是不可以在函数的中间声明一个变量的。如KEIL
+
+==============================[2013-01-24 四]==============================
+
+IE1 Interrupt 1 Edge flag. Set by hardware when external interrupt 1 edge is detected. Cleared by hardware
+when the interrupt is processed, or by software.
+外部中断标志是这个意思，但是在用边沿触发时如果在中断处理过程中还有边沿发生的
+话硬件也会把中断标志设置的。
+
+今天发现按键板有一个问题就是返回的值是
+return ((i+1) * temp);
+其实是
+return ((i+1) * 8 + temp);
+
+在扫描键的时候发现一开始扫描的那几键与相近键的键值是一样的，所以要用延时。
+
+用U盘装XP都很可能有问题，说文件找不到，可能是IOS文件的问题。
+
+要找几个不一样的字符可以这样：用EMACS把一样的字符替换成空格就会剩下你要找的了。
+
+
+==============================[2013-01-25 五]==============================
+
+如果用串口发完一个数据后在串口中断处理中没有清接收标志伪证，那么会导致运行速度减慢。
+
+在中断处理函数中一定要清标志位，就像今天不在串口服务例程中清标志位，导致退出中断还进入
+中断。
+
+在用中断时来扫描键盘时会影响串口数据的发送!!!
+
+发现一个问题，就是将串口发送数据写入BUFFER后马上进入中断对64个按键进行扫描，
+那么可能因为对多个引脚进行上下拉使BUFFER出现了错误。这种问题还是用CRC检验
+比较好解决。
+
+keil的extern变量好像不能使用一样，一个值改了但是另外一个值没有被改。
+
+Emacs的C mode可以用Alt+/来作为关键字的补全的。
+
+==============================[2013-01-28 一]==============================
+
+ComTools这个串口调试工具的硬DTS和RTS比较好用
+
+uart_transmit(1<<((cd)&(~0x80)));
+在KEIL里有问题。。。
+
+在KEIL里
+void led_update(unsigned char cd)
+{
+	uart_transmit(1<<((unsigned char)(0x81)&(~0x80)));
+	/* uart_transmit(cd); */
+}
+会发送2
+
+void led_update(unsigned char cd)
+{
+    uart_transmit(cd);
+}
+会发送0x81若cd是0x81
+
+void led_update(unsigned char cd)
+{
+	uart_transmit(1<<(cd&(~0x80)));
+}
+但这个发送0若cd是0x81，为什么会这样子啊。。。。
+uart_transmit((cd&(~0x80)));是1若cd是0x81.
+
+==============================[2013-01-29 二]==============================
+
+KEIL函数库
+http://www.baidu.com/s?ie=utf-8&bs=%E5%8D%95%E7%89%87%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E5%BA%93&f=8&rsv_bp=1&wd=KEIL%E5%87%BD%E6%95%B0%E5%BA%93&rsv_sug3=8&rsv_sug4=458&rsv_sug1=6&inputT=3959
+
+以后打算工作每工作两年之后就休息和学习半年，只有民工的工作才可以这样子，要善于利用的哦。
+
+create-destroy, alloc-free
+
+http://download.csdn.net/download/sironline/356610
+回去下载。
+
+9600的波特率大概是50毫移一个字节的数据对吗？好像是把。
+
+做按键板真心不能用死循环来扫描的，这会影响串口的接收和发送数据的，不知道是不是单片机的设计有问题?
+
+原来除了KEIL还有IAR的
+
+单片机有一个掉电模式：The Brownout Detect function determines if the power supply voltage drops below a
+certain level
+
+让单片机进入空闲模式的目的通常是为了降低系统的功耗
+
+这个单片机要在某个特定的地方才可以休眠的？其它的位置会一直让串口发送数据0？？
+
+	S0BUF = get_crc8(value);
+	delay(10);					/* delay(1)的时间太短 */
+	UART_ENABLE_RX;
+时间太短的话会发送一些FE啊FF之类字符，就是发漏的那些位会被用1补上。
+
+==============================[2013-01-30 三]==============================
+
+原来485是半双工的要用；软件来控制收发协议。232是全双工。
+
+232 485 转换器不行就说不行，由于485是半双工的，所以要用软件来控制收发，
+为了找出是哪里导致了这么高的错误率，我用了这样的方法：把单片机端的485只设置为
+发不能收，把PC机的串口调试软件设置为自动连续发数据，这时单片机的按键不停地按下，
+发现错误率还是很高，而把单片机设为可收可发，而PC端不发数据，这时错误也非常低基本上
+没错,所以怀疑是转换器的问题。
+
+为了检查有没有单片机休眠成功，看电源功率有点难看，所以在一个死循环用串口发一个值，正常的结果
+是按下键的时触发中断唤醒后PC端就只接收到一个值。
+
+
+
+==============================[2013-01-31 四]==============================
+
+http://download.csdn.net/download/yun_long08/2045489
+可以下载记住
+
+之前说到的485问题原来是协议的问题，485是半双工的同时也是一条数据线的，所以要处理好
+同时收发的问题。
+
+现在明白半双工的多机通信的实现了，既然是多机时就没有必要都是主机，与I2C不同，
+485是异步的，有一个主机也可以任意两个从机之间的数据交互，可以用主机转发的方式来处理，
+为保证数据不互相冲突，需要采用轮询的方式通讯，
+而且这种方式也解决了，在只有两个机子的情况下解决同时收发出现的数据错误的问题。
+
+http://zhidao.baidu.com/question/308120148.html
+原来之前用过的MODBUS协议还不知道有这个作用的。
+
+http://baike.baidu.com/view/1861869.htm?fromId=15267
+下面的这个表可以看看，了解一下有哪些协议可以用
 
 ==============================[2013-01-30 Wed]==============================
 
@@ -4336,6 +5057,263 @@ http://blog.csdn.net/coolbacon/article/details/8521841
 ==============================[2013-02-14 Thu]==============================
 
 tree这个命令好用。
+经常刺激太白穴，对睡觉流口水、舌头两边有齿痕、消化不良、手脚冰凉等症状效果很好。
+
+==============================[2013-02-01 五]==============================
+
+关于通信的时候如何选择主从的问题：就看谁发的数据对时实性的要求比较高，高的应该就是主机了。
+如灯值和按键码值。
+
+所谓的波特率就是bit/s,9600的波特率就是1移可以传9600个位。
+
+http://zhidao.baidu.com/question/516397487.html
+http://zhidao.baidu.com/question/235866733.html
+
+单片机的中断向量和中断优先级是不一样的，中断向量是一个中断服务处理程序的地址
+void timers_isr0
+  (
+  void
+  ) interrupt 1 
+interrupt 1 表示的中断向量，与中断优先级无关。
+
+==============================[2013-02-16 六]==============================
+
+每次烧写都要插拔一次串口，一定要加一个USB转串
+
+怪不得老是复位，原来是因为看门狗在休眠时也要喂的。
+
+看一个芯片是不是在休眠时也要喂狗，可以用以发串口数据-休眠-喂狗的顺序看，如果是会一直不停地
+发数据就说明了问题。
+
+==============================[2013-02-17 日]==============================
+
+一个名为ComTools的串口调试程序不错
+
+那个按键板的程序用了串口和定时器的中断嵌套，但以后不要用这种方式来做，为了可移植性或是其它的
+东西还的按照LINUX的方式不依赖中断嵌套。
+
+在外中断与定时器一起使用时要注意：若是外部中断的优先级高时，且在处理外部中断时定时器也到时了，
+这时定时器还会继续计时，如果在外部中断处理过程中又溢出了，就会产生两次定时器中断，所以要注意
+在定时器中断中要清TF定时器中断标志，不然就会运行两次定时器中断函数。
+
+
+如果是一直在复位，就看看复位脚是否被动了手脚，或是不是看门狗出了问题。
+
+==============================[2013-02-18 一]==============================
+
+其实你已经是很累了。。。。。不要压榨你的肾了。。。
+
+是你给自已的压力太大了，想想你现在的钱可以让你不用工作一年在南沙这里住，还可以面试。
+你现在只是还不到一年，你现在的技术也不错。不用给自已那么大的压力了。
+不能像以前那样一天工作8个小时其有2个小时学习，回去又学习2个小时。真的不能规定那么死
+要看自已的状态，不过不能长期处于这种状态，应该是8个小时工作时间不能超过6个小时，其余时
+间可以作总结和休息，休息可以坐着养神。
+同时我是不会晚上加班的，只能调休。
+现代的那么好的时代把自已的身体弄坏了真的不值，不要挑战自已身体的极限啊。
+有时候很难发现自已累了，可以这样：静静地坐着，如果你会困就说明你累了。
+
+出现毛病是在我在电脑上记图片开始的。
+
+李工说这个按键板的程序写得不错，所以以后就更要放松去做事情了。不能再折腾你的肾了啊。
+
+刚才和李工一说话下腋又出汗了。还是不行啊。
+
+李工说按键板的程序再总结总结，说明总结是一个学习方法，但是我和李工不一样的是我是在过程中
+总结的，不是在之后。
+
+不要一下子学太多的东西，因为有很多东西会很快被淘汰掉了，人的一生的精力的有限的，所以注意了。
+
+如果世界没有Linux了，我就不做IT了。
+
+神奇了，不累的话就没那么多尿了。
+
+卧（HID）
+
+谁说看门狗和休眠不可以共用的呢？在进入休眠之后可以停止看门狗，退出休眠之后就开启看门狗
+
+本来是想在硬件组玩玩的，结果玩得我快没命了。
+
+==============================[2013-02-19 二]==============================
+
+关于用shell打印制表符的问题。
+http://superuser.com/questions/362235/how-do-i-enter-a-literal-tab-character-in-a-bash-shell
+
+找出大于100M的文件：
+du -h |grep "[0-9][0-9][0-9]M "
+
+uboot是可以将启动参数传给系统的，所以可以在启动时选择不同的文件系统。
+
+编译内核记住这几条命令：
+make distclean ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
+make da850_omapl138_defconfig ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
+make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- menuconfig
+make uImage ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
+make modules ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
+make modules_install INSTALL_MOD_PATH=/opt/nfs-exports/am1808 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi
+
+本来想打这个命令的：
+make omapl138_2.6.20_config
+但是make oma之后按下TAB没反应，所以就用ll oma再按TAB补全这个名字再把ll删掉就可以了。
+不用一个字母一个字母地打上。
+
+一旦发现下午的尿黄了就不要再太过辛苦了，等白了再说。
+
+看文档时要有随手写上点什么东西。
+
+CPPI RAM:
+The EMAC control module controls device interrupts and incorporates an 8k-byte internal
+RAM to hold EMAC buffer descriptors (also known as CPPI RAM).
+
+==============================[2013-02-20 三]==============================
+
+偶尔在工作桌上坐着睡还是有一个好处的，就是可以体验一下如何在工作时放松，让你有一种这样的感觉。
+并记住这种感觉，以后可以再现。
+
+内核是可以用sprintf的
+	sprintf(emac_cfg[cfg_instance],
+		"%d:%x:%d:%d:%u:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%x:%d:%d:%u:%u:%x:%d",
+		cfg_instance, EMAC_BASE_ADDR,
+		EMAC_INTERRUPT, 0, EMAC_BUS_FREQUENCY,
+		g_link_speed, g_link_mode, EMAC_DEFAULT_PROMISCOUS_ENABLE,
+		EMAC_DEFAULT_BROADCAST_ENABLE,
+		EMAC_DEFAULT_MULTICAST_ENABLE,
+		EMAC_DEFAULT_MAX_FRAME_SIZE,
+		EMAC_DEFAULT_TX_NUM_BD,
+		EMAC_DEFAULT_TX_MAX_SERVICE, EMAC_DEFAULT_RX_NUM_BD,
+		EMAC_DEFAULT_RX_MAX_SERVICE, 0,
+		EMAC_MDIO_BASE_ADDR, 0, 0,
+		EMAC_BUS_FREQUENCY, EMAC_MDIO_FREQUENCY, EMAC_PHY_MASK, 10);
+
+
+做设计的一定要熟悉各种总线的速度。
+
+==============================[2013-02-21 四]==============================
+
+以后还是不要用top来删除进程了用ps aux 和killall组合
+
+==============================[2013-02-22 五]==============================
+
+马太效应
+
+http://zhidao.baidu.com/question/451138869.html
+
+打印16，32，64，位的10，8，16进制
+int main(void)
+{
+unsigned char uc = UCHAR_MAX;
+unsigned short us = USHRT_MAX;
+unsigned int ui = UINT_MAX;
+unsigned long ul = ULONG_MAX;
+unsigned long long ull = ULLONG_MAX;
+puts("[output, specific values are implementation-dependent.]");
+
+printf("UCHAR_MAX, %u (decimal), %#o (octal), %#x (hex)\n",
+uc, uc, uc);
+
+
+printf("USHRT_MAX, %u (decimal), %#o (octal), %#x (hex)\n",
+us, us, us);
+
+printf("UINT_MAX, %u (decimal), %#o (octal),\n %#x (hex)\n",
+ui, ui, ui);
+
+printf("ULONG_MAX, %lu (decimal), %#lo (octal),\n %#lx (hex)\n",
+ul, ul, ul);
+
+printf
+("ULLONG_MAX, %llu (decimal),\n %#llo (octal),\n %#llx (hex)\n",
+ull, ull, ull);
+
+puts("[end of output]");
+return 0;
+}
+
+[output, specific values are implementation-dependent.]
+UCHAR_MAX, 255 (decimal), 0377 (octal), 0xff (hex)
+USHRT_MAX, 65535 (decimal), 0177777 (octal), 0xffff (hex)
+UINT_MAX, 4294967295 (decimal), 037777777777 (octal),
+0xffffffff (hex)
+ULONG_MAX, 4294967295 (decimal), 037777777777 (octal),
+0xffffffff (hex)
+ULLONG_MAX, 18446744073709551615 (decimal),
+01777777777777777777777 (octal),
+0xffffffffffffffff (hex)
+
+
+==============================[2013-02-22 五]==============================
+
+发现Linux的内核是真的有物理地址，逻辑地址，虚拟地址之分，而逻辑地址主要是给程序用于
+计算用的，不能像物理地址和虚拟地址那样访问.
+
+/*
+ * I/O mapping
+ */
+#define IO_PHYS				0x01c00000UL /* the begin */
+#define IO_OFFSET			0xfd000000 /* Virtual IO = 0xfec00000 */
+#define IO_SIZE				0x00400000
+#define IO_VIRT				(IO_PHYS + IO_OFFSET)
+#define io_v2p(va)			((va) - IO_OFFSET)
+#define __IO_ADDRESS(x)			((x) + IO_OFFSET)
+#define IO_ADDRESS(pa)			IOMEM(__IO_ADDRESS(pa)) /* equel io_p2v */
+IO_PHYS + IO_OFFSET之后就是程序使用的逻辑地址了。
+
+==============================[2013-02-25 一]==============================
+
+http://www.linuxfoundation.org/collaborate/workgroups/networking
+可以从这里学一下LINUX的内核的网络。
+
+
+==============================[2013-02-26 二]==============================
+
+#define MDIO_CONTROL_ENABLE           	(1 << 30)
+有30个0的意思
+
+
+#define MSG(format, args...) \
+  printk("%s:%d" format "\n", __FUNCTION__, __LINE__,  ##args)
+
+可以MSG();来调用，不用加字符串。
+
+MII和MDIO都是在EMAC和PHY之间，MII是用来收发数据的，MDIO是EMAC用来管理PHY的。因为可能有多个PHY
+
+MII和MDIO的关系
+MII接口的Management Interface可同时控制多个PHY，802.3协议最多支持32个PHY，但有一定的限制：要符合协议要求的connector特性。所谓Management Interface，即MDC信号和MDIO信号。
+MDIO接口包括两根信号线：MDC和MDIO，通过它，MAC层芯片（或其它控制芯片）可以访问物理层芯片的寄存器
+http://dpinglee.blog.163.com/blog/static/144097753201041131115262/
+
+多机通信可以做成以态网的那样有原地址，目标地址，数据长度，冗余码
+
+其实有时候看自己写过的代码不但只是看代码而已，还有一点就是再次熟悉之前的业务，
+如驱动就是再次认识芯片的功能和特殊性。
+
+==============================[2013-02-28 四]==============================
+
+SPI的典型应用：
+Typical applications
+include interface to external I/O or peripheral expansion via devices such as shift registers, display drivers,
+SPI EPROMS and analog-to-digital converters.
+
+SIMO原来是这样的简称
+Slave in, master out (SPIx_SIMO)
+
+clock polarity
+(rising edge or falling edge)
+
+电脑的232通过一个232到485的转接器与单片机通信的时候，因为调试软件关闭了DTR控制
+而导致了数据发不出去，看来要找时间记一下这些协议了。
+
+octal:八进制
+
+李工说485的正负线可以接反，但是这是错的，导致接到的数据和发的数据都错了。
+
+DAC也有读操作，原来是读寄存器
+
+DAC的时间延时会因为电源电压的不同而不同。
+
+http://zhidao.baidu.com/question/338280356.html
+工作累不累，是你的心态的问题；工资高与不高，看你的付出有多少。
+累不累是心态问题？？我现在也有点这种感觉，看来心态还是不行啊。
+
 
 ==============================[2013-03-03 Sun]==============================
 
@@ -4354,5 +5332,183 @@ tree这个命令好用。
 注意生活护理。
 
 http://maol.banzhu.com/article/maol-11-4411593.html
-经常刺激太白穴，对睡觉流口水、舌头两边有齿痕、消化不良、手脚冰凉等症状效果很好。
 
+==============================[2013-03-04 一]==============================
+
+一个写按键程序的经验：用中断扫描时的按下A键不放，再按下B键，这时键B没触发，而抬起键A，但是
+由于键B没有抬起，所以键A一直触发。这种程序就是检测到一个键按下键就检测有没有抬起。
+
+这个Keil也真是的，居然把链接找不到的函数当作一个警告给用户，这样编译出来的文件肯定是不可用的
+
+不知是Keil的问题，还是单片机的问题，在定时器中断是做了一个发送串口的事情（其中会有中断嵌套）
+就老是发送错误，这个错误还很奇怪，就是放到发送buffer里的值不是RAM的值，不是通信有问题，不
+知是不是程序被优化错了，之前也有一个优化问题，就是不能正常移位。
+
+void uart_transmit_crc
+  (
+  unsigned char value    // data to transmit
+  )
+{
+
+	/* delay(1);					/\* 在用定时器控制时这个延时是必须的 *\/ */
+	while(mtxbusy);
+	mtxbusy = 1;
+	S0BUF = value;
+
+	while(mtxbusy);
+	mtxbusy = 1;
+	S0BUF = get_crc8(value);
+}
+这样就是发送校验码的时候不行
+
+void uart_transmit
+  (
+  unsigned char value    // data to transmit
+  )
+{
+	while(mtxbusy);
+	mtxbusy = 1;
+	/* UART_DISABLE_RX; */
+	S0BUF = value;
+	/* UART_ENABLE_RX; */
+}
+
+void uart_transmit_crc
+  (
+  unsigned char value    // data to transmit
+  )
+{
+	unsigned char crc8 = get_crc8(value);
+	uart_transmit(value);
+	uart_transmit(crc8);
+
+}
+这样才行。
+
+
+==============================[2013-03-05 二]==============================
+
+static struct mtd_partition da850evm_spiflash_part[] = {
+	[0] = {
+		.name = "UBL",
+		.offset = 0,
+		.size = SZ_64K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+	[1] = {
+		.name = "U-Boot",
+		.offset = MTDPART_OFS_APPEND,
+		.size = SZ_512K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+	[2] = {
+		.name = "U-Boot-Env",
+		.offset = MTDPART_OFS_APPEND,
+		.size = SZ_64K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+	[3] = {
+		.name = "Kernel",
+		.offset = MTDPART_OFS_APPEND,
+		.size = SZ_2M + SZ_512K,
+		.mask_flags = 0,
+	},
+	[4] = {
+		.name = "Filesystem",
+		.offset = MTDPART_OFS_APPEND,
+		.size = SZ_4M,
+		.mask_flags = 0,
+	},
+	[5] = {
+		.name = "MAC-Address",
+		.offset = SZ_8M - SZ_64K,
+		.size = SZ_64K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+};
+像这样的5个part，一个part就是一个分区，会在/dev/目录下显示6个part
+
+brw-rw----    1 root     disk      31,   0 Jan  1  2000 /dev/mtdblock0
+brw-rw----    1 root     disk      31,   1 Jan  1  2000 /dev/mtdblock1
+brw-rw----    1 root     disk      31,   2 Jan  1  2000 /dev/mtdblock2
+brw-rw----    1 root     disk      31,   3 Jan  1  2000 /dev/mtdblock3
+brw-rw----    1 root     disk      31,   4 Jan  1  2000 /dev/mtdblock4
+brw-rw----    1 root     disk      31,   5 Jan  1  2000 /dev/mtdblock5
+
+在omapl138/Linux平台上与spi相关的文件有
+    davinci_spi.c        30233  C/l				  /linux-03.21.00.04/drivers/spi/davinci_spi.c
+    spi.c                31547  C/l				  /linux-03.21.00.04/drivers/spi/spi.c
+    board-da850-evm.c    50083  C/l				  /linux-03.21.00.04/arch/arm/mach-davinci/board-da850-evm.c
+    spi.h                29283  C/l				  /linux-03.21.00.04/include/linux/spi/spi.h
+    spidev.c             17514  C/l				  /linux-03.21.00.04/drivers/spi/spidev.c
+
+==============================[2013-03-06 三]==============================
+
+知道任何一个struct driver,struct device, struct spi_device, struct spi_driver
+都可以找到另外三个。
+
+
+spi.c的注释
+/* SPI devices should normally not be created by SPI device drivers; that
+ * would make them board-specific.  Similarly with SPI master drivers.
+ * Device registration normally goes into like arch/.../mach.../board-YYY.c
+ * with other readonly (flashable) information about mainboard devices.
+ */
+
+在spi子系统中，同步发送函数也是通过异步实现的，实现的方法是用complete同步原语。
+
+b.c文件访问a.c文件的一个static函数的方法用指针函数去调用。
+
+spi_transfer结构体里有tx_buf和rx_buf成员，但是一个结构体只能用一个，
+spi_transfer还要被放到spi_message队列里。
+
+==============================[2013-03-07 四]==============================
+
+很多驱动里的probe和remove函数就是，那些模块的module_init和module_exit
+
+emacs中的搜索控制符时输入控制符的方法是直接输入，如输入Tab键就是Ctrl+i.
+而在替换时的输入前要加Ctrl+q再输入控制符。
+
+transfers是传送的意思，没有指定那个方向或两个方向都可以。
+
+==============================[2013-03-08 五 ]==============================
+
+device的private数据还没那么简单
+struct device_private {
+	struct klist klist_children;
+	struct klist_node knode_parent;
+	struct klist_node knode_driver;
+	struct klist_node knode_bus;
+	void *driver_data;
+	struct device *device;
+};
+
+==============================[2013-03-11 一]==============================
+
+串口控制器、显卡控制器、硬件编解码、存储卡控制器、I2C通讯、SPI通讯、USB通讯、
+SDIO通讯、I2S通讯、PCI通讯等
+
+==============================[2013-03-12 二]==============================
+
+想知道已把一个模块编译进内核后，是如何在系统启动时加载进去的吗？可以看看关于__init这个东西
+的文章
+http://www.cnblogs.com/hustcat/articles/1570063.html
+同时也要注意module_init();运行过程中驱动的probe函数是怎么被找行的，可以看看：
+http://www.cnblogs.com/hoys/archive/2011/04/01/2002299.html
+
+
+有__init_or_module的可以函数可以EXPORT_SYMBOL
+但是__init的可以吗？
+
+==============================[2013-03-13 三]==============================
+
+01C1 4120h加上13后以为是01c1 4130h但是错了
+
+Creating a Patch File:
+
+diff -Naur olddir newdir > new-patch
+
+- or -
+
+diff -Naur oldfile newfile >new-patch
+http://lab.ac.uab.edu/node/1153

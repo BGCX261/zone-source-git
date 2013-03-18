@@ -1,0 +1,30 @@
+digraph spi_new_device{
+        label="struct spi_device *spi_new_device(struct spi_master *master, struct spi_board_info *chip);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		spi_alloc_device[label="spi_alloc_device(master);"];
+		get_chip_select[label="get_chip_select"];
+		get_max_speed_hz[label="get_max_speed_hz"];
+		get_mode[label="get_mode"];
+		get_irq[label="get_irq"];
+		get_modalias[label="get_modalias"];
+		get_platform_data[label="get_platform_data"];
+		get_controller_data[label="get_controller_data"];
+		clean_controller_state[label="clean_controller_state"];
+		spi_add_device[label="spi_add_device ()"];
+		
+		spi_alloc_device -> get_chip_select;
+		get_chip_select -> get_max_speed_hz;
+		get_max_speed_hz -> get_mode;
+		get_mode -> get_irq;
+		get_irq -> get_modalias;
+		get_modalias -> get_platform_data;
+		get_platform_data -> get_controller_data;
+		get_controller_data -> clean_controller_state;
+		clean_controller_state -> spi_add_device;
+		
+}

@@ -1,0 +1,14 @@
+digraph spidev_release{
+        label="struct spi_device_id *spi_get_device_id(const struct spi_device *sdev);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		to_spi_driver[label="to_spi_driver(sdev->dev.driver)"];
+		spi_match_id[label="spi_match_id(sdrv->id_table, sdev);"];
+
+		to_spi_driver -> spi_match_id;
+		
+		}

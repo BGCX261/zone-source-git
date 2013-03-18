@@ -1,0 +1,17 @@
+digraph spi_alloc_master{
+       label="struct spi_master *spi_alloc_master(struct device *dev, unsigned size);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		kzalloc[label="kzalloc(size + sizeof *master, GFP_KERNEL);"];
+		device_initialize[label="device_initialize(&master->dev);"];
+		get_master_class[label="get_master_class"];
+		get_master_parent[label="get_device(dev);"];
+		spi_master_set_devdata[label="spi_master_set_devdata(master, &master[1]);"];
+
+		
+		
+		}

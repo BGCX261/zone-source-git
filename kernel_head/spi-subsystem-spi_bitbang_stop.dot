@@ -1,0 +1,12 @@
+digraph spi_bitbang_stop{
+        label="int spi_bitbang_stop(struct spi_bitbang *bitbang)";
+		
+        size="10,18";
+        ratio=filled;
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		spi_unregister_master[label="spi_unregister_master(bitbang->master);"];
+		destroy_workqueue[label="destroy_workqueue(bitbang->workqueue);"];
+
+		spi_unregister_master -> destroy_workqueue;
+}

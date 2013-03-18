@@ -1,0 +1,18 @@
+digraph __spi_sync{
+		label="static int __spi_sync(struct spi_device *spi, struct spi_message *message, int bus_locked);";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		declare_completion[label="declare_completion"];
+		get_message_complete[label="get_message_complete"];
+		get_message_context[label="get_message_context"];
+		lock_master_bus_lock_mutex[label="lock_master_bus_lock_mutex"];
+		spi_async_locked[label="spi_async_locked(spi, message);"];
+		unlock_master_bus_lock_mutex[label="unlock_master_bus_lock_mutex"];
+		wait_for_completion[label="wait_for_completion(&done);"];
+		clean_message_context[label="clean_message_context"];
+		
+		}

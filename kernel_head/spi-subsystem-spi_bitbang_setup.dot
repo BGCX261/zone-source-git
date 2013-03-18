@@ -1,0 +1,24 @@
+digraph spi_bitbang_setup{
+        label="int spi_bitbang_setup(struct spi_device *spi)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		alloc_spi_bitbang_cs[label="alloc_spi_bitbang_cs"];
+		set_controller_state[label="set_controller_state"];
+		set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word[label="set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word"];
+		setup_transfer[label="bitbang->setup_transfer(spi, NULL);"];
+		spi_bitbang_not_busy[label="spi_bitbang_not_busy"];
+		bitbang_chipselect[label="bitbang->chipselect(spi, BITBANG_CS_INACTIVE);"];
+		ndelay[label="ndelay(cs->nsecs);"];
+
+		alloc_spi_bitbang_cs -> set_controller_state;
+		set_controller_state -> set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word;
+		set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word -> setup_transfer;
+		setup_transfer -> spi_bitbang_not_busy;
+		spi_bitbang_not_busy -> bitbang_chipselect;
+		bitbang_chipselect -> ndelay;
+
+}

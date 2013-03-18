@@ -1,0 +1,13 @@
+digraph copy_flags{
+        label="static inline void copy_flags(unsigned long clone_flags, struct task_struct *p)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		clear_PF_SUPERPRIV -> set_PF_FORKNOEXEC; 
+		set_PF_FORKNOEXEC -> clone_flag_ptrace_clear;
+		clone_flag_ptrace_clear -> clear_ptrace[label="clear"];
+		clone_flag_ptrace_clear -> end;
+		clear_ptrace -> end;
+		}

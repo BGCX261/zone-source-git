@@ -1,0 +1,26 @@
+digraph bitbang_txrx_8{
+        label="static unsigned bitbang_txrx_8(struct spi_device	*spi,u32 (*txrx_word)(struct spi_device *spi, unsigned nsecs,u32 word, u8 bits),unsigned ns, struct spi_transfer *t)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		len_not_null[label="len_not_null"];
+		tx_buff_not_null[label="tx_buff_not_null"];
+		get_next_tx_word[label="get_next_tx_word"];
+		txrx_word[label="txrx_word(spi, ns, word, bits);"];
+		rx_buff_not_null[label="rx_buff_not_null"];
+		put_next_rx_word[label="put_next_rx_word"];
+		len_desc[label="len_desc"];
+		return_tx_rx_count[label="return_tx_rx_count"];
+
+		len_not_null -> tx_buff_not_null;
+		tx_buff_not_null -> get_next_tx_word;
+		get_next_tx_word -> txrx_word;
+		txrx_word -> rx_buff_not_null;
+		rx_buff_not_null -> put_next_rx_word;
+		put_next_rx_word -> len_desc;
+		len_desc -> len_not_null;
+		len_not_null -> return_tx_rx_count;
+
+}

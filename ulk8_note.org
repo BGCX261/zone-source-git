@@ -1,0 +1,211 @@
+#+STARTUP: showall
+* 8 内存管理
+
+** 8.1 页框管理
+- 用4k页框
+
+*** 8.1.1 页描述符
+- 32字节，mem\_map
+- 页描述符域
+- count域
+- flag域宏
+
+*** 8.1.2 非一致内存访问
+- 节点描述符的域
+
+*** 8.1.3 内存管理区
+- 页框作用限制
+- 分3管理区
+- 64位
+- 节点描述符域
+- page\_zone()
+- 指明管理区
+
+*** 8.1.4 保留的页框池
+- 阻塞
+- GPF\_ATOMIC,阻塞错误
+- 内存不足使用
+- min\_free\_kbytes计算
+
+*** 8.1.5 分区页框分配器
+
+**** 8.1.5.1 请求和释放页框
+- 6个函数和宏
+- gfp\_mask标记
+- 预定义标志组合
+- 管理区修辞符
+- 后备(fallback)管理区
+- 4个释放函数
+
+*** 8.1.6 高端内存页框的内核映射
+- "high\_memory" isn't applicable to kernel
+- 64-bit is ok
+- mapping high page frames mechanisms
+- two limits
+
+**** 8.1.6.1 Permanent kernel mappings
+- pkmap\_page\_table, LAST\_PKMAP
+- PKMAP\_BASE, pkmap\_count, 
+- page\_address\_htable\_hash, page\_address\_map
+- page\_address()
+- kmap(), kmap\_high()
+- won't disable interrupt
+- map\_new\_virtual()
+- begin from last address
+- flush\_all\_zero\_pkmap()
+- kunmap()
+
+**** 8.1.6.2. Temporary kernel mappings
+- window
+- 13, enum km\_type
+- nerver by two control path, KM\_TYPE\_NR
+- index, enum fixed\_addresses, NR\_CPU
+- fix\_to\_virt(KMAP\_BEGIN)
+- kmap\_atomic(page, args...)
+- kunmap\_atomic(addr, args...)
+
+*** 8.1.7. The Buddy System Algorithm
+- external fragmentation
+- two ways
+- the reasons of the choice
+- 11 chains
+- find a chains then take apart
+- merge
+
+**** 8.1.7.1. Data structures
+- zone\_mem\_map, size
+- free\_area
+- free\_list, lru
+- nr\_free
+- private
+
+**** 8.1.7.2. Allocating a block
+- \_\_rmqueue(struct zone *zone, unsigned int order, int migratetype)
+ 
+**** 8.1.7.3. Freeing a block
+- \_\_free\_pages\_bulk()
+
+*** 8.1.8. The Per-CPU Page Frame Cache
+
+**** 8.1.8.1. Allocating page frames through the per-CPU page frame caches
+- buffered\_rmqueue() 
+
+**** 8.1.8.2. Releasing page frames to the per-CPU page frame caches
+- free\_hot\_page(), free\_cold\_page(), free\_hot\_cold\_page()
+
+*** 8.1.9  The Zone Allocator
+- the aims
+- alloc\_pages(), \_\_alloc\_pages()
+- zone\_watermark\_ok() return
+- determine threshold
+- \_\_alloc\_pages() steps
+
+**** 8.1.9.1. Releasing a group of page frames
+- \_\_free\_pages()
+
+** 8.2. Memory Area Management
+- what is memory area
+- internal fragmentation
+- the method of early Linux
+
+*** 8.2.1. The Slab Allocator
+- Solaris's slab
+
+*** 8.2.2. Cache Descriptor
+- kmem\_cache's fields
+- list field
+
+*** 8.2.3. Slab Descriptor
+- slab's fields
+- two positions
+- FLAGS_OFF_SLAB
+
+*** 8.2.4. General and Specific Caches
+- two General Caches
+- kmem_cache_init() build general caches
+- kmem_cache_create() create specific caches
+- cache_chain
+- kmem_cache_destroy(), kmem_cache_shrink()
+- /proc/slabinfo
+
+*** 8.2.5. Interfacing the Slab Allocator with the Zoned Page Frame Allocator
+- kmem_getpages(), PG_SLAB,
+- kmem_freepages(), reclaimed_slab
+
+*** 8.2.6. Allocating a Slab to a Cache
+- the situation allocating a slab
+- cache_grow()
+- next and pre of lru
+- cache_init_objs()
+- list_add_tail()
+
+*** 8.2.7. Releasing a Slab from a Cache
+- the situations of releasing a slab from a cache
+- slab_destroy()
+
+*** 8.2.8. Object Descriptor
+- kmem_bufctl_t, out of or in slab
+- the first object
+
+*** 8.2.9. Aligning Objects in Memory
+- alignmemt factor
+- max alignmemt factor
+- BYTES_PER_WORD
+- SLAB_HWCACHE_ALIGN
+
+*** 8.2.10. Slab Coloring
+
+*** 8.2.11. Local Caches of Free Slab Objects
+- to reduce spin lock contention among processors and to make better use of the hardware caches
+- struct array_cache's fields
+- kmem_cache_create()
+
+*** 8.2.12. Allocating a Slab Object
+- kmem_cache_alloc()
+- cache_alloc_refill() refill local cache and get a object
+
+*** 8.2.13. Freeing a Slab Object
+- kmem_cache_free()
+- cache_flush_array() clean local cache
+
+*** 8.2.14. General Purpose Objects
+- kmalloc()
+- kfree()
+
+*** 8.2.15. Memory Pools
+- in low-on-memory emergencies
+- reserved page frames for interrupt handlers or inside critical regions
+- memory pools for kernel component
+- over the slab allocator
+- mempool_t fields
+- alloc, free, mempool_alloc_slab(), mempool_free_slab(), kmem_cache_alloc(), kmem_cache_free()
+- mempool_create()
+- mempool_alloc()
+- mempool_free()
+
+*** 8.3. Noncontiguous Memory Area Management
+- cache
+- 4096
+
+*** 8.3.1. Linear Addresses of Noncontiguous Memory Areas
+- how to use the 4G linear
+- VMALLOC_START, VMALLOC_END
+
+*** 8.3.2. Descriptors of Noncontiguous Memory Areas
+- vm_struct fields
+- vmlist, vmlist_lock
+- flag
+- get_vm_area()
+
+*** 8.3.3. Allocating a Noncontiguous Memory Area
+- vmalloc ()
+- map_vm_area (), kernel page table
+- map_vm_area () parameters
+- page fault
+- vmalloc_32 (), ZONE_NORMAL, ZONE_DMA
+- vmap () reflact page
+
+*** 8.3.4. Releasing a Noncontiguous Memory Area
+- vfree () for vmalloc () and vmalloc_nmap32 ()
+- vunmap () for vmap ()
+- __vunmap

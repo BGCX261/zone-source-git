@@ -1,0 +1,34 @@
+digraph spi_write_then_read{
+		label="int spi_write_then_read(struct spi_device *spi,
+		const u8 *txbuf, unsigned n_tx,
+						u8 *rxbuf, unsigned n_rx);
+";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		verify_buffer_size[label="verify_buffer_size"];
+		spi_message_init[label="spi_message_init(&message);"];
+		set_spi_transfer_tx_len[label="set_spi_transfer_tx_len"];
+		set_spi_transfer_rx_len[label="set_spi_transfer_rx_len"];
+		add_spi_transfer_tx_to_list[label="add_spi_transfer_tx_to_list:spi_message_add_tail(&x[0], &message);"];
+		add_spi_transfer_rx_to_list[label="add_spi_transfer_rx_to_list:spi_message_add_tail(&x[1], &message);"];
+		
+		set_spi_transfer_tx_buf[label="set_spi_transfer_tx_buf"];
+		set_spi_transfer_rx_buf[label="set_spi_transfer_rx_buf"];
+		spi_sync[label="spi_sync(spi, &message);"];
+		cp_rx_buff[label="cp_rx_buff"];
+
+		verify_buffer_size -> spi_message_init;
+		spi_message_init -> set_spi_transfer_tx_len;
+		set_spi_transfer_tx_len -> set_spi_transfer_rx_len;
+		set_spi_transfer_rx_len -> add_spi_transfer_tx_to_list;
+		add_spi_transfer_tx_to_list -> add_spi_transfer_rx_to_list;
+		add_spi_transfer_rx_to_list -> set_spi_transfer_tx_buf;
+		set_spi_transfer_tx_buf -> set_spi_transfer_rx_buf;
+		set_spi_transfer_rx_buf -> spi_sync;
+		spi_sync -> cp_rx_buff;
+		
+}

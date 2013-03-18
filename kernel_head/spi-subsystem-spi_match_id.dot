@@ -1,0 +1,16 @@
+digraph spidev_release{
+        label="struct spi_device_id *spi_match_id(const struct spi_device_id *id, const struct spi_device *sdev)";
+		
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		strcmp[label="strcmp(sdev->modalias, id->name)"];
+		return_id[label="return id"];
+		id_incr[label="id++"];
+
+		strcmp -> return_id;
+		strcmp ->id_incr;
+
+		}
