@@ -72,9 +72,10 @@ static inline int pte_file(pte_t pte) { return (pte).pte_low & _PAGE_FILE; }
 #define pud_page_kernel(pud) ((unsigned long) __va(pud_val(pud) & PAGE_MASK))
 #define pmd_offset(pud, address) ((pmd_t *) pud_page(*(pud)) + pmd_index(address))
 /* include/asm-i386/pgtable-2level.h: */
+/* 返回Page Table项x指向的页的页描述符地址 */
 #define pte_page(x) pfn_to_page(pte_pfn(x))
 /* include/asm-i386/pgtable-2level.h: */
-/* 将类型为pte的变量转成页框号 */
+/* 将类型为pte的变量转成页框号,高20位存的就是页框号，页表的内容是这样子定义的 */
 #define pte_pfn(x) ((unsigned long )(((x).pte_low >> PAGE_SHIFT)))
 /* CONFIG_DISCONTIGMEM
    Say Y to support efficient handling of discontiguous physical memory,

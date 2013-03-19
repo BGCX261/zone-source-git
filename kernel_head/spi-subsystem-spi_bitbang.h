@@ -33,7 +33,10 @@ struct spi_bitbang_cs {
 
 /* txrx_word有4个数组对应CPOL和CPHA的组合，这四个成员要根据spi_device的成员的mode来选择合适的元素赋给spi_bitbang_cs.txrx_word,
    而spi_bitbang_cs.txrx_bufs根据spi_tranfser.bits_per_word的值会赋予bitbang_txrx_8或bitbang_txrx_16或bitbang_txrx_32,
-   但是为什么txrx_bufs里有一个txrx_word的函数参数呢 ?
+   但是为什么txrx_bufs里有一个txrx_word的函数参数呢 ?其实spi_bitbang_cs.txrx_bufs是spi_bitbang_cs.txrx_word的一个封装，因为
+   spi_bitbang_cs.txrx_buf是bitbang_txrx_8/16/32其中的一个，而在spi_bitbang_bufs（默认的bitbang.txrx_bufs函数）函数里调用
+   spi_bitbang_cs.txrx_buf时会传以spi_bitbang_cs.txrx_word，而spi_bitbang_cs.txrx_word是会被赋予spi_bitbang.txrx_word的
+   其中一个。
 */
 /* spi_bitbang.txrx_bufs就是最终调用spi_bitbang_cs里的txrx_bufs，就看当前要传送那个spi_bitbang_cs的数据了 */
 /* spi_bitbang.setup_transfer并不一定是spi_bitbang_setup_transfer函数但spi_gpio.spi_bitbang.setup_tranfer就是 */
@@ -126,6 +129,8 @@ int spi_bitbang_setup(struct spi_device *spi);
 /* 而这个函数会把queue中所有的spi_message给发送完 */
 /* 这个函数怎么和spi_bitbang_cs一点关系都没有呢? */
 /* 主要就是调用了bitbang.txrx_bufs, bitbang.chipselect, spi_transfer.delay_usecs */
+/* setup_transfer() -> bitbang.chipselect() -> bitbang.txrx_bufs() ->
+   bitbang.chipselect() -> complete() -> bitbang.chipselect() */
 static void bitbang_work(struct work_struct *work);
 /**
  * spi_bitbang_transfer - default submit to transfer queue

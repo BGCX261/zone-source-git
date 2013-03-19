@@ -41,6 +41,17 @@
 #define _PAGE_UNUSED2	0x400
 #define _PAGE_UNUSED3	0x800
 
+/* 以下的是arm的定义 */
+/* /include/asm-arm/pgtable.h */
+#define L_PTE_PRESENT		(1 << 0)
+#define L_PTE_FILE		(1 << 1)	/* only when !PRESENT */
+#define L_PTE_YOUNG		(1 << 1)
+#define L_PTE_BUFFERABLE	(1 << 2)	/* matches PTE */
+#define L_PTE_CACHEABLE		(1 << 3)	/* matches PTE */
+#define L_PTE_USER		(1 << 4)
+#define L_PTE_WRITE		(1 << 5)
+#define L_PTE_EXEC		(1 << 6)
+#define L_PTE_DIRTY		(1 << 7)
 
 /* include/asm-i386/page.h: */
 #ifdef CONFIG_X86_PAE
@@ -561,7 +572,7 @@ struct exec_domain {
  * Per process flags
  */
 #define PF_ALIGNWARN	0x00000001	/* Print alignment warning msgs */
-					/* Not implemented yet, only for 486*/
+					/* Not implemented yet, only for 486 */
 #define PF_STARTING	0x00000002	/* being created */
 #define PF_EXITING	0x00000004	/* getting shut down */
 #define PF_DEAD		0x00000008	/* Dead */
