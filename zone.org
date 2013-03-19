@@ -5654,3 +5654,73 @@ container_of(bang, struct spi_gpio, bitbang);
 
 gpio_set_value(),gpio_get_value()
 这些函数原来是通用的GPIO函数，spi_gpio.c里就调用了。
+
+==============================[2013-03-19 二]==============================
+
+spi_bitbang.c里的一个bitbang_work函数实现了这样子的一个循环：第一个次进入一个做某件
+事，但是以后的每次根据具体情况来判断是否再做这件事。
+
+原来内核的mach是machine的缩写，而不是match
+
+因为__initdata报了一个fpga_program_dat causes a section type conflict
+unsigned char fpga_program_dat[] __initdata = {
+但加多了一个const 后就没事了，为什么呢？
+
+unsigned char fpga_program_dat[] __initdata = {
+int fpga_config_update_data(unsigned char *const program_dat, size_t dat_size)
+调用时：if (fpga_config_update_data(fpga_program_dat,
+会报一个错误：warning: passing argument 1 of 'fpga_config_update_data'
+discards qualifiers from pointer target type
+
+改成这样子就可以了：
+int fpga_config_update_data(const unsigned char *const program_dat, size_t dat_size)
+
+两个枚举里有相同的成员名会报错的。
+
+没有wait_event_uninterruptible,只有wait_event_interruptible
+
+for (i = 0; pins[i] >= 0; i++) {
+有时不一定要知道数组的大小才可以循环的，在数组的最后一个元素放一个特殊的值就可以了。
+
+数组可以在声明的时候给特定的元素的特定的成员赋值，如
+struct fpga_config_pin omapl138_fpga_config_pin[] = {
+[1] = {.base=1}, [3] = {.offset=3}
+};
+而且声明时不用指定大小。
+
+宏使用参数有三种有意思使用：一种是##,一种是#,还有一种是直接替换#define a(b) (c->b)
+
+#define PIN_INF(soc, desc, bank_offset, pinmask, direct) \
+	[soc##_##desc] = {													\
+		.name =  #desc,													\
+		.bank_base_addr = bank_offset,									\
+		.pin_mask = pinmask,											\
+		.dir = direct,													\
+},
+\后只能跟回车，不能有空格注释等等
+
+即使是在内核是EXPORT_SYMBOL的变量，写模块的时候也要用extern来别外声明才可以使用，和函数一样.
+
+单片机的端口有：
+准双向口（quasi-bidirectional）、推挽式输出（push-pull）、
+       开漏集输出（open-drain）及仅输入（input only）四种模式
+
+而像ARM这些就没有。
+
+51的pin脚有准双向功能好像是51特有的，AVR没有，ARM好像也没有。
+http://zhidao.baidu.com/question/517881714.html
+所以51的准双向脚只有一个寄存器，而没有分输入输出两个
+
+spi_bitbang_transfer函数当没有时钟的时候用到了ENETDOWN这个错误号
+
+wait_event是不用传入wait_queue_t变量的，会在函数里面定义。
+
+一直以为spi_bitbang里有一个等待队列，后来发现不是等待队列，而是工作队列，以后要分清这两个结构体啊
+struct workqueue_struct;
+struct work_struct;
+
+struct wait_queue_head_t;
+struct wait_queue_t;
+
+一个工作可以多次加到一个队列里面吗？好像是可以的，spi_bitbang.work就是可以多次加到spi_bitbang.workqueue里的
+

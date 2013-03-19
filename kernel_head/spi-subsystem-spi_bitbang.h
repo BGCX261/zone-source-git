@@ -129,6 +129,8 @@ int spi_bitbang_setup(struct spi_device *spi);
 /* 而这个函数会把queue中所有的spi_message给发送完 */
 /* 这个函数怎么和spi_bitbang_cs一点关系都没有呢? */
 /* 主要就是调用了bitbang.txrx_bufs, bitbang.chipselect, spi_transfer.delay_usecs */
+/* setup_transfer() -> bitbang.chipselect() -> bitbang.txrx_bufs() ->
+   bitbang.chipselect() -> complete() -> bitbang.chipselect() */
 static void bitbang_work(struct work_struct *work);
 /**
  * spi_bitbang_transfer - default submit to transfer queue
