@@ -5367,3 +5367,145 @@ diff -Naur olddir newdir > new-patch
 
 diff -Naur oldfile newfile >new-patch
 http://lab.ac.uab.edu/node/1153
+
+probe的函数返回int类型
+
+http://www.cnblogs.com/cute/archive/2011/05/13/2045544.html
+http://www.cnblogs.com/cute/archive/2011/05/13/2045552.html
+driver的绑定是通过driver core自动完成的，完成driver和device的匹配后以后会自动执行probe()函数，如果函数执行成功，则driver和device就绑定在一起了，drvier和device匹配的方法有3种：
+  ＊ 当一个设备注册的时候，他会在总线上寻找匹配的driver，platform device一般在系统启动很早的时候就注册了
+  ＊ 当一个驱动注册[platform_driver_register()]的时候，他会遍历所有总线上的设备来寻找匹配，在启动的过程驱动的注册一般比较晚，或者在模块载入的时候
+  ＊ 当一个驱动注册[platform_driver_probe()]的时候， 功能上和使用platform_driver_register()是一样的，唯一的区别是它不能被以后其他的device probe了，也就是说这个driver只能和一个device绑定。
+
+struct device_driver 与struct file_operation是如何关联的呢？
+http://linux.chinaunix.net/techdoc/net/2008/09/10/1031351.shtml
+其实没什么关系，因为
+struct device_driver里的函数名与struct file_operation里的函数名是没什么关系的
+
+include/asm-generic/gpio.h里有gpio通用层的东西。
+
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
+static void __iomem *gpio_base;这种void类型的东西做加法都是按字节计算的,所以做地址的计算的要注意
+
+
+不用ioremap_nocache也可以，因为像writel这些函用用volatile
+extern inline void writel(u32 b, volatile void __iomem *addr)
+
+如果不知道要用的函数不知道要包含哪个头文件，可以用cscope来查一下其它的文件包含了哪些头文件。
+
+==============================[2013-03-14 四]==============================
+
+__initdata应该放在前面还是后面？
+static char __initdata cmd_line[COMMAND_LINE_SIZE];
+static char default_command_line[COMMAND_LINE_SIZE] __initdata = CONFIG_CMDLINE;
+
+__init 和__initdata数据是什么时候被释放的呢？
+init进程相关的知识相信是总所周之,这就不提了(init进程是所有进程之父,使用ps -aux可以查看init的进程号为1)
+        init进程的入口函数即为init（）函数，定义于init/main.c中。
+   1.init()函数调用do_basic_setup()函数完成最后的初始化工作。
+   2.调用free_initmem()把内核中标记有__init、__initfunc、__initdata的程序代码和数据所占据的内存全部释放。
+   3.调用open("/dev/console", O_RDWR, 0)打开控制台设备。同时调用复制标准输出设备和标准出错设备的描述符。
+   4.调用execve()执行init程序，该程序完成各种脚本的执行。
+http://hi.baidu.com/caosicong/item/9e9a526ee0d3b40aa1cf0f8c
+
+要想实现微秒的延时是不可能用time_after这些函数的，因为一个jiffier一般是毫秒级的.
+
+明白omapl138的pin脚写数据是有out_data,set_data,clr_data这3个寄存器了，因为out_data写0和1都有效，
+而set_data,clr_data只在写
+
+将一个const的数组指针赋给一个变量后有这样的一个错误：
+arch/arm/mach-davinci/omapl138_fpga.c:72: warning: assignment discards qualifiers from pointer target type
+因为const的东西不能改。
+定义
+const struct fpga_config_pin omapl138_fpga_config_pin[] __initdata = {
+赋值
+pin_config = &omapl138_fpga_config_pin[i];
+
+在一个语句块的开头声明变量没有问题，而在中间就不行，注意是语句块！
+
+今天在内核里加一个.c文件并想在启动时运行里面的函数，写完之后还要写一个.h，并在一个已经可以在启动时运行的函数添加
+想要运行的函数，接着在当前目录的Makefile文件里添加了编译新加文件的编译。
+obj-y 			:= time.o clock.o serial.o io.o psc.o \
+			   gpio.o dma.o usb.o common.o sram.o aemif.o omapl138_fpga.o
+
+加了omapl138_fpga.o
+
+要在一个.c的文件访问另一个.c的变量，要建一个.h并用extern修辞，要访问的那个.c包含就可以了。
+
+有这么一本书可以学习make
+Managing Projects with GNU make, 3rd Edition
+
+在Linux里有一个工具xxd可以将任何文件转为数组（用-i）参数，好像也可以反过来。
+用-b可以转为二进制。
+
+microsecond = micro - second
+微秒
+一直以为是毫秒
+millisecond 毫秒(msec)
+
+函数或程序成功执行的退出码一般是0
+
+用echo "$?"可以输出上一个命令的运行返回值。
+
+==============================[2013-03-15 五]==============================
+
+Linux上的udelay好像有时间不准的问题。
+http://stackoverflow.com/questions/12811490/is-udelay-deterministic-if-i-disable-preemption-and-irq
+
+用udelay之类的延时的最好要加上禁止中断和抢占。
+
+local_irq_save(flags)注意flags是值传的不是指针。
+
+linux 内核好像是没有EOF的定义，那么返回一个文件读到尾返回什么呢？LDD说了返回0就可以了。
+
+有一个Linux版本把file_operations里的ioctl给删除了。
+unlocked_ioctl与ioctl的参数的不同是没有inode。
+
+在ioctl里用access_ok时是用VERIFY_READ还是WRITE参数时可以先用_IOC_DIR来判断命令方向.
+if (_IOC_DIR(cmd) & _IOC_READ)
+    ret = !access_ok(VERIFY_WRITE, (void *)arg, _IOC_SIZE(cmd));
+
+EFAULT;是bad address的意思,可用于access_ok,get_user,copy_from_user等等.
+
+在一个函数中声明一个局部数组变量时用的参数作为元素个数有问题吗?
+
+==============================[2013-03-18 一]==============================
+
+好像培训师比较适合我. 
+
+好像copy_to/from_user函数里面会调用access_ok函数，所以不必单独调用。
+
+常常记得咽口水，吞津法。
+
+ADG器件的作用：要把多个通道用选通的方式来选择一个作为输出的话就用ADG，那是不是也有DAG这样
+反过来用的呢？
+
+Analog Multiplexers/Demultiplexers
+模拟 多路选通器/多路分配器
+Multiplexer  多个输入，单个输出，由控制信号进行选择哪个输入，常见的如多路ADC前面通常就是一个ANALOG Multiplexer。
+Demultiplexer  一个输入，多个输出。由控制信号控制选通哪个输出。
+相应的，还有数字式的Multiplexer跟Demultiplexer。
+
+AD8494/AD8495/AD8496/AD8497 均为易于使用的J型和K型热电偶放大器。
+这些放大器将热电偶结点产生的小电压转换为模数转换器(ADC)或微控制器易于读取的信号。
+从热电偶到放大器输出端的增益约为5 mV/°C。
+http://bbs.dzsc.com/space/viewspacepost.aspx?postid=88083
+
+模数（AD）转换中，ADC和ADS有什么区别？
+没有差别。只是产品批次问题
+http://zhidao.baidu.com/question/94615045.html
+
+这个ioctl的_IOR,_IOW的方向好像是与access_ok的VERIFY_READ,VERIFY_WRITE相反的
+
+做Linux专家是技术上的发展，而做IT培训讲师是从职业发展的角度上讲的，这两者不冲宊。
+
+find -name *.pdf
+上面那条命有错说：路径必须在表达式之前
+改成：find -name "*.pdf"就没错了
+
+container_of(bang, struct spi_gpio, bitbang);
+的意思是从struct spi_gpio结构体中有一个成员就bitbang，而这个成员的实体是bang，取包含bang的struct spi_gpio结构体
+
+gpio_set_value(),gpio_get_value()
+这些函数原来是通用的GPIO函数，spi_gpio.c里就调用了。
