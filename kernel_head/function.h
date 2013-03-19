@@ -388,6 +388,50 @@ void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait);
 
 /* max_scan是max_pid所占的页数，就是说offset一开始不是在一页的开始位置的，
    max_scan这个循环就要做max_pid+1次 */
+long do_fork(unsigned long clone_flags,
+	      unsigned long stack_start,
+	      struct pt_regs *regs,
+	      unsigned long stack_size,
+	      int __user *parent_tidptr,
+             int __user *child_tidptr);
+
+int alloc_pidmap(void);
+
+/* 在start_kernel调用 */
+void __init pidhash_init(void);
+
+/* 只有高16位任意一位为1返回32-16，
+ 否则只有高24位任意一位为1返回32-24，
+ 否则只有高28位任意一位为1返回32-28，
+ 否则只有高30位任意一位为1返回32-30，
+ 否则只有高31位任意一位为1返回32-31，*/
+static __inline__ int generic_fls(int x);
+
+void __init pidmap_init(void);
+
+static inline int fork_traceflag (unsigned clone_flags);
+
+static task_t *copy_process(unsigned long clone_flags,
+                            unsigned long stack_start,
+                            struct pt_regs *regs,
+                            unsigned long stack_size,
+                            int __user *parent_tidptr,
+                            int __user *child_tidptr,
+                            int pid);
+
+static inline int security_task_create (unsigned long clone_flags);
+
+static struct task_struct *dup_task_struct(struct task_struct *orig);
+
+void prepare_to_copy(struct task_struct *tsk);
+
+# define alloc_task_struct()	kmem_cache_alloc(task_struct_cachep, GFP_KERNEL)
+
+#define alloc_thread_info(tsk) kmalloc(THREAD_SIZE, GFP_KERNEL)
+
+#define free_task_struct(tsk)	kmem_cache_free(task_struct_cachep, (tsk))
+
+#define get_group_info(group_info) ;
 int alloc_pidmap(void);
 
 /* 	if (nr_threads >= max_threads)这句话说明什么呢？nr_threads只在
@@ -423,12 +467,3 @@ int copy_namespace(int flags, struct task_struct *tsk);
 int copy_thread(int nr, unsigned long clone_flags, unsigned long esp,
 	unsigned long unused,
 	struct task_struct * p, struct pt_regs * regs)
-
-
-
-
-
-
-
-
-
