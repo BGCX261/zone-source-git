@@ -86,8 +86,62 @@ digraph fork_c{
                 sched_fork[label="sched_fork(p)"];
                 set_p_group_leader[label="p->group_leader = p"];
                 init_p_ptrace_children_list[label="init_p_ptrace_children_list"];
-                init_p_ptrace_listlist[label="init_p_ptrace_list_list"];
-                
-                
+                init_p_ptrace_list_list[label="init_p_ptrace_list_list"];
+                get_write_lock_irq[label="write_lock_irq(&tasklist_lock);"];
+
+                set_p_cpus_allowed[label="p->cpus_allowed = current->cpus_allowed;"];
+                set_task_cpu[label="set_task_cpu(p, smp_processor_id());"];
+                sigismember_SIGKILL[label="sigismember(&current->pending.signal, SIGKILL)"];
+                write_unlock_irq[label="write_unlock_irq(&tasklist_lock)"];
+                retval_EINTR;
+                CLONE_PARENT_or_CLONE_THREAD_set[label="CLONE_PARENT_or_CLONE_THREAD_set"];
+                set_p_real_parent_current_real_parent[label="set_p_real_parent_current_real_parent"];
+                set_p_real_parent_current[label="set_p_real_parent_current"];
+                set_parent_p_real_parent[label="set_parent_p_real_parent"];
+                CLONE_THREAD_set[label="CLONE_THREAD_set"];
+                spin_lock_current_sighand_siglock[label="spin_lock_current_sighand_siglock"];
+                current_signal_flags_SIGNAL_GROUP_EXIT[label="current_signal_flags_SIGNAL_GROUP_EXIT"];
+                spin_unlock_current_sighand_siglock[label="spin_unlock_current_sighand_siglock"]; 
+                write_unlock_irq_1[label="write_unlock_irq(&tasklist_lock)"];
+                retval_EAGAIN;
+                set_p_group_leader_current_group_leader[label="set_p_group_leader_current_group_leader"];
+                current_signal_group_stop_count[label="current_signal_group_stop_count_greater_0"];
+                set_tsk_thread_flag[label="set_tsk_thread_flag(p, TIF_SIGPENDING);"];
+                cputime_eq_virt_prof_RLIM_INFINIT_current_signal_cpu_timers_0_1_2[label="cputime_eq_virt_prof_RLIM_INFINIT_current_signal_cpu_timers_0_1_2"];
+                set_p_it_prof_expires[label="p->it_prof_expires = jiffies_to_cputime(1);"];
+                spin_unlock_current_sighand_siglock_1[label="spin_unlock_current_sighand_siglock"];
+                SET_LINKS[label="SET_LINKS(p);"];
+                p_ptrace_PT_PTRACED_set[label="p_ptrace_PT_PTRACED_set"];
+                __ptrace_link[label="__ptrace_link"];
+                cpuset_fork[label="cpuset_fork(p)"];
+                attach_pid_PID[label="attach_pid(p, PIDTYPE_PID, p->pid);"];
+                attack_pid_TGID[label="attach_pid(p, PIDTYPE_TGID, p->tgid);"];
+                p_thread_group_leader[label="p_thread_group_leader"];
+                attack_pid_PGID[label="attach_pid(p, PIDTYPE_PGID, process_group(p));"];
+                attack_pid_SID[label="attach_pid(p, PIDTYPE_SID, p->signal->session);"];               
+                p_pid_not_null[label="p_pid_not_null"];
+                __get_cpu_var[label="__get_cpu_var(process_counts)++;"];
+                inc_nr_threads[label="inc_nr_threads"];
+                inc_total_forks[label="inc_total_forks"];
+                write_unlock_irq_2[label="write_unlock_irq(&tasklist_lock)"];
+                clean_retval[label="clean_retval"];
+                exit_namespace[label="exit_namespace(p)"];
+                exit_keys[label="exit_keys(p)"];
+                p_mm_not_null[label="p_mm_not_null"];
+                mmput[label="mmput(p->mm);"];
+                exit_sighand[label="exit_sighand(p)"];
+                exit_fs[label="exit_fs(p)"];
+                exit_files[label="exit_files(p)"];
+                exit_sem[label="exit_sem(p)"];
+                audit_free[label="audit_free(p)"];
+                security_task_free[label="security_task_free(p)"];
+                mpol_free[label="mpol_free(p->mempolicy)"];
+                p_bitfmt_not_null[label="p_bitfmt_not_null"];
+                module_put[label="module_put(p->binfmt->module);"];
+                module_put_1[label="module_put(p->thread_info->exec_domain->module);"];
+                put_group_info[label="put_group_info(p->group_info);"];
+                atomic_dec[label="atomic_dec(&p->user->processes);"];
+                free_uid[label="free_uid(p->user)"];
+                free_task[label="free_task(p)"];
         }
 }
