@@ -438,12 +438,12 @@ int alloc_pidmap(void);
 /* 	if (nr_threads >= max_threads)这句话说明什么呢？nr_threads只在
 	copy_process上加只在exit上减. */
 static task_t *copy_process(unsigned long clone_flags,
-							unsigned long stack_start,
-							struct pt_regs *regs,
-							unsigned long stack_size,
-							int __user *parent_tidptr,
-							int __user *child_tidptr,
-							int pid);
+                            unsigned long stack_start,
+                            struct pt_regs *regs,
+                            unsigned long stack_size,
+                            int __user *parent_tidptr,
+                            int __user *child_tidptr,
+                            int pid);
 
 static inline int try_module_get(struct module *module);
 
@@ -466,5 +466,7 @@ int copy_keys(unsigned long clone_flags, struct task_struct *tsk);
 int copy_namespace(int flags, struct task_struct *tsk);
 /* thread_info  */
 int copy_thread(int nr, unsigned long clone_flags, unsigned long esp,
-	unsigned long unused,
-	struct task_struct * p, struct pt_regs * regs)
+                unsigned long unused,
+                struct task_struct * p, struct pt_regs * regs);
+
+
