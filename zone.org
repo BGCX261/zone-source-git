@@ -5513,32 +5513,6 @@ diff -Naur olddir newdir > new-patch
 diff -Naur oldfile newfile >new-patch
 http://lab.ac.uab.edu/node/1153
 
-probe的函数返回int类型
-
-http://www.cnblogs.com/cute/archive/2011/05/13/2045544.html
-http://www.cnblogs.com/cute/archive/2011/05/13/2045552.html
-driver的绑定是通过driver core自动完成的，完成driver和device的匹配后以后会自动执行probe()函数，如果函数执行成功，则driver和device就绑定在一起了，drvier和device匹配的方法有3种：
-  ＊ 当一个设备注册的时候，他会在总线上寻找匹配的driver，platform device一般在系统启动很早的时候就注册了
-  ＊ 当一个驱动注册[platform_driver_register()]的时候，他会遍历所有总线上的设备来寻找匹配，在启动的过程驱动的注册一般比较晚，或者在模块载入的时候
-  ＊ 当一个驱动注册[platform_driver_probe()]的时候， 功能上和使用platform_driver_register()是一样的，唯一的区别是它不能被以后其他的device probe了，也就是说这个driver只能和一个device绑定。
-
-struct device_driver 与struct file_operation是如何关联的呢？
-http://linux.chinaunix.net/techdoc/net/2008/09/10/1031351.shtml
-其实没什么关系，因为
-struct device_driver里的函数名与struct file_operation里的函数名是没什么关系的
-
-include/asm-generic/gpio.h里有gpio通用层的东西。
-
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-
-static void __iomem *gpio_base;这种void类型的东西做加法都是按字节计算的,所以做地址的计算的要注意
-
-
-不用ioremap_nocache也可以，因为像writel这些函用用volatile
-extern inline void writel(u32 b, volatile void __iomem *addr)
-
-如果不知道要用的函数不知道要包含哪个头文件，可以用cscope来查一下其它的文件包含了哪些头文件。
-
 ==============================[2013-03-14 四]==============================
 
 __initdata应该放在前面还是后面？
@@ -5615,7 +5589,52 @@ EFAULT;是bad address的意思,可用于access_ok,get_user,copy_from_user等等.
 
 在一个函数中声明一个局部数组变量时用的参数作为元素个数有问题吗?
 
-==============================[2013-03-18 一]==============================
+==============================[2013-03-18 Mon]==============================
+
+#define SPI_SCK_GPIO	((pdata)->sck)
+/* this is #defined to avoid unused-variable warnings when inlining */
+#define pdata		spi_to_pdata(spi)
+
+static inline void setsck(const struct spi_device *spi, int is_on)
+{
+	gpio_set_value(SPI_SCK_GPIO, is_on);
+}
+这种用法有点不明白，有机会查一查。
+
+在spi-gpio.c里关于延时是这样使用和解释的：
+/*
+ * NOTE:  this clocks "as fast as we can".  It "should" be a function of the
+ * requested device clock.  Software overhead means we usually have trouble
+ * reaching even one Mbit/sec (except when we can inline bitops), so for now
+ * we'll just assume we never need additional per-bit slowdowns.
+ */
+#define spidelay(nsecs)	do {} while (0)
+
+probe的函数返回int类型
+
+http://www.cnblogs.com/cute/archive/2011/05/13/2045544.html
+http://www.cnblogs.com/cute/archive/2011/05/13/2045552.html
+driver的绑定是通过driver core自动完成的，完成driver和device的匹配后以后会自动执行probe()函数，如果函数执行成功，则driver和device就绑定在一起了，drvier和device匹配的方法有3种：
+  ＊ 当一个设备注册的时候，他会在总线上寻找匹配的driver，platform device一般在系统启动很早的时候就注册了
+  ＊ 当一个驱动注册[platform_driver_register()]的时候，他会遍历所有总线上的设备来寻找匹配，在启动的过程驱动的注册一般比较晚，或者在模块载入的时候
+  ＊ 当一个驱动注册[platform_driver_probe()]的时候， 功能上和使用platform_driver_register()是一样的，唯一的区别是它不能被以后其他的device probe了，也就是说这个driver只能和一个device绑定。
+
+struct device_driver 与struct file_operation是如何关联的呢？
+http://linux.chinaunix.net/techdoc/net/2008/09/10/1031351.shtml
+其实没什么关系，因为
+struct device_driver里的函数名与struct file_operation里的函数名是没什么关系的
+
+include/asm-generic/gpio.h里有gpio通用层的东西。
+
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
+static void __iomem *gpio_base;这种void类型的东西做加法都是按字节计算的,所以做地址的计算的要注意
+
+
+不用ioremap_nocache也可以，因为像writel这些函用用volatile
+extern inline void writel(u32 b, volatile void __iomem *addr)
+
+如果不知道要用的函数不知道要包含哪个头文件，可以用cscope来查一下其它的文件包含了哪些头文件。
 
 好像培训师比较适合我. 
 
@@ -5772,3 +5791,8 @@ arch/arm/mach-davinci/include/mach/omapl138_fpga.h
 但是我只需要在模块的.c文件里加上
 #include <mach/omapl138_fpga.h>
 就可以了，它是怎么找到的呢？
+
+原来Linux的缩进风格是用TAB的
+
+常常看到用“mask”这个东西来定义变量或宏名，注意mask是屏蔽的意思，所以像
+PAGE_MASK就是把一页大小的位清0，若是12位，那么就是~((1<<12) - 1)
