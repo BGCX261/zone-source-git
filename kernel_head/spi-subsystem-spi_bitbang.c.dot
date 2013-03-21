@@ -1,0 +1,236 @@
+digraph spi_bitbang_c{
+		size="32,20";
+		ratio=filled;
+		
+		// node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		node[margin="0.05,0.005",height="0.1",width="0.1"];
+
+		subgraph cluster_func_bitbang_work{
+				label="static void bitbang_work(struct work_struct *work)";
+				
+				lock_bitbang_lock[label="lock_bitbang_lock"];
+				set_bitbang_busy[label="set_bitbang_busy"];
+				bitbang_not_empty[label="bitbang_not_empty"];
+				get_next_spi_message[label="get_next_spi_message"];
+				del_spi_message_from_spi_bitbang_queue[label="del_spi_message_from_spi_bitbang_queue"];
+				unlock_bitbang_lock[label="unlock_bitbang_lock"];
+				unlock_bitbang_lock_1[label="unlock_bitbang_lock"];
+				set_cs_change_true[label="set_cs_change_true"];
+				set_nsecs[label="set_nsecs"];
+				list_for_spi_transfer[label="list_for_spi_transfer"];
+				spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func[label="spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func"];
+				cs_change_true[label="cs_change_true"];
+				call_bit_bang_chipselect_active[label="call_bitbang_chipselect_active"];
+				ndelay_nsecs[label="ndelay_nsecs"];
+				get_spi_transfer_cs_change_for_cs_change[label="get_spi_transfer_cs_change_for_cs_change"];
+				
+				call_bit_bang_txrx_bufs[label="call_bit_bang_txrx_bufs"];
+				update_actual_length[label="update_actual_length"];
+				spi_transfer_delay_usecs_not_null[label="spi_transfer_delay_usecs_not_null"];
+				udelay_spi_transfer_delay_usecs[label="udelay_spi_transfer_delay_usecs"];
+				cs_change_true_1[label="cs_change_true"];
+				queue_empty[label="queue_empty"];
+				ndelay_nsecs_1[label="ndelay_nsecs"];
+				bit_bang_chipselect_inactive[label="bit_bang_chipselect_inactive"];
+				ndelay_ncecs_2[label="ndelay_ncecs"];
+				set_spi_message_status[label="set_spi_message_status"];
+				call_spi_message_complete[label="call_spi_message_complete"];
+				no_error_and_cs_change_not_true[label="no_error_and_cs_change_not_true"];
+				ndelay_ncecs_3[label="ndelay_ncecs"];
+				bit_bang_chipselect_inactive_1[label="bit_bang_chipselect_inactive"];
+				ndelay_ncecs_4[label="ndelay_ncecs"];
+				lock_bitbang_lock_1[label="lock_bitbang_lock"];
+				clear_bit_bang_busy[label="clear_bit_bang_busy"];
+				
+				lock_bitbang_lock -> set_bitbang_busy;
+				set_bitbang_busy -> bitbang_not_empty;
+				bitbang_not_empty -> get_next_spi_message;
+				get_next_spi_message -> del_spi_message_from_spi_bitbang_queue;
+				del_spi_message_from_spi_bitbang_queue -> unlock_bitbang_lock;
+				unlock_bitbang_lock -> set_cs_change_true;
+				set_cs_change_true -> set_nsecs;
+				set_nsecs -> list_for_spi_transfer;
+				list_for_spi_transfer -> spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func;
+				spi_transfer_speed_hz_or_bits_per_work_for_setup_transfer_func -> cs_change_true;
+				cs_change_true -> call_bit_bang_chipselect_active;
+				call_bit_bang_chipselect_active -> ndelay_nsecs;
+				ndelay_nsecs -> get_spi_transfer_cs_change_for_cs_change;
+				cs_change_true -> get_spi_transfer_cs_change_for_cs_change;
+				get_spi_transfer_cs_change_for_cs_change -> call_bit_bang_txrx_bufs;
+				call_bit_bang_txrx_bufs -> update_actual_length;
+				update_actual_length -> spi_transfer_delay_usecs_not_null;
+				spi_transfer_delay_usecs_not_null -> udelay_spi_transfer_delay_usecs;
+				udelay_spi_transfer_delay_usecs -> cs_change_true_1;
+				cs_change_true_1 -> list_for_spi_transfer;
+				cs_change_true_1 -> queue_empty;
+				queue_empty -> ndelay_nsecs_1;
+				ndelay_nsecs_1 -> bit_bang_chipselect_inactive;
+				bit_bang_chipselect_inactive -> ndelay_ncecs_2;
+				ndelay_ncecs_2 -> list_for_spi_transfer;
+				ndelay_ncecs_2 -> set_spi_message_status;
+				set_spi_message_status -> call_spi_message_complete;
+				call_spi_message_complete -> no_error_and_cs_change_not_true;
+				no_error_and_cs_change_not_true -> ndelay_ncecs_3;
+				ndelay_ncecs_3 -> bit_bang_chipselect_inactive_1;
+				bit_bang_chipselect_inactive_1 -> ndelay_ncecs_4;
+				ndelay_ncecs_4 -> lock_bitbang_lock_1;
+				no_error_and_cs_change_not_true -> lock_bitbang_lock_1;
+				lock_bitbang_lock_1 -> bitbang_not_empty;
+				queue_empty -> bitbang_not_empty;
+				bitbang_not_empty -> clear_bit_bang_busy;
+				clear_bit_bang_busy -> unlock_bitbang_lock_1;
+				unlock_bitbang_lock_1 -> return;
+		}
+		
+		//////////////////////////////////////////////////////////////////
+		subgraph cluster_txrx_bufs_and_txrx_word{
+				label="finally, spi_bitbang.txrx_bufs calls spi_bitbang.txrx_word[0/1/2/3]";
+
+				spi_bitbang_txrx_bufs[label="spi_bitbang.txrx_bufs()(default is spi_bitbang_bufs)"];
+				spi_bitbang_cs_txrx_bufs[label="spi_bitbang_cs.txrx_bufs()(is one of bitbang_txrx_8/16/32)"];
+				spi_bitbang_cs_txrx_word[label="spi_bitbang_cs.txrx_word()(is one of spi_bitbang.txrx_word[0-3])"];
+				spi_bitbang_txrx_word[label="spi_bitbang.txrx_word[0-3]"];
+				
+				spi_bitbang_txrx_bufs -> spi_bitbang_cs_txrx_bufs[label="call"];
+				spi_bitbang_cs_txrx_bufs -> spi_bitbang_cs_txrx_word[label="parameter"];
+				spi_bitbang_cs_txrx_word -> spi_bitbang_txrx_word;
+		}
+
+		//////////////////////////////////////////////////////////////////
+		subgraph cluster_spi_bitbang_transfer{
+				label="int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m)";
+				
+				spi_master_get_devdata[label="spi_master_get_devdata(spi->master);"];
+
+				spi_bitbang_transfer_lock_bitbang_lock[label="lock_bitbang_lock"];
+				spi_max_speed_hz_not_null[label="spi_max_speed_hz_not_null"];
+				list_add_spi_message_queue_to_bitbang_queue_tail[label="list_add_spi_message_queue_to_bitbang_queue_tail"];
+				queue_bitbang_work_to_bitbang_workqueuework[label="queue_bitbang_work_to_bitbang_workqueuework"];
+				spi_bitbang_transfer_unlock_bitbang_lock[label="unlock_bitbang_lock"];
+
+				spi_master_get_devdata -> spi_bitbang_transfer_lock_bitbang_lock;
+				spi_bitbang_transfer_lock_bitbang_lock -> spi_max_speed_hz_not_null;
+				spi_max_speed_hz_not_null -> list_add_spi_message_queue_to_bitbang_queue_tail;
+				list_add_spi_message_queue_to_bitbang_queue_tail -> queue_bitbang_work_to_bitbang_workqueuework;
+				queue_bitbang_work_to_bitbang_workqueuework -> spi_bitbang_transfer_unlock_bitbang_lock;
+				spi_max_speed_hz_not_null -> spi_bitbang_transfer_unlock_bitbang_lock;
+		}
+		//////////////////////////////////////////////////////////////////
+		subgraph cluster_spi_bitbang_start{
+				label="int spi_bitbang_start(struct spi_bitbang *bitbang)";
+
+				bitbang_master_or_chipselect_null[label="bitbang_master_or_chipselect_null"];
+				return_EINVAL[label="return_EINVAL"];
+				init_bitbang_work_with_bitbang_work[label="init_bitbang_work_with_bitbang_work"];
+				init_bitbang_queue[label="init_bitbang_queue"];
+				bitbang_master_mode_bits_null[label="bitbang_master_mode_bits_null"];
+				set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage[label="set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage"];
+				bitbang_master_transfer_null[label="bitbang_master_transfer_null"];
+				set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func[label="set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func"];
+				bitbang_txrx_bufs_null[label="bitbang_txrx_bufs_null"];
+				clean_bitbang_use_dma[label="clean_bitbang_use_dma"];
+				set_bitbang_txrx_bufs_to_spi_bitbang_bufs[label="set_bitbang_txrx_bufs_to_spi_bitbang_bufs"];
+				bitbang_master_setup_null[label="bitbang_master_setup_null"];
+				bitbang_setup_transfer_null[label="bitbang_setup_transfer_null"];
+				set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer[label="set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer"];
+				set_bitbang_master_setup_to_spi_bitbang_setup[label="set_bitbang_master_setup_to_spi_bitbang_setup"];
+				set_bitbang_master_cleanup_to_spi_bitbang_cleanup[label="set_bitbang_master_cleanup_to_spi_bitbang_cleanup"];
+				bitbang_master_setup_null_1[label="bitbang_master_setup_null"];
+				return_EINVAL_1[label="return_EINVAL"];
+				clean_bitbang_busy[label="clean_bitbang_busy"];
+				create_singlethread_workqueue_for_bitbang_workqueue[label="create_singlethread_workqueue_for_bitbang_workqueue"];
+				spi_register_master[label="spi_register_master(bitbang->master);"];
+
+				bitbang_master_or_chipselect_null -> return_EINVAL;
+				bitbang_master_or_chipselect_null -> init_bitbang_work_with_bitbang_work;
+				init_bitbang_work_with_bitbang_work -> init_bitbang_queue;
+				init_bitbang_queue -> bitbang_master_mode_bits_null;
+				bitbang_master_mode_bits_null -> set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage;
+				bitbang_master_mode_bits_null -> bitbang_master_transfer_null;
+				set_bitbang_master_mode_bits_cpol_cpha_bitbang_flage -> bitbang_master_transfer_null;
+				bitbang_master_transfer_null -> set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func;
+				bitbang_master_transfer_null -> bitbang_txrx_bufs_null;
+				set_bitbang_master_transfer_to_default_spi_bitbang_transfer_func -> bitbang_txrx_bufs_null;
+				bitbang_txrx_bufs_null -> clean_bitbang_use_dma;
+				clean_bitbang_use_dma -> set_bitbang_txrx_bufs_to_spi_bitbang_bufs;
+				set_bitbang_txrx_bufs_to_spi_bitbang_bufs -> bitbang_master_setup_null;
+				bitbang_txrx_bufs_null -> bitbang_master_setup_null_1;
+				bitbang_master_setup_null -> bitbang_setup_transfer_null;
+				bitbang_setup_transfer_null -> set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer;
+				set_bitbang_setup_transfer_to_default_spi_bitbang_setup_transfer -> set_bitbang_master_setup_to_spi_bitbang_setup;
+				set_bitbang_master_setup_to_spi_bitbang_setup -> set_bitbang_master_cleanup_to_spi_bitbang_cleanup;
+				bitbang_setup_transfer_null -> set_bitbang_master_setup_to_spi_bitbang_setup;
+				set_bitbang_master_cleanup_to_spi_bitbang_cleanup -> clean_bitbang_busy;
+				bitbang_master_setup_null_1 -> return_EINVAL_1;
+				bitbang_master_setup_null_1 -> clean_bitbang_busy;
+				return_EINVAL_1 -> clean_bitbang_busy;
+				bitbang_master_setup_null -> clean_bitbang_busy;
+				// bitbang_txrx_bufs_null -> clean_bitbang_busy;
+				clean_bitbang_busy -> create_singlethread_workqueue_for_bitbang_workqueue;
+				create_singlethread_workqueue_for_bitbang_workqueue -> spi_register_master;
+		}
+
+		//////////////////////////////////////////////////////////////////
+		subgraph cluster_spi_bitbang_setup_transfer{
+				label="int spi_bitbang_setup_transfer(struct spi_device *spi, struct spi_transfer *t)\l主要设置了spi_bitbang_cs.txrx_bufs和spi_bitbang_cs.nsecs";
+
+				spi_transfer_not_null[label="spi_transfer_not_null"];
+				get_transfer_bits_per_word[label="get_transfer_bits_per_word_from_spi_transfer"];
+				get_transfer_bits_per_word_1[label="get_transfer_bits_per_word_from_spi_device"];
+				get_transfer_speed_hz[label="get_transfer_speed_hz"];
+
+				clean_bits_per_word[label="clean_bits_per_word"];
+				clean_hz[label="clean_hz"];
+
+				bits_per_word_null[label="bits_per_word_null"];
+				set_spi_bitbang_cs_txrx_bufs[label="set_spi_bitbang_cs_txrx_bufs8/16/32"];
+
+				hz_null[label="hz_null"];
+				get_hz_from_spi_device_max_speed_hz[label="get_spi_device_max_speed_hz"];
+				
+				set_spi_bitbang_cs_nsecs[label="set_spi_bitbang_cs_nsecs"];
+				
+				spi_transfer_not_null -> get_transfer_bits_per_word;
+				get_transfer_bits_per_word -> get_transfer_speed_hz;
+				spi_transfer_not_null -> clean_bits_per_word;
+				clean_bits_per_word -> clean_hz;
+				clean_hz -> bits_per_word_null;
+				get_transfer_speed_hz -> bits_per_word_null;
+				bits_per_word_null -> get_transfer_bits_per_word_1;
+				get_transfer_bits_per_word_1 -> set_spi_bitbang_cs_txrx_bufs;
+				bits_per_word_null -> set_spi_bitbang_cs_txrx_bufs;
+				set_spi_bitbang_cs_txrx_bufs -> hz_null;
+				hz_null -> get_hz_from_spi_device_max_speed_hz;
+				get_hz_from_spi_device_max_speed_hz -> hz_not_null
+				hz_not_null -> set_spi_bitbang_cs_nsecs;
+		}
+
+		subgraph cluster_spi_bitbang_setup{
+				label="int spi_bitbang_setup(struct spi_device *spi)";
+		
+				alloc_spi_bitbang_cs[label="alloc_spi_bitbang_cs"];
+				set_controller_state[label="set_controller_state_to_spi_bitbang_cs"];
+				set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word[label="set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word[0-3]"];
+				setup_transfer[label="bitbang->setup_transfer(spi, NULL);"];
+				spi_bitbang_not_busy[label="spi_bitbang_not_busy"];
+				bitbang_chipselect[label="bitbang->chipselect(spi, BITBANG_CS_INACTIVE);"];
+				ndelay[label="ndelay(cs->nsecs);"];
+
+				alloc_spi_bitbang_cs -> set_controller_state;
+				set_controller_state -> set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word;
+				set_spi_bitbang_cs_txrx_word_from_spi_bitbang_txrx_word -> setup_transfer;
+				setup_transfer -> spi_bitbang_not_busy;
+				spi_bitbang_not_busy -> bitbang_chipselect;
+				bitbang_chipselect -> ndelay;
+		}
+
+		subgraph cluster_spi_bitbang_cleanup{
+				label="void spi_bitbang_cleanup(struct spi_device *spi);";
+				kfree[label="kfree(spi->controller_state);"];
+		}
+
+		subgraph cluster_spi_bitbang_bufs{
+				label="static int spi_bitbang_bufs(struct spi_device *spi, struct spi_transfer *t)";
+				spi->controller_state->txrx_bufs(spi, spi->controller_state->txrx_word, nsecs, t);
+		}
+}
