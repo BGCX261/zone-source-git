@@ -1,3 +1,4 @@
+/* 搞清楚spi_message, spi_device, spi_master函数成员和几个bitbang实体函数之间的关系 */
 /* 要记住这些结构体和成员 */
 /* 要认清这些结构体之间的对应关系，是1对0，还是1对1，还是1对n */
 /* spi_master:1 - spi_driver:1 - spi_message:1 - spi_transfer:n;  spi_driver:1 - spi_device:n */

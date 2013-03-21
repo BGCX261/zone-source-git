@@ -1,0 +1,145 @@
+digraph spi_c{
+		size="32,20";
+		ratio=filled;
+		
+		// node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+		node[margin="0.05,0.005",height="0.1",width="0.1"];
+
+		subgraph cluster_spidev_release{
+				label="static void spidev_release(struct device *dev)";
+
+				spidev_release_to_spi_device[label="to_spi_device(dev);"];
+				spi_master_cleanup_not_null[label="spi_master_cleanup_not_null"];
+				spi_master_cleanup[label="spi_master_cleanup(spi)"];
+				spi_master_put[label="spi_master_put"];
+
+				spidev_release_to_spi_device -> spi_master_cleanup_not_null;
+				spi_master_cleanup_not_null -> spi_master_cleanup;
+				spi_master_cleanup -> spi_master_put;
+				spi_master_cleanup_not_null -> spi_master_put;
+				spi_master_put -> kfree_spi;
+		}
+
+		subgraph cluster_spidev_release{
+				label="struct spi_device_id *spi_match_id(const struct spi_device_id *id, const struct spi_device *sdev)";
+		
+				strcmp[label="strcmp(sdev->modalias, id->name)"];
+				return_id[label="return id"];
+				id_incr[label="id++"];
+
+				strcmp -> return_id;
+				strcmp ->id_incr;
+		}
+
+		subgraph clustter_spi_get_device_id{
+				label="struct spi_device_id *spi_get_device_id(const struct spi_device *sdev);";
+
+				to_spi_driver[label="to_spi_driver(sdev->dev.driver)"];
+				spi_match_id[label="spi_match_id(sdrv->id_table, sdev);"];
+
+				to_spi_driver -> spi_match_id;
+		}
+
+		subgraph cluster_spi_match_device{
+				label="static int spi_match_device(struct device *dev, struct device_driver *drv);";
+
+				spi_match_device_to_spi_device[label="to_spi_device(dev)"];
+				spi_match_device_to_spi_driver[label="to_spi_driver(drv)"];
+
+				of_driver_match_device[label="of_driver_match_device(dev, drv)"];
+				return_true;
+
+				spi_match_id[label="spi_match_id(sdrv->id_table, spi);"];
+				strcmp[label="strcmp(spi->modalias, drv->name) == 0;"];
+
+				of_driver_match_device -> retrun_true;
+				of_driver_match_device -> spi_match_id;
+				spi_match_id -> return_true;
+				spi_match_id -> strcmp;
+				strcmp -> return;
+		}
+
+		subgraph cluster_spi_suspend{
+				label="static int spi_suspend(struct device *dev, pm_message_t message);";
+
+				spi_suspend_to_spi_driver[label="to_spi_driver(dev->driver);"];
+				suspend[label="drv->suspend(to_spi_device(dev), message);"];
+
+				spi_suspend_to_spi_driver -> suspend;
+		}
+
+		subgraph cluster_spi_resume{
+				label="static int spi_resume(struct device *dev, pm_message_t message);";
+
+				spi_resume_to_spi_driver[label="to_spi_driver(dev->driver);"];
+				resume[label="drv->resume(to_spi_device(dev), message);"];
+
+				spi_resume_to_spi_driver -> resume;
+		}
+
+		subgraph cluster_spi_drv_probe{
+				label="static int spi_drv_probe(struct device *dev);";
+
+				spi_drv_probe_to_spi_driver[label="to_spi_driver(dev->driver);"];
+				probe[label="sdrv->probe(to_spi_device(dev));"];
+
+				spi_drv_probe_to_spi_driver -> probe;
+		}
+
+		subgraph cluster_spi_drv_remove{
+				label="static int spi_drv_remove(struct device *dev);";
+
+				spi_drv_remove_to_spi_driver[label="to_spi_driver(dev->driver);"];
+				remove[label="sdrv->remove(to_spi_device(dev));"];
+
+				spi_drv_remove_to_spi_driver -> remove;
+		}
+
+		subgraph cluster_spi_drv_shutdown{
+				label="static int spi_drv_shutdown(struct device *dev);";
+
+				spi_drv_shutdown_to_spi_driver[label="to_spi_driver(dev->driver);"];
+				shutdown[label="sdrv->shutdown(to_spi_device(dev));"];
+
+				spi_drv_shutdown_to_spi_driver -> shutdown;
+		}
+
+		subgraph cluster_spi_register_driver{
+				label="int spi_register_driver(struct spi_driver *sdrv);";
+				
+				get_bus[label="sdrv->driver.bus = &spi_bus_type;"];
+				get_probe[label="sdrv->driver.probe = spi_drv_probe;"];
+				get_remove[label="sdrv->driver.remove = spi_drv_remove;"];
+				get_shutdown[label="sdrv->driver.shutdown = spi_drv_shutdonw;"];
+				driver_register[label="driver_register(&sdrv->driver);"];
+
+				get_bus -> get_probe;
+				get_probe -> get_remove;
+				get_remove -> get_shutdown;
+				get_shutdown -> driver_register;
+		}
+
+		subgraph cluster_spi_alloc_device{
+				label="struct spi_device *spi_alloc_device(struct spi_master *master);";
+
+				get_parent[label="master->dev.parent;"];
+				spi_master_get[label="spi_master_get(master)"];
+				alloc_spi[label="kzalloc()"];
+				spi_master_put[label="spi_master_put(master);"];
+				get_master[label="spi->master = master;"];
+				get_parent[label="	spi->dev.parent = dev;"];
+				get_bus[label="	spi->dev.bus = &spi_bus_type;"];
+				get_release[label="spi->dev.release = spidev_release;"];
+				device_initialize[label="device_initialize(&spi->dev);"];
+
+				get_parent -> spi_master_get;
+				spi_master_get -> alloc_spi;
+				alloc_spi -> spi_master_put;
+				spi_master_put -> get_master;
+				get_master -> get_parent;
+				get_parent -> get_bus;
+				get_bus -> get_release;
+				get_release -> device_initialize;
+		}
+
+}

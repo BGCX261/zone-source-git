@@ -1,0 +1,18 @@
+digraph pgd_alloc{
+        label="pgd_t *pgd_alloc(struct mm_struct *mm)";
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		alloc_pgd[label="kmem_cache_alloc(pgd_cache, GFP_KERNEL);"];
+		PTRS_PER_PMD_is_1_than_return[label="PTRS_PER_PMD_is_1_than_return;"]
+		alloc_all_pmd[label="alloc_all_pmd"];
+		set_all_pgd[label="set_all_pgd"]
+
+		alloc_pgd -> PTRS_PER_PMD_is_1_than_return;
+		PTRS_PER_PMD_is_1_than_return -> alloc_all_pmd;
+		alloc_all_pmd -> set_all_pgd;
+
+		alloc_pmd_error_goto_free_pmd_and_pgd;
+}

@@ -5743,6 +5743,55 @@ struct wait_queue_t;
 
 一个工作可以多次加到一个队列里面吗？好像是可以的，spi_bitbang.work就是可以多次加到spi_bitbang.workqueue里的
 
+关于GPIO的双向问题
+http://bbs.21ic.com/icview-84990-1-1.html
+读I/O口状态
+   51： 必须先对端口写1（SETB  P1.0）
+        然后再判断是1还是0    
+   PIC：先设为输入，然后判断
+   ARM：先设为输入，然后判断
+
+原来内核的mach是machine的缩写，而不是match
+
+因为__inittdata报了一个void spi_bitbang_cleanup(struct spi_device *spi)
+
+
+原来51要这样子操作的啊
+http://blog.sina.com.cn/s/blog_98ba29e201011sm7.html
+http://blog.163.com/zy_tommy/blog/static/869267772012030776313/
+
+有三种总线：数据总线，地址总线，控制总线，那个FPGA的同步读写引脚就是控制总线了。
+
+技术不扎实，不要给承诺
+
+C-u C-y可以在粘贴之后光标在原地。
+
+今天发现就算是在函数里定义的static变量在初始化时也要用常量，不能用变量，因为这些东西是在编译时确定的.
+
+tmp = (__raw_readl(omapl138_fpga_config_pin[OMAPL138_FPGA_GPIO_DATA_0].
+bank_base_addr+OUT_DATA_OFFSET) & 0xff00) | (dat & 0xff);
+这句话编译时有警告：warning: suggest parentheses around arithmetic in operand of |
+改成：
+tmp = (__raw_readl(omapl138_fpga_config_pin[OMAPL138_FPGA_GPIO_DATA_0].
+bank_base_addr+OUT_DATA_OFFSET) & 0xff00) | (dat & 0xff);
+就可以了。
+
+这是fpga驱动的Makefile
+obj-m = fpga_driver.o
+KERNELDIR ?= /linux-03.21.00.04
+PWD := $(shell pwd)
+
+fpga_driver:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
+
+在编译模块时是怎么指定一个头文件的呢？
+有那么多的include目录，
+我要包含这个头文件
+arch/arm/mach-davinci/include/mach/omapl138_fpga.h
+但是我只需要在模块的.c文件里加上
+#include <mach/omapl138_fpga.h>
+就可以了，它是怎么找到的呢？
+
 原来Linux的缩进风格是用TAB的
 
 常常看到用“mask”这个东西来定义变量或宏名，注意mask是屏蔽的意思，所以像

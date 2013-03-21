@@ -40,6 +40,7 @@ struct spi_bitbang_cs {
 */
 /* spi_bitbang.txrx_bufs就是最终调用spi_bitbang_cs里的txrx_bufs，就看当前要传送那个spi_bitbang_cs的数据了 */
 /* spi_bitbang.setup_transfer并不一定是spi_bitbang_setup_transfer函数但spi_gpio.spi_bitbang.setup_tranfer就是 */
+/* queue成员就是要发送的spi_message的链表头，把spi_message.queue链起来 */
 struct spi_bitbang {
 	struct workqueue_struct	*workqueue;
 	struct work_struct	work;
@@ -131,6 +132,8 @@ int spi_bitbang_setup(struct spi_device *spi);
 /* 主要就是调用了bitbang.txrx_bufs, bitbang.chipselect, spi_transfer.delay_usecs */
 /* setup_transfer() -> bitbang.chipselect() -> bitbang.txrx_bufs() ->
    bitbang.chipselect() -> complete() -> bitbang.chipselect() */
+/* 调用一次这个函数会一次把整个spi_bitbang.queue链表里的spi_message全部处理完，
+   虽然在spi_bitbang_transfer函数里是加入一个spi_message结点时同是加入一个工作 */
 static void bitbang_work(struct work_struct *work);
 /**
  * spi_bitbang_transfer - default submit to transfer queue
@@ -164,6 +167,15 @@ int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m);
  */
 /* 从这个函数可以看出bitbang.chipselect好像是没有默认的 */
 /* 这函数就是初始化spi_bitbang的 */
+/* 为什么bitbang->txrx_bufs不为空且bitbang->master->setup为空时要返回EINVAL呢？
+   这个可以从bitbang->master->setup的默认函数spi_bitbang_setup和bitbang->txrx_bufs
+   的默认函数spi_bitbang_transfer入手：若bitbang->txrx_bufs不为空，那么调用bitbang->txrx_bufs时
+   就可能不调用bitbang->txrx_word,而默认的bitbang->master->setup就是默认的bitbang->txrx_bufs调用
+   bitbang->txrx_word的，所以bitbang->txrx_buf不为空那么bitbang->txrx_setup就不能为空，但是
+   bitbang->txrx_bufs可以为默认的而bitbang->master->setup不为默认的；setup和cleanup要么同是为默认的
+   要么同时不为默认的，bitang->master->setup且bitbang->setup_transfer同时为不默认的时才可以设置
+   bitbang->setup_transfer为默认的. 所以bitbang->txrx_bufs不为默认时，那么bitbang->master->setup
+   就不能为默认，转而bitbang->setup_transfer就不能为默认，bitbang->master->cleanup也不能为默认 */
 int spi_bitbang_start(struct spi_bitbang *bitbang);
 
 /**

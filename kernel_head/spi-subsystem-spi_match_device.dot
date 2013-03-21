@@ -20,5 +20,4 @@ digraph spi_match_device{
 		spi_match_id -> return_true;
 		spi_match_id -> strcmp;
 		strcmp -> return;
-		
 }

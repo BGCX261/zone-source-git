@@ -9,6 +9,7 @@ static const struct spi_device_id *spi_match_id(const struct spi_device_id *id,
 
 const struct spi_device_id *spi_get_device_id(const struct spi_device *sdev);
 
+/* 若spi_driver的spi_device_id不为空就在里面找，若为空就直接与spi_driver的名字比较 */
 static int spi_match_device(struct device *dev, struct device_driver *drv);
 
 static int spi_uevent(struct device *dev, struct kobj_uevent_env *env);

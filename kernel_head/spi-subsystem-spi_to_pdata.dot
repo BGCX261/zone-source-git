@@ -1,0 +1,11 @@
+digraph spi_to_pdata{
+        label="static inline const struct spi_gpio_platform_data * __pure
+		spi_to_pdata(const struct spi_device *spi)";
+		
+        size="10,18";
+        ratio=filled;
+		spi_master_get_devdata[label="spi_master_get_devdata(spi->master);spi_device.master.device.p.driver_data"];
+		container_of[label="container_of(bang, struct spi_gpio, bitbang);"];
+		return_spi_gpio_pdata[label="return spi_gpio->pdata"];
+
+}

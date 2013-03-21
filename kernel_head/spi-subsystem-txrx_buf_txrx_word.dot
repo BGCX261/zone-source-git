@@ -1,0 +1,16 @@
+digraph txrx_bufs_and_txrx_word{
+        label="finally, spi_bitbang.txrx_bufs calls spi_bitbang.txrx_word[0/1/2/3]";
+		
+        size="10,18";
+        ratio=filled;
+
+		spi_bitbang_txrx_bufs[label="spi_bitbang.txrx_bufs()(spi_bitbang_bufs)"];
+		spi_bitbang_cs_txrx_bufs[label="spi_bitbang_cs.txrx_bufs()(bitbang_txrx_8/16/32)"];
+		spi_bitbang_cs_txrx_word[label="spi_bitbang_cs.txrx_word()(bitbang_txrx_8/16/32 calls)"];
+		spi_bitbang_txrx_word[label="spi_bitbang.txrx_word[0-3]"];
+		
+		spi_bitbang_txrx_bufs -> spi_bitbang_cs_txrx_bufs;
+		spi_bitbang_cs_txrx_bufs -> spi_bitbang_cs_txrx_work;
+		spi_bitbang_cs_txrx_work -> spi_bitbang_txrx_word;
+		
+}
