@@ -1,0 +1,21 @@
+digraph pidhash_init{
+        label="void __init pidhash_init(void)";
+	
+        size="10,18";
+        ratio=filled;
+        
+        node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+        get_pidhash_shift_4_12;
+        for_each_PIDTYPE;
+        alloc_bootmem;
+        for_each_hash_entry;
+        INIT_HLIST_HEAD;
+
+        get_pidhash_shift_4_12 -> for_each_PIDTYPE;
+        for_each_PIDTYPE -> alloc_bootmem;
+        alloc_bootmem -> for_each_hash_entry;
+        for_each_hash_entry -> INIT_HLIST_HEAD;
+        INIT_HLIST_HEAD:s -> for_each_hash_entry:w;
+        INIT_HLIST_HEAD:s -> for_each_PIDTYPE:w;
+}
