@@ -5848,5 +5848,70 @@ insmod fpga_driver.ko是有这个错。
 inserting 'fpga_driver.ko': -1 Bad address
 把初始化函数里的所有内容删除后就没有错了，可能是因为free东西时出错了。
 
+==============================[2013-03-22 五]==============================
 
+C-x DEL
+    Kill back to beginning of sentence (backward-kill-sentence)
+http://www.chemie.fu-berlin.de/chemnet/use/info/emacs/emacs_13.html
 
+DAC用参考电压可以让输出更准一些。
+
+chmod 用-R递归，不是-r
+
+if (fpga_cdev = cdev_alloc()){
+}
+这样会报一个警：
+warning: suggest parentheses around assignment used as truth value
+
+内核报错：
+fpga_exit+0x18/0x2c
+这样理解：fpga_exit函数的地址加上0x18的偏移量，fpga_exit函数尾的位置在fpga_exit加上0x2c处。
+
+Unable to handle kernel NULL pointer dereference at virtual address 00000034
+pgd = c700c000
+[00000034] *pgd=c7008031, *pte=00000000, *ppte=00000000
+Internal error: Oops: 17 [#1] PREEMPT
+last sysfs file: /sys/kernel/uevent_seqnum
+Modules linked in: fpga_driver(-) [last unloaded: fpga_driver]
+CPU: 0    Not tainted  (2.6.37+ #44)
+PC is at cdev_del+0x14/0x34
+LR is at fpga_exit+0x18/0x2c [fpga_driver]
+pc : [<c00b2240>]    lr : [<bf012690>]    psr: a0000013
+sp : c7831f08  ip : c7831f20  fp : c7831f1c
+r10: 00000000  r9 : c7830000  r8 : c002f104
+r7 : c7831f3c  r6 : 00000880  r5 : bf012804  r4 : 00000000
+r3 : c0445264  r2 : 00000001  r1 : 00000000  r0 : 00000000
+Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+Control: 0005317f  Table: c700c000  DAC: 00000015
+Process rmmod (pid: 929, stack limit = 0xc7830270)
+Stack: (0xc7831f08 to 0xc7832000)
+1f00:                   bf012928 bf012804 c7831f34 c7831f20 bf012690 c00b223c
+1f20: 00000000 bf012804 c7831fa4 c7831f38 c0074c38 bf012688 c009b1bc 61677066
+1f40: 6972645f 00726576 c7015700 c709bc04 00000000 c709bc34 00001000 40290000
+1f60: c002f104 00000000 c7831f84 c7831f78 c0063218 00187218 bf012804 00000880
+1f80: c7831f84 00000000 be80cf29 be80cc90 00000880 00000081 00000000 c7831fa8
+1fa0: c002ef80 c0074a58 be80cf29 be80cc90 be80cc90 00000880 be80c410 00000001
+1fc0: be80cf29 be80cc90 00000880 00000081 00000000 00000000 00000000 be80ccc4
+1fe0: 17d01992 be80cc88 000091c8 402296dc 60000010 be80cc90 00000000 00000000
+Backtrace: 
+[<c00b222c>] (cdev_del+0x0/0x34) from [<bf012690>] (fpga_exit+0x18/0x2c [fpga_driver])
+ r5:bf012804 r4:bf012928
+[<bf012678>] (fpga_exit+0x0/0x2c [fpga_driver]) from [<c0074c38>] (sys_delete_module+0x1f0/0x264)
+ r5:bf012804 r4:00000000
+[<c0074a48>] (sys_delete_module+0x0/0x264) from [<c002ef80>] (ret_fast_syscall+0x0/0x2c)
+ r7:00000081 r6:00000880 r5:be80cc90 r4:be80cf29
+Code: e92dd830 e24cb004 e59f301c e1a04000 (e5941034) 
+---[ end trace 917e72b8f439a377 ]---
+
+mknod建立的东西用rm就可以了
+
+内核报错：
+1. insmod Tainted: GF 没碰见过，查了一下有篇很好的文章说kernel tainted的。
+
+http://www.novell.com/support/viewContent.do?externalId=3582750&sliceId=1
+
+其中提到了G和F的意思，和/proc/sys/kernel/tainted
+
+    G : The opposite of ' P ': the kernel has been tainted (for a reason indicated by a different flag), but all modules loaded into it were licensed under the G PL or a license compatible with the GPL. 
+
+fpga的驱动的ioctl函数里的switch case没加break;怪不得时间变长了。
