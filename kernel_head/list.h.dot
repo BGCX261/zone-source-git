@@ -1,0 +1,121 @@
+digraph list_h{
+        size="10,18";
+        ratio=filled;
+
+		subgraph cluster_list_add{
+				label="static inline void list_add(struct list_head *new, struct list_head *head)";
+
+				__list_add[label="__list_add(new, head, head->next);"];
+		}
+
+		subgraph cluster_list_add_tail{
+				label="static inline void list_add_tail(struct list_head *new, struct list_head *head)";
+
+				__list_add[label="__list_add(new, head->prev, head);"];
+		}
+
+		subgraph cluster_list_del{
+				label="static inline void list_del(struct list_head *entry)";
+
+				__list_del[label="__list_del(entry->prev, entry->next);"];
+				next_LIST_POISON1;
+				prev_LIST_POISON2;
+
+				__list_del -> next_LIST_POISON1;
+				next_LIST_POISON1 -> prev_LIST_POISON2;
+		}
+
+		subgraph cluster_list_empty{
+				label="list_empty(head)";
+				head_next_head;
+		}
+
+		subgraph cluster_list_entry{
+				// Returns the address of the data structure of type t in which the list_head field that has the name m and the address p is included.
+				// list_entry(p,t,m)
+				label="list_entry(ptr, type, member) macro"; //		// type has the type of ptr, and its name is member in type. return type address.
+
+				container_of;
+		}
+
+		subgraph cluster_list_for_each{
+				label="list_for_each(pos, head) macro";
+        
+				for[label="	for (pos = (head)->next; prefetch(pos->next), pos != (head);pos = pos->next)"];
+		}
+
+		subgraph cluster_list_for_each_entry{
+				label="list_for_each_entry(pos, head, member) macro"; 
+				
+				for[label="for (pos = list_entry((head)->next, typeof(*pos), member);\lprefetch(pos->member.next), &pos->member != (head);\lpos = list_entry(pos->member.next, typeof(*pos), member))"];		
+		}
+
+		subgraph cluster__list_del{
+				label="__list_del(prev, next)";
+				next_prev_prev-> prev_next_next;
+		}
+
+		subgraph cluster_hlist_add_head{
+				label="hlist_add_head(struct hlist_node *n, struct hlist_head *h)";
+				compound=true;
+				subgraph cluster_n{
+						label="n";
+						
+						n_next[label="next"];
+						n_pprev[label="pprve"];
+						
+				}
+				subgraph cluster_h
+				{
+						label="h";
+						h_first[label="first"];
+				}
+
+				subgraph cluster_h_first{
+						label="h_first";
+						h_first_next[label="next"];
+						h_first_pprev[label="pprev"];
+				}
+				
+				n_next -> h_first_next[lhead=cluster_h_first];
+				h_first_pprev -> n_next[label="&"];
+				h_first -> h_first_next[lhead=cluster_h_first, color=red];
+				h_first -> n_next[lhead=cluster_n];
+				n_pprev -> h_first[label="&"];
+				h_first_pprev -> h_first[label="&", color=red];
+		}
+
+		subgraph cluster_hlist_add_head{
+				label="hlist_del(struct hlist_node *n)";
+				compound=true;
+
+				n_next_to_LIST_POISON1;
+				n_pprev_to_LIST_POISON2;
+				
+				subgraph cluster___hlist_del{
+						label="__hlist_del(n)";
+						
+						n_pprev_pointer_to_n_next;
+						n_next_not_null;
+						n_next_pprev_to_n_pprev;
+
+						n_pprev_pointer_to_n_next -> n_next_not_null;
+						n_next_not_null -> n_next_pprev_to_n_pprev;
+				}
+
+				n_next_not_null -> n_next_to_LIST_POISON1[color=red];
+				
+				n_next_pprev_to_n_pprev -> n_next_to_LIST_POISON1[ltail=cluster___hlist_del];
+				n_next_to_LIST_POISON1 -> n_pprev_to_LIST_POISON2;
+		}
+
+		subgraph cluster_hlist_add_head{
+				label="hlist_empty(const struct hlist_head *h)";
+				compound=true;
+				edge[decorate=true];
+
+				not_h_first;
+		}
+
+		
+}

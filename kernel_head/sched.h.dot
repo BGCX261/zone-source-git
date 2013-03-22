@@ -1,0 +1,16 @@
+digraph sched_h{
+        size="10,18";
+        ratio=filled;
+
+		subgraph cluster_set_task_state{
+				label="set_task_state(tsk, state_value)";
+
+				set_mb[label="set_mb((tsk)->state, (state_value))"];
+		}
+
+		subgraph cluster_set_current_state{
+				label="set_current_state(state_value)";
+
+				set_mb[label="set_mb(current->state, (state_value))"];
+		}
+}

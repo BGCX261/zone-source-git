@@ -5796,3 +5796,57 @@ arch/arm/mach-davinci/include/mach/omapl138_fpga.h
 
 常常看到用“mask”这个东西来定义变量或宏名，注意mask是屏蔽的意思，所以像
 PAGE_MASK就是把一页大小的位清0，若是12位，那么就是~((1<<12) - 1)
+
+==============================[2013-03-21 四]==============================
+
+今天遇到了一个这样的编译问题：
+error: a label can only be part of a statement and a declaration is not a statement
+与switch case的用法有关
+http://stackoverflow.com/questions/92396/why-cant-variables-be-declared-in-a-switch-statement
+switch (val)
+{   
+case VAL:  
+{
+  // This will work
+  int newVal = 42;  
+  break;
+}
+case ANOTHER_VAL:  
+...
+break;
+}
+
+switch (i)
+{
+   case 0:
+     int j; // 'j' has indeterminate value
+     j = 0; // 'j' initialized to 0, but this statement
+            // is jumped when 'i == 1'
+     break;
+   case 1:
+     ++j;   // 'j' is in scope here - but it has an indeterminate value
+     break;
+}
+
+static int get_ti_nr(fpga_ti_t __user *const dest, unsigned char nr);
+有static的函数不能只声明。否则会有一个警告。
+warning: 'get_ti_nr' declared 'static' but never defined
+
+编译模块时用make -C指向内核原码根目录就可以了，前提是这个内核要先编译。
+
+i386和arm的thread_info是很不一样的
+虽然很不一样，但是current_thread_info也是用堆栈的
+
+有必要记住错误号，因为写驱动时老是不知道返回什么错误号。
+
+不是只有这一句就可以了：
+module_param(scull_major, int, S_IRUGO);
+还要有：
+int scull_major =   SCULL_MAJOR;
+
+insmod fpga_driver.ko是有这个错。
+inserting 'fpga_driver.ko': -1 Bad address
+把初始化函数里的所有内容删除后就没有错了，可能是因为free东西时出错了。
+
+
+

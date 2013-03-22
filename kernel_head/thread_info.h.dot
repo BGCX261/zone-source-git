@@ -1,0 +1,10 @@
+digraph thread_info_h{
+        size="10,18";
+        ratio=filled;
+		
+		subgraph cluster_alloc_thread_info{
+				label="alloc_thread_info(tsk)";
+
+				kmalloc[label="kmalloc(THREAD_SIZE, GFP_KERNEL)"];
+		}
+}
