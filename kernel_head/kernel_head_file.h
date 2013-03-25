@@ -143,7 +143,7 @@ struct task_struct {
 	 */
 	struct list_head children;	/* list of my children */
 	struct list_head sibling;	/* linkage in my parent's children list */
-	struct task_struct *group_leader;	/* threadgroup leader */
+	struct task_struct *group_leader;	/* threadgroup(processgroup) leader */
 
 	/* PID/PID hash table linkage. */
 	struct pid pids[PIDTYPE_MAX];
@@ -155,23 +155,54 @@ struct task_struct {
 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
 
 	unsigned long rt_priority;
-	cputime_t utime, stime;
+	cputime_t utime, stime;/**
+							  utime = user time,
+							  stime = system time,
+							  cutime = cumulative user time (process + its children),
+							  cstime = cumulative system time (process + its children) 
+						   **/
 	unsigned long nvcsw, nivcsw; /* context switch counts */
-	struct timespec start_time;
+	struct timespec start_time;/**
+								  value of the jiffies when the task was created
+								**/
 /* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
-	unsigned long min_flt, maj_flt;
+	unsigned long min_flt, maj_flt;/**
+									  min_flt: minor fault, 
+									  maj_flt: major fault (means that it had access to the disk),
+									  cmin_flt: cumulative minor fault (process + its children),
+									  cmaj_flt: cumulative major fault (process + its children)
+									**/
 
   	cputime_t it_prof_expires, it_virt_expires;
 	unsigned long long it_sched_expires;
 	struct list_head cpu_timers[3];
 
 /* process credentials */
-	uid_t uid,euid,suid,fsuid;
-	gid_t gid,egid,sgid,fsgid;
+	uid_t uid,euid,suid,fsuid;/**
+								 uid: user identifier,
+								 euid: effective UID used for privilege checks,
+								 suid: saved UID used to support switching permission,
+								 fsuid: UID used for filesystem access checks (used by NFS for 
+								 example)
+							   **/
+	gid_t gid,egid,sgid,fsgid;/**
+								 gid: group identifier, 
+								 egid: effective GID used for privilege checks,
+								 sgid: saved GID used to support switching permission,
+								 fgid: GID used for filesystem access checks
+							   **/
 	struct group_info *group_info;
-	kernel_cap_t   cap_effective, cap_inheritable, cap_permitted;
-	unsigned keep_capabilities:1;
-	struct user_struct *user;
+	kernel_cap_t   cap_effective, cap_inheritable, cap_permitted;/**
+																	POSIX capability information. It's sets of bits that permit splitting of 
+																	the privileges typically held by root into a larger set of more specific 
+																	privileges. 
+																  **/
+	unsigned keep_capabilities:1;/**
+									used to forbid the drop of all privileges.
+								  **/
+	struct user_struct *user;/**
+								information about user who owns the process. 
+							  **/
 #ifdef CONFIG_KEYS
 	struct key *thread_keyring;	/* keyring private to this thread */
 #endif
@@ -193,11 +224,19 @@ struct task_struct {
 /* namespace */
 	struct namespace *namespace;
 /* signal handlers */
-	struct signal_struct *signal;
-	struct sighand_struct *sighand;
+	struct signal_struct *signal;/**
+									signal associated to the process
+								  **/
+	struct sighand_struct *sighand;/**
+									  signal handler associated to the process
+									**/
 
-	sigset_t blocked, real_blocked;
-	struct sigpending pending;
+	sigset_t blocked, real_blocked;/**
+									  signals that are blocked by the process
+									**/
+	struct sigpending pending;/**
+								 signals generated but not yet delivered 
+							   **/
 
 	unsigned long sas_ss_sp;
 	size_t sas_ss_size;
@@ -211,7 +250,11 @@ struct task_struct {
 
 /* Thread group tracking */
    	u32 parent_exec_id;
-   	u32 self_exec_id;
+   	u32 self_exec_id;/**
+						used to distinguish if we have changed execution domain by comparing the 
+						two value. When changing execution domain, self_exec_id is incremented and
+						then is different from parent_exec_id.
+					  **/
 /* Protection of (de-)allocation: mm, files, fs, tty, keyrings */
 	spinlock_t alloc_lock;
 /* Protection of proc_dentry: nesting proc_lock, dcache_lock, write_lock_irq(&tasklist_lock); */
@@ -223,7 +266,10 @@ struct task_struct {
 	void *journal_info;
 
 /* VM state */
-	struct reclaim_state *reclaim_state;
+	struct reclaim_state *reclaim_state;/**
+										   pointer to structure reclaim_state when a task is running system's page 
+										   release (kmem_freepages).
+										 **/
 
 	struct dentry *proc_dentry;
 	struct backing_dev_info *backing_dev_info;
@@ -353,6 +399,15 @@ struct signal_struct {
 	/* POSIX.1b Interval Timers */
 	struct list_head posix_timers;
 
+	/**
+	   - unsigned long it_real_value, it_prof_value, it_virt_value;
+	   holds the current timer value. It's used to implement the specific 
+	   interval timer (itmer). 
+	   
+	   - unsigned long it_real_incr, it_prof_incr, it_virt_incr;
+	   holds the duration of the interval. It's used to implement the specific 
+	   interval timer (itmer). 
+	 **/
 	/* ITIMER_REAL timer for the process */
 	struct timer_list real_timer;
 	unsigned long it_real_value, it_real_incr;
@@ -380,9 +435,21 @@ struct signal_struct {
 	 * Live threads maintain their own counters and add to these
 	 * in __exit_signal, except for the group leader.
 	 */
-	cputime_t utime, stime, cutime, cstime;
-	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
-	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+	cputime_t utime, stime, cutime, cstime;/**
+											  utime = user time,
+											  stime = system time,
+											  cutime = cumulative user time (process + its children),
+											  cstime = cumulative system time (process + its children) 
+											**/
+	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;/**
+													context switch counts
+												  **/
+	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;/**
+														  min_flt: minor fault, 
+														  maj_flt: major fault (means that it had access to the disk),
+														  cmin_flt: cumulative minor fault (process + its children),
+														  cmaj_flt: cumulative major fault (process + its children)
+													   **/
 
 	/*
 	 * Cumulative ns of scheduled CPU time for dead threads in the
@@ -652,27 +719,64 @@ struct pt_regs {
 #define EXIT_ZOMBIE		16
 #define EXIT_DEAD		32
 
+	/* http://www.spinics.net/lists/newbies/msg11186.html 有很多成员的注释 */
 struct task_struct {
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	struct thread_info *thread_info;
-	atomic_t usage;
+	atomic_t usage;				/* used by get_task_struct(). It's also set in kernel/fork.c. This value 
+								   acts like a reference count on the task structure of a process. It can be
+								   used if we don't want to hold the tasklist_lock. */
+	/**
+      process flag can be, for example, PF_DEAD when exit_notify() is called.
+      List is of possible values is in include/linux/sched.h 
+	 **/
 	unsigned long flags;	/* per process flags, defined below */
+	/**
+	   used by ptrace a system call that provides the ability to a parent 
+	   process to observe and control the execution of another process.  
+	 **/
 	unsigned long ptrace;
-
 	int lock_depth;		/* BKL lock depth */
 
-	int prio, static_prio;
-	struct list_head run_list;	/* where the process is in the run list. */
-	prio_array_t *array;
+	int prio, static_prio;/**
+							 priority of a process used when scheduled. Variable prio, which is the 
+							 user-nice values, can be converted to static priority to better scale 
+							 various scheduler parameters.
+						   **/
 
-	unsigned long sleep_avg;
-	unsigned long long timestamp, last_ran;
+	/**
+	    a list of runnable task.
+	 **/
+	/**
+	   If the process priority is equal to k (a value ranging between 0 and 139),
+	   the run_list field links the process descriptor into the list of runnable processes having priority k.
+	 **/
+	struct list_head run_list;	/* where the process is in the run list. */
+	
+	prio_array_t *array;/**
+						   a pointer to a priority array. 
+						 **/
+
+	unsigned long sleep_avg;/**
+							   average sleep time of the process
+							 **/
+	unsigned long long timestamp, last_ran;/**
+											  timestamp:keep the time when the process has been activating. It is used, for 
+											  example, to recalculate the task's priority.
+											**/
 	unsigned long long sched_time; /* sched_clock time spent running */
 	int activated;
 
-	unsigned long policy;
-	cpumask_t cpus_allowed;
-	unsigned int time_slice, first_time_slice;
+	unsigned long policy;/**
+							the scheduling policy used for this process. It can be SCHED_NORMAL, 
+							SCHED_FIFO or SCHED_RR
+						  **/
+	cpumask_t cpus_allowed;/**
+							  mask that indicates on what CPUs the process can run.
+							**/
+	unsigned int time_slice, first_time_slice;/**
+												 time during when the process can run.
+											   **/
 
 #ifdef CONFIG_SCHEDSTATS
 	struct sched_info sched_info;
@@ -696,15 +800,35 @@ struct task_struct {
 								   traced)
 								  */
 
-	struct mm_struct *mm, *active_mm;
+	struct mm_struct *mm, *active_mm;/**
+										process address space describes by mm_struct. Field active_mm points to 
+										the active address space if the process doesn't have real one (eg kernel 
+										threads).
+									  **/
 
 /* task state */
-	struct linux_binfmt *binfmt;
-	long exit_state;
-	int exit_code, exit_signal;
+	struct linux_binfmt *binfmt;/**
+								   allows to define functions that are used to load the binary formats that 
+								   linux accepts.
+								 **/
+	long exit_state;			/* tsk->exit_state can only be 0, EXIT_ZOMBIE, or EXIT_DEAD */
+	/**
+      holds code or signal when a process exited. 
+      code: SIGHUP, SIGINT, SIGQUIT, ...
+      signal: generally used with SIGCHLD to signal init on exit
+	**/
+	int exit_code, exit_signal;	/* 把task_struct.exit_code(任务退出代码)置为exit()提供的代码code(退出代码存放在task_struct.exit_code中以供父进程随时检索) */
 	int pdeath_signal;  /*  The signal sent when the parent dies  */
 	/* ??? */
-	unsigned long personality;
+	unsigned long personality;/**
+								 relates to the personality of the task, i.e. to the way certain system 
+								 calls behave in order to emulate the "personality" of foreign flavors of
+								 UNIX.
+							   **/
+	/**
+	   set to 1 when executing a new program using sys_execve() and searching 
+	   the correct binary formats handler
+	 **/
 	unsigned did_exec:1;		/* 按POSIX要求设计的布尔量，
 								   区分进程是正在执行老程序代码，
 								   还是在执行execve装入的新代码 */
@@ -736,12 +860,26 @@ struct task_struct {
 	int __user *set_child_tid;		/* CLONE_CHILD_SETTID */
 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
 
-	unsigned long rt_priority;
-	cputime_t utime, stime;
+	unsigned long rt_priority;	/**
+								   real time priority
+								 **/
+	cputime_t utime, stime;/**
+							  utime = user time,
+							  stime = system time,
+							  cutime = cumulative user time (process + its children),
+							  cstime = cumulative system time (process + its children)
+						   **/
 	unsigned long nvcsw, nivcsw; /* context switch counts */
-	struct timespec start_time;
-/* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
-	unsigned long min_flt, maj_flt;
+	struct timespec start_time;/**
+								  value of the jiffies when the task was created
+								**/
+	/* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
+	unsigned long min_flt, maj_flt;/**
+									  min_flt: minor fault, 
+									  maj_flt: major fault (means that it had access to the disk),
+									  cmin_flt: cumulative minor fault (process + its children),
+									  cmaj_flt: cumulative major fault (process + its children)
+									**/
 
   	cputime_t it_prof_expires, it_virt_expires;
 	unsigned long long it_sched_expires;
@@ -876,3 +1014,20 @@ struct thread_info {
 						*/
 	__u8			supervisor_stack[0];
 };
+
+/*
+ * thread information flags
+ * - these are process state flags that various assembly files may need to access
+ * - pending work-to-be-done flags are in LSW
+ * - other flags in MSW
+ */
+#define TIF_SYSCALL_TRACE	0	/* syscall trace active */
+#define TIF_NOTIFY_RESUME	1	/* resumption notification requested */
+#define TIF_SIGPENDING		2	/* signal pending */
+#define TIF_NEED_RESCHED	3	/* rescheduling necessary */
+#define TIF_SINGLESTEP		4	/* restore singlestep on return to user mode */
+#define TIF_IRET		5	/* return with iret */
+#define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+#define TIF_SECCOMP		8	/* secure computing */
+#define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+#define TIF_MEMDIE		17

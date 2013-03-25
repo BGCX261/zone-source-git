@@ -5915,3 +5915,26 @@ http://www.novell.com/support/viewContent.do?externalId=3582750&sliceId=1
     G : The opposite of ' P ': the kernel has been tainted (for a reason indicated by a different flag), but all modules loaded into it were licensed under the G PL or a license compatible with the GPL. 
 
 fpga的驱动的ioctl函数里的switch case没加break;怪不得时间变长了。
+
+==============================[2013-03-25 一]==============================
+
+在每个进程的thread_info结构体里都有内核栈，所以在那个进程运行时进入内核态就用那个内核栈，
+即使是中断，每次进入都为空。且大小是固定的了.
+
+i.e.:也就是
+
+tgid就是thread(t) group(g) identifier(id)
+
+Oom-kill就是out-of-memory,，在linux内核中有一层保护机制，用于避免
+linux在内存不足的时候不至于严重的问题，把无关紧要的进程杀掉。这就是oom-killer。
+
+task_struct使用到的链表成员有:run_list, tasks, ptrace_children, ptrace_list, children, sibling, 
+task_struct使用到task_struct结构体的成员有:real_parent, parent, group_leader
+task_struct使用到pid_t的成员有:pid, tgid, 
+signal_struct使用到的链表成只有:posix_timer, cpu_timers
+signal_struct使用到的task_struct的成员有:group_exit_task, 
+signal_struct使用到的pid_t的成员有:pgrp, tty_old_pgrp, session,
+
+simultaneously同时的
+
+initiates启动.

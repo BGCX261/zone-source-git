@@ -1,15 +1,9 @@
 digraph fork_c{
-        size="10,18";
+        size="20,80";
         ratio=filled;
 
         subgraph cluster_copy_process{
-                label="static task_t *copy_process(unsigned long clone_flags,
-				 unsigned long stack_start,
-				 struct pt_regs *regs,
-				 unsigned long stack_size,
-				 int __user *parent_tidptr,
-				 int __user *child_tidptr,
-				 int pid)";
+                label="static task_t *copy_process(unsigned long clone_flags,unsigned long stack_start,struct pt_regs *regs,unsigned long stack_size,int __user *parent_tidptr,int __user *child_tidptr,int pid)";
 
                 CLONE_NEWNS_and_CLONE_FS_set_true[label="CLONE_NEWNS_and_CLONE_FS_set_true"];
                 return_ERR_PTR_EINVAL[label="return_ERR_PTR_EINVAL"];
@@ -111,7 +105,7 @@ digraph fork_c{
                 sigismember_SIGKILL[label="sigismember(&current->pending.signal, SIGKILL)"];
                 write_unlock_irq[label="write_unlock_irq(&tasklist_lock)"];
                 retval_EINTR[label="retval_EINTR"];
-                CLONE_PARENT_or_CLONE_THREAD_set[label="CLONE_PARENT_or_CLONE_THREAD_set"];
+                CLONE_PARENT_and_CLONE_THREAD_set[label="CLONE_PARENT_and_CLONE_THREAD_set"];
                 set_p_real_parent_current_real_parent[label="set_p_real_parent_current_real_parent"];
                 set_p_real_parent_current[label="set_p_real_parent_current"];
                 set_p_parent_p_real_parent[label="set_p_parent_p_real_parent"];
@@ -147,7 +141,7 @@ digraph fork_c{
 				return_ERR_PTR_retval[label="return_ERR_PTR_retval"];
 				return_p[label="return_p"];
 				exit_namespace[label="exit_namespace(p)"];
-                exit_keys[label="exit_keys(p)"];
+                // exit_keys[label="exit_keys(p)"];
                 p_mm_not_null[label="p_mm_not_null"];
                 mmput[label="mmput(p->mm);"];
                 exit_signal[label="exit_signal(p)"];
@@ -165,11 +159,12 @@ digraph fork_c{
                 atomic_dec[label="atomic_dec(&p->user->processes);"];
                 free_uid[label="free_uid(p->user)"];
                 free_task[label="free_task(p)"];
-
+				
 				CLONE_NEWNS_and_CLONE_FS_set_true -> return_ERR_PTR_EINVAL;
 				CLONE_NEWNS_and_CLONE_FS_set_true -> CLONE_THREAD_set_and_not_CLONE_SIGHAND;
 				CLONE_THREAD_set_and_not_CLONE_SIGHAND -> return_ERR_PTR_EINVAL_1;
-				CLONE_THREAD_set_and_not_CLONE_SIGHAND -> return_ERR_PTR_EINVAL_2;
+				CLONE_THREAD_set_and_not_CLONE_SIGHAND -> CLONE_SIGHAND_set_and_not_CLONE_VM;
+				CLONE_SIGHAND_set_and_not_CLONE_VM -> return_ERR_PTR_EINVAL_2;
 				CLONE_SIGHAND_set_and_not_CLONE_VM -> security_task_create;
 				security_task_create -> set_retval_ENOMEM;
 				security_task_create -> goto_fork_out;
@@ -228,6 +223,7 @@ digraph fork_c{
 				clear_p_audit_context -> set_p_tgid_p_pid;
 				set_p_tgid_p_pid -> CLONE_THREAD_set;
 				CLONE_THREAD_set -> p_tgid_current_tgid;
+				CLONE_THREAD_set -> security_task_alloc;
 				p_tgid_current_tgid -> security_task_alloc;
 				security_task_alloc -> audit_alloc;
 				audit_alloc -> copy_semundo;
@@ -241,12 +237,14 @@ digraph fork_c{
 				copy_namespace -> copy_thread;
 				security_task_alloc -> goto_bad_fork_cleanup_policy;
 				audit_alloc -> goto_bad_fork_cleanup_security;
-				copy_semundo -> goto_bad_fork_cleanup_semundo;
+				copy_semundo -> goto_bad_fork_cleanup_audit;
+				copy_files -> goto_bad_fork_cleanup_semundo;
 				copy_fs -> goto_bad_fork_cleanup_files;
 				copy_sighand -> goto_bad_fork_cleanup_fs;
 				copy_signal -> goto_bad_fork_cleanup_sighand;
 				copy_mm -> goto_bad_fork_cleanup_signal;
-				copy_keys -> goto_bad_fork_cleanup_mm;
+				copy_key -> goto_bad_fork_cleanup_mm;
+				copy_namespace -> goto_bad_fork_cleanup_keys;
 				copy_thread -> goto_bad_fork_cleanup_namespace;
 				copy_thread -> set_p_set_child_tid;
 				set_p_set_child_tid -> set_p_clear_child_tid;
@@ -266,16 +264,17 @@ digraph fork_c{
 				sigismember_SIGKILL -> write_unlock_irq;
 				write_unlock_irq -> retval_EINTR;
 				retval_EINTR -> goto_bad_fork_cleanup_namespace;
-				sigismember_SIGKILL -> CLONE_PARENT_or_CLONE_THREAD_set;
-				CLONE_PARENT_or_CLONE_THREAD_set -> set_p_real_parent_current_real_parent;
-				CLONE_PARENT_or_CLONE_THREAD_set -> set_p_real_parent_current;
+				sigismember_SIGKILL -> CLONE_PARENT_and_CLONE_THREAD_set;
+				CLONE_PARENT_and_CLONE_THREAD_set -> set_p_real_parent_current_real_parent;
+				CLONE_PARENT_and_CLONE_THREAD_set -> set_p_real_parent_current;
 				set_p_real_parent_current -> set_p_parent_p_real_parent;
 				set_p_real_parent_current_real_parent -> set_p_parent_p_real_parent;
+				set_p_parent_p_real_parent -> CLONE_THREAD_set_1;
 				CLONE_THREAD_set_1 -> spin_lock_current_sighand_siglock;
 				spin_lock_current_sighand_siglock -> current_signal_flags_SIGNAL_GROUP_EXIT;
 				current_signal_flags_SIGNAL_GROUP_EXIT -> spin_unlock_current_sighand_siglock;
-				spin_unlock_current_sighand_siglock -> write_unlock_irq;
-				write_unlock_irq -> retval_EAGAIN;
+				spin_unlock_current_sighand_siglock -> write_unlock_irq_1;
+				write_unlock_irq_1 -> retval_EAGAIN;
 				retval_EAGAIN -> goto_bad_fork_cleanup_namespace;
 				current_signal_flags_SIGNAL_GROUP_EXIT -> set_p_group_leader_current_group_leader;
 				set_p_group_leader_current_group_leader -> current_signal_group_stop_count;
@@ -343,5 +342,6 @@ digraph fork_c{
 				free_uid -> goto_bad_fork_free;
 				goto_bad_fork_free -> free_task;
 				free_task -> goto_fork_out;
+				
         }
 }
