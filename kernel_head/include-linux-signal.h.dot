@@ -1,0 +1,13 @@
+digraph signal_h{
+        size="10,18";
+        ratio=filled;
+
+        subgraph cluster_sigemptyset{
+                label="void sigemptyset(sigset_t *set)";
+
+                _NSIG_WORDS_1[label="_NSIG_WORDS_1"];
+                _NSIG_WORDS_2[label="_NSIG_WORDS_2"];
+                clear_set_sig_1[label="clear_set_sig_1"];
+                clear_set_sig_2[label="clear_set_sig_2"];
+        }
+}

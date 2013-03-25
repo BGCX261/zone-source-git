@@ -1,0 +1,35 @@
+digraph sched_c{
+        subgraph cluster_enqueue_task{
+                label="enqueue_task(struct task_struct *p, prio_array_t *array)";
+
+		sched_info_queued[label="sched_info_queued()"];
+		list_add_tail[label="list_add_tail(&p->run_list, array->queue + p->prio)"];
+		__set_bit[label="__set_bit(p->prio, array->bitmap)"];
+		array_nr_active_inc;
+		p_array_array[label="p->array = array"];
+
+		sched_info_queued -> list_add_tail;
+		list_add_tail -> __set_bit;
+		__set_bit -> array_nr_active_inc;
+		array_nr_active_inc -> p_array_array;
+        }
+
+        subgraph cluster_dequeue_task{
+                label="dequeue_task(struct task_struct *p, prio_array_t *array)";
+
+		array_nr_active_dec;
+		list_del[label="list_del()"];
+		list_empty[label="list_empty(array->queue + p->prio)"];
+		__clear_bit[label="__clear_bit(p->prio, array->bitmap)"];
+		end;
+
+		array_nr_active_dec -> list_del;
+		list_del -> list_empty;
+		list_empty -> __clear_bit[label="is empty"];
+		list_empty -> end;
+		__clear_bit -> end;
+        }
+
+        
+
+}

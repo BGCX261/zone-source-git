@@ -1,0 +1,9 @@
+digraph thread_info_h{
+        size="10,18";
+        ratio=filled;
+
+        subgraph cluster_clear_ti_thread_flag{
+                label="void clear_ti_thread_flag(struct thread_info *ti, int flag)";
+                clear_bit[label="clear_bit(flag,&ti->flags);"];
+        }
+}
