@@ -5849,4 +5849,21 @@ inserting 'fpga_driver.ko': -1 Bad address
 把初始化函数里的所有内容删除后就没有错了，可能是因为free东西时出错了。
 
 
+==============================[2013-03-24 Sun]==============================
+
+不明白内核里的put_user是怎么弄的,找不到调用.
+
+switch case里的default可以放到第一个位置
+
+static inline void sigemptyset(sigset_t *set)
+{
+	switch (_NSIG_WORDS) {
+	default:
+		memset(set, 0, sizeof(sigset_t));
+		break;
+	case 2: set->sig[1] = 0;
+	case 1:	set->sig[0] = 0;
+		break;
+	}
+}
 

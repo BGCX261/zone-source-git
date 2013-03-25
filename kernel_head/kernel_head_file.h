@@ -844,6 +844,32 @@ union thread_union {
 	unsigned long stack[THREAD_SIZE/sizeof(long)];
 };
 
+/*
+ * Per process flags
+ */
+#define PF_ALIGNWARN	0x00000001	/* Print alignment warning msgs */
+					/* Not implemented yet, only for 486*/
+#define PF_STARTING	0x00000002	/* being created */
+#define PF_EXITING	0x00000004	/* getting shut down */
+#define PF_DEAD		0x00000008	/* Dead */
+#define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
+#define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
+#define PF_DUMPCORE	0x00000200	/* dumped core */
+#define PF_SIGNALED	0x00000400	/* killed by a signal */
+#define PF_MEMALLOC	0x00000800	/* Allocating memory */
+#define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
+#define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
+#define PF_FREEZE	0x00004000	/* this task is being frozen for suspend now */
+#define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
+#define PF_FROZEN	0x00010000	/* frozen for system suspend */
+#define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+#define PF_KSWAPD	0x00040000	/* I am kswapd */
+#define PF_SWAPOFF	0x00080000	/* I am in swapoff */
+#define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
+#define PF_SYNCWRITE	0x00200000	/* I am doing a sync write */
+#define PF_BORROWED_MM	0x00400000	/* I am a kthread doing use_mm */
+#define PF_RANDOMIZE	0x00800000	/* randomize virtual address space */
+
 	/******************************kernel/pid.c******************************/
 #define PIDMAP_ENTRIES		((PID_MAX_LIMIT + 8*PAGE_SIZE - 1)/PAGE_SIZE/8)
 static pidmap_t pidmap_array[PIDMAP_ENTRIES] =

@@ -2,15 +2,28 @@ digraph sched_h{
         size="10,18";
         ratio=filled;
 
-		subgraph cluster_set_task_state{
-				label="set_task_state(tsk, state_value)";
+	subgraph cluster_set_task_state{
+		label="set_task_state(tsk, state_value)";
+                
+		set_mb[label="set_mb((tsk)->state, (state_value))"];
+	}
 
-				set_mb[label="set_mb((tsk)->state, (state_value))"];
-		}
+	subgraph cluster_set_current_state{
+		label="set_current_state(state_value)";
 
-		subgraph cluster_set_current_state{
-				label="set_current_state(state_value)";
+		set_mb[label="set_mb(current->state, (state_value))"];
+        }
+        
 
-				set_mb[label="set_mb(current->state, (state_value))"];
-		}
+        subgraph cluster_get_group_info{
+		label="get_group_info(group_info)";
+
+                atomic_inc[label="atomic_inc(&(group_info)->usage);"];
+        }
+
+        subgraph cluster_clear_task_thread_flag{
+                label="void clear_tsk_thread_flag(struct task_struct *tsk, int flag)";
+                clear_ti_thread_flag[label="clear_ti_thread_flag(tsk->thread_info,flag);"];
+                
+        }
 }

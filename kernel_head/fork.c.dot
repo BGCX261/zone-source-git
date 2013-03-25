@@ -144,4 +144,50 @@ digraph fork_c{
                 free_uid[label="free_uid(p->user)"];
                 free_task[label="free_task(p)"];
         }
+
+        subgraph cluster_dup_task_struct{
+                label="struct task_struct *dup_task_struct(struct task_struct *orig)";
+
+		prepare_to_copy[label="prepare_to_copy(orig)"];
+		alloc_task_struct[label="alloc_task_struct()"];
+		alloc_thread_info[label="alloc_thread_info()"];
+                free_task_struct[label="free_task_struct(tsk)"];
+		return_null[label="return_null"];
+		copy_ti[label="copy_ti"];
+		copy_tsk[label="copy_tsk"];
+		get_ti[label="get_ti"];
+		get_tsk[label="get_tsk"];
+		set_usage_2[label="set_usage_2"];
+
+		prepare_to_copy -> alloc_task_struct;
+		alloc_task_struct -> alloc_thread_info;
+		alloc_thread_info -> free_task_struct[label="NULL"];
+		alloc_thread_info -> copy_ti;
+		free_task_struct -> return_null;
+		alloc_task_struct -> return_null[label="NULL"];
+		copy_ti -> copy_tsk;
+		copy_tsk -> get_ti;
+		get_ti -> get_tsk;
+		get_tsk -> set_usage_2;
+        }
+
+        subgraph cluster_alloc_task_struct {
+                label="alloc_task_struct()";
+
+                kmem_cache_alloc[label="kmem_cache_alloc(task_struct_cachep, GFP_KERNEL)"];
+        }
+
+        subgraph cluster_copy_flags {
+                label="void copy_flags(unsigned long clone_flags, struct task_struct *p)";
+
+                clear_PF_SUPERPRIV[label="clear_PF_SUPERPRIV"];
+                set_PF_FORKNOEXEC[label="set_PF_FORKNOEXEC"];
+                CLONE_PTRACE_set[label="CLONE_PTRACE_set"];
+                clear_p_ptrace[label="clear_p_ptrace"];
+        }
+
+        subgraph cluster{
+                label=""
+                }
+
 }
