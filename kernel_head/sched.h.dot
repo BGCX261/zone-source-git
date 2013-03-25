@@ -26,4 +26,53 @@ digraph sched_h{
                 clear_ti_thread_flag[label="clear_ti_thread_flag(tsk->thread_info,flag);"];
                 
         }
+
+        subgraph cluster_SET_LINKS{
+                label="SET_LINKS(p)";
+		
+		thread_group_leader[label="thread_group_leader()"];
+		list_add_tail[label="list_add_tail()\ladd task to tail of task list"];
+		add_parent[label="add_parent()\ladd task to the head of his parent's childen list"];
+
+		thread_group_leader -> list_add_tail[label="is thread group_leader"];
+		thread_group_leader -> add_parent;
+		list_add_tail -> add_parent;
+        }
+
+        subgraph cluster_list_REMOVE_LINKS{
+                label="REMOVE_LINKS(p), macro";
+
+	        thread_group_leader[label="thread_group_leader()"];
+	        list_del_init[label="list_del_init(&(p)->tasks)\ldeletes entry from list and reinitialize it."];
+	        remove_parent[label="add_parent(p)\ldeletes from the sibling lists, call list_del_init"];
+
+	        thread_group_leader -> list_del_init[label="is thread group leader"];
+	        list_del_init -> remove_parent;
+	        thread_group_leader -> remove_parent;
+        }
+
+        subgraph cluster_add_parent{
+                label="add_parent(p, parent)";
+
+		add_parent[label="list_add_tail(&(p)->sibling,&(parent)->children)"];
+        }
+
+        subgraph cluster_remove_parent{
+                label="remove_parent(p) marco";
+
+		list_del_init[label="list_del_init()\lp->sibling"]
+        }
+
+        subgraph cluster_for_each_process{
+                label="for_each_process(p)";
+                
+	        for[label="for (p = &init_task ; (p = next_task(p)) != &init_task ; );"];
+        }
+
+        subgraph cluster_find_task_by_pid{
+                label="find_task_by_pid(nr)";
+                find_task_by_pid_type[label="find_task_by_pid_type(PIDTYPE_PID, nr)"];
+        }           
+
+
 }

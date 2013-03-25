@@ -5958,3 +5958,11 @@ simultaneously同时的
 
 initiates启动.
 
+当task_struct.sibling为空时那么该进程没有父进程，这种说法对吗？
+每个进程都会被调用add_parent的，add_parent在SET_LINKS被调用。
+add_parent会涉及到sibling
+
+task_struct.array是一个prio_array_t的指针，那么是如何知道一个给定的task_struct的优先
+级呢？可能这个array成员只是指定了那个CPU的prio_array_t，因为每个CPU都有自己的运行队列。
+关于进程的优先级由其它的成员来确定。
+的确是这样子的，可以通定enqueue_task来确定。

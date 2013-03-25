@@ -1057,3 +1057,26 @@ struct thread_info {
 #define TIF_SECCOMP		8	/* secure computing */
 #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
 #define TIF_MEMDIE		17
+
+    /******************************sched.c******************************/
+
+struct prio_array {
+	unsigned int nr_active;
+	unsigned long bitmap[BITMAP_SIZE];
+	struct list_head queue[MAX_PRIO];
+};
+
+
+    /******************************pid.c******************************/
+static struct hlist_head *pid_hash[PIDTYPE_MAX];
+
+    /******************************pid.h******************************/
+struct pid
+{
+	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
+	int nr;
+	struct hlist_node pid_chain;
+	/* list of pids with the same nr, only one of them is in the hash */
+	struct list_head pid_list;
+};
+
