@@ -1,0 +1,86 @@
+digraph wait_c{
+        size="20,80";
+        ratio=filled;
+
+		subgraph cluster_autoremove_wake_function{
+				label="int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)";
+
+				default_wake_function[label="default_wake_function(wait, mode, sync, key);"];
+				list_del_init[label="list_del_init(&wait->task_list);"];
+
+				default_wake_function -> list_del_init;
+		}
+
+		subgraph cluster_add_wait_queue{
+				label="add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)";
+
+				clear_flags_last[label="clear_flags_last"];
+				spin_lock_irqsave[label="spin_lock_irqsave"];
+				__add_wait_queue[label="__add_wait_queue(q, wait);"];
+				spin_unlock_irqrestore[label="spin_unlock_irqrestore"];
+
+				clear_flags_last -> spin_lock_irqsave;
+				spin_lock_irqsave -> __add_wait_queue;
+				__add_wait_queue -> spin_unlock_irqrestore;
+		}
+
+		subgraph cluster_add_wait_queue_exclusive{
+				label="void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)";
+				
+				set_flags_last[label="set_flags_last"];
+				spin_lock_irqsave[label="spin_lock_irqsave"];
+				__add_wait_queue_tail[label="__add_wait_queue_tail(q, wait);"];
+				spin_unlock_irqrestore[label="spin_unlock_irqrestore"];
+
+				clear_flags_last -> spin_lock_irqsave;
+				spin_lock_irqsave -> __add_wait_queue_tail;
+				__add_wait_queue_tail -> spin_unlock_irqrestore;
+		}
+
+		subgraph cluster_remove_wait_queue{
+				label="remove_wait_queuevoid fastcall remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)";
+
+				spin_lock_irqsave[label="spin_lock_irqsave(&q->lock, flags);"];
+				__remove_wait_queue[label="	__remove_wait_queue(q, wait);"]
+				spin_unlock_irqrestore[label="spin_unlock_irqrestore(&q->lock, flags);"];
+				spin_lock_irqsave -> __remove_wait_queue;
+				__remove_wait_queue -> spin_unlock_irqrestore;
+		}
+
+		subgraph cluster_prepare_to_wait{
+				label="prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)";
+
+				set_non_ex[label="set_non_ex"];
+				spin_lock_irqsave[label="spin_lock_irqsave(&q->lock, flags);"];
+				list_empty[label="list_empty(&wait->task_list)"];
+				__add_wait_queue[label="__add_wait_queue(q, wait);"];
+				is_sync_wait[label="is_sync_wait(wait)"];
+				set_current_state[label="set_current_state(state);"];
+				spin_unlock_irqrestore[label="spin_unlock_irqrestore(&q->lock, flags);"];
+
+				set_non_ex -> spin_lock_irqsave;
+				spin_lock_irqsave -> list_empty;
+				list_empty -> __add_wait_queue[label="empty"];
+				__add_wait_queue -> is_sync_wait;
+				is_sync_wait -> set_current_state[label="sync"];
+				set_current_state -> spin_unlock_irqrestore;
+				list_empty -> is_sync_wait;
+				is_sync_wait -> spin_unlock_irqrestore;
+		}
+
+		subgraph cluster_finish_wait{
+				label="void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)";
+
+				set_running[label="__set_current_state(TASK_RUNNING)"];
+				list_empty_careful[label="list_empty_careful(&wait->task_list)"];
+				spin_lock_irqsave[label="spin_lock_irqsave(&q->lock, flags);"];
+				list_del_init[label="list_del_init(&wait->task_list);"];
+				spin_unlock_irqrestore[label="spin_unlock_irqrestore(&q->lock, flags);"];
+
+				set_running -> list_empty_careful;
+				list_empty_careful -> spin_lock_irqsave[label="not empty"];
+				spin_lock_irqsave -> list_del_init;
+				list_del_init -> spin_unlock_irqrestore;
+		}
+
+}

@@ -1,0 +1,13 @@
+digraph pid_h{
+        size="10,18";
+        ratio=filled;
+        
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		subgraph pid_task{
+				label="pid_task(elem, type)";
+				list_entry[label="list_entry(elem, struct task_struct, pids[type].pid_list);"];
+		}
+
+		subgraph 
+}

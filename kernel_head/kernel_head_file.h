@@ -1010,7 +1010,7 @@ union thread_union {
 
 	/******************************kernel/pid.c******************************/
 #define PIDMAP_ENTRIES		((PID_MAX_LIMIT + 8*PAGE_SIZE - 1)/PAGE_SIZE/8)
-static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
+	static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
 	 { [ 0 ... PIDMAP_ENTRIES-1 ] = { ATOMIC_INIT(BITS_PER_PAGE), NULL } };
 
 	/******************************include/asm-i386/thread_info.h************/
@@ -1060,23 +1060,46 @@ struct thread_info {
 
     /******************************sched.c******************************/
 
-struct prio_array {
-	unsigned int nr_active;
-	unsigned long bitmap[BITMAP_SIZE];
-	struct list_head queue[MAX_PRIO];
-};
+	struct prio_array {
+		unsigned int nr_active;
+		unsigned long bitmap[BITMAP_SIZE];
+		struct list_head queue[MAX_PRIO];
+	};
 
 
     /******************************pid.c******************************/
-static struct hlist_head *pid_hash[PIDTYPE_MAX];
+	static struct hlist_head *pid_hash[PIDTYPE_MAX];
 
     /******************************pid.h******************************/
-struct pid
-{
-	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
-	int nr;
-	struct hlist_node pid_chain;
-	/* list of pids with the same nr, only one of them is in the hash */
-	struct list_head pid_list;
-};
+	struct pid
+	{
+		/* Try to keep pid_chain in the same cacheline as nr for find_pid */
+		int nr;
+		struct hlist_node pid_chain;
+		/* list of pids with the same nr, only one of them is in the hash */
+		struct list_head pid_list;
+	};
+
+	/******************************include/wait.h******************************/
+	struct __wait_queue_head {
+		spinlock_t lock;
+		struct list_head task_list;
+	};
+	typedef struct __wait_queue_head wait_queue_head_t;
+	
+	struct __wait_queue {
+		unsigned int flags;
+#define WQ_FLAG_EXCLUSIVE	0x01
+		struct task_struct * task;
+		wait_queue_func_t func;
+		struct list_head task_list;
+	};
+
+#define __WAIT_QUEUE_HEAD_INITIALIZER(name) {				\
+	.lock		= SPIN_LOCK_UNLOCKED,				\
+	.task_list	= { &(name).task_list, &(name).task_list } }
+
+#define DECLARE_WAIT_QUEUE_HEAD(name) \
+	wait_queue_head_t name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
+
 

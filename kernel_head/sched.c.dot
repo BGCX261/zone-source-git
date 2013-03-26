@@ -30,6 +30,98 @@ digraph sched_c{
 		__clear_bit -> end;
         }
 
-        
+        subgraph cluster_default_wake_function{
+				label="int default_wake_function(wait_queue_t *curr, unsigned mode, int sync, void *key)"
 
+				get_curr_task[label="task_t *p = curr->task;"];
+				try_to_wake_up[label="try_to_wake_up(p, mode, sync);"];
+
+				get_curr_task -> try_to_wake_up;
+		}
+
+		subgraph cluster_sleep_on{
+				label="sleep_on(wait_queue_head_t *q)";
+
+				init_waitqueue_entry[label="init_waitqueue_entry(&wait, current);"];
+				set_UNINTERRUPTIBLE[label="set_UNINTERRUPTIBLE"];
+				spin_lock_irqsave_1[label="spin_lock_irqsave(&q->lock,flags);"];
+				__add_wait_queue[label="__add_wait_queue(q, &wait);"];
+				spin_unlock_1[label="spin_unlock_restore(&q->lock);"];
+				schedule[label="schedule()"];
+				spin_lock_irqsave_2[label="spin_lock_irqsave(&q->lock,flags);"];
+				spin_unlock_2[label="spin_unlock(&q->lock);"];
+				__remove_wait_queue[label="__remove_wait_queue(q, &wait);"];
+
+				init_waitqueue_entry -> set_UNINTERRUPTIBLE;
+				set_UNINTERRUPTIBLE -> spin_lock_irqsave_1;
+				spin_lock_irqsave_1 -> __add_wait_queue;
+				__add_wait_queue -> spin_unlock_1;
+				spin_unlock_1 -> schedule;
+				schedule -> spin_lock_irqsave_2;
+				spin_lock_irqsave_2 -> __remove_wait_queue;
+				__remove_wait_queue -> spin_unlock_2;
+		}
+
+		subgraph cluster_sleep_on_timeout{
+				label="sleep_on_timeout(wait_queue_head_t *q, long timeout)";
+
+				init_waitqueue_entry[label="init_waitqueue_entry(&wait, current);"];
+				set_UNINTERRUPTIBLE[label="set_UNINTERRUPTIBLE"];
+				spin_lock_irqsave_1[label="spin_lock_irqsave(&q->lock,flags);"];
+				__add_wait_queue[label="__add_wait_queue(q, &wait);"];
+				spin_unlock_1[label="spin_unlock_restore(&q->lock);"];
+				schedule_timeout[label="schedule_timeout()"];
+				spin_lock_irqsave_2[label="spin_lock_irqsave(&q->lock,flags);"];
+				spin_unlock_2[label="spin_unlock(&q->lock);"];
+				__remove_wait_queue[label="__remove_wait_queue(q, &wait);"];
+
+				init_waitqueue_entry -> set_UNINTERRUPTIBLE;
+				set_UNINTERRUPTIBLE -> spin_lock_irqsave_1;
+				spin_lock_irqsave_1 -> __add_wait_queue;
+				__add_wait_queue -> spin_unlock_1;
+				spin_unlock_1 -> schedule_timeout;
+				schedule_timeout -> spin_lock_irqsave_2;
+				spin_lock_irqsave_2 -> __remove_wait_queue;
+				__remove_wait_queue -> spin_unlock_2;
+		}
+
+		subgraph cluster__wake_up_locked{
+				label="__wake_up_locked(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, void *key)";
+
+				__wake_up_common[label="__wake_up_common(q, mode, 1, 0, NULL);"];
+		}
+
+		subgraph cluster__wake_up_common{
+				label="void __wake_up_common(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, int sync, void *key)";
+
+				list_for_each_safe[label="list_for_each_safe(tmp, next, &q->task_list)"];
+				list_entry[label="get wait_queue_t \llist_entry(tmp, wait_queue_t, task_list);"];
+				call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null[label="call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null"];
+				return[label="return"];
+
+				list_for_each_safe -> return;
+				list_for_each_safe -> list_entry;
+				list_entry -> call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null;
+				call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null -> return;
+		}
+
+		subgraph cluster___wake_up_sync{
+				label="void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr_exclusive)";
+
+				nr_exclusive[label="nr_exclusive_null"];
+				clean_sync[label="clean_sync"];
+
+				spin_lock_irqsave_q_lock[label="spin_lock_irqsave_q_lock"];
+				__wake_up_common[label="__wake_up_common(q, mode, nr_exclusive, sync, NULL);"];
+				spin_unlock_irqsave_q_lock[label="spin_unlock_irqsave_q_lock"];
+
+				spin_lock_irqsave_q_lock -> __wake_up_common;
+				__wake_up_common -> spin_unlock_irqsave_q_lock;
+		}
+
+		subgraph cluster___wake_up_locked{
+				label="void __wake_up_locked(wait_queue_head_t *q, unsigned int mode)";
+
+				__wake_up_common[label="__wake_up_common(q, mode, 1, 0, NULL);"];
+		}
 }

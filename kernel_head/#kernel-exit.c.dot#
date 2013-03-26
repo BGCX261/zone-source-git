@@ -1,0 +1,10 @@
+digraph exit_c{
+        size="20,80";
+        ratio=filled;
+
+		subgraph cluster_next_thread{
+				label="task_t *next_thread(const task_t *p)";
+
+				pid_task[label="pid_task(p->pids[PIDTYPE_TGID].pid_list.next, PIDTYPE_TGID);"];
+		}
+}
