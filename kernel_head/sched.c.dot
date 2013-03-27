@@ -124,4 +124,5 @@ digraph sched_c{
 
 				__wake_up_common[label="__wake_up_common(q, mode, 1, 0, NULL);"];
 		}
+
 }
