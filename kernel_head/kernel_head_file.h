@@ -1081,10 +1081,10 @@ struct thread_info {
 	};
 
 	/******************************include/wait.h******************************/
-	struct __wait_queue_head {
-		spinlock_t lock;
-		struct list_head task_list;
-	};
+    struct __wait_queue_head {
+        spinlock_t lock;
+        struct list_head task_list;
+    };
 	typedef struct __wait_queue_head wait_queue_head_t;
 	
 	struct __wait_queue {
@@ -1103,3 +1103,29 @@ struct thread_info {
 	wait_queue_head_t name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
 
 
+/******************************include/asm-i386/processor.h******************************/
+struct thread_struct {
+/* cached TLS descriptors. */
+	struct desc_struct tls_array[GDT_ENTRY_TLS_ENTRIES];
+	unsigned long	esp0;
+	unsigned long	sysenter_cs;
+	unsigned long	eip;
+	unsigned long	esp;
+	unsigned long	fs;
+	unsigned long	gs;
+/* Hardware debugging registers */
+	unsigned long	debugreg[8];  /* %%db0-7 debug registers */
+/* fault info */
+	unsigned long	cr2, trap_no, error_code;
+/* floating point info */
+	union i387_union	i387;
+/* virtual 86 mode info */
+	struct vm86_struct __user * vm86_info;
+	unsigned long		screen_bitmap;
+	unsigned long		v86flags, v86mask, saved_esp0;
+	unsigned int		saved_fs, saved_gs;
+/* IO permissions */
+	unsigned long	*io_bitmap_ptr;
+/* max allowed port in the bitmap, in bytes: */
+	unsigned long	io_bitmap_max;
+};
