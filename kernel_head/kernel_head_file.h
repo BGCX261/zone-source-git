@@ -266,11 +266,7 @@ struct task_struct {
 	void *journal_info;
 
 /* VM state */
-	struct reclaim_state *reclaim_state;/**
-										   pointer to structure reclaim_state when a task is running system's page 
-										   release (kmem_freepages).
-										 **/
-
+	struct reclaim_state *reclaim_state;
 	struct dentry *proc_dentry;
 	struct backing_dev_info *backing_dev_info;
 
@@ -710,6 +706,13 @@ struct pt_regs {
 
 	////////////////////////////////3-21//////////////////////////////////
 	/******************************sched.h******************************/
+/*
+ * Bits in flags field of signal_struct.
+ */
+#define SIGNAL_STOP_STOPPED	0x00000001 /* job control stop in effect */
+#define SIGNAL_STOP_DEQUEUED	0x00000002 /* stop signal dequeued */
+#define SIGNAL_STOP_CONTINUED	0x00000004 /* SIGCONT since WCONTINUED reap */
+#define SIGNAL_GROUP_EXIT	0x00000008 /* group exit in progress */
 
 #define TASK_RUNNING		0
 #define TASK_INTERRUPTIBLE	1
@@ -734,6 +737,12 @@ struct task_struct {
 	/**
 	   used by ptrace a system call that provides the ability to a parent 
 	   process to observe and control the execution of another process.  
+	 **/
+	/**
+	   ulk:if it is not zero, the parent process (current) is being traced by another process, 
+	 **/
+	/**
+	   标志在ptrace.h里
 	 **/
 	unsigned long ptrace;
 	int lock_depth;		/* BKL lock depth */
@@ -943,14 +952,18 @@ struct task_struct {
 	void *journal_info;
 
 /* VM state */
-	struct reclaim_state *reclaim_state;
-
+	struct reclaim_state *reclaim_state;/**
+										   pointer to structure reclaim_state when a task is running system's page 
+										   release (kmem_freepages).
+										 **/
 	struct dentry *proc_dentry;
 	struct backing_dev_info *backing_dev_info;
 
 	struct io_context *io_context;
 
-	unsigned long ptrace_message;
+	unsigned long ptrace_message;/**
+									若创建的子进程被跟踪,用在调用do_fork里ptrace_message被存放子进程的pid
+								  **/
 	siginfo_t *last_siginfo; /* For ptrace use.  */
 /*
  * current io wait handle: wait queue entry to use for io waits
@@ -1103,6 +1116,7 @@ struct thread_info {
 	wait_queue_head_t name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
 
 
+<<<<<<< HEAD
 /******************************include/asm-i386/processor.h******************************/
 struct thread_struct {
 /* cached TLS descriptors. */
@@ -1129,3 +1143,87 @@ struct thread_struct {
 /* max allowed port in the bitmap, in bytes: */
 	unsigned long	io_bitmap_max;
 };
+=======
+	/******************************include/linux/ptrace.h******************************/
+/*
+ * Ptrace flags
+ */
+/**
+   这些是task_struct.ptrace里设置的标志
+ **/
+#define PT_PTRACED	0x00000001
+#define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
+#define PT_TRACESYSGOOD	0x00000004
+#define PT_PTRACE_CAP	0x00000008	/* ptracer can follow suid-exec */
+#define PT_TRACE_FORK	0x00000010
+#define PT_TRACE_VFORK	0x00000020
+#define PT_TRACE_CLONE	0x00000040
+#define PT_TRACE_EXEC	0x00000080
+#define PT_TRACE_VFORK_DONE	0x00000100
+#define PT_TRACE_EXIT	0x00000200
+#define PT_ATTACHED	0x00000400	/* parent != real_parent */
+
+	/******************************include/linux/irq.h******************************/
+	
+/*
+ * IRQ line status.
+ */
+#define IRQ_INPROGRESS	1	/* IRQ handler active - do not enter! */
+#define IRQ_DISABLED	2	/* IRQ disabled - do not enter! */
+#define IRQ_PENDING	4	/* IRQ pending - replay on enable */
+#define IRQ_REPLAY	8	/* IRQ has been replayed but not acked yet */
+#define IRQ_AUTODETECT	16	/* IRQ is being autodetected */
+#define IRQ_WAITING	32	/* IRQ not yet seen - for autodetection */
+#define IRQ_LEVEL	64	/* IRQ level triggered */
+#define IRQ_MASKED	128	/* IRQ masked - shouldn't be seen again */
+#define IRQ_PER_CPU	256	/* IRQ is per CPU */
+
+/*
+ * Interrupt controller descriptor. This is all we need
+ * to describe about the low-level hardware. 
+ */
+struct hw_interrupt_type {
+	const char * typename;
+	unsigned int (*startup)(unsigned int irq);
+	void (*shutdown)(unsigned int irq);
+	void (*enable)(unsigned int irq);
+	void (*disable)(unsigned int irq);
+	void (*ack)(unsigned int irq);
+	void (*end)(unsigned int irq);
+	void (*set_affinity)(unsigned int irq, cpumask_t dest);
+};
+
+typedef struct hw_interrupt_type  hw_irq_controller;
+
+/*
+ * This is the "IRQ descriptor", which contains various information
+ * about the irq, including what kind of hardware handling it has,
+ * whether it is disabled etc etc.
+ *
+ * Pad this out to 32 bytes for cache and indexing reasons.
+ */
+typedef struct irq_desc {
+	hw_irq_controller *handler;
+	void *handler_data;
+	struct irqaction *action;	/* IRQ action list */
+	unsigned int status;		/* IRQ status */
+	unsigned int depth;		/* nested irq disables */
+	unsigned int irq_count;		/* For detecting broken interrupts */
+	unsigned int irqs_unhandled;
+	spinlock_t lock;
+} ____cacheline_aligned irq_desc_t;
+extern irq_desc_t irq_desc [NR_IRQS];
+
+	/******************************include/linux/interrupt.h******************************/
+struct irqaction {
+	irqreturn_t (*handler)(int, void *, struct pt_regs *);
+	unsigned long flags;
+	cpumask_t mask;
+	const char *name;
+	void *dev_id;
+	struct irqaction *next;
+	int irq;
+	struct proc_dir_entry *dir;
+};
+
+>>>>>>> 061cb64d3f4dbdc8091311306bafb102a4254bd2

@@ -7,4 +7,258 @@ digraph exit_c{
 
 				pid_task[label="pid_task(p->pids[PIDTYPE_TGID].pid_list.next, PIDTYPE_TGID);"];
 		}
+
+		subgraph cluster_do_group_exit{
+				label="NORET_TYPE void do_group_exit(int exit_code)";
+				
+				current_signal_flags_SIGNAL_GROUP_EXIT_set[label="current_signal_flags_SIGNAL_GROUP_EXIT_set"];
+				set_exit_code_current_signal_group_exit_code[label="set_exit_code_current_signal_group_exit_code"];
+				do_exit[label="do_exit(exit_code);"];
+				thread_group_empty_current[label="thread_group_empty_current"];
+				read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+				spin_lock_irq_current_sighand_siglock[label="spin_lock_irq_current_sighand_siglock"];
+				current_signal_flags_SIGNAL_GROUP_EXIT_set_1[label="current_signal_flags_SIGNAL_GROUP_EXIT_set_1"];
+				set_exit_code_current_signal_group_exit_code_1[label="set_exit_code_sig_group_exit_code"];
+				set_current_signal_flags_SIGNAL_GROUP_EXIT[label="set_current_signal_flags_SIGNAL_GROUP_EXIT"];
+				set_current_signal_group_exit_code_exit_code_1[label="set_current_signal_group_exit_code_exit_code_1"];
+				zap_other_threads[label="zap_other_threads(current);"];
+				spin_unlock_irq_current_sighand_siglock[label="spin_unlock_irq_current_sighand_siglock"];
+				read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+
+				current_signal_flags_SIGNAL_GROUP_EXIT_set -> set_exit_code_current_signal_group_exit_code;
+				current_signal_flags_SIGNAL_GROUP_EXIT_set -> thread_group_empty_current;
+				set_exit_code_current_signal_group_exit_code -> do_exit;
+				thread_group_empty_current -> read_lock_tasklist_lock;
+				read_lock_tasklist_lock -> spin_lock_irq_current_sighand_siglock;
+				spin_lock_irq_current_sighand_siglock -> current_signal_flags_SIGNAL_GROUP_EXIT_set_1;
+				current_signal_flags_SIGNAL_GROUP_EXIT_set_1 -> set_exit_code_current_signal_group_exit_code_1;
+				set_exit_code_current_signal_group_exit_code_1 -> spin_unlock_irq_current_sighand_siglock;
+				spin_unlock_irq_current_sighand_siglock -> read_unlock_tasklist_lock;
+				read_unlock_tasklist_lock -> do_exit;
+				current_signal_flags_SIGNAL_GROUP_EXIT_set_1 -> set_current_signal_flags_SIGNAL_GROUP_EXIT;
+				set_current_signal_flags_SIGNAL_GROUP_EXIT -> set_current_signal_group_exit_code_exit_code_1;
+				set_current_signal_group_exit_code_exit_code_1 -> zap_other_threads;
+				zap_other_threads -> spin_unlock_irq_current_sighand_siglock;
+		}
+
+		subgraph cluster_do_exit{
+				label="void do_exit(long code)";
+
+				profile_task_exit[label="profile_task_exit"];
+				in_interrupt[label="in_interrupt"];
+				panic_1[label="panic"];
+				current_pid_null[label="current_pin_null"];
+				panic_2[label="panic_2"];
+				current_pid_1[label="current_pid_1"];
+				panic_3[label="panic_3"];
+				current_io_context_not_null[label="current_io_context_not_null"];
+				exit_io_context[label="exit_io_context()"];
+				current_ptrace_PT_TRACE_EXIT_set[label="current_ptrace_PT_TRACE_EXIT_set"];
+				set_current_ptrace_message_code[label="set_current_ptrace_message_code"];
+				ptrace_notify_PTRACE_EVENT_EXIT_and_SIGTRAP[label="ptrace_notify_PTRACE_EVENT_EXIT_and_SIGTRAP"];
+				set_current_flags_PF_EXITING[label="set_current_flags_PF_EXITING"];
+
+				set_current_it_virt_expires_cputime_zero[label="set_current_it_virt_expires_cputime_zero"];
+				set_current_it_prof_expires_cputime_zero[label="set_current_it_prof_expires_cputime_zero"];
+				clear_current_it_sched_expires[label="clear_current_it_sched_expires"];
+
+				acct_update_integrals[label="acct_update_integrals()"];
+				update_mem_hiwater[label="update_mem_hiwater()"];
+				get_group_dead[label="group_dead = atomic_dec_and_test(&tsk->signal->live);"];
+				group_dead_not_null[label="group_dead_not_null"];
+				acct_prcess[label="acct_prcess(code)"];
+				exit_mm[label="exit_mm(current)"];
+				exit_sem[label="exit_sem(current)"];
+				__exit_files[label="__exit_files(current)"];
+				__exit_fs[label="__exit_fs(current)"];
+				exit_namespace[label="exit_namespace(current)"];
+				exit_thread[label="exit_thread()"];
+				cpuset_exit[label="cpuset_exit(current)"];
+				exit_keys[label="exit_keys(current)"];
+				group_dead_and_current_signal_leader_set[label="group_dead_and_current_signal_leader_set"];
+				disassociate_ctty[label="disassociate_ctty(1)"];
+				module_put_domain[label="module_put(tsk->thread_info->exec_domain->module);"];
+				current_binfmt_not_null[label="current_binfmt_not_null"];
+				module_put_binfmt[label="module_put_binfmt"];
+				set_current_exit_code_code[label="set_current_exit_code_code"];
+				exit_notyfy[label="exit_notyfy(current)"];
+				mpol_free[label="mpol_free(tsk->mempolicy);"];
+				clear_current_mempolicy[label="clear_current_mempolicy"];
+				schedule[label="schedule()"];
+				dead_cycle[label="dead_cycle"];
+
+				profile_task_exit -> in_interrupt;
+				in_interrupt -> panic_1;
+				in_interrupt -> current_pid_null;
+				current_pid_null -> panic_2;
+				current_pid_1 -> panic_3;
+				current_pid_1 -> current_io_context_not_null;
+				current_io_context_not_null -> exit_io_context;
+				exit_io_context -> current_ptrace_PT_TRACE_EXIT_set;
+				current_io_context_not_null -> current_ptrace_PT_TRACE_EXIT_set;
+				current_ptrace_PT_TRACE_EXIT_set -> set_current_ptrace_message_code;
+				set_current_ptrace_message_code -> ptrace_notify_PTRACE_EVENT_EXIT_and_SIGTRAP;
+				ptrace_notify_PTRACE_EVENT_EXIT_and_SIGTRAP -> set_current_flags_PF_EXITING;
+				current_ptrace_PT_TRACE_EXIT_set -> set_current_flags_PF_EXITING;
+				set_current_flags_PF_EXITING -> set_current_it_virt_expires_cputime_zero;
+				set_current_it_virt_expires_cputime_zero -> set_current_it_prof_expires_cputime_zero;
+				set_current_it_prof_expires_cputime_zero -> clear_current_it_sched_expires;
+				clear_current_it_sched_expires -> acct_update_integrals;
+				acct_update_integrals -> update_mem_hiwater;
+				update_mem_hiwater -> get_group_dead;
+				get_group_dead -> group_dead_not_null;
+				group_dead_not_null -> acct_prcess;
+				acct_prcess -> exit_mm;
+				group_dead_not_null -> exit_mm;
+				exit_mm -> exit_sem;
+				exit_sem -> __exit_files;
+				__exit_files -> __exit_fs;
+				__exit_fs -> exit_namespace;
+				exit_namespace -> exit_thread;
+				exit_thread -> cpuset_exit;
+				cpuset_exit -> exit_keys;
+				exit_keys -> group_dead_and_current_signal_leader_set;
+				group_dead_and_current_signal_leader_set -> disassociate_ctty;
+				disassociate_ctty -> module_put_domain;
+				group_dead_and_current_signal_leader_set -> module_put_domain;
+				module_put_domain -> current_binfmt_not_null;
+				current_binfmt_not_null -> module_put_binfmt;
+				module_put_binfmt -> set_current_exit_code_code;
+				current_binfmt_not_null -> set_current_exit_code_code;
+				set_current_exit_code_code -> exit_notyfy;
+				exit_notyfy -> mpol_free;
+				mpol_free -> clear_current_mempolicy;
+				clear_current_mempolicy -> schedule;
+				schedule -> dead_cycle;
+		}
+
+		subgraph exit_notify{
+				label="static void exit_notify(struct task_struct *tsk)";
+				signal_pending_true_and_tsk_signal_flags_SIGNAL_GROUP_EXIT_set_and_thread_group_empty_not_true[label="signal_pending_true_and_tsk_signal_flags_SIGNAL_GROUP_EXIT_set_and_thread_group_empty_not_true"];
+				read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+				spin_lock_irq_tsk_sighand_siglock[label="spin_lock_irq_tsk_sighand_siglock"];
+				next_thread[label="next_thread"];
+				signal_pending_not_true_and_flags_PF_EXITING_not_null[label="signal_pending_not_true_and_flags_PF_EXITING_not_null"];
+				recalc_sigpending_tsk[label="recalc_sigpending_tsk()"];
+				signal_pending_not_null[label="signal_pending_not_null"];
+				signal_wake_up[label="signal_wake_up()"];
+				spin_unlock_irq_tsk_sighand_siglock[label="spin_unlock_irq_tsk_sighand_siglock"];
+				read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+				write_lock_irq_tasklist_lock[label="write_lock_irq_tasklist_lock"];
+				INIT_LIST_HEAD_ptrace_dead[label="INIT_LIST_HEAD_ptrace_dead"];
+				forget_original_parent[label="forget_original_parent(tsk, &ptrace_dead)"];
+				tsk_real_parent_process_group_not_equal_tsk_process_group_and_tsk_real_parent_signal_session_equal_tsk_signal_session_and_will_become_orphanded_pgrp_and_tsk_process_group_has_stoped_jobs[label="tsk_real_parent_process_group_not_equal_tsk_process_group_and_tsk_real_parent_signal_session_equal_tsk_signal_session_and_will_become_orphanded_pgrp_and_tsk_process_group_has_stoped_jobs"];
+				__kill_pg_info_1[label="__kill_pg_info(SIGHUP, (void *)1, process_group(tsk));"];
+				__kill_pg_info_2[label="__kill_pg_info(SIGCONT, (void *)1, process_group(tsk));"];
+				tsk_exit_signal_SIGCHLD_clean_and_tsk_exit_signal_neg_1_and_tsk_parent_exec_id_not_eq_tsk_real_parent_self_exec_id_or_tsk_self_exec_id_not_eq_tsk_parent_exec_id_and_not_CAP_KILL[label="tsk_exit_signal_SIGCHLD_clean_and_tsk_exit_signal_neg_1_and_tsk_parent_exec_id_not_eq_tsk_real_parent_self_exec_id_or_tsk_self_exec_id_not_eq_tsk_parent_exec_id_and_not_CAP_KILL"];
+				set_tsk_exit_signal_SIGCHLD[label="set_tsk_exit_signal_SIGCHLD"];
+				tsk_exit_signal_not_eq_neg_1_and_thread_group_empty_tsk[label="tsk_exit_signal_not_eq_neg_1_and_thread_group_empty_tsk"];
+				do_notify_parent[label="do_notify_parent(tsk, tsk->parent == tsk->real_parent ? tsk->exit_signal : SIGCHLD;);"];
+				tsk_ptrace_not_null[label="tsk_ptrace_not_null"];
+				do_notify_parent_1[label="do_notify_parent(tsk, SIGCHLD);"];
+				tsk_exit_signal_not_eq_neg_1_and_tsk_ptrace_null_or_tsk_parent_signal_flags_SIGNAL_GROUP_EXIT_set[label="tsk_exit_signal_not_eq_neg_1_and_tsk_ptrace_null_or_tsk_parent_signal_flags_SIGNAL_GROUP_EXIT_set"];
+				set_tsk_exit_state_EXIT_ZOMBIE[label="set_tsk_exit_state_EXIT_ZOMBIE"];
+				set_tsk_exit_state_EXIT_DEAD[label="set_tsk_exit_state_EXIT_DEAD"];
+				write_unlock_irq_tasklist_lock[label="write_unlock_irq_tasklist_lock"];
+				list_for_each_safe_ptrace_dead[label="list_for_each_safe_ptrace_dead"];
+				list_del_init[label="list_del_init"];
+				list_entry_task_struct[label="list_entry_task_struct"];
+				release_task[label="release_task()"];
+				tsk_exit_state_EXIT_DEAD[label="tsk_exit_state_EXIT_DEAD"];
+				release_task_tsk[label="release_task_tsk"];
+				preempt_disable[label="preempt_disable()"];
+				set_tsk_flags_PF_DEAD[label="set_tsk_flags_PF_DEAD"];
+
+				signal_pending_true_and_tsk_signal_flags_SIGNAL_GROUP_EXIT_set_and_thread_group_empty_not_true -> read_lock_tasklist_lock;
+				read_lock_tasklist_lock -> spin_lock_irq_tsk_sighand_siglock;
+				spin_lock_irq_tsk_sighand_siglock -> next_thread;
+				next_thread -> signal_pending_not_true_and_flags_PF_EXITING_not_null;
+				signal_pending_not_true_and_flags_PF_EXITING_not_null -> recalc_sigpending_tsk;
+				recalc_sigpending_tsk -> signal_pending_not_null;
+				signal_pending_not_null -> signal_wake_up;
+				signal_pending_not_null -> next_thread;
+				signal_wake_up -> next_thread;
+				signal_pending_not_true_and_flags_PF_EXITING_not_null -> next_thread;
+				next_thread -> spin_unlock_irq_tsk_sighand_siglock;
+				spin_unlock_irq_tsk_sighand_siglock -> read_unlock_tasklist_lock;
+				signal_pending_true_and_tsk_signal_flags_SIGNAL_GROUP_EXIT_set_and_thread_group_empty_not_true -> write_lock_irq_tasklist_lock;
+				read_unlock_tasklist_lock -> write_lock_irq_tasklist_lock;
+				INIT_LIST_HEAD_ptrace_dead -> forget_original_parent;
+				forget_original_parent -> tsk_real_parent_process_group_not_equal_tsk_process_group_and_tsk_real_parent_signal_session_equal_tsk_signal_session_and_will_become_orphanded_pgrp_and_tsk_process_group_has_stoped_jobs;
+				tsk_real_parent_process_group_not_equal_tsk_process_group_and_tsk_real_parent_signal_session_equal_tsk_signal_session_and_will_become_orphanded_pgrp_and_tsk_process_group_has_stoped_jobs -> __kill_pg_info_1;
+				__kill_pg_info_1 -> __kill_pg_info_2;
+				__kill_pg_info_2 -> tsk_exit_signal_SIGCHLD_clean_and_tsk_exit_signal_neg_1_and_tsk_parent_exec_id_not_eq_tsk_real_parent_self_exec_id_or_tsk_self_exec_id_not_eq_tsk_parent_exec_id_and_not_CAP_KILL;
+				tsk_real_parent_process_group_not_equal_tsk_process_group_and_tsk_real_parent_signal_session_equal_tsk_signal_session_and_will_become_orphanded_pgrp_and_tsk_process_group_has_stoped_jobs -> tsk_exit_signal_SIGCHLD_clean_and_tsk_exit_signal_neg_1_and_tsk_parent_exec_id_not_eq_tsk_real_parent_self_exec_id_or_tsk_self_exec_id_not_eq_tsk_parent_exec_id_and_not_CAP_KILL;
+				tsk_exit_signal_SIGCHLD_clean_and_tsk_exit_signal_neg_1_and_tsk_parent_exec_id_not_eq_tsk_real_parent_self_exec_id_or_tsk_self_exec_id_not_eq_tsk_parent_exec_id_and_not_CAP_KILL -> set_tsk_exit_signal_SIGCHLD;
+				tsk_exit_signal_SIGCHLD_clean_and_tsk_exit_signal_neg_1_and_tsk_parent_exec_id_not_eq_tsk_real_parent_self_exec_id_or_tsk_self_exec_id_not_eq_tsk_parent_exec_id_and_not_CAP_KILL -> tsk_exit_signal_not_eq_neg_1_and_thread_group_empty_tsk;
+				set_tsk_exit_signal_SIGCHLD -> tsk_exit_signal_not_eq_neg_1_and_thread_group_empty_tsk;
+				tsk_exit_signal_not_eq_neg_1_and_thread_group_empty_tsk -> do_notify_parent;
+				do_notify_parent -> tsk_exit_signal_not_eq_neg_1_and_tsk_ptrace_null_or_tsk_parent_signal_flags_SIGNAL_GROUP_EXIT_set;
+				tsk_exit_signal_not_eq_neg_1_and_thread_group_empty_tsk -> tsk_ptrace_not_null;
+				tsk_ptrace_not_null -> tsk_exit_signal_not_eq_neg_1_and_tsk_ptrace_null_or_tsk_parent_signal_flags_SIGNAL_GROUP_EXIT_set;
+				tsk_ptrace_not_null -> do_notify_parent_1;
+				tsk_exit_signal_not_eq_neg_1_and_tsk_ptrace_null_or_tsk_parent_signal_flags_SIGNAL_GROUP_EXIT_set -> set_tsk_exit_state_EXIT_DEAD;
+				tsk_exit_signal_not_eq_neg_1_and_tsk_ptrace_null_or_tsk_parent_signal_flags_SIGNAL_GROUP_EXIT_set -> set_tsk_exit_state_EXIT_DEAD;
+				set_tsk_exit_state_EXIT_DEAD -> write_unlock_irq_tasklist_lock;
+				set_tsk_exit_state_EXIT_ZOMBIE -> write_unlock_irq_tasklist_lock;
+				write_unlock_irq_tasklist_lock -> list_for_each_safe_ptrace_dead;
+				list_for_each_safe_ptrace_dead -> list_del_init;
+				list_del_init -> list_entry_task_struct;
+				list_entry_task_struct -> release_task;
+				release_task -> tsk_exit_state_EXIT_DEAD;
+				tsk_exit_state_EXIT_DEAD -> release_task_tsk;
+				release_task_tsk -> preempt_disable;
+				preempt_disable -> set_tsk_flags_PF_DEAD;
+		}
+
+		subgraph cluster_release_task{
+				label="void release_task(struct task_struct * p)";
+
+				dec_p_user_p_user_processes[label="dec_p_user_p_user_processes"];
+				spin_lock_p_proc_lock[label="spin_lock_p_proc_lock"];
+				proc_pid_unhash[label="proc_pid_unhash(p)"];
+				write_lock_irq_tasklist_lock[label="write_lock_irq_tasklist_lock"];
+				p_ptrace_not_null[label="p_ptrace_not_null"];
+				__ptrace_unlink[label="__ptrace_unlink"];
+				__exit_signal[label="__exit_signal(p)"];
+				__exit_sighand[label="__exit_sighand(p);"];
+				__unhash_process[label="__unhash_process(p);"];
+				clean_zap_leader[label="clean_zap_leader"];
+				p_group_leader_not_eq_p_and_thread_group_empty_p_group_leader_and_p_group_leader_exit_state_EXIT_ZOMBIE_set[label="p_group_leader_not_eq_p_and_thread_group_empty_p_group_leader_and_p_group_leader_exit_state_EXIT_ZOMBIE_set"];
+				do_notify_parent_2[label="do_notify_parent(leader, leader->exit_signal);"];
+				p_group_leader_exit_signal_eq_neg_1[label="p_group_leader_exit_signal_eq_neg_1"];
+				set_zap_leader[label="set_zap_leader"];
+				sched_exit_p[label="sched_exit(p)"];
+				write_unlock_irq_tasklist_lock[label="write_unlock_irq_tasklist_lock"];
+				spin_unlock_p_proc_lock[label="spin_unlock_p_proc_lock"];
+				proc_pid_flush_proc_dentry[label="proc_pid_flush_proc_dentry"];
+				release_thread[label="release_thread(p)"];
+				put_task_struct[label="put_task_struct(p)"];
+				set_p_leader[label="set_p_leader"];
+				zap_leader_not_null[label="zap_leader_not_null"];
+
+				dec_p_user_p_user_processes -> spin_lock_p_proc_lock;
+				spin_lock_p_proc_lock -> proc_pid_unhash;
+				proc_pid_unhash -> write_lock_irq_tasklist_lock;
+				write_lock_irq_tasklist_lock -> p_ptrace_not_null;
+				p_ptrace_not_null -> __ptrace_unlink;
+				__ptrace_unlink -> __exit_signal;
+				p_ptrace_not_null -> __exit_signal;
+				__exit_signal -> __exit_sighand;
+				__exit_sighand -> __unhash_process;
+				__unhash_process -> clean_zap_leader;
+				clean_zap_leader -> p_group_leader_not_eq_p_and_thread_group_empty_p_group_leader_and_p_group_leader_exit_state_EXIT_ZOMBIE_set;
+				p_group_leader_not_eq_p_and_thread_group_empty_p_group_leader_and_p_group_leader_exit_state_EXIT_ZOMBIE_set -> do_notify_parent_2;
+				do_notify_parent_2 -> p_group_leader_exit_signal_eq_neg_1;
+				p_group_leader_exit_signal_eq_neg_1 -> sched_exit_p;
+				p_group_leader_not_eq_p_and_thread_group_empty_p_group_leader_and_p_group_leader_exit_state_EXIT_ZOMBIE_set -> sched_exit_p;
+				sched_exit_p -> write_unlock_irq_tasklist_lock;
+				write_unlock_irq_tasklist_lock -> spin_unlock_p_proc_lock;
+				spin_unlock_p_proc_lock -> proc_pid_flush_proc_dentry;
+				proc_pid_flush_proc_dentry -> release_thread;
+				release_thread -> put_task_struct;
+				put_task_struct -> set_p_leader;
+				set_p_leader -> zap_leader_not_null;
+				zap_leader_not_null -> dec_p_user_p_user_processes;
+		}
 }

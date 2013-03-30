@@ -1,0 +1,24 @@
+digraph process_c{
+		subgraph cluster_kernel_thread{
+				label="int kernel_thread(int (*fn)(void *), void * arg, unsigned long flags)";
+
+				set_ebx_fn[label="set_ebx_fn"];
+				set_edx_arg[label="set_edx_arg"];
+				set_xds___USER_DS[label="set_xds___USER_DS"];
+				set_xes___USER_DS[label="set_xes___USER_DS"];
+				set_orig_eax[label="set_orig_eax_neg_1"];
+				set_eip_kernel_thread_helper[label="set_eip_kernel_thread_helper"];
+				set_xcs___KERNEL_CS[label="set_xcs___KERNEL_CS"];
+				set_eflags_X86_EFLAGS_IF_X86_EFLAGS_SF_X86_EFLAGS_PF_2[label="set_eflags_X86_EFLAGS_IF_X86_EFLAGS_SF_X86_EFLAGS_PF_2"];
+				kernel_thread_do_fork[label="do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);"];
+
+				set_ebx_fn -> set_edx_arg;
+				set_edx_arg -> set_xds___USER_DS;
+				set_xds___USER_DS -> set_xes___USER_DS;
+				set_xes___USER_DS -> set_orig_eax;
+				set_orig_eax -> set_eip_kernel_thread_helper;
+				set_eip_kernel_thread_helper -> set_xcs___KERNEL_CS;
+				set_xcs___KERNEL_CS -> set_eflags_X86_EFLAGS_IF_X86_EFLAGS_SF_X86_EFLAGS_PF_2;
+				set_eflags_X86_EFLAGS_IF_X86_EFLAGS_SF_X86_EFLAGS_PF_2 -> kernel_thread_do_fork;
+		}
+}

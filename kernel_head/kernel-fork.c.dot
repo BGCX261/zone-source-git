@@ -1,0 +1,57 @@
+digraph fork_c{
+		subgraph cluster_do_fork{
+				label="long do_fork(unsigned long clone_flags,unsigned long stack_start,struct pt_regs *regs,unsigned long stack_size,int __user *parent_tidptr,int __user *child_tidptr)";
+
+				alloc_pidmap[label="alloc_pidmap()"];
+				current_ptrace_true[label="current_ptrace_true"];
+				fork_traceflag[label="fork_traceflag (clone_flags);"];
+				clone_flags_set_CLONE_PTRACE[label="clone_flags_set_CLONE_PTRACE"];
+				copy_process[label="copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);"];
+				CLONE_VFORK_set[label="CLONE_VFORK_set"];
+				set_p_vfork_done[label="set_p_vfork_done"];
+				init_completion[label="init_completion(&vfork);"];
+				p_ptrace_PT_PTRACED_set_or_clone_flags_CLONE_STOPPED_set[label="p_ptrace_PT_PTRACED_set_or_clone_flags_CLONE_STOPPED_set"];
+				sigaddset_SIGSTOP[label="sigaddset(&p->pending.signal, SIGSTOP);"];
+				set_tsk_thread_flag_TIF_SIGPENDING[label="set_tsk_thread_flag_TIF_SIGPENDING"];
+				CLONE_STOPPED_set[label="CLONE_STOPPED_set"];
+				wake_up_new_task[label="wake_up_new_task(p, clone_flags);"];
+				set_p_state_TASK_STOPPED[label="set_p_state_TASK_STOPPED"];
+				trace_true[label="trace_true"];
+				set_current_ptrace_message_pid[label="set_current_ptrace_message_pid"];
+				ptrace_notify[label="ptrace_notify ((trace << 8) | SIGTRAP);"];
+				clone_flags_CLONE_VFORK_set[label="clone_flags_CLONE_VFORK_set"];
+				wait_for_completion[label="wait_for_completion(&vfork);"];
+				current_ptrace_PT_TRACE_VFORK_DONE_set[label="current_ptrace_PT_TRACE_VFORK_DONE_set"];
+				ptrace_notify_1[label="ptrace_notify ((PTRACE_EVENT_VFORK_DONE << 8) | SIGTRAP);"];
+				return_pid[label="return_pid"];
+
+				alloc_pidmap -> current_ptrace_true;
+				current_ptrace_true -> fork_traceflag;
+				fork_traceflag -> clone_flags_set_CLONE_PTRACE;
+				clone_flags_set_CLONE_PTRACE -> copy_process;
+				current_ptrace_true -> copy_process;
+				fork_traceflag -> copy_process;
+				copy_process -> CLONE_VFORK_set;
+				CLONE_VFORK_set -> set_p_vfork_done;
+				set_p_vfork_done -> init_completion;
+				init_completion -> p_ptrace_PT_PTRACED_set_or_clone_flags_CLONE_STOPPED_set;
+				CLONE_VFORK_set -> p_ptrace_PT_PTRACED_set_or_clone_flags_CLONE_STOPPED_set;
+				p_ptrace_PT_PTRACED_set_or_clone_flags_CLONE_STOPPED_set -> sigaddset_SIGSTOP;
+				sigaddset_SIGSTOP -> set_tsk_thread_flag_TIF_SIGPENDING;
+				set_tsk_thread_flag_TIF_SIGPENDING -> CLONE_STOPPED_set;
+				p_ptrace_PT_PTRACED_set_or_clone_flags_CLONE_STOPPED_set -> CLONE_STOPPED_set;
+				CLONE_STOPPED_set -> wake_up_new_task;
+				wake_up_new_task -> trace_true;
+				set_p_state_TASK_STOPPED -> trace_true;
+				trace_true -> set_current_ptrace_message_pid;
+				set_current_ptrace_message_pid -> ptrace_notify;
+				ptrace_notify -> clone_flags_CLONE_VFORK_set;
+				trace_true -> clone_flags_CLONE_VFORK_set;
+				clone_flags_CLONE_VFORK_set -> wait_for_completion;
+				wait_for_completion -> current_ptrace_PT_TRACE_VFORK_DONE_set;
+				wait_for_completion -> reurn_pid;
+				current_ptrace_PT_TRACE_VFORK_DONE_set -> return_pid;
+				current_ptrace_PT_TRACE_VFORK_DONE_set -> ptrace_notify_1;
+				ptrace_notify_1 -> return_pid;
+		}
+}
