@@ -1,0 +1,16 @@
+digraph preempt_h{
+        subgraph cluster_preempt_count{
+                label="preempt_count ()";
+                current_thread_info_preempt_count[label="current_thread_info()->preempt_count"];
+        }
+
+        subgraph cluster_local_softirq_pending{
+                label="local_softirq_pending()";
+                __IRQ_STAT[label="__IRQ_STAT(smp_processor_id(), __softirq_pending)"];
+        }
+
+        subgraph cluster___IRQ_STAT{
+                label="__IRQ_STAT(cpu, member)";
+                irq_stat_cpu_member[label="irq_stat_cpu_member"];
+        }
+}

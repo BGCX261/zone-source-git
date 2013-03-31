@@ -1,0 +1,11 @@
+digraph irq_cpustat_h{
+        subgraph cluster_local_softirq_pending{
+                label="local_softirq_pending()";
+                __IRQ_STAT[label="__IRQ_STAT(smp_processor_id(), __softirq_pending)"];
+        }
+
+        subgraph cluster___IRQ_STAT{
+                label="__IRQ_STAT(cpu, member)";
+                irq_stat_cpu_member[label="irq_stat_cpu_member"];
+        }
+}

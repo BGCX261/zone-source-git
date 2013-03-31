@@ -1,0 +1,9 @@
+digraph hw_irq_h{
+        subgraph cluster_hw_resend_irq{
+                label="void hw_resend_irq(struct hw_interrupt_type *h, unsigned int i)";
+                IO_APIC_IRQ_i[label="IO_APIC_IRQ_i"];
+                send_IPI_self[label="send_IPI_self(IO_APIC_VECTOR(i));"];
+                
+                
+                }
+        }

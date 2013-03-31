@@ -1,0 +1,13 @@
+digraph setup_c{
+        subgraph cluster_pre_intr_init_hook{
+	        init_ISA_irqs[label="init_ISA_irqs();"];
+        }
+
+        subgraph cluster_intr_init__hook{
+                CONFIG_X86_LOCAL_APIC[label="CONFIG_X86_LOCAL_APIC"];
+                apic_intr_init[label="apic_intr_init()"];
+                acpi_ioapic_not_null[label="acpi_ioapic_not_null"];
+                setup_irq[label="setup_irq(2, &irq2);"];
+                
+                }
+}

@@ -1,0 +1,8 @@
+digraph workqueue_h{
+        subgraph cluster_cancel_delayed_work{
+                label="int cancel_delayed_work(struct work_struct *work)";
+
+                del_timer_sync_work_timer[label="del_timer_sync_work_timer"];
+                clear_bit[label="clear_bit(0, &work->pending)"];
+        }
+}

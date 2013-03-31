@@ -1,0 +1,174 @@
+digraph softirq_c{
+        subgraph cluster_irq_exit{
+                label="void irq_exit(void)"
+
+                account_system_vtime[label="account_system_vtime(current)"];
+                sub_ppreempt_count[label="sub_ppreempt_count(IRQ_EXIT_OFFSET)"];
+                not_in_interrupt_and_local_softirq_pending[label="not_in_interrupt_and_local_softirq_pending"];
+                invoke_softirq[label="invoke_softirq()"];
+                preempt_enable_no_resched[label="preempt_enable_no_resched()"];
+        }
+
+        subgraph cluster_openn_softirq{
+                label="void open_softirq(int nr, void (*action)(struct softirq_action*), void *data)";
+                set_softirq_vec_nr_data_data[label="set_softirq_vec_nr_data_data"];
+                set_softirq_vec_action_action[label="set_softirq_vec_action_action"];
+        }
+
+        subgraph cluster_raise_softirq{
+                label="void raise_softirq(unsigned int nr)";
+
+                local_irq_save[label="local_irq_save()"];
+                raise_softirq_irqoff[label="raise_softirq_irqoff(nr)"];
+                local_irq_restore[label="local_irq_restore(flags)"];
+        }
+
+        subgraph cluster_raise_softirq_irqoff{
+                label="inline fastcall void raise_softirq_irqoff(unsigned int nr)";
+                __raise_softirq_irqoff[label="__raise_softirq_irqoff(nr)"];
+                in_interrupt_null[label="in_interrupt_null"];
+                wakeup_softirqd[label="wakeup_softirqd()"];
+        }
+
+        subgraph cluster_do_softirq{
+                label="asmlinkage void do_softirq(void)";
+
+                in_interrupt_not_null[label="in_interrupt_not_null"];
+                return[label="return"];
+                local_irq_save[label="local_irq_save()"];
+                get_local_softirq_pending[label="get_local_softirq_pending"];
+                pinding[label="pinding"];
+                __do_softirq[label="__do_softirq()"];
+                local_irq_restore[label="local_irq_restore()"];
+        }
+
+        subgraph cluster___do_softirq{
+                label="asmlinkage void __do_softirq(void)";
+
+                set_pending_local_softirq_pending[label="set_pending_local_softirq_pending"];
+                local_hb_disable[label="local_hb_disable()"];
+                set_cpu_smp_processor_id[label="set_cpu_smp_processor_id"];
+
+                clear_local_softirq_pending[label="clear_local_softirq_pending"];
+                local_irq_enable[label="local_irq_enable()"];
+                pending_lowest_bit_set[label="pending_lowest_bit_set"];
+                call_softirq_vec_action[label="call_softirq_vec_action"];
+                rec_bh_qsctr_inc_cpu[label="rec_bh_qsctr_inc_cpu"];
+                inc_softriq_vec[label="inc_softriq_vec"];
+                pending_move_right_1[label="pending_move_right_1"];
+                pending_not_null[label="pending_not_null"];
+                local_irq_disable[label="local_irq_disable()"];
+                set_pending_local_softirq_pending_1[label="set_pending_local_softirq_pending"];
+                dec_max_restart[label="dec_max_restart"];
+                pending_not_null_and_max_restart_not_null[label="pending_not_null_and_max_restart_not_null"];
+                pending_not_null_1[label="pending_not_null"];
+                call_wakeup_softirqd[label="call_wakeup_softirqd"];
+                __local_hb_enable[label="__local_hb_enable()"];
+        }
+
+        subgraph cluster_ksoftirqd{
+                label="static int ksoftirqd(void *__bind_cpu)";
+
+                set_user_nice[label="set_user_nice_current_19"];
+                set_current_flags_PF_NOFREEZE[label="set_current_flags_PF_NOFREEZE"];
+                set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                kthread_should_stop_null[label="kthread_should_stop_null"];
+                call_preempt_disable[label="call_preempt_disable"];
+                local_softirq_pending_null[label="local_softirq_pending_null"];
+                call_preempt_enable_no_resched[label="call_preempt_enable_no_resched"];
+                schedule[label="schedule()"];
+                preempt_disable[label="call_preempt_disable"];
+                __set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+                return_1[label="return 0"]
+                local_softirq_pending_not_null[label="local_softirq_pending_not_null"];
+                cpu_is_offline[label="cpu_is_offline(__bind_cpu)"];
+                do_softirq[label="do_softirq()"];
+                preempt_enable_no_resched[label="preempt_enable_no_resched()"];
+                cond_resched[label="cond_resched()"];
+                preempt_disable_1[label="preempt_disable()"];
+                preempt_enable_1[label="preempt_enable()"];
+                set_current_state_TASK_INTERRUPTIBLE_1[label="set_current_state_TASK_INTERRUPTIBLE"];
+                __set_current_state_TAKS_RUNNING[label="__set_current_state_TAKS_RUNNING"];
+                preempt_enable_2[label="preempt_enable()"];
+                set_current_state_TASK_INTERRUPTIBLE_2[label="set_current_state_TASK_INTERRUPTIBLE"];
+                kthread_should_stop_null_1[label="kthread_should_stop_null"];
+                schedule_1[label="schedule()"];
+                set_current_state_TASK_INTERRUPTIBLE_3[label="set_current_state_TASK_INTERRUPTIBLE"];
+                __set_current_state_TASK_RUNNING_1[label="__set_current_state_TASK_RUNNING"];
+                return[label="return 0"];
+        }
+
+        subgraph cluster_tasklet_init{
+                label="void tasklet_init(struct tasklet_struct *t,void (*func)(unsigned long), unsigned long data)";
+
+                clear_t_next[label="clear_t_next"];
+                clear_t_state[label="clear_t_state"];
+                atomic_set_t_count_0[label="atomic_set_t_count_0"];
+                set_t_func_func[label="set_t_func_func"];
+                set_t_data_data[label="set_t_data_data"];        
+        }
+
+        subgraph cluster___tasklet_schedule{
+                label="void __tasklet_schedule(struct tasklet_struct *t)";
+
+                local_irq_save[label="local_irq_save"];
+                set_t_next___get_cput_var_tasklet_vec_list[label="set_t_next___get_cput_var_tasklet_vec_list"];
+                set___get_cput_var_tasklet_vec_list_t[label="set___get_cput_var_tasklet_vec_list_t"];
+raise_softirq_irqoff_TASKLET_SOFTIRQ[label="raise_softirq_irqoff_TASKLET_SOFTIRQ"];
+                local_irq_restore[label="local_irq_restore"];
+        }
+
+        subgraph cluster___taslket_hi_schedule{
+                label="void __tasklet_hi_schedule(struct tasklet_struct *t)";
+
+                local_irq_save[label="local_irq_save"];
+                set_t_next___get_cpu_var_tasklet_hi_vec_list[label="set_t_next___get_cpu_var_tasklet_hi_vec_list"];
+                set___get_cput_var_tasklet_hi_vec_list_t[label="set___get_cput_var_tasklet_hi_vec_list_t"];
+raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
+                local_irq_restore[label="local_irq_restore"];
+        }
+
+        subgraph cluster_tasklet_action{
+                label="static void tasklet_action(struct softirq_action *a)";
+
+                local_irq_disable[label="local_irq_disable"];
+                set_list_tasklet_vec_list[label="set_list_tasklet_vec_list"];
+                set_tasklet_vec_list_null[label="set_tasklet_vec_list_null"];
+                local_irq_enable[label="local_irq_enable"];
+                list_not_null[label="list_not_null"];
+                set_t_list[label="set_t_list"];
+                set_list_list_next[label="set_list_list_next"];
+                tasklet_trylock_t_not_null[label="tasklet_trylock_t_not_null"];
+                atomic_read_t_count_null[label="atomic_read_t_count_null"];
+                test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null[label="test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null"];
+                t_func_t_data[label="t_func_t_data"];
+                tasklet_unlock_t[label="tasklet_unlock_t"];
+                tasklet_unlock_t_1[label="tasklet_unlock_t"];
+                local_irq_disable[label="local_irq_disable"];
+                set_t_next_tasklet_vec_list[label="set_t_next_tasklet_vec_list"];
+                raise_softirq_irqoff_TASKLET_SOFTIRQ[label="raise_softirq_irqoff_TASKLET_SOFTIRQ"];
+                local_irq_enable[label="local_irq_enable"];
+        }
+
+        subgraph cluster_tasklet_action{
+                label="static void tasklet_action(struct softirq_action *a)";
+
+                local_irq_disable[label="local_irq_disable"];
+                set_list_tasklet_hi_vec_list[label="set_list_tasklet_hi_vec_list"];
+                set_tasklet_hi_vec_list_null[label="set_tasklet_hi_vec_list_null"];
+                local_irq_enable[label="local_irq_enable"];
+                list_not_null[label="list_not_null"];
+                set_t_list[label="set_t_list"];
+                set_list_list_next[label="set_list_list_next"];
+                tasklet_trylock_t_not_null[label="tasklet_trylock_t_not_null"];
+                atomic_read_t_count_null[label="atomic_read_t_count_null"];
+                test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null[label="test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null"];
+                t_func_t_data[label="t_func_t_data"];
+                tasklet_unlock_t[label="tasklet_unlock_t"];
+                tasklet_unlock_t_1[label="tasklet_unlock_t"];
+                local_irq_disable[label="local_irq_disable"];
+                set_t_next_tasklet_hi_vec_list[label="set_t_next_tasklet_hi_vec_list"];
+                raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HIH_SOFTIRQ"];
+                local_irq_enable[label="local_irq_enable"];
+        }
+}

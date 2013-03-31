@@ -1,0 +1,37 @@
+digraph irq_c{
+        subgraph cluster_irq_ctx_init{
+                label="void irq_ctx_init(int cpu)";
+
+                hardirq_ctx_cpu_not_null[label="hardirq_ctx_cpu_not_null"];
+                get_hardirq_stack[label="get_hardirq_stack"];
+                clear_tinfo_task[label="clear_tinfo_task"];
+                clear_tinfo_exec_domain[label="clear_tinfo_exec_domain"];
+                set_tinfo_cpu_cpu[label="set_tinfo_cpu_cpu"];
+                set_tinfo_preempt_count_HARDIRQQ_OFFSET[label="set_tinfo_preempt_count_HARDIRQQ_OFFSET"];
+                set_tinfo_addr_limit_MAKE_MM_SEG_0[label="set_tinfo_addr_limit_MAKE_MM_SEG_0"];
+                set_hardirq_ctx_cpu[label="set_hardirq_ctx_cpu"];
+
+                softirq_ctx_cpu_not_null[label="softirq_ctx_cpu_not_null"];
+                get_softirq_stack[label="get_softirq_stack"];
+                clear_tinfo_task[label="clear_tinfo_task"];
+                clear_tinfo_exec_domain[label="clear_tinfo_exec_domain"];
+                set_tinfo_cpu_cpu[label="set_tinfo_cpu_cpu"];
+                set_tinfo_preempt_count_SOFTIRQQ_OFFSET[label="set_tinfo_preempt_count_SOFTIRQQ_OFFSET"];
+                set_tinfo_addr_limit_MAKE_MM_SEG_0[label="set_tinfo_addr_limit_MAKE_MM_SEG_0"];
+                set_softirq_ctx_cpu[label="set_softirq_ctx_cpu"];
+        }
+
+        subgraph cluster_do_IRQ{
+                label="unsigned int do_IRQ(struct pt_regs *regs)";
+
+                irq_enter[label="irq_enter()"];
+                CONFIG_4KSTACKS[label="CONFIG_4KSTACKS"];
+                current_thread_info_not_eq_hardirq_ctx[label="current_thread_info_not_eq_hardirq_ctx"];
+                set_tinfo_task_tinfo_task[label="set_tinfo_task_tinfo_task"];
+                set_tinfo_previous_esp_tinfo_previous_esp[label="set_tinfo_previous_esp_tinfo_previous_esp"];
+                __do_IRQ[label="__do_IRQ(irq, regs)"];;
+                irq_exit[label="irq_exit()"];
+                
+                
+        }
+}

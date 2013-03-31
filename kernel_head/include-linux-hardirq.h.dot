@@ -1,0 +1,21 @@
+digraph hardirq_h{
+    subgraph cluster_irq_enter{
+            label="irq_enter()";
+            account_system_vtime[label="account_system_vtime(current)"];
+            add_preempt_count[label="add_preempt_count(HARDIRQ_OFFSET)"];
+            
+    }
+
+    subgraph cluster_in_interrupt{
+            label="in_interrupt()";
+
+            irq_count[label="irq_count ()"];
+    }
+
+    subgraph cluster_irq_count{
+            label="irq_count ()";
+
+            preempt_count_HARDINQ_MASK_or_SOFTIRQ_MASK_set[label="preempt_count_HARDINQ_MASK_or_SOFTIRQ_MASK_set"];
+            
+            }
+}

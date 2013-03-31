@@ -1116,7 +1116,6 @@ struct thread_info {
 	wait_queue_head_t name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
 
 
-<<<<<<< HEAD
 /******************************include/asm-i386/processor.h******************************/
 struct thread_struct {
 /* cached TLS descriptors. */
@@ -1143,7 +1142,6 @@ struct thread_struct {
 /* max allowed port in the bitmap, in bytes: */
 	unsigned long	io_bitmap_max;
 };
-=======
 	/******************************include/linux/ptrace.h******************************/
 /*
  * Ptrace flags
@@ -1226,4 +1224,164 @@ struct irqaction {
 	struct proc_dir_entry *dir;
 };
 
->>>>>>> 061cb64d3f4dbdc8091311306bafb102a4254bd2
+/* PLEASE, avoid to allocate new softirqs, if you need not _really_ high
+   frequency threaded job For almost all the purposes
+   tasklets are more than enough. F.e. all serial device BHs et
+   al. should be converted to tasklets, not to softirqs.
+ */
+
+enum
+{
+	HI_SOFTIRQ=0,
+	TIMER_SOFTIRQ,
+	NET_TX_SOFTIRQ,
+	NET_RX_SOFTIRQ,
+	SCSI_SOFTIRQ,
+	TASKLET_SOFTIRQ
+};
+
+
+/* softirq mask and active fields moved to irq_cpustat_t in
+ * asm/hardirq.h to get better cache usage.  KAO
+ */
+
+struct softirq_action
+{
+	void	(*action)(struct softirq_action *);
+	void	*data;
+};
+ 
+
+/* Tasklets --- multithreaded analogue of BHs.
+
+   Main feature differing them of generic softirqs: tasklet
+   is running only on one CPU simultaneously.
+
+   Main feature differing them of BHs: different tasklets
+   may be run simultaneously on different CPUs.
+
+   Properties:
+   * If tasklet_schedule() is called, then tasklet is guaranteed
+     to be executed on some cpu at least once after this.
+   * If the tasklet is already scheduled, but its excecution is still not
+     started, it will be executed only once.
+   * If this tasklet is already running on another CPU (or schedule is called
+     from tasklet itself), it is rescheduled for later.
+   * Tasklet is strictly serialized wrt itself, but not
+     wrt another tasklets. If client needs some intertask synchronization,
+     he makes it with spinlocks.
+ */
+
+struct tasklet_struct
+{
+	struct tasklet_struct *next;
+	unsigned long state;
+	atomic_t count;
+	void (*func)(unsigned long);
+	unsigned long data;
+};
+
+    /******************************include/linux/signal.h******************************/
+#define SA_PROBE		SA_ONESHOT
+#define SA_SAMPLE_RANDOM	SA_RESTART
+#define SA_SHIRQ		0x04000000
+
+    /******************************include/asm-i386/hardirq.h******************************/
+typedef struct {
+	unsigned int __softirq_pending;
+	unsigned long idle_timestamp;
+	unsigned int __nmi_count;	/* arch dependent */
+	unsigned int apic_timer_irqs;	/* arch dependent */
+} ____cacheline_aligned irq_cpustat_t;
+
+    /******************************kernel/softirq.c******************************/
+irq_cpustat_t irq_stat[NR_CPUS] ____cacheline_aligned;
+static struct softirq_action softirq_vec[32] __cacheline_aligned_in_smp;
+
+/* Tasklets */
+struct tasklet_head
+{
+	struct tasklet_struct *list;
+};
+
+/* Some compilers disobey section attribute on statics when not
+   initialized -- RR */
+static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
+static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
+
+    /******************************kernel/irq.c******************************/
+static char softirq_stack[NR_CPUS * THREAD_SIZE]
+		__attribute__((__aligned__(THREAD_SIZE)));
+
+static char hardirq_stack[NR_CPUS * THREAD_SIZE]
+		__attribute__((__aligned__(THREAD_SIZE)));
+
+    /******************************include/linux/kernel_stat.h******************************/
+struct kernel_stat {
+	struct cpu_usage_stat	cpustat;
+	unsigned int irqs[NR_IRQS];
+};
+
+DECLARE_PER_CPU(struct kernel_stat, kstat);
+
+        /******************************kernel/irq/handle.h******************************/
+struct hw_interrupt_type no_irq_type = {
+	.typename = 	"none",
+	.startup = 	startup_none,
+	.shutdown = 	shutdown_none,
+	.enable = 	enable_none,
+	.disable = 	disable_none,
+	.ack = 		ack_none,
+	.end = 		end_none,
+	.set_affinity = NULL
+};
+
+/******************************kernel/workqueue.c******************************/
+/*
+ * The per-CPU workqueue (if single thread, we always use cpu 0's).
+ *
+ * The sequence counters are for flush_scheduled_work().  It wants to wait
+ * until until all currently-scheduled works are completed, but it doesn't
+ * want to be livelocked by new, incoming ones.  So it waits until
+ * remove_sequence is >= the insert_sequence which pertained when
+ * flush_scheduled_work() was called.
+ */
+struct cpu_workqueue_struct {
+
+	spinlock_t lock;
+
+	long remove_sequence;	/* Least-recently added (next to run) */
+	long insert_sequence;	/* Next to add */
+
+	struct list_head worklist;
+	wait_queue_head_t more_work;
+	wait_queue_head_t work_done;
+
+	struct workqueue_struct *wq;
+	task_t *thread;
+
+	int run_depth;		/* Detect run_workqueue() recursion depth */
+} ____cacheline_aligned;
+
+/*
+ * The externally visible workqueue abstraction is an array of
+ * per-CPU workqueues:
+ */
+struct workqueue_struct {
+	struct cpu_workqueue_struct cpu_wq[NR_CPUS];
+	const char *name;
+	struct list_head list; 	/* Empty if single thread */
+};
+
+/******************************include/linux/workqueue.h******************************/
+struct work_struct {
+	unsigned long pending;
+	struct list_head entry;
+	void (*func)(void *);
+	void *data;
+	void *wq_data;
+	struct timer_list timer;
+};
+
+/******************************include/linux/workqueue.h******************************/
+#define create_singlethread_workqueue(name) __create_workqueue((name), 1)

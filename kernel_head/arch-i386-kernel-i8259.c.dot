@@ -1,0 +1,11 @@
+digraph i8259{
+        subgraph cluster_init_IRQ{
+                pre_intr_init_hook[label="pre_intr_init_hook"];
+                for_all_vectors[label="for_all_vectors"];
+                great_NR_IRQS[label="great_NR_IRQS"];
+                not_eq_SYSCALL_VECTOR[label="not_eq_SYSCALL_VECTOR"];
+                set_intr_gate[label="set_intr_gate(vector, interrupt[i]);"];
+                intr_init_hook[label="intr_init_hook()"];
+                setup_pit_timer[label="setup_pit_timer()"];;
+                }
+        }

@@ -1,0 +1,33 @@
+digraph interrupt_h{
+        subgraph cluster___raise_softirq_irqoff{
+                label="__raise_softirq_irqoff(nr)";
+                local_softirq_pending_or_1_move_nr[label="local_softirq_pending_or_1_move_nr"];
+        }
+
+        subgraph cluster_tasklet_disable_nosync{
+                label="static inline void tasklet_disable_nosync(struct tasklet_struct *t)";
+                atomic_inc_t_count[label="atomic_inc_t_count"];
+                smp_mb__after_atomic_inc[label="smp_mb__after_atomic_inc()"];
+        }
+
+        subgraph cluster_tasllet_disable{
+                label="static inline void tasklet_disable(struct tasklet_struct *t)";
+                tasklet_disable_nosync[label="tasklet_disable_nosync(t)"];
+                tasklet_unlock_wait[label="tasklet_unlock_wait(t)"]
+                smp_mb[label="smp_mb()"];
+        }
+
+        subgraph cluster_tasklet_schedule{
+                label="void tasklet_schedule(struct tasklet_struct *t)";
+                test_and_set_bit_TASKLET_STATE_SCHED_null[label="test_and_set_bit_TASKLET_STATE_SCHED_null"];
+                __tasklet_schedule_t[label="__tasklet_schedule(t)"];
+        }
+
+        subgraph cluster_tasklet_hi_schedule{
+                label="void tasklet_hi_schedule(struct tasklet_struct *t)";
+                test_and_set_bit_TASKLET_STATE_SCHED_null[label="test_and_set_bit_TASKLET_STATE_SCHED_null"];
+                __tasklet_hi_schedule_t[label="__tasklet_hi_schedule(t)"];
+        }
+
+        subgraph cluster_
+}
