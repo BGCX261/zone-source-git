@@ -6033,3 +6033,33 @@ kstat_this_cpu.irqs[irq]++;
 经常有看到kernel源码有这样定义结构体的
 struct workqueue_struct;
 是不是这样就不用包含具体定义那个结构体的文件了呢？
+
+==============================[2013-04-01 一]==============================
+
+工作做事情不能一有空就叫人负责另一个项目,这样是不行的,会忙时那个人,一旦负责的项目同时有问题
+就可能完不成.
+
+阻塞 休眠是一个意思吗?阻塞一定会休眠吗?
+不是一个意思，阻塞是等待,不一定会休眠。
+阻塞 读zuse
+
+#define container_of(ptr, type, member) ({			\
+        const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+        (type *)( (char *)__mptr - offsetof(type,member) );})
+
+宏传一个类型进去就可以直接使用了
+
+(type __user *)arg,如果arg不是一个32位的整型，就会报一个错:
+cast to pointer from integer of different size
+我有一个这样的错：
+#define PUT_CONF(type, arg, addr)							\
+	({														\
+		type __user *source = (type __user *)arg;			\
+		type dest = 0;										\
+															\
+		if (copy_from_user(&dest, source, sizeof(type)))	\
+			return -EFAULT;									\
+		fpga_write32(addr, dest);							\
+	})
+
+精通LINUX设备驱动程序开发.pdf

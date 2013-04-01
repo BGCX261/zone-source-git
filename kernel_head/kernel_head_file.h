@@ -1373,6 +1373,8 @@ struct workqueue_struct {
 	struct list_head list; 	/* Empty if single thread */
 };
 
+static struct workqueue_struct *keventd_wq;
+
 /******************************include/linux/workqueue.h******************************/
 struct work_struct {
 	unsigned long pending;
@@ -1385,3 +1387,5 @@ struct work_struct {
 
 /******************************include/linux/workqueue.h******************************/
 #define create_singlethread_workqueue(name) __create_workqueue((name), 1)
+
+#define create_workqueue(name) __create_workqueue((name), 0)
