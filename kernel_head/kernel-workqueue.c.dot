@@ -95,6 +95,71 @@ digraph workqueue_c{
                 run_workqueue_cwq[label="run_workqueue(cwq)"];
                 set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
                 __set_current_state_TASK_RUNNING_1[label="__set_current_state_TASK_RUNNING"];
-                
-                }
+        }
+
+		subgraph cluster_run_workqueue{
+				label="void run_workqueue(struct cpu_workqueue_struct *cwq)";
+
+				spin_lock_irqsave_cwq_lock[label="spin_lock_irqsave_cwq_lock"];
+				inc_cwq_run_depth[label="inc_cwq_run_depth"];
+				cwq_run_depth_great_3[label="cwq_run_depth_great_3"];
+				dump_stack[label="dump_stack"];
+
+				list_empty_cwq_worklist[label="list_empty_cwq_worklist"];
+				list_entry_cwq_wroklist_next_wrok_struct[label="list_entry_cwq_wroklist_next_wrok_struct"];
+				list_del_init_cwq_worklist_next[label="list_del_init_cwq_worklist_next"];
+				unlock_cwq_lock[label="unlock_cwq_lock"];
+				clear_bit_0_work_pending[label="clear_bit_0_work_pending"];
+				call_work_func[label="call_work_func"];
+				lock_cwq_lock[label="lock_cwq_lock"];
+				inc_cwq_remove_sequece[label="inc_cwq_remove_sequece"];
+				wake_up_cwq_work_done[label="wake_up_cwq_work_done"];
+				dec_cwq_run_depth[label="dec_cwq_run_depth"];
+				unlock_cwq_lock[label="unlock_cwq_lock"];
+		}
+
+		subgraph cluster_flush_workqueue{
+				label="void flush_workqueue(struct workqueue_struct *wq)";
+
+				might_sleep[label="might_sleep()"];
+				is_single_threaded_wq[label="is_single_threaded_wq"];
+				flush_cpu_workqueue_wq_cpu_wq[label="flush_cpu_workqueue_wq_cpu_wq"];
+				lock_cpu_hotplug[label="lock_cpu_hotplug()"];
+				for_each_online_cpu[label="for_each_online_cpu(cpu)"];
+				flush_cpu_workqueue_add_cpu[label="flush_cpu_workqueue_wq_cpu_wq_cpu"];
+				unlock_cpu_hotplug[label="unlock_cpu_hotplug()"];
+		}
+
+		subgraph cluster_init_workqueues{
+				label="void init_workqueues(void)";
+				
+				hotcpu_notifier_workqueue_cpu_callback_0[label="hotcpu_notifier_workqueue_cpu_callback_0"];
+				set_keventd_wq_create_workqueue_events[label="set_keventd_wq_create_workqueue_events"];
+		}
+
+		subgraph cluster_schedule_work{
+				label="int schedule_work(struct work_struct *work)";
+				queue_work_keventd_wq_work[label="queue_work_keventd_wq_work"];
+		}
+
+		subgraph cluster_schedule_delayed_work{
+				label="int schedule_delayed_work(struct work_struct *work, unsigned long delay)";
+				queue_delayed_work_keventd_wq_work_delay[label="queue_delayed_work_keventd_wq_work_delay"];
+		}
+
+		subgraph cluster_schedule_delayed_work_on{
+				label="int schedule_delayed_work_on(int cpu, struct work_struct *work, unsigned long delay)";
+				test_and_set_bit_0_work_pending_null[label="test_and_set_bit_0_work_pending_null"];
+				set_work_wq_data_keventd_wq[label="set_work_wq_data_keventd_wq"];
+				set_work_timer_expires_jiffies_add_delay[label="set_timer_expires_jiffies_add_delay"];
+				set_work_timer_data_work[label="set_timer_data_work"];
+				set_work_timer_function_delayed_workk_timer_fn[label="set_timer_function_delayed_workk_timer_fn"];
+				call_add_timer_on_work_timer_cpu[label="call_add_timer_on_work_timer_cpu"];
+		}
+
+		subgraph cluster_flush_scheduled_work{
+				label="void flush_scheduled_work(void)";
+				flush_workqueue_keventd_wq[label="flush_workqueue_keventd_wq"];
+		}
+		
 }

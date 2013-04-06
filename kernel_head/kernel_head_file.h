@@ -770,7 +770,11 @@ struct pt_regs {
 #define SIGNAL_STOP_STOPPED	0x00000001 /* job control stop in effect */
 #define SIGNAL_STOP_DEQUEUED	0x00000002 /* stop signal dequeued */
 #define SIGNAL_STOP_CONTINUED	0x00000004 /* SIGCONT since WCONTINUED reap */
-#define SIGNAL_GROUP_EXIT	0x00000008 /* group exit in progress */
+#define SIGNAL_GROUP_EXIT	0x00000008 /* group exit in progress *//**
+																	  ulk:If the thread group is being killed
+																	  (SIGNAL_GROUP_EXIT flag in the flags field of
+																	  the signal descriptor set)
+																	**/
 
 #define TASK_RUNNING		0
 #define TASK_INTERRUPTIBLE	1
@@ -791,6 +795,32 @@ struct task_struct {
       process flag can be, for example, PF_DEAD when exit_notify() is called.
       List is of possible values is in include/linux/sched.h 
 	 **/
+
+	/*
+	 * Per process flags
+	 */
+#define PF_ALIGNWARN	0x00000001	/* Print alignment warning msgs */
+	/* Not implemented yet, only for 486*/
+#define PF_STARTING	0x00000002	/* being created */
+#define PF_EXITING	0x00000004	/* getting shut down */
+#define PF_DEAD		0x00000008	/* Dead */
+#define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
+#define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
+#define PF_DUMPCORE	0x00000200	/* dumped core */
+#define PF_SIGNALED	0x00000400	/* killed by a signal */
+#define PF_MEMALLOC	0x00000800	/* Allocating memory */
+#define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
+#define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
+#define PF_FREEZE	0x00004000	/* this task is being frozen for suspend now */
+#define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
+#define PF_FROZEN	0x00010000	/* frozen for system suspend */
+#define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+#define PF_KSWAPD	0x00040000	/* I am kswapd */
+#define PF_SWAPOFF	0x00080000	/* I am in swapoff */
+#define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
+#define PF_SYNCWRITE	0x00200000	/* I am doing a sync write */
+#define PF_BORROWED_MM	0x00400000	/* I am a kthread doing use_mm */
+#define PF_RANDOMIZE	0x00800000	/* randomize virtual address space */
 	unsigned long flags;	/* per process flags, defined below */
 	/**
 	   used by ptrace a system call that provides the ability to a parent 
@@ -802,6 +832,23 @@ struct task_struct {
 	/**
 	   标志在ptrace.h里
 	 **/
+/*
+ * Ptrace flags
+ */
+/**
+   这些是task_struct.ptrace里设置的标志
+ **/
+#define PT_PTRACED	0x00000001
+#define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
+#define PT_TRACESYSGOOD	0x00000004
+#define PT_PTRACE_CAP	0x00000008	/* ptracer can follow suid-exec */
+#define PT_TRACE_FORK	0x00000010
+#define PT_TRACE_VFORK	0x00000020
+#define PT_TRACE_CLONE	0x00000040
+#define PT_TRACE_EXEC	0x00000080
+#define PT_TRACE_VFORK_DONE	0x00000100
+#define PT_TRACE_EXIT	0x00000200
+#define PT_ATTACHED	0x00000400	/* parent != real_parent */
 	unsigned long ptrace;
 	int lock_depth;		/* BKL lock depth */
 
@@ -820,6 +867,16 @@ struct task_struct {
 	 **/
 	struct list_head run_list;	/* where the process is in the run list. */
 	
+	/**
+struct prio_array {
+	unsigned int nr_active;
+	unsigned long bitmap[BITMAP_SIZE];
+	struct list_head queue[MAX_PRIO];
+};
+	**/
+	/**
+	   因为每一个CPU有一个prio_array_t，array成员只是指向了其中的一个。
+	 **/
 	prio_array_t *array;/**
 						   a pointer to a priority array. 
 						 **/
@@ -884,6 +941,7 @@ struct task_struct {
       code: SIGHUP, SIGINT, SIGQUIT, ...
       signal: generally used with SIGCHLD to signal init on exit
 	**/
+	/* blog.csdn.net/dog250/article/details/5303673 */
 	int exit_code, exit_signal;	/* 把task_struct.exit_code(任务退出代码)置为exit()提供的代码code(退出代码存放在task_struct.exit_code中以供父进程随时检索) */
 	int pdeath_signal;  /*  The signal sent when the parent dies  */
 	/* ??? */
@@ -1431,6 +1489,8 @@ struct workqueue_struct {
 	struct list_head list; 	/* Empty if single thread */
 };
 
+static struct workqueue_struct *keventd_wq;
+
 /******************************include/linux/workqueue.h******************************/
 struct work_struct {
 	unsigned long pending;
@@ -1443,6 +1503,7 @@ struct work_struct {
 
 /******************************include/linux/workqueue.h******************************/
 #define create_singlethread_workqueue(name) __create_workqueue((name), 1)
+#define create_workqueue(name) __create_workqueue((name), 0)
 
 /******************************include/linux/percpu.h******************************/
 #ifdef CONFIG_SMP
