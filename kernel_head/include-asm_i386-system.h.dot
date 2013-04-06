@@ -1,0 +1,19 @@
+digraph system_h{
+        subgraph cluster_mb{
+                label="#define mb()";
+                alternative[label="alternative(\"lock; addl $0,0(%%esp)\", \"mfence\", X86_FEATURE_XMM2)"];
+        }
+
+        subgraph cluster_rmb{
+                label="#define rmb()";
+                alternative_1[label="#define rmb() alternative(\"lock; addl $0,0(%%esp)\", \"lfence\", X86_FEATURE_XMM2)"];
+        }
+
+        subgraph cluster_wmb{
+                label="#define wmb()";
+                CONFIG_X86_OOSTORE[label="CONFIG_X86_OOSTORE"];
+                alternative_2[label="alternative(\"lock; addl $0,0(%%esp)\", \"sfence\", X86_FEATURE_XMM)"];
+                asm[label="(\"\": : :\"memory\")"];
+        }
+
+}

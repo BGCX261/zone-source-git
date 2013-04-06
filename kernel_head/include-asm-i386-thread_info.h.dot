@@ -1,0 +1,8 @@
+digraph thread_info_h{
+        subgraph cluster_current_thread_info{
+                label="struct thread_info *current_thread_info(void)";
+                asm[label="__asm__(\"andl %%esp,%0; \":\"=r\" (ti) : \"0\" (~(THREAD_SIZE - 1)));"];
+         }
+
+         
+}

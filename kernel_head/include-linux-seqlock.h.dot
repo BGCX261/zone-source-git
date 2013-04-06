@@ -1,0 +1,34 @@
+digraph seqlock_h{
+        subgraph cluster_seqlock_init{
+                label="#define seqlock_init (x)";
+                SEQLOCK_UNLOCKED[label="SEQLOCK_UNLOCKED"];
+        }
+
+        subgraph cluster_write_seqlock{
+                label="static inline void write_seqlock(seqlock_t *sl)";
+                spin_lock[label="spin_lock(&sl->lock);"];
+                inc_sl_sequence[label="inc_sl_sequence"];
+                smp_wmb[label="smp_wmb ()"];
+        }
+
+        subgraph cluster_write_sequnlock{
+                label="static inline void write_sequnlock(seqlock_t *sl) ";
+                smp_wmb_1[label="smp_wmb ()"];
+                inc_sl_sequence_1[label="inc_sl_sequence"];
+                spin_unlock[label="spin_unlock (&sl->lock)"];
+        }
+
+        subgraph cluster_read_seqretry{
+                label="static inline int read_seqretry(const seqlock_t *sl, unsigned iv)";
+                smp_rmb[label="smp_rmb ()"];
+                return_iv_and_1_or_sl_sequence_xor_iv[label="return_iv_and_1_or_sl_sequence_xor_iv"];
+        }
+
+        subgraph cluster_read_seqbegin{
+                label="static inline unsigned read_seqbegin(const seqlock_t *sl)";
+                set_ret_sl_sequence[label="set_ret_sl_sequence"];
+                smp_rmb[label="smp_rmb ()"];
+                return_ret[label="return_ret"];
+        }
+
+}

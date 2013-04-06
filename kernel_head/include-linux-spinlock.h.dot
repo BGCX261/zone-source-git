@@ -1,0 +1,52 @@
+digraph spinlock_h{
+        subgraph cluster_spin_lock{
+                label="#define spin_lock(lock)";
+                _spin_lock[label="_spin_lock(lock)"];
+        }
+
+        subgraph cluster__spin_lock{
+                label="#define _spin_lock (lock)";
+                preempt_disable[label="preempt_disable ()"];
+                _raw_spin_lock[label="_raw_spin_lock (lock)"];
+                __acquire[label="__acquire (lock)"];
+        }
+
+        subgraph cluster__raw_spin_lock{
+                label="#define _raw_spin_lock (lock)";
+                do_while_0_lock[label="do_while_0_lock"];
+        }
+
+        subgraph cluster_spin_unlock{
+                label="#define spin_unlock (lock)";
+                _spin_unlock[label="_spin_unlock (lock)"];
+        }
+
+        subgraph cluster__spin_unlock{
+                label="#define _spin_unlock (lock)";
+                _raw_spin_unlock[label="_raw_spin_unlock (lock)"];
+                _spin_unlock_preempt_enable[label="preempt_enable ()"];
+                _spin_unlock___release[label="__release (lock)"];
+        }
+
+        subgraph cluster__raw_spin_unlock{
+                label="#define _raw_spin_unlock (lock)";
+                _raw_spin_unlock_do_while_0_lock[label="do_while_0_lock"];
+        }
+
+        subgraph cluster_spin_unlock_wait{
+                label="#define spin_unlock_wait (lock)";
+                just_lock[label="just_lock"];
+        }
+
+        subgraph cluster_spin_is_locked{
+                label="spin_is_locked (lock)";
+                lock_0[label="lock_0"];
+        }
+
+        subgraph cluster_spin_trylock{
+                label="#define spin_trylock(lock)";
+                __cond_lock__spin_trylock[label="__cond_lock(_spin_trylock(lock))"];
+        }
+
+        subgraph cluster_
+}

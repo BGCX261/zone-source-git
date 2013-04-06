@@ -1,3 +1,61 @@
+/**
+PREEMPT_ACTIVE这个标志有什么用呢？
+好像这个标志在preempt_count被设置就说明可以抢占，
+不对，被设置说明不可以抢占.
+
+atomic_clear_mask里有~mask这样的东西是不是不原子了，因为这样再加上addl指令就不止一条指令了。那么怎么原子呢？
+
+多处理器的spinlock的底层处理是在特定架构的spinlock.h里定义的，而上层的spinlock函数在通用
+spinlock.h文件里声明在spinlock.c文件定义实现调用底层处理函数；而单处理器spinlock底层函数
+是在通用的spinlock.h里声明和实现。关于spinlock的DEBUG多单处理器也是不一样的,单的复杂一点。
+spin_lock()函数都是调用_spin_lock()无论多单,_spin_lock()分多单。
+像_raw_spin_lock()这些就是底层函数。
+
+call_rcu里实现了一种用指针的指针实现了方便操作的插入
+
+像up(), down(), down_trylock(), down_interrupt()这些函数与特定架构有关，
+asm("	.section .sched.text,\"ax\"		\n\
+	.align	5				\n\
+	.globl	__down_failed			\n\
+__down_failed:					\n\
+	stmfd	sp!, {r0 - r3, lr}		\n\
+	mov	r0, ip				\n\
+	bl	__down				\n\
+	ldmfd	sp!, {r0 - r3, pc}		\n\
+						\n\
+	.align	5				\n\
+	.globl	__down_interruptible_failed	\n\
+__down_interruptible_failed:			\n\
+	stmfd	sp!, {r0 - r3, lr}		\n\
+	mov	r0, ip				\n\
+	bl	__down_interruptible		\n\
+	mov	ip, r0				\n\
+	ldmfd	sp!, {r0 - r3, pc}		\n\
+						\n\
+	.align	5				\n\
+	.globl	__down_trylock_failed		\n\
+__down_trylock_failed:				\n\
+	stmfd	sp!, {r0 - r3, lr}		\n\
+	mov	r0, ip				\n\
+	bl	__down_trylock			\n\
+	mov	ip, r0				\n\
+	ldmfd	sp!, {r0 - r3, pc}		\n\
+						\n\
+	.align	5				\n\
+	.globl	__up_wakeup			\n\
+__up_wakeup:					\n\
+	stmfd	sp!, {r0 - r3, lr}		\n\
+	mov	r0, ip				\n\
+	bl	__up				\n\
+	ldmfd	sp!, {r0 - r3, pc}		\n\
+	");
+这几个函数是这样子定义的，用C-c s g和C-c s s是找不到的，只能用C-c s t来找.
+
+* _down_trylock () 里为什么会把sleepers设为0呢？
+
+* _down_interruptible()函数里为什么一会用current一会又用tsk呢？
+
+ **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */
 #define PAGE_SHIFT		12
@@ -1385,3 +1443,107 @@ struct work_struct {
 
 /******************************include/linux/workqueue.h******************************/
 #define create_singlethread_workqueue(name) __create_workqueue((name), 1)
+
+/******************************include/linux/percpu.h******************************/
+#ifdef CONFIG_SMP
+struct percpu_data {
+	void *ptrs[NR_CPUS];
+	void *blkp;
+};
+
+/******************************include/asm-i386/atomic.h******************************/
+/*
+ * Make sure gcc doesn't try to be clever and move things around
+ * on us. We need to use _exactly_ the address the user gave us,
+ * not some alias that contains the same information.
+ */
+typedef struct { volatile int counter; } atomic_t;
+
+/******************************include/asm-i386/spinlock.h******************************/
+typedef struct {
+	volatile unsigned int slock;
+#ifdef CONFIG_DEBUG_SPINLOCK
+	unsigned magic;
+#endif
+#ifdef CONFIG_PREEMPT
+	unsigned int break_lock;
+#endif
+} spinlock_t;
+
+#define SPINLOCK_MAGIC	0xdead4ead
+
+#ifdef CONFIG_DEBUG_SPINLOCK
+#define SPINLOCK_MAGIC_INIT	, SPINLOCK_MAGIC
+#else
+#define SPINLOCK_MAGIC_INIT	/* */
+#endif
+#define SPIN_LOCK_UNLOCKED (spinlock_t) { 1 SPINLOCK_MAGIC_INIT }
+
+/*
+ * Read-write spinlocks, allowing multiple readers
+ * but only one writer.
+ *
+ * NOTE! it is quite common to have readers in interrupts
+ * but no interrupt writers. For those circumstances we
+ * can "mix" irq-safe locks - any writer needs to get a
+ * irq-safe write-lock, but readers can get non-irqsafe
+ * read-locks.
+ */
+typedef struct {
+	volatile unsigned int lock;
+#ifdef CONFIG_DEBUG_SPINLOCK
+	unsigned magic;
+#endif
+#ifdef CONFIG_PREEMPT
+	unsigned int break_lock;
+#endif
+} rwlock_t;
+
+/******************************include/linux/seqlock.h******************************/
+typedef struct {
+	unsigned sequence;
+	spinlock_t lock;
+} seqlock_t;
+
+/******************************include/linux/rcupdate.h******************************/
+/**
+ * struct rcu_head - callback structure for use with RCU
+ * @next: next update requests in a list
+ * @func: actual update function to call after the grace period.
+ */
+struct rcu_head {
+	struct rcu_head *next;
+	void (*func)(struct rcu_head *head);
+};
+
+
+/*
+ * Per-CPU data for Read-Copy UPdate.
+ * nxtlist - new callbacks are added here
+ * curlist - current batch for which quiescent cycle started if any
+ */
+struct rcu_data {
+	/* 1) quiescent state handling : */
+	long		quiescbatch;     /* Batch # for grace period */
+	int		passed_quiesc;	 /* User-mode/idle loop etc. */
+	int		qs_pending;	 /* core waits for quiesc state */
+
+	/* 2) batch handling */
+	long  	       	batch;           /* Batch # for current RCU batch */
+	struct rcu_head *nxtlist;
+	struct rcu_head **nxttail;
+	struct rcu_head *curlist;
+	struct rcu_head **curtail;
+	struct rcu_head *donelist;
+	struct rcu_head **donetail;
+	int cpu;
+};
+
+/******************************include/asm-i386/semaphore.h******************************/
+
+struct semaphore {
+	atomic_t count;
+	int sleepers;
+	wait_queue_head_t wait;
+};
+

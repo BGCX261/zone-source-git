@@ -1,0 +1,45 @@
+digraph spinlock_h{
+        subgraph cluster_spin_lock_init{
+                label="#define spin_lock_init(x)";
+                set_x_SPIN_LOCK_UNLOCKED[label="set_x_SPIN_LOCK_UNLOCKED"];
+        }
+
+        subgraph cluster__raw_spin_lock{
+                label="static inline void _raw_spin_lock(spinlock_t *lock)";
+
+                asm[label="spin_lock_string :\"=m\" (lock->slock) : : \"memory\");"];
+        }
+
+        subgraph cluster__raw_spin_unlock{
+                label="static inline void _raw_spin_unlock(spinlock_t *lock)";
+                CONFIG_X86_OOSTORE_and_CONFIG_X86_PPRO_FENCE_not_define[label="CONFIG_X86_OOSTORE_and_CONFIG_X86_PPRO_FENCE_not_define"];
+                spin_unlock_string_0[label="spin_unlock_string_0"];
+                spin_unlock_string_1[label="spin_unlock_string_1"];
+        }
+
+        subgraph cluseter_spin_unlock_wait{
+                label="#define spin_unlock_wait (x)";
+                barrier[label="barrier ()"];
+                while_spin_is_locked[label="while_spin_is_locked"];
+        }
+
+        subgraph cluster_spin_is_locked{
+                label="#define spin_is_locked (x)";
+                volatile_x_slock_not_great_0[label="volatile_x_slock_not_great_0"];
+        }
+
+        subgraph cluster__raw_read_trylock{
+                label="static inline int _raw_read_trylock(rwlock_t *lock)";
+                atommic_dec_lock[label="atommic_dec_lock"];
+                atomic_read_lock[label="atomic_read_lock"];
+                return_1[label="return_1"];
+                atomic_inc_lock[label="atomic_inc_lock"];
+        }
+
+        subgraph cluster__raw_write_trylock{
+                label="static inline int _raw_write_trylock(rwlock_t *lock)";
+                atomic_sub_and_test_RW_LOCK_BIAS_count[label="atomic_sub_and_test(RW_LOCK_BIAS, count)"];
+                return_1_1[label="return_1_1"];
+                atomic_add_RW_LOCK_BIAS_count[label="atomic_add(RW_LOCK_BIAS, count);"];
+        }
+}

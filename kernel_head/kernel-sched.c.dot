@@ -1,0 +1,16 @@
+digraph sched_c{
+        subgraph cluster_preempt_schedule{
+                label="asmlinkage void __sched preempt_schedule(void)";
+                set_ti_current_thread_info[label="set_ti_current_thread_info"];
+                ti_preempt_count_not_0_or_irqs_disabled[label="ti_preempt_count_not_0_or_irqs_disabled"];
+                return[label="return"];
+                add_preempt_count_PPREEMPT_ACTIVE[label="add_preempt_count_PPREEMPT_ACTIVE"];
+                save_current_lock_depth[label="save_current_lock_depth"];
+                set_current_lock_depth_neg_1[label="set_current_lock_depth_neg_1"];
+                schedule[label="()"];
+                restore_current_lock_depth[label="restore_current_lock_depth"];
+                sub_preempt_count_PREEMPT_ACTIVE[label="sub_preempt_count_PREEMPT_ACTIVE"];
+                barrier[label="()"];
+                test_thread_flag_TIF_NEED_RESCHED[label="test_thread_flag_TIF_NEED_RESCHED"];
+                }
+        }

@@ -1,0 +1,57 @@
+digraph bitops_h{
+        subgraph cluster_constant_test_bit{
+                label="static inline int constant_test_bit(int nr, const volatile unsigned long *addr)";
+                and[label="((1UL << (nr & 31)) & (addr[nr >> 5])) != 0;"];
+        }
+        
+        subgraph cluster_test_bit{
+                label="#define test_bit(nr,addr)";
+                __builtin_constant_p_nr[label="__builtin_constant_p_nr"];
+                constant_test_bit[label=" constant_test_bit((nr),(addr))"];
+                variable_test_bit[label=" variable_test_bit((nr),(addr)))"];
+        }
+
+        subgraph cluster__variable_test_bit{
+                label="static inline int variable_test_bit(int nr, const volatile unsigned long * addr)";
+                btl[label="\"btl %2,%1\n\tsbbl %0,%0\":\"=r\" (oldbit):\"m\" (ADDR),\"Ir\" (nr));"];
+                return_oldbit[label="return_oldbit"];
+        }
+
+        subgraph cluster_set_bit{
+                label="static inline void set_bit(int nr, volatile unsigned long * addr)";
+                btsl[label="LOCK_PREFIX \"btsl %1,%0\":\"=m\" (ADDR):\"Ir\" (nr));"];
+        }
+
+        subgraph cluster___set_bit{
+                label="static inline void __set_bit(int nr, volatile unsigned long * addr)";
+                btsl_[label="\"btsl %1,%0\":\"=m\" (ADDR):\"Ir\" (nr));"];
+        }
+
+        subgraph cluster_clear_bit{
+                label="static inline void clear_bit(int nr, volatile unsigned long * addr)";
+                btrl[label="LOCK_PREFIX\"btrl %1,%0\":\"=m\" (ADDR):\"Ir\" (nr));"];
+        }
+
+        subgraph cluster_change_bit{
+                label="static inline void change_bit(int nr, volatile unsigned long * addr)";
+                btcl[label="LOCK_PREFIX\"btcl %1,%0\":\"=m\" (ADDR):\"Ir\" (nr));"];
+        }
+
+        subgraph cluster_test_and_set_bit{
+                label="static inline int test_and_set_bit(int nr, volatile unsigned long * addr)";
+                btsl_return[label="LOCK_PREFIX\"btsl %2,%1\n\tsbbl %0,%0\":\"=r\" (oldbit),\"=m\" (ADDR):\"Ir\" (nr) : \"memory\");"];
+                return_oldbit[label="return_oldbit"];
+        }
+
+        subgraph test_and_clear_bit{
+                label="static inline int test_and_clear_bit(int nr, volatile unsigned long * addr)";
+                btrl_sbbl[label="LOCK_PREFIX\"btrl %2,%1\n\tsbbl %0,%0\":\"=r\" (oldbit),\"=m\" (ADDR):\"Ir\" (nr) : \"memory\");"];
+        }
+
+        subgraph test_and_change_bit{
+                label="static inline int test_and_change_bit(int nr, volatile unsigned long* addr)";
+                btcl_sbbl[label="LOCK_PREFIX\"btcl %2,%1\n\tsbbl %0,%0\":\"=r\" (oldbit),\"=m\" (ADDR):\"Ir\" (nr) : \"memory\");"];
+        }
+
+        
+}

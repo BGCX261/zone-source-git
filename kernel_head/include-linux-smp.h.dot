@@ -1,0 +1,18 @@
+digraph smp_h{
+        subgraph cluster_get_cpu{
+                label="#define get_cpu()";
+                preempt_disable[label="preempt_disable ()"];
+                smp_processor_id[label="smp_processor_id ()"];
+        }
+
+        subgraph cluster_put_cpu{
+                label="#define put_cpu()";
+                preempt_enabel[label="()"];
+                }
+
+        subgraph clusterput_cpu_no_resched{
+                label="#define put_cpu_no_resched()";
+
+                preempt_enable_no_resched[label="preempt_enable_no_resched"];
+        }
+}

@@ -1,0 +1,39 @@
+digraph percpu_h{
+        subgraph cluster_get_cpu_var{
+                label="#define get_cpu_var(var)";
+                preempt_disable[label="preempt_disable ()"];
+                __get_cpu_var[label="__get_cpu_var (var)"];
+        }
+
+        subgraph cluster_put_cpu_var{
+                label="#define put_cpu_var (var)" ;
+                preempt_enable[label="preempt_enable ()"];
+        }
+
+        subgraph cluster_alloc_percpu{
+                label="#define alloc_percpu(type)";
+                __alloc_percpu[label="(type*)__alloc_percpu(sizeof(type), __alignof__(type))"];
+        }
+
+        subgraph cluster___alloc_percpu{
+                label="void *__alloc_percpu(size_t size, size_t align)";
+                CONFIG_SMP[label="CONFIG_SMP"];
+                kmalloc[label="kmalloc (size, GFP_KERNEL)"];
+                memset[label="memset (ret, 0, size)"];
+        }
+
+        subgraph cluster_free_percpu{
+                label="void free_percpu(const void *ptr)";
+                kfree[label="kfree(ptr)"];
+        }
+
+        subgraph cluster_per_cpu_ptr{
+                label="#define per_cpu_ptr (ptr, cpu)";
+                CONFIG_SMP[label="CONFIG_SMP"];
+                set_per_data___p_rever_ptr[label="set_per_data___p_rever_ptr"];
+                __p_ptrs_cpu[label="__p_ptrs_cpu"];
+                ptr[label="ptr"];
+        }
+
+        subgraph cluster_
+}

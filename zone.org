@@ -6033,3 +6033,53 @@ kstat_this_cpu.irqs[irq]++;
 经常有看到kernel源码有这样定义结构体的
 struct workqueue_struct;
 是不是这样就不用包含具体定义那个结构体的文件了呢？
+
+==============================[2013-04-04 Thu]==============================
+
+麦是会胀气的  
+
+思多伤脾
+
+PREEMPT_ACTIVE这个标志有什么用呢？
+好像这个标志在preempt_count被设置就说明可以抢占，
+不对，被设置说明不可以抢占.
+
+如果一个宏函数没有参数那么就与一般的宏定义一样，但是为什么还要加上括号呢？
+我觉这不是徒劳的，它有一个说明的作用。
+
+==============================[2013-04-06 Sat]==============================
+
+像spinlock里有很多结构体即在特定的架构的头文件里定义，也在通用的头文件里定义，那么到底用哪个
+呢？一般来说是用特定的，但是这是不是在Makefile里指定呢？ 刚刚发现应该不是这样的，多处理器和
+单处理器之分，用了宏条件来分开，不会重定义的。
+
+linux里有很多是这样包含特定架构头文件的#include <asm/processor.h>
+就是用asm作为目录，但是实际没有这样的目录，而是这样的
+./include/asm-parisc/processor.h
+./include/asm-ppc/processor.h
+./include/asm-mips/processor.h
+./include/asm-h8300/processor.h
+./include/asm-alpha/processor.h
+./include/asm-arm26/processor.h
+./include/asm-m32r/processor.h
+./include/asm-sh/processor.h
+./include/asm-sparc/processor.h
+./include/asm-sparc64/processor.h
+./include/asm-m68k/processor.h
+./include/asm-sh64/processor.h
+./include/asm-ppc64/processor.h
+./include/asm-ia64/processor.h
+./include/asm-arm/processor.h
+./include/asm-frv/processor.h
+./include/asm-v850/processor.h
+./include/acpi/processor.h
+./include/asm-x86_64/processor.h
+./include/asm-s390/processor.h
+./include/asm-i386/processor.h
+./include/asm-cris/processor.h
+./include/asm-cris/arch-v10/processor.h
+./include/asm-m68knommu/processor.h
+
+可以将一个类型强制转换为atomic_t类型的
+
+

@@ -1,0 +1,50 @@
+digraph semaphore_h{
+        subgraph cluster_init_MUTEX{
+                label="static inline void init_MUTEX (struct semaphore *sem)";
+                sema_init[label="sema_init(sem, 1);"];
+        }
+
+        subgraph cluster_init_MUTEX_LOCKED{
+                label="static inline void init_MUTEX_LOCKED (struct semaphore *sem)";
+                sema_init[label="sema_init(sem, 0);"];
+        }
+
+        subgraph cluster_up{
+                label="static inline void up(struct semaphore * sem)";
+                asm_up[label="\"# atomic up operation\\n\\t\"
+		LOCK \"incl %0\\n\\t\"     /* ++sem->count */
+		\"jle 2f\\n\"
+		\"1:\\n\"
+		LOCK_SECTION_START(\"\")
+		\"2:\\tlea %0,%%eax\\n\\t\"
+		\"call __up_wakeup\\n\\t\"
+		\"jmp 1b\\n\"
+		LOCK_SECTION_END
+		\".subsection 0\\n\"
+		:\"=m\" (sem->count)
+		:
+		:\"memory\",\"ax\");"];
+        }
+
+        subgraph cluster_down{
+                label="static inline void down(struct semaphore * sem)";
+
+                might_sleep[label="might_sleep ()"];
+                down_asm[label="\"# atomic down operation\n\t\"LOCK \"decl %0\n\t\"     /* --sem->count */\"js 2f\n\"\"1:\n\"LOCK_SECTION_START(\"\")\"2:\tlea %0,%%eax\n\t\"\"call __down_failed\n\t\"\"jmp 1b\n\"LOCK_SECTION_END:\"=m\" (sem->count)::\"memory\",\"ax\");"];
+        }
+
+        subgraph cluster_down_trylock{
+                label="static inline int down_trylock(struct semaphore * sem)";
+                down_trylock_asm[label="\"# atomic interruptible down operation\n\t\"LOCK \"decl %1\n\t\"     /* --sem->count */\"js 2f\n\t\"\"xorl %0,%0\n\"\"1:\n\"LOCK_SECTION_START(\"\")\"2:\tlea %1,%%eax\n\t\"\"call __down_failed_trylock\n\t\"\"jmp 1b\n\"LOCK_SECTION_END:\"=a\" (result), \"=m\" (sem->count)::\"memory\");"];
+        }
+
+        subgraph cluster_down_interruptible{
+                label="static inline int down_interruptible(struct semaphore * sem)";
+                might_sleep[label="might_sleep ()"];
+                down_interruptible_asm[label="\"# atomic interruptible down operation\n\t\"LOCK \"decl %1\n\t\"     /* --sem->count */\"js 2f\n\t\"\"xorl %0,%0\n\"\"1:\n\"LOCK_SECTION_START(\"\")\"2:\tlea %1,%%eax\n\t\"\"call __down_failed_interruptible\n\t\"\"jmp 1b\n\"LOCK_SECTION_END:\"=a\" (result), \"=m\" (sem->count)::\"memory\");"];
+                
+                }
+
+        
+}
+        

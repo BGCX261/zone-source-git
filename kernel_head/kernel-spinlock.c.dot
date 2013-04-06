@@ -1,0 +1,15 @@
+digraph spinlock_c{
+        subgraph cluster__spin_lock{
+                label="void __lockfunc _spin_lock(spinlock_t *lock)";
+                preempt_disable[label="preempt_disable ()"];
+                _raw_spin_lock[label="_raw_spin_lock ()"];
+        }
+
+        subgraph cluster__spin_unlock{
+                label="void __lockfunc _spin_unlock(spinlock_t *lock)";
+                _raw_spin_unlock[label="_raw_spin_unlock (lock)"];
+                preempt_enable[label="preempt_enable ()"];
+        }
+
+        
+}

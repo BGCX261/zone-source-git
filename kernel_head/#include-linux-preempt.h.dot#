@@ -41,6 +41,6 @@ digraph preempt_h{
                 label="#define preempt_check_resched()";
                 test_thread_flag_TIF_NEED_RESCHED[label="test_thread_flag_TIF_NEED_RESCHED"];
                 preempt_schedule[label="preempt_schedule ()"];
-                }
+        }
 
 }

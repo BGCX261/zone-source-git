@@ -1,0 +1,15 @@
+digraph rcupdate_c{
+        subgraph cluster_call_rcu{
+                label="void fastcall call_rcu(struct rcu_head *head,void (*func)(struct rcu_head *rcu))";
+
+                set_head_func_func[label="set_head_func_func"];
+                clear_head_next[label="clear_head_next"];
+                local_irq_save[label="local_irq_save (flags)"];
+                get_cpu_var_rcu_data[label="get_cpu_var_rcu_data"];
+                set_rcu_data_nxttail_head[label="set_rcu_data_nxttail_head"];
+                set_rcu_data_nxttail_head_next_addr[label="set_rcu_data_nxttail_head_next_addr"];
+                local_irq_restore[label="local_irq_restore (flags)"];
+        }
+
+        
+}

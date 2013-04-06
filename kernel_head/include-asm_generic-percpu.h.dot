@@ -1,0 +1,25 @@
+digraph percpu_h{
+        subgraph cluster_DEFINE_PERE_CPU{
+                label="#define DEFINE_PER_CPU(type, name)";
+                CONFIG_SMP[label="CONFIG_SMP"];
+                typeof[label="__typeof__(type) per_cpu__##name"];
+                attribute[label="__attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name"];
+        }
+
+        subgraph cluster_per_cpu{
+                label="#define per_cpu(var, cpu)";
+                
+                CONFIG_SMP_1[label="CONFIG_SMP"];
+                RELOC_HIDE[label="(*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]))"];
+                no_use_cpu[label="(*((void)cpu, &per_cpu__##var))"];
+        }
+
+        subgraph cluster___get_cpu_var{
+                label="#define __get_cpu_var(var)";
+                CONFIG_SMP_2[label="CONFIG_SMP"];
+                per_cpu[label="per_cpu(var, smp_processor_id())"];
+                per_cpu_var[label="per_cpu_##var"];
+        }
+
+        subgraph cluster_get_cpu_var
+}

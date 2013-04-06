@@ -1,0 +1,97 @@
+digraph atomic_h{
+        subgraph cluster_ATOMIC_INIT{
+                label="#define ATOMIC_INIT(i)";
+                i[label="i"];
+        }
+
+        subgraph cluster_atomic_read{
+                label="#define atomic_read(v)";
+                v_counter[label="(v)->counter"];
+        }
+
+        subgraph cluster_atomic_set{
+                label="#define atomic_set(v,i)";
+                set_v_counter_i[label="set_v_counter_i"];
+        }
+
+        subgraph cluster_atomic_add{
+                label="static __inline__ void atomic_add(int i, atomic_t *v)";
+                asm_addl[label="LOCK \"addl %1,%0\":\"=m\" (v->counter):\"ir\" (i), \"m\" (v->counter));"];
+        }
+
+        subgraph cluster_atomic_sub{
+                label="static __inline__ void atomic_sub(int i, atomic_t *v)";
+                asm_subl[label="LOCK \"subl %1,%0\":\"=m\" (v->counter):\"ir\" (i), \"m\" (v->counter));"];
+        }
+
+        subgraph cluster_atomic_sub_and_test{
+                label="static __inline__ int atomic_sub_and_test(int i, atomic_t *v)";
+                asm_subl_sete[label="LOCK \"subl %2,%0; sete %1\":\"=m\" (v->counter), \"=qm\" (c):\"ir\" (i), \"m\" (v->counter) : \"memory\");"];
+                return[label="return"];
+        }
+
+        subgraph cluster_atomic_inc{
+                label="static __inline__ void atomic_inc(atomic_t *v)";
+
+                asm_incl[label="LOCK \"incl %0\":\"=m\" (v->counter):\"m\" (v->counter));"];
+        }
+
+        subgraph cluster_atomic_dec{
+                label="static __inline__ void atomic_dec(atomic_t *v)";
+                asm_decl[label="LOCK \"decl %0\":\"=m\" (v->counter):\"m\" (v->counter));"];
+        }
+
+        subgraph cluster_atomic_dec_test{
+                label="static __inline__ int atomic_dec_and_test(atomic_t *v)";
+                asm_decl_sete[label="LOCK \"decl %0; sete %1\":\"=m\" (v->counter), \"=qm\" (c):\"m\" (v->counter) : \"memory\");"];
+        }
+
+        subgraph cluster_atomic_inc_and_test{
+                label="static __inline__ int atomic_inc_and_test(atomic_t *v)";
+                asm_incl_sete[label="LOCK \"incl %0; sete %1\":\"=m\" (v->counter), \"=qm\" (c):\"m\" (v->counter) : \"memory\");"];
+                return[label="return"];
+        }
+
+        subgraph cluster_atomic_add_negative{
+                label="static __inline__ int atomic_add_negative(int i, atomic_t *v)";
+                asm_addl_sets[label="LOCK \"addl %2,%0; sets %1\":\"=m\" (v->counter), \"=qm\" (c):\"ir\" (i), \"m\" (v->counter) : \"memory|\");"];
+                return[label="return"];
+        }
+
+        subgraph cluster_atomic_add_return{
+                label="static __inline__ int atomic_add_return(int i, atomic_t *v)";
+                CONFIG_M386_and_no_xadd[label="CONFIG_M386_and_no_xadd"];
+                asm_xaddl[label="LOCK \"xaddl %0, %1;\":\"=r\"(i):\"m\"(v->counter), \"0\"(i));"];
+                return_i_add__i[label="return_i_add__i"];
+                local_irq_disable[label="local_irq_disable ()"];
+                atomic_read[label="atomic_read (v)"];
+                atomic_set[label="atomic_set (v, i+__i)"];
+                local_irq_enalbe[label="local_irq_enalbe ()"];
+                return_i_add__i_1[label="return_i_add__i"];
+        }
+
+        subgraph cluster_atomic_sub_return{
+                label="static __inline__ int atomic_sub_return(int i, atomic_t *v)";
+                atomic_add_return_neg_i_v[label="atomic_add_return_neg_i_v"];
+        }
+
+        subgraph cluster_atomic_inc_return{
+                label="#define atomic_inc_return(v) ";
+                atomic_add_return_1_v[label="atomic_add_return_1_v"];
+        }
+
+        subgraph cluster_atomic_dec_return{
+                label="#define atomic_dec_return(v) ";
+                atomic_sub_return_1_v[label="atomic_sub_return_1_v"];
+        }
+
+        subgraph cluster_atomic_clear_mask{
+                label="#define atomic_clear_mask(mask, addr)";
+                asm_andl[label="LOCK \"andl %0,%1\" : : \"r\" (~(mask)),\"m\" (*addr) : \"memory\""];
+        }
+
+        subgraph cluster_set_mask{
+                label="#define atomic_set_mask (mask, addr)";
+                asm_orl[label="LOCK \"orl %0,%1\" : : \"r\" (mask),\"m\" (*(addr)) : \"memory\""];
+        }
+}

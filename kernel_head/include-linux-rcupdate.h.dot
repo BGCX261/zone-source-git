@@ -1,0 +1,11 @@
+digraph rcupdate_h{
+        subgraph cluster_rcu_read_lock{
+                label="#define rcu_read_lock ()";
+                preempt_disable[label="preempt_disable ()"];
+        }
+
+        subgraph cluster_rcu_read_unlock{
+                label="#define rcu_read_unlock ()";
+                preempt_enable[label="preempt_enable ()"];
+        }
+}

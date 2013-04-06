@@ -1,0 +1,28 @@
+digraph slab_c{
+        subgraph cluster___alloc_percpu{
+                label="void *__alloc_percpu (size_t size, size_t align)";
+                kmalloc_percpu_data_pdata[label="kmalloc_percpu_data_pdata"];
+                for_NR_CPUS[label="for_NR_CPUS"];
+                cpu_possible_i[label="cpu_possible_i"];
+                kmalloc_node_pdata_ptrs_i[label="kmalloc_node_pdata_ptrs_i"];
+                goto_unwind_oom[label="goto_unwind_oom"];
+                memset_pdata_ptrs_i[label="memset_pdata_ptrs_i"];
+                return_rever_pdata[label="return_rever_pdata"];
+                while_i_dec[label="while_i_dec"];
+                cpu_possible_i_1[label="cpu_possible_i"];
+                kfree_pdata_ptrs_i[label="kfree_pdata_ptrs_i"];
+                kfree_pdata[label="kfree_pdata"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_free_percpu{
+                label="void free_percpu(const void *objp)";
+                set_percpu_data_p_rever_objp[label="set_percpu_data_p_rever_objp"];
+                for_NR_CPUS[label="for_NR_CPUS"];
+                cpu_possible_i[label="cpu_possible_i"];
+                kfree_p_ptrs_i[label="kfree_p_ptrs_i"];
+                kfree_p[label="kfree_p"];
+        }
+
+        
+}

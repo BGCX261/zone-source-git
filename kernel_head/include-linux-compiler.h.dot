@@ -1,0 +1,6 @@
+digraph compiler_h{
+        subgraph cluster___cond_lock{
+                label="#define __cond_lock (x)";
+                __context__[label="((x) ? ({ __context__(1); 1; }) : 0)"];
+        }
+}
