@@ -1,0 +1,60 @@
+digraph rwsem_h{
+		subgraph cluster_down_read{
+				label="static inline void down_read(struct rw_semaphore *sem)";
+				might_sleep[label="might_sleep ()"];
+				rwsemtrace[label="rwsemtrace(sem,\"Entering down_read\");"];
+				__down_read[label="__down_read (sem)"];
+				rwsemtrace[label="rwsemtrace(sem,\"Leaving down_read\");"];
+		}
+
+		subgraph cluster_down_write{
+				label="static inline void down_write(struct rw_semaphore *sem)";
+
+				might_sleep[label="might_sleep ()"];
+				rwsemtrace[label="rwsemtrace(sem,\"Entering down_write\");"];
+				__down_write[label="__down_write (sem)"];
+				rwsemtrace[label="rwsemtrace(sem,\"Leaving down_write\");"];
+		}
+
+		subgraph cluster_up_read{
+				label="static inline void up_read(struct rw_semaphore *sem)";
+
+				might_sleep[label="might_sleep ()"];
+				rwsemtrace[label="rwsemtrace(sem,\"Entering up_read\");"];
+				__up_read[label="__up_read(sem);"];
+				rwsemtrace[label="rwsemtrace(sem,\"Leaving up_read\");"];
+		}
+
+		subgraph cluster_up_write{
+				label="static inline void up_write(struct rw_semaphore *sem)";
+				might_sleep[label="might_sleep ()"];
+				rwsemtrace[label="rwsemtrace(sem,\"Entering up_write\");"];
+				__up_write[label="__up_write(sem);"];
+				rwsemtrace[label="rwsemtrace(sem,\"Leaving up_write\");"];				
+		}
+
+		subgraph cluster_down_read_trylock{
+				label="static inline void down_read_trylock(struct rw_semaphore *sem)";
+				might_sleep[label="might_sleep ()"];
+				rwsemtrace[label="rwsemtrace(sem,\"Entering down_read_trylock\");"];
+				__down_read_trylock[label="__down_read_trylock (sem)"];
+				rwsemtrace[label="rwsemtrace(sem,\"Leaving down_read_trylock\");"];
+		}
+
+		subgraph cluster_down_write_trylock{
+				label="static inline void down_write_trylock(struct rw_semaphore *sem)";
+				might_sleep[label="might_sleep ()"];
+				rwsemtrace[label="rwsemtrace(sem,\"Entering down_write_trylock\");"];
+				__down_write_trylock[label="__down_write_trylock (sem)"];
+				rwsemtrace[label="rwsemtrace(sem,\"Leaving down_write_trylock\");"];
+		}
+
+		subgraph cluster_downgrade_write{
+				label="static inline void downgrade_write(struct rw_semaphore *sem)";
+
+				might_sleep[label="might_sleep ()"];
+				rwsemtrace[label="rwsemtrace(sem,\"Entering downgrade_write\");"];
+				__downgrade_write[label="__downgrade_write (sem)"];
+				rwsemtrace[label="rwsemtrace(sem,\"Leaving downgrade_write\");"];
+		}
+}

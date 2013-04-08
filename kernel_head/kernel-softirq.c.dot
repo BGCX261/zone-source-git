@@ -171,4 +171,13 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
                 raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HIH_SOFTIRQ"];
                 local_irq_enable[label="local_irq_enable"];
         }
+
+		subgraph cluster_local_bh_enable{
+				label="void local_bh_enable(void)";
+				sub_preempt_count[label="sub_preempt_count (SOFTIRQ_OFFSET-1)"];
+				in_interrupt_not_null_and_local_softirq_pending_true[label="in_interrupt_not_null_and_local_softirq_pending_true"];
+				do_softirq[label="do_softirq ()"];
+				dec_preempt_count[label="dec_preempt_count ()"];
+				preempt_check_resched[label="preempt_check_resched ()"];
+		}
 }

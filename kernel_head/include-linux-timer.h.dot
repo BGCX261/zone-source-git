@@ -1,0 +1,6 @@
+digraph timer_h{
+		subgraph cluster_add_timer{
+				label="static inline void add_timer(struct timer_list * timer)";
+				
+		}
+}
