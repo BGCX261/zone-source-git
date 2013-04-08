@@ -155,4 +155,14 @@ digraph timer_c{
 				timer_after_eq_jiffies_base_timer_jiffies[label="timer_after_eq_jiffies_base_timer_jiffies"];
 				__run_timers_base[label="__run_timers_base"];
 		}
+
+		subgraph cluster___run_timers{
+				label="static inline void __run_timers(tvec_base_t *base)";
+				lock_base_lock[label="lock_base_lock"];
+				time_after_eq_jiffies_base_timer_jiffies[label="time_after_eq_jiffies_base_timer_jiffies"];
+				LIST_HEAD_INIT_work_list[label="LIST_HEAD_INIT_work_list"];
+				set_head_work_list[label="set_head_work_list"];
+				set_index_base_timer_jiffies_and_TVR_MASK[label="set_index_base_timer_jiffies_and_TVR_MASK"];
+				index_not_null_and_
+				}
 }
