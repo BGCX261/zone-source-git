@@ -29,5 +29,13 @@ digraph interrupt_h{
                 __tasklet_hi_schedule_t[label="__tasklet_hi_schedule(t)"];
         }
 
-        subgraph cluster_
+        subgraph cluster_local_bh_disable{
+				label="#define local_bh_disable()";
+				add_preempt_count[label="add_preempt_count(SOFTIRQ_OFFSET); barrier(); "];
+		}
+
+		subgraph cluster___local_bh_enable{
+				label="#define __local_bh_enable()";
+				sub_preempt_count[label="barrier(); sub_preempt_count(SOFTIRQ_OFFSET); "];
+		}
 }

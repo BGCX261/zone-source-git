@@ -1,0 +1,150 @@
+digraph rwsem_spinlock_c{
+		subgraph cluster_init_rwsem{
+				label="void fastcall __sched __down_read(struct rw_semaphore *sem)";
+				clear_sem_activity[label="clear_sem_activity"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				INIT_LIST_HEAD_sem_wait_list[label="INIT_LIST_HEAD_sem_wait_list"];
+		}
+
+		subgraph cluster___down_read{
+				label="void fastcall __sched __down_read(struct rw_semaphore *sem)";
+				rwsemtrace[label="rwsemtrace(sem, \"Entering __down_read\");"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				sem_activity_not_neg_and_sem_wait_list_not_empty[label="sem_activity_not_neg_and_sem_wait_list_not_empty"];
+				inc_sem_activity[label="inc_sem_activity"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				set_tsk_state_TASK_UNINTERRUPTIBLE[label="set_tsk_state_TASK_UNINTERRUPTIBLE"];
+				set_rwsem_waiter_task_current[label="set_rwsem_waiter_task_current"];
+				set_rwsem_waiter_flags_RWSEM_WAITING_FOR_READ[label="set_rwsem_waiter_flags_RWSEM_WAITING_FOR_READ"];
+				get_task_struct_current[label="get_task_struct_current"];
+				list_add_tail_waiter_list_sem_wait_list[label="list_add_tail_waiter_list_sem_wait_list"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				dead_for[label="dead_for"];
+				waiter_task_not_null[label="waiter_task_not_null"];
+				schedule[label="schedule ()"];
+				set_task_state_current_TASK_UNINTERRUPTIBLE[label="set_task_state_current_TASK_UNINTERRUPTIBLE"];
+				set_current_state_TASK_RUNNING[label="set_current_state_TASK_RUNNING"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __down_read\");"];
+		}
+
+		
+		subgraph cluster___down_write{
+				label="void fastcall __sched __down_write(struct rw_semaphore *sem)";
+
+				rwsemtrace[label="rwsemtrace(sem, \"Entering __down_write\");"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				sem_activity_0_and_list_empty_sem_wait_list[label="sem_activity_0_and_list_empty_sem_wait_list"];
+				set_sem_activity_neg_1[label="set_sem_activity_neg_1"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				set_task_state_current_TASK_UNINTERRUPTIBLE[label="set_task_state_current_TASK_UNINTERRUPTIBLE"];
+				set_waiter_task_current[label="set_waiter_task_current"];
+				set_waiter_flags_RWSEM_WAITING_FOR_WRITE[label="set_waiter_flags_RWSEM_WAITING_FOR_WRITE"];
+				get_task_struct_current[label="get_task_struct_current"];
+				list_add_tail_waiter_list_sem_wait_list[label="list_add_tail_waiter_list_sem_wait_list"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				dead_for[label="dead_for"];
+				waiter_task_not_null[label="waiter_task_not_null"];
+				schedule[label="schedule ()"];
+				set_task_state_current_TASK_UNINTERRUPTIBLE[label="set_task_state_current_TASK_UNINTERRUPTIBLE"];
+				set_current_state_TASK_RUNNING[label="set_current_state_TASK_RUNNING"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __down_write\");"];
+		}
+
+		subgraph cluster___up_read{
+				label="void fastcall __up_read(struct rw_semaphore *sem)";
+				rwsemtrace___up_read[label="rwsemtrace(sem, \"Entering __up_read\");"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				dec_sem_activity[label="dec_sem_activety"];
+				sem_activity_0_and_sem_wait_list_not_null[label="sem_activity_0_and_sem_wait_list_not_null"];
+				__rwsem_wake_one_writer_sem[label="__rwsem_wake_one_writer_sem"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __up_read\");"];
+		}
+
+		subgraph cluster___up_write{
+				label="void fastcall __up_write(struct rw_semaphore *sem)";
+				rwsemtrace[label="rwsemtrace(sem, \"Entering __up_write\");"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				clear_sem_activity[label="clear_sem_activity"];
+				list_empty_sem_wait_list_not_null[label="list_empty_sem_wait_list_not_null"];
+				__rwsem_do_wake[label="__rwsem_do_wake(sem, 1);"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __up_write\");"];
+		}
+
+		subgraph cluster___downgrade_write{
+				label="void fastcall __downgrade_write(struct rw_semaphore *sem)";
+				rwsemtrace[label="rwsemtrace(sem, \"Entering __downgrade_write\");"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				set_sem_activity_1[label="set_sem_activity_1"];
+				list_empty_sem_wait_list_not_null[label="list_empty_sem_wait_list_not_null"];
+				__rwsem_do_wake[label="__rwsem_do_wake(sem,0)"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __downgrade_write\");"];
+		}
+
+		subgraph cluster___down_read_trylock{
+				label="int fastcall __down_read_trylock(struct rw_semaphore *sem)";
+				clear_ret[label="clear_ret"];
+				rwsemtrace[label="rwsemtrace(sem, \"Entering __down_read_trylock\");"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				sem_activity_neg_and_list_empty_sem_wait_list[label="sem_activity_neg_and_list_empty_sem_wait_list"];
+				inc_sem_activity[label="inc_sem_activity"];
+				set_ret_1[label="set_ret_1"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __down_read_trylock\");"];
+		}
+
+		subgraph cluster___down_write_trylock{
+				label="int fastcall __down_write_trylock(struct rw_semaphore *sem)";
+				clear_ret[label="clear_ret"];
+				rwsemtrace[label="rwsemtrace(sem, \"Entering __down_write_trylock\");"];
+				lock_sem_wait_lock[label="lock_sem_wait_lock"];
+				sem_activity_0_and_list_empty_sem_wait_list[label="sem_activity_0_and_list_empty_sem_wait_list"];
+				set_sem_activity_neg_1[label="set_sem_activity_neg_1"];
+				set_ret_1[label="set_ret_1"];
+				unlock_sem_wait_lock[label="unlock_sem_wait_lock"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __down_write_trylock\");"];				
+		}
+
+		subgraph cluster___rwsem_wake_one_writer{
+				label="static inline struct rw_semaphore *__rwsem_wake_one_writer(struct rw_semaphore *sem)";
+				set_sem_activity_neg_1[label="set_sem_activity_neg_1"];
+				get_waiter_list_entry_sem_wait_list_next_list[label="get_waiter_list_entry_sem_wait_list_next"];
+				list_del_waiter_list[label="list_del_waiter_list"];
+				set_tsk_waiter_task[label="set_tsk_waiter_task"];
+				smp_mb[label="smp_mb ()"];
+				clear_waiter_task[label="clear_waiter_task"];
+				wake_up_process_tsk[label="wake_up_process(tsk);"];
+				put_task_struct_tsk[label="put_task_struct_tsk"];
+		}
+
+		subgraph cluster___rwsem_do_wake{
+				label="static inline struct rw_semaphore *__rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)";
+				rwsemtrace[label="rwsemtrace(sem, \"Entering __rwsem_do_wake\");"];
+				get_waiter_list_entry_sem_wait_list_next_list[label="get_waiter_list_entry_sem_wait_list_next"];
+				wakewrite_null[label="wakewrite_null"];
+				waiter_flags_RWSEM_WAITING_FOR_WRITE_set[label="waiter_flags_RWSEM_WAITING_FOR_WRITE_set"];
+				waiter_flags_RWSEM_WAITING_FOR_WRITE_set_1[label="waiter_flags_RWSEM_WAITING_FOR_WRITE_set"];
+				set_sem_activity_neg_1[label="set_sem_activity_neg_1"];
+				list_del_waiter_list[label="list_del_waiter_list"];
+				set_tsk_waiter_task[label="set_tsk_waiter_task"];
+				smp_mb[label="smp_mb ()"];
+				clear_waiter_task[label="clear_waiter_task"];
+				wake_up_process_tsk[label="wake_up_process_tsk"];
+				put_task_struct_tsk[label="put_task_struct_tsk"];
+				set_woken_0[label="set_woken_0"];
+				while_waiter_flags_RWSEM_WAITING_FOR_READ_set[label="while_waiter_flags_RWSEM_WAITING_FOR_READ_set"];
+				set_next_waiter_list_next[label="set_next_waiter_list_next"];
+				list_del_waiter_list[label="list_del_waiter_list"];
+				set_tsk_waiter_task[label="set_tsk_waiter_task"];
+				smp_mb_1[label="smp_mb ()"];
+				clear_waiter_task[label="clear_waiter_task"];
+				wake_up_process[label="wake_up_process (tsk)"];
+				put_task_struct[label="put_task_struct (tsk)"];
+				list_empty_sem_wait_list[label="list_empty_sem_wait_list"];
+				get_waiter_list_entry_sem_wait_list_next_list_1[label="get_waiter_list_entry_sem_wait_list_next"];
+				sem_activity_self_add_woken[label="sem_activity_self_add_woken"];
+				rwsemtrace[label="rwsemtrace(sem, \"Leaving __rwsem_do_wake\");"]
+		}
+
+}

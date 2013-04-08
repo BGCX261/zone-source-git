@@ -55,6 +55,21 @@ __up_wakeup:					\n\
 
 * _down_interruptible()函数里为什么一会用current一会又用tsk呢？
 
+* 怎么include/asm-i386/rwsem.h和include/linux/rwsem-spinlock.h都有struct rw_semaphore的定义呢？
+在include/linux/rwsem.h里有一段这样的代码：
+#ifdef CONFIG_RWSEM_GENERIC_SPINLOCK
+#include <linux/rwsem-spinlock.h> \/* use a generic implementation *\/
+#else
+#include <asm/rwsem.h> \/* use an arch-specific implementation *\/
+#endif
+所以像init_rwsem()这样的函数在两个地方出现。
+而down_read()只在include/linux/rwsem.h里出现，但是里面调用的__down_read()又分别在asm/rwsem.h和
+lib/rwsem-spinlock.c里出现
+
+* 有local_bh_enable()和__local_bh_enable()，前都调用do_softirq()
+
+* asmlinkage void __sched preempt_schedule_irq(void)里面的__sched是不是把这个函数放到__sched段里呢？
+
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */
@@ -1608,3 +1623,45 @@ struct semaphore {
 	wait_queue_head_t wait;
 };
 
+/******************************include/asm-i386/rwsem.h******************************/
+
+/*
+ * the semaphore definition
+ */
+struct rw_semaphore {
+	signed long		count;
+#define RWSEM_UNLOCKED_VALUE		0x00000000
+#define RWSEM_ACTIVE_BIAS		0x00000001
+#define RWSEM_ACTIVE_MASK		0x0000ffff
+#define RWSEM_WAITING_BIAS		(-0x00010000)
+#define RWSEM_ACTIVE_READ_BIAS		RWSEM_ACTIVE_BIAS
+#define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
+	spinlock_t		wait_lock;
+	struct list_head	wait_list;
+#if RWSEM_DEBUG
+	int			debug;
+#endif
+};
+/******************************include/linux/rwsem-spinlock.h******************************/
+
+/*
+ * the rw-semaphore definition
+ * - if activity is 0 then there are no active readers or writers
+ * - if activity is +ve then that is the number of active readers
+ * - if activity is -1 then there is one active writer
+ * - if wait_list is not empty, then there are processes waiting for the semaphore
+ */
+struct rw_semaphore {
+	__s32			activity;
+	spinlock_t		wait_lock;
+	struct list_head	wait_list;
+#if RWSEM_DEBUG
+	int			debug;
+#endif
+};
+
+/******************************include/linux/completion.h******************************/
+struct completion {
+	unsigned int done;
+	wait_queue_head_t wait;
+};

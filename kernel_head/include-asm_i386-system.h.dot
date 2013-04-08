@@ -16,4 +16,31 @@ digraph system_h{
                 asm[label="(\"\": : :\"memory\")"];
         }
 
+		subgraph cluster_local_irq_disable{
+				label="#define local_irq_disable()";
+				local_irq_disable_asm[label="__asm__ __volatile__(\"cli\": : :\"memory\")"];
+		}
+
+		subgraph cluster_local_irq_enable{
+				label="#define local_irq_enable()";
+				local_irq_enable_asm[label="__asm__ __volatile__(\"sti\": : :\"memory\")"];
+		}
+
+		subgraph cluster_irqs_disabled{
+				label="#define irqs_disabled()";
+				local_save_flags_flags[label="local_save_flags_flags"];
+				flag_and_1_move_left_9_not_null[label="flag_and_1_move_left_9_not_null"];
+		}
+
+		subgraph cluster_local_irq_save{
+				label="#define local_irq_save(x)";
+
+				local_irq_save_asm[label="__asm__ __volatile__(\"pushfl ; popl %0 ; cli\":\"=g\" (x): /* no input */ :\"memory\")"];
+		}
+
+		subgraph cluster_local_irq_restore{
+				label="#define local_irq_restore(x)";
+				typecheck[label="typecheck(unsigned long,x);"];
+				local_irq_restore_asm[label="__asm__ __volatile__(\"pushl %0 ; popfl\": /* no output */ :\"g\" (x):\"memory\", \"cc\"); } while (0)"];
+		}
 }

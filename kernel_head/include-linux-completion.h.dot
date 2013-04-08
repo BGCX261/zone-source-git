@@ -1,0 +1,14 @@
+digraph completion_h{
+		subgraph cluster_init_completion{
+				label="static inline void init_completion(struct completion *x)";
+				clear_x_done[label="clear_x_done"];
+				init_waitqueue_head_x_wait[label="init_waitqueue_head_x_wait"];
+		}
+
+		subgraph cluster_DECLARE_COMPLETION{
+				label="#define DECLARE_COMPLETION(work)";
+				COMPLETION_INITIALIZER[label="COMPLETION_INITIALIZER(work)"];
+		}
+
+		
+}

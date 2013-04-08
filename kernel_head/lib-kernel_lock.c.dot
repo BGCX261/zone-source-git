@@ -1,0 +1,48 @@
+digraph kernel_lock_c{
+		subgraph cluster_lock_kernel{
+				label="void __lockfunc lock_kernel(void)";
+				CONFIG_PREEMPT_BKL[label="CONFIG_PREEMPT_BKL"];
+				save_depth_current_lock_depth_add_1[label="save_depth_current_lock_depth_add_1"];
+				depth_not_null[label="depth_not_null"];
+				down_kernel_sem[label="down_kernel_sem"];
+				restore_current_lock_depth_depth[label="restore_current_lock_depth_depth"];
+				save_depth_current_lock_depth_add_1_1[label="save_depth_current_lock_depth_add_1"];
+				depth_not_null_1[label="depth_not_null"];
+				__lock_kernel[label="__lock_kernel ()"];
+				restore_current_lock_depth_depth[label="restore_current_lock_depth_depth"];
+		}
+
+		subgraph cluster_unlock_kernel{
+				label="void __lockfunc unlock_kernel(void)";
+				CONFIG_PREEMPT_BKL_1[label="CONFIG_PREEMPT_BKL"];
+				dec_current_lock_depth[label="dec_current_lock_depth"];
+				current_lock_depth_neg[label="current_lock_depth_neg"];
+				up_kernel_sem[label="up_kernel_sem"];
+
+				dec_current_lock_depth[label="dec_current_lock_depth"];
+				current_lock_depth_not_neg[label="current_lock_depth_not_neg"];
+				__unlock_kernel[label="__unlock_kernel ()"];
+		}
+
+		subgraph cluster___lock_kernel{
+				label="static inline void __lock_kernel(void)";
+				CONFIG_PREEMPT[label="CONFIG_PREEMPT"];
+				preempt_disable[label="preempt_disable ()"];
+				_raw_spin_trylock_kernel_flag_not_null[label="_raw_spin_trylock_kernel_flag_not_null"];
+				preempt_count_great_1[label="preempt_count_great_1"];
+				_raw_spin_lock_kernel_flag[label="_raw_spin_lock_kernel_flag"];
+				preempt_enable[label="preempt_enable ()"];
+				spin_is_locked_kernel_flag[label="spin_is_locked_kernel_flag"];
+				cpu_relax[label="cpu_relax ()"];
+				preempt_disable[label="preempt_disable ()"];
+				_raw_spin_trylock_kernel_flag[label="_raw_spin_trylock_kernel_flag"];
+
+				_raw_spin_lock_kernel_flag[label="_raw_spin_lock_kernel_flag"];
+		}
+
+		subgraph cluster___unlock_kernel{
+				label="static inline void __unlock_kernel(void)";
+				_raw_spin_unlock[label="_raw_spin_unlock_kernel_flag"];
+				preempt_enalbe[label="preempt_enalbe ()"];
+		}
+}
