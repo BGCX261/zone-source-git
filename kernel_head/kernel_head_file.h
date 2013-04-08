@@ -1793,3 +1793,12 @@ struct tvec_t_base_s {
 
 typedef struct tvec_t_base_s tvec_base_t;
 
+/******************************include/linux/thread_info.h******************************/
+/*
+ * System call restart block. 
+ */
+struct restart_block {
+	long (*fn)(struct restart_block *);
+	unsigned long arg0, arg1, arg2, arg3;
+};
+
