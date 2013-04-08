@@ -1,0 +1,9 @@
+digraph do_timer_h{
+		subgraph cluster_do_timer_interrupt_hook{
+				label="static inline void do_timer_interrupt_hook(struct pt_regs *regs)";
+				do_timer[label="do_timer (regs)"];
+				CONFIG_SMP[label="CONFIG_SMP"];
+				update_Process_times[label="update_Process_times (user_mode(resg))"];
+				
+		}
+}

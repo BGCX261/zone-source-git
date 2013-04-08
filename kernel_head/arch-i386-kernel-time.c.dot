@@ -1,0 +1,16 @@
+digraph time_c{
+		subgraph cluster_timer_interrupt{
+				label="irqreturn_t timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)";
+				write_seqlock_xtime_lock[label="write_seqlock_xtime_lock"];
+				cur_timer_mark_offset[label="call cur_timer_mark_offset"];
+				do_timer_interrupt[label="do_timer_interrupt(irq, NULL, regs);"];
+				write_sequnlock_xtime_lock[label="write_sequnlock_xtime_lock"];
+				return_IRQ_HANDLED[label="return_IRQ_HANDLED"];
+		}
+
+		subgraph cluster_do_timer_interrupt{
+				label="static inline void do_timer_interrupt(int irq, void *dev_id,struct pt_regs *regs)";
+				do_timer_interrupt_hook[label="do_timer_interrupt_hook(regs)"];
+		}
+
+}

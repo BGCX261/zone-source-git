@@ -70,6 +70,11 @@ lib/rwsem-spinlock.c里出现
 
 * asmlinkage void __sched preempt_schedule_irq(void)里面的__sched是不是把这个函数放到__sched段里呢？
 
+* update_process_times()上有段这样的注释.
+  Called from the timer interrupt handler to charge one tick to the current 
+  process.  user_tick is 1 if the tick is user time, 0 for system.
+  
+* account_user_time()定义在sched.c里但是只在timer.c里被调用，真的有点不明白为什么这样安排。
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */
@@ -1665,3 +1670,86 @@ struct completion {
 	unsigned int done;
 	wait_queue_head_t wait;
 };
+
+/******************************include/linux/kernel_stat.h******************************/
+
+/*
+ * 'kernel_stat.h' contains the definitions needed for doing
+ * some kernel statistics (CPU usage, context switches ...),
+ * used by rstatd/perfmeter
+ */
+/**
+   里面的大部分成员都是在account_system_time(),account_user_time()里更新的。
+ **/
+struct cpu_usage_stat {
+	cputime64_t user;
+	cputime64_t nice;
+	cputime64_t system;
+	cputime64_t softirq;
+	cputime64_t irq;
+	cputime64_t idle;
+	cputime64_t iowait;
+	cputime64_t steal;
+};
+
+struct kernel_stat {
+	struct cpu_usage_stat	cpustat;
+	unsigned int irqs[NR_IRQS];
+};
+
+DECLARE_PER_CPU(struct kernel_stat, kstat);
+
+#define kstat_cpu(cpu)	per_cpu(kstat, cpu)
+/* Must have preemption disabled for this to be meaningful. */
+#define kstat_this_cpu	__get_cpu_var(kstat)
+
+/******************************include/linux/timer.h******************************/
+
+
+struct timer_list {
+	struct list_head entry;
+	unsigned long expires;
+
+	spinlock_t lock;
+	unsigned long magic;
+
+	void (*function)(unsigned long);
+	unsigned long data;
+
+	struct tvec_t_base_s *base;
+};
+
+/******************************kernel/timer.c******************************/
+
+/*
+ * per-CPU timer vector definitions:
+ */
+
+#define TVN_BITS (CONFIG_BASE_SMALL ? 4 : 6)
+#define TVR_BITS (CONFIG_BASE_SMALL ? 6 : 8)
+#define TVN_SIZE (1 << TVN_BITS)
+#define TVR_SIZE (1 << TVR_BITS)
+#define TVN_MASK (TVN_SIZE - 1)
+#define TVR_MASK (TVR_SIZE - 1)
+
+typedef struct tvec_s {
+	struct list_head vec[TVN_SIZE];
+} tvec_t;
+
+typedef struct tvec_root_s {
+	struct list_head vec[TVR_SIZE];
+} tvec_root_t;
+
+struct tvec_t_base_s {
+	spinlock_t lock;
+	unsigned long timer_jiffies;
+	struct timer_list *running_timer;
+	tvec_root_t tv1;
+	tvec_t tv2;
+	tvec_t tv3;
+	tvec_t tv4;
+	tvec_t tv5;
+} ____cacheline_aligned_in_smp;
+
+typedef struct tvec_t_base_s tvec_base_t;
+

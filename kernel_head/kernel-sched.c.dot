@@ -190,4 +190,89 @@ digraph sched_c{
 				barrier[label="barrier ()"];
 				test_thread_flag_TIF_NEED_RESCHED[label="test_thread_flag_TIF_NEED_RESCHED"];
 		}
+
+		subgraph cluster_account_user_time{
+				label="void account_user_time(struct task_struct *p, cputime_t cputime)";
+				set_cpustat_kstat_this_cpu_cpustat[label="set_cpustat_kstat_this_cpu_cpustat"];
+				set_p_utime_cputime_add_p_utime_cputime[label="set_p_utime_cputime_add_p_utime_cputime"];
+				TASK_NICE_p_great_0[label="TASK_NICE_p_great_0"];
+				set_cpustat_nice_cputime64_add_cpustat_nice_cputime_to_cputime64_cputime[label="set_cpustat_nice_cputime64_add_cpustat_nice_cputime_to_cputime64_cputime"];
+				set_cpustat_user_cputime64_add_cpustat_user_cputime_to_cputime64_cputime[label="set_cpustat_user_cputime64_add_cpustat_user_cputime_to_cputime64_cputime"];
+		}
+
+		subgraph cluster_account_system_time{
+				label="void account_system_time(struct task_struct *p, int hardirq_offset,cputime_t cputime)";
+				set_cpustat_kstat_this_cpu_cpustat_1[label="set_cpustat_kstat_this_cpu_cpustat"];
+				set_rq_this_rq[label="set_rq_this_rq"];
+				set_p_stime_cputime_add_p_stiem_cputime[label="set_p_stime_cputime_add_p_stiem_cputime"];
+				hardirq_count_sub_hardirq_offset_not_0[label="hardirq_count_sub_hardirq_offset_not_0"];
+				set_cpustat_irq_cputime64_add_cpustat_irq_cputime_to_cputime64_cputime[label="set_cpustat_irq_cputime64_add_cpustat_irq_cputime_to_cputime64_cputime"];
+				softirq_count_not_null[label="softirq_count_not_null"];
+				set_cpustat_softirq_cputime64_add_cpustat_softirq_cputime_to_cputime64_cputime[label="set_cpustat_softirq_cputime64_add_cpustat_softirq_cputime_to_cputime64_cputime"];
+				p_not_eq_rq_idle[label="p_not_eq_rq_idle"];
+				set_cpustat_system_cputime64_add_cpustat_system_cputime_to_cputime64_cputime[label="set_cpustat_system_cputime64_add_cpustat_system_cputime_to_cputime64_cputime"];
+				atomic_read_rq_nr_iowait_great_0[label="atomic_read_rq_nr_iowait_great_0"];
+				set_cpustat_iowait_cputime64_add_cpustat_iowait_cputime_to_cputime64_cputime[label="set_cpustat_iowait_cputime64_add_cpustat_iowait_cputime_to_cputime64_cputime"];
+				set_cpustat_idle_cputime64_add_cpustat_idle_cputime_to_cputime64_cputime[label="set_cpustat_idle_cputime64_add_cpustat_idle_cputime_to_cputime64_cputime"];
+				acct_update_integrals_p[label="acct_update_integrals_p"];
+				update_mem_hiwater[label="update_mem_hiwater_p"];
+		}
+
+		subgraph cluster_scheduler_tick{
+				size="10,12";
+				ratio=filled;
+				bgcolor=darkolivegreen4;
+				node[style=filled,shape=box,fillcolor=gray];
+				timestamp_last_tick;
+				swap_process[label="swap process"];
+				set_TIF_NEED_RESCHED_swap[label="set TIF_NEED_RESCHED"];
+				set_TIF_NEED_RESCHED_normal[label="set TIF_NEED_RESCHED"];
+				hyper_threading;
+				replace[label="haven't replace"];
+				lock_rq[label="lock_rq"];
+				descrease_time[shape=record,label="{{<f0>realtime|<f1>normal}}"];
+				descrease_time_fifo[label="descrease_time"];
+				descrease_time_normal[label="descrease_time"];
+				effective_prio[label="effective_prio()"];
+				
+				fifo_rr[shape=record,label="{{<f0>FIFO|<f1>RR}}"];
+				nothing[label="nothing to do"];
+				move_tail[label="move to tail if 0"];
+				dequeue_task[label="dequeue_task()"];
+				reset_clean_time[label="reset timeslice and clean first_time,"];
+				set_expired_timestamp[label="set expired_timestamp"];
+				insert_active_expired[label="insert active or expired,\lTASK_INTERACTIVE,\lEXPIRED_STARVING"];
+				timesile_granularity[label="TIMESILE_GRANULARITY"];
+				unlock_rq[label="unlock_rq"];
+				reblance_tick[label="reblance_tick()"];
+				
+				timestamp_last_tick -> swap_process;
+				swap_process -> replace;
+				replace -> lock_rq;
+				lock_rq -> descrease_time;
+				
+				descrease_time:f0 -> fifo_rr;
+				fifo_rr:f0:s -> nothing;
+				fifo_rr:f1 -> descrease_time_fifo;
+				descrease_time_fifo -> move_tail;
+				
+				unlock_rq -> reblance_tick;
+				swap_process -> set_TIF_NEED_RESCHED_swap[label="is swap"];
+				set_TIF_NEED_RESCHED_swap -> hyper_threading;
+				hyper_threading -> reblance_tick;
+				nothing -> unlock_rq;
+				move_tail -> unlock_rq;
+				
+				descrease_time:f1 -> descrease_time_normal;
+				descrease_time_normal -> timesile_granularity;
+				descrease_time_normal -> dequeue_task[label="timeout"];
+				dequeue_task -> set_TIF_NEED_RESCHED_normal;
+				set_TIF_NEED_RESCHED_normal -> effective_prio;
+				effective_prio -> reset_clean_time;
+				reset_clean_time -> set_expired_timestamp;
+				set_expired_timestamp -> insert_active_expired;
+				insert_active_expired -> unlock_rq;
+				timesile_granularity -> unlock_rq;
+		}
+
 }
