@@ -1,0 +1,22 @@
+digraph jiffies_h{
+        subgraph cluster_time_after{
+                label="#define time_after(a,b)";
+                typecheck_unsigned_long_a_and_typecheck_unsigned_long_b_and_b_sub_a[label="(typecheck(unsigned long, a) && typecheck(unsigned long, b) && ((long)(b) - (long)(a) < 0))"];
+        }
+
+        subgraph cluster_time_before{
+                label="#define time_before(a,b)";
+                time_after[label="time_after(b,a)"];
+        }
+
+        subgraph cluster_time_after_eq{
+                label="#define time_after_eq(a,b)";
+                typecheck_a_and_typecheck_b_and_a_sub_b[label="(typecheck(unsigned long, a) && typecheck(unsigned long, b) && ((long)(a) - (long)(b) >= 0))"];
+        }
+
+        subgraph cluster_time_before_eq{
+                label="#define time_before_eq(a,b)";
+                time_after_eq[label="time_after_eq (b,a)"];
+        }
+}
+

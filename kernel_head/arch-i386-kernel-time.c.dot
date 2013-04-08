@@ -1,0 +1,19 @@
+digraph time_c{
+        subgraph cluster_time_init{
+                label="void __init time_init(void)";
+                set_xtime_tv_sec_get_cmos_time[label="set_xtime_tv_sec_get_cmos_time"];
+                set_xtime_tv_nsec[label="xtime.tv_nsec = (INITIAL_JIFFIES % HZ) * (NSEC_PER_SEC / HZ);"];
+                set_normalized_timespec[label="set_normalized_timespec(&wall_to_monotonic,-xtime.tv_sec, -xtime.tv_nsec);"];
+                set_cur_timer[label="cur_timer = select_timer();"];
+                time_init_hook[label="time_init_hook ()"];
+        }
+
+        subgraph cluster_timer_interrupt{
+                label="irqreturn_t timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)";
+                write_seqlock[label="write_seqlock (&xtime_lock)"];
+                cur_timer_mark_offset[label="cur_timer_mark_offset"];
+                do_timer_interrupt[label="do_timer_interrupt(irq, NULL, regs);"];
+                write_sequnlock[label="write_sequnlock(&xtime_lock);"];
+                return_IRQ_HANDLED[label="return_IRQ_HANDLED"];
+        }
+}
