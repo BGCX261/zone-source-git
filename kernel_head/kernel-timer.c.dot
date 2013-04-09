@@ -224,4 +224,29 @@ digraph timer_c{
                 label="static void process_timeout(unsigned long __data)";
                 wake_up_process_data[label="wake_up_process___data"];
         }
+
+		subgraph cluster_sys_gettimeofday{
+				label="asmlinkage long sys_gettimeofday(struct timeval __user *tv, struct timezone __user *tz)";
+				tv_not_null[label="tv_not_null"];
+				set_ktv_do_gettimeofday[label="set_ktv_do_gettimeofday"];
+				copy_to_user_tv_ktv[label="copy_to_user_tv_ktv"];
+				return_EFALUT[label="return_EFALUT"];
+				tz_not_null[label="tz_not_null"];
+				copy_to_user_tz_sys_tz[label="copy_to_user_tz_sys_tz"];
+		}
+
+		subgraph cluster_do_gettimeofdat{
+				label="void do_gettimeofday (struct timeval *tv)";
+				set_seq_read_seqbegin_xtime_lock[label="set_seq_read_seqbegin_xtime_lock"];
+				set_offset_time_interpolator_get_offset[label="set_offset_time_interpolator_get_offset"];
+				set_xtime_tv_sec[label="set_xtime_tv_sec"];
+				set_nsec_xtime_tv_nsec[label="set_nsec_xtime_tv_nsec"];
+				read_seqretry_xtime_lock_seq[label="read_seqretry_xtime_lock_seq"];
+				set_usec_nsec_add_offset_div_1000[label="set_usec_nsec_add_offset_div_1000"];
+				usec_not_small_USEC_PER_SEC[label="usec_not_small_USEC_PER_SEC"];
+				usec_self_sub_USEC_PER_SEC[label="usec_self_sub_USEC_PER_SEC"];
+				inc_sec[label="inc_sec"];
+				set_tv_tv_sec_sec[label="set_tv_tv_sec_sec"];
+				set_tv_tv_usec_usec[label="set_tv_tv_usec_usec"];
+		}
 }

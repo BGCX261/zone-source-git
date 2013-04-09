@@ -1,0 +1,19 @@
+digraph delay_h{
+		subgraph cluster_udelay{
+				label="#define udelay(n)";
+				__builtin_constant_p_n[label="builtin_constant_p_n"];
+				n_great_20000[label="n_great_20000"];
+				__bad_udelay[label="__bad_udelay"];
+				__const_udelay_n_multi_0x10c7ul[label="__const_udelay_n_multi_0x10c7ul"];
+				__udelay[label="__udelay(n)"];
+		}
+		
+		subgraph cluster_ndelay{
+				label="#define ndelay(n)";
+				__builtin_constant_p_n[label="builtin_constant_p_n"];
+				n_great_20000[label="n_great_20000"];
+				__bad_ndelay[label="__bad_ndelay"];
+				__const_ndelay_n_multi_5ul[label="__const_ndelay_n_multi_5ul"];
+				__ndelay[label="__ndelay(n)"];
+		}
+}

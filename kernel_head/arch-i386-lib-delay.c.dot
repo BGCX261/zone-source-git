@@ -1,0 +1,25 @@
+digraph delay_c{
+	subgraph cluster___udelay{
+			label="void __udelay(unsigned long usecs)";
+			__const_udelay[label="__const_udelay(usecs * 0x000010c7);  /* 2**32 / 1000000 (rounded up) */"];
+	}
+
+	subgraph cluster___const_udelay{
+			label="inline void __const_udelay(unsigned long xloops)";
+			xloops_self_multi_4[label="xloops_self_multi_4"];
+			__const_udelay[label="\"mull %0\":\"=d\" (xloops), \"=&a\" (d0):\"1\" (xloops),\"0\" (cpu_data[_smp_processor_id()].loops_per_jiffy * (HZ/4))"];
+			__delay[label="__delay(++xloops);"];
+	}
+
+	subgraph cluster___delay{
+			label="void __delay(unsigned long loops)";
+			cur_timer_delay_loops[label="cur_timer_delay_loops"];
+	}
+
+	subgraph cluster___ndelay{
+			label="void __ndelay(unsigned long usecs)";
+			__const_udelay[label="__const_udelay(nsecs * 0x00005);  /* 2**32 / 1000000000 (rounded up) */"];
+	}
+
+	
+}

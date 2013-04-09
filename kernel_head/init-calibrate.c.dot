@@ -1,0 +1,31 @@
+digraph calibrate_c{
+		subgraph cluster_calibrate_delay{
+				label="void __devinit calibrate_delay(void)";
+				label="void __devinit calibrate_delay(void)";
+				preset_lpj_not_true[label="preset_lpj_not_true"];
+				set_loops_per_jiffy_present_lpj[label="set_loops_per_jiffy_present_lpj"];
+				printk_bogoMIPS_prsent[label="printk_bogoMIPS_prsent"];
+				set_loops_per_jiffy_1_move_left_12[label="set_loops_per_jiffy_1_move_left_12"];
+				loops_per_jiffy_self_move_left_1_not_eq_0[label="loops_per_jiffy_self_move_left_1_not_eq_0"];
+				set_ticks_jiffies[label="set_ticks_jiffies"];
+				ticks_eq_jiffies[label="ticks_eq_jiffies"];
+				set_ticks_jiffies[label="set_ticks_jiffies"];
+				__delay_loops_per_jiffy[label="__delay_loops_per_jiffy"];
+				set_ticks_jiffies_sub_ticks[label="set_ticks_jiffies_sub_ticks"];
+				ticks_not_null[label="ticks_not_null"];
+				loops_per_jiffy_move_right_1[label="loops_per_jiffy_move_right_1"];
+				set_loopbit_loops_per_jiffy[label="set_loopbit_loops_per_jiffy"];
+				dec_lps_percision_not_null_and_loopbit_move_right_1[label="dec_lps_percision_not_null_and_loopbit_move_right_1"];
+				loops_per_jiffy_self_or_loopbit[label="loops_per_jiffy_self_or_loopbit"];
+				set_ticks_jiffies_1[label="set_ticks_jiffies"];
+				ticks_eq_jiffies_1[label="ticks_eq_jiffies"];
+				__delay_loops_per_jiffy[label="__delay_loops_per_jiffy"];
+				jiffies_not_eq_ticks[label="jiffies_not_eq_ticks"];
+				loops_per_jiffy_self_and_rever_loopbit[label="loops_per_jiffy_self_and_rever_loopbit"];
+		}
+
+		subgraph cluster_lpj_setup{
+				label="static int __init lpj_setup(char *str)";
+				set_present_lpj_simple_strtoul_str_NULL_0[label="set_present_lpj_simple_strtoul_str_NULL_0"];
+		}
+}

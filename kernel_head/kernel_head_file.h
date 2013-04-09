@@ -75,6 +75,12 @@ lib/rwsem-spinlock.c里出现
   process.  user_tick is 1 if the tick is user time, 0 for system.
   
 * account_user_time()定义在sched.c里但是只在timer.c里被调用，真的有点不明白为什么这样安排。
+
+* 找不到arm的__delay()函数
+
+* arm好像是不调用calibrate_delay()的
+
+* 还有__devinit之类的修辞符号的
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */
@@ -1802,3 +1808,8 @@ struct restart_block {
 	unsigned long arg0, arg1, arg2, arg3;
 };
 
+/******************************include/linux/time.h******************************/
+struct timezone {
+	int	tz_minuteswest;	/* minutes west of Greenwich */
+	int	tz_dsttime;	/* type of dst correction */
+};

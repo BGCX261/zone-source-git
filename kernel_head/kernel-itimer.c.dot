@@ -1,0 +1,108 @@
+digraph itimer_c{
+		subgraph cluster_do_getitimer{
+				label="int do_getitimer(int which, struct itimerval *value)";
+				ITIMER_REAL[label="ITIMER_REAL"];
+				lock_tsk_sighand_siglock[label="lock_tsk_sighand_siglock"];
+				set_interval_tsk_signal_it_real_incr[label="set_interval_tsk_signal_it_real_incr"];
+				set_val_it_real_value_tsk_singal[label="set_val_it_real_value_tsk_singal"];
+				unlock_tsk_sighand_siglock[label="unlock_tsk_sighand_siglock"];
+				jiffies_to_timeval_val_value_it_value[label="jiffies_to_timeval_val_value_it_value"];
+				jiffies_to_timeval_interval_value_it_interval[label="jiffies_to_timeval_interval_value_it_interval"];
+				ITIMER_VIRTUAL[label="ITIMER_VIRTUAL"];
+				read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+				spin_lock_irq_tsk_sighand_siglock[label="spin_lock_irq_tsk_sighand_siglock"];
+				set_cval_tsk_signal_it_virt_expires[label="set_cval_tsk_signal_it_virt_expires"];
+				set_cinterval_tsk_signal_it_virt_incr[label="set_cinterval_tsk_signal_it_virt_incr"];
+				cputime_eq_cval_cputime_zero[label="cputime_eq_cval_cputime_zero"];
+				set_utime_cputime_add_utime_t_utime[label="set_utime_cputime_add_utime_t_utime"];
+				set_t_next_thread_t[label="set_t_next_thread_t"];
+				t_not_eq_tsk[label="t_not_eq_tsk"];
+				cputime_le_cval_utime[label="cputime_le_cval_utime"];
+				set_cval_jiffies_to_cputime_1[label="set_cval_jiffies_to_cputime_1"];
+				set_cval_cputime_sub_cval_utime[label="set_cval_cputime_sub_cval_utime"];
+				unlock_tsk_sighand_siglock[label="unlock_tsk_sighand_siglock"];
+				read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+				cputime_to_timeval_cval_value_it_value[label="cputime_to_timeval_cval_value_it_value"];
+				cputime_to_timeval_cinterval_value_it_interval[label="cputime_to_timeval_cinterval_value_it_interval"];
+				read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+				lock_tsk_sighand_siglock[label="lock_tsk_sighand_siglock"];
+				set_cval_tsk_signal_it_prof_expires[label="set_cval_tsk_signal_it_prof_expires"];
+				cinterval_tsk_signal_it_prof_incr[label="cinterval_tsk_signal_it_prof_incr"];
+				cputime_eq_cval_cputime_zero_1[label="cputime_eq_cval_cputime_zero_1"];
+				set_t_tsk[label="set_t_tsk"];
+				set_ptime_cputime_add_tsk_signal_utime_tsk_signal_stime[label="set_ptime_cputime_add_tsk_signal_utime_tsk_signal_stime"];
+				set_ptime_cputime_add_ptime_cputime_add_t_utime_t_stime[label="set_ptime_cputime_add_ptime_cputime_add_t_utime_t_stime"];
+				set_t_next_thread_t[label="set_t_next_thread_t"];
+				t_not_eq_tsk[label="t_not_eq_tsk"];
+				cputime_le_cval_ptime[label="cputime_le_cval_ptime"];
+				set_cval_jiffies_to_cputime_1_1[label="set_cval_jiffies_to_cputime_1"];
+				set_cval_cputime_sub_cval_ptime[label="set_cval_cputime_sub_cval_ptime"];
+				unlock_tsk_sighand_siglock_1[label="unlock_tsk_sighand_siglock"];
+				read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+				cputime_to_timeval_cval_value_it_value[label="cputime_to_timeval_cval_value_it_value"];
+				cputime_to_timeval_cinterval_value_it_interval[label="cputime_to_timeval_cinterval_value_it_interval"];
+		}
+
+		subgraph cluster_do_setitimer{
+				label="int do_setitimer(int which, struct itimerval *value, struct itimerval *ovalue)";
+				set_tsk_current[label="set_tsk_current"];
+				ITIMER_REAL_1[label="ITIMER_REAL"];
+				lock_tsk_sighand_siglock_1[label="lock_tsk_sighand_siglock"];
+				set_interval_tsk_signal_it_real_incr[label="set_interval_tsk_signal_it_real_incr"];
+				set_val_it_real_value_tsk_signal[label="set_val_it_real_value_tsk_signal"];
+				val_not_null[label="val_not_null"];
+				del_timer_sync_tsk_signal_real_timer[label="del_timer_sync_tsk_signal_real_timer"];
+				set_tsk_signal_it_real_incr_timerval_to_jiffies_value_it_real_timer[label="set_tsk_signal_it_real_incr_timerval_to_jiffies_value_it_real_timer"];
+				it_real_arm_tsk_timeval_to_jiffies_value_it_value[label="it_real_arm_tsk_timeval_to_jiffies_value_it_value"];
+				unlock_tsk_sighand_siglock[label="unlock_tsk_sighand_siglock"];
+				ovalue_not_null[label="ovalue_not_null"];
+				jiffies_to_timeval_val_ovalue_it_value[label="jiffies_to_timeval_val_ovalue_it_value"];
+				jiffies_to_timeval_interval_ovalue_it_interval[label="jiffies_to_timeval_interval_ovalue_it_interval"];
+				ITIMER_VIRTUAL_1[label="ITIMER_VIRTUAL"];
+				set_nval_timeval_to_cputime_value_it_value[label="set_nval_timeval_to_cputime_value_it_value"];
+				set_ninterval_timeval_to_cputime_value_it_interval[label="set_ninterval_timeval_to_cputime_value_it_interval"];
+				read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+				lock_tsk_sighand_siglock[label="lock_tsk_sighand_siglock"];
+				set_cval_tsk_signal_it_virt_expires[label="set_cval_tsk_signal_it_virt_expires"];
+				set_cinterval_tsk_signal_it_virt_incr[label="set_cinterval_tsk_signal_it_virt_incr"];
+				cputime_eq_cval_cputime_zero_null_or_cputime_eq_nval_cputime_zero[label="cputime_eq_cval_cputime_zero_null_or_cputime_eq_nval_cputime_zero"];
+				cputime_gt_nval_cputime_zero_not_null[label="cputime_gt_nval_cputime_zero_not_null"];
+				set_nval_cputime_add_nval_jiffies_to_cputime_1[label="set_nval_cputime_add_nval_jiffies_to_cputime_1"];
+				set_process_cpu_timer_tsk_CPUCLOCK_VIRT_nval_cval[label="set_process_cpu_timer_tsk_CPUCLOCK_VIRT_nval_cval"];
+				set_tsk_signal_it_virt_expires_nval[label="set_tsk_signal_it_virt_expires_nval"];
+				set_tsk_signal_it_virt_incr_ninterval[label="set_tsk_signal_it_virt_incr_ninterval"];
+				unlock_tsk_sighand_siglock[label="unlock_tsk_sighand_siglock"];
+				read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+				ovalue_cputime_to_timeval_cval_ovalue_it_value[label="ovalue_cputime_to_timeval_cval_ovalue_it_value"];
+				cputime_to_timeval_cinterval_ovalue_it_interval[label="cputime_to_timeval_cinterval_ovalue_it_interval"];
+				ITIMER_PROF_1[label="ITIMER_PROF"];
+				set_nval_timeval_to_cputime_value_it_value[label="set_nval_timeval_to_cputime_value_it_value"];
+				set_ninterval_timeval_to_cputime_value_it_interval[label="set_ninterval_timeval_to_cputime_value_it_interval"];
+				read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+				locktsk_sighand_siglock[label="locktsk_sighand_siglock"];
+				set_cval_tsk_signal_it_prof_expires[label="set_cval_tsk_signal_it_prof_expires"];
+				set_cinterval_tsk_signal_it_prof_incr[label="set_cinterval_tsk_signal_it_prof_incr"];
+				cputime_eq_cval_cputime_zero_null_or_cputime_eq_nval_cputime_zero[label="cputime_eq_cval_cputime_zero_null_or_cputime_eq_nval_cputime_zero"];
+				cputime_gt_nval_cputime_zero[label="cputime_gt_nval_cputime_zero"];
+				set_nval_cputime_add_nval_jiffies_to_cputime_1[label="set_nval_cputime_add_nval_jiffies_to_cputime_1"];
+				set_process_cpu_timer_tsk_CPUCLOCK_PROF_nval_cval[label="set_process_cpu_timer_tsk_CPUCLOCK_PROF_nval_cval"];
+				tsk_signal_it_prof_expires_nval[label="tsk_signal_it_prof_expires_nval"];
+				unlock_tsk_sighand_ninterval[label="unlock_tsk_sighand_ninterval"];
+				unlock_tsk_sighand_siglock[label="unlock_tsk_sighand_siglock"];
+				read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+				ovalue_not_null[label="ovalue_not_null"];
+				cputime_to_timeval_cval_ovalue_it_value[label="cputime_to_timeval_cval_ovalue_it_value"];
+				cputime_to_timeval_cinterval_ovalue_it_interval[label="cputime_to_timeval_cinterval_ovalue_it_interval"];
+				return_EINVAL[label="return_EINVAL"];
+		}
+
+		subgraph cluster_sys_setitimer{
+				label="asmlinkage long sys_setitimer(int which,struct itimerval __user *value,struct itimerval __user *ovalue)";
+				value_not_null[label="value_not_null"];
+				copy_form_user_set_buffer_value[label="copy_form_user_set_buffer_value"];
+				memset_set_buffer_0[label="memset_set_buffer_0"];
+				do_setitimer[label="do_setitimer(which, &set_buffer, ovalue ? &get_buffer : NULL);"];
+				ovalue_null[label="ovalue_null"];
+				copy_to_user[label="copy_to_user_ovalue_get_buffer"];
+		}
+}
