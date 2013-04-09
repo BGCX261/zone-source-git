@@ -1,0 +1,8 @@
+digraph mm_h{
+        subgraph cluster_page_zone{
+                label="static inline struct zone *page_zone(struct page *page)";
+	        zone_table[label="zone_table[page->flags >> NODEZONE_SHIFT];"];
+        }
+
+        subgraph 
+}

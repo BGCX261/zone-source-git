@@ -1,0 +1,9 @@
+digraph page_alloc_c{
+        subgraph cluster___get_free_pages{
+                label="fastcall unsigned long __get_free_pages(unsigned int __nocast gfp_mask, unsigned int order)";
+                alloc_pages[label="alloc_pages (gfp_mask,order)"];
+                page_address_page[label="page_address_page"];
+        }
+
+        
+}

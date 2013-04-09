@@ -1,0 +1,35 @@
+digraph gfp_h{
+        subgraph cluster_alloc_pages{
+                label="static inline struct page *alloc_pages(unsigned int __nocast gfp_mask, unsigned int order)";
+                order_not_small_MAX_ORDER[label="order_not_small_MAX_ORDER"];
+                return_NULL[label="return_NULL"];
+                alloc_pages_current[label="alloc_pages_current (gfp_mask,order)"];
+        }
+
+        subgraph cluster_alloc_pages{
+                label="#define alloc_pages(gfp_mask, order)";
+                alloc_pages_node[label="alloc_pages_node (numa_node_id (), gfp_mask, order)"];
+        }
+
+        subgraph cluster_alloc_pages_node{
+                label="static inline struct page *alloc_pages_node(int nid, unsigned int __nocast gfp_mask, unsigned int order)";
+                order_not_small_MAX_ORDER[label="order_not_small_MAX_ORDER"];
+                return_NULL_1[label="return_NULL_1"];
+                __alloc_pages[label="__alloc_pages(gfp_mask, order,NODE_DATA(nid)->node_zonelists + (gfp_mask & GFP_ZONEMASK));"];
+        }
+
+        subgraph cluster_alloc_page{
+                label="#define alloc_page(gfp_mask)";
+                alloc_pages_0[label="alloc_pages (gfp_mask, 0)"];
+        }
+
+        subgraph cluster___get_free_page{
+                label="#define __get_free_page(gfp_mask)";
+                __get_free_pages_0[label="__get_free_pages (gfp_mask, 0)"];
+        }
+
+        subgraph cluster___get_free_pages{
+                label="fastcall unsigned long __get_free_pages(unsigned int __nocast gfp_mask, unsigned int order)";
+                alloc_pages_ord
+                }
+}
