@@ -1628,6 +1628,42 @@ struct semaphore {
 	wait_queue_head_t wait;
 };
 
+/******************************include/asm-i386/timer.h******************************/
+/**
+ * struct timer_ops - used to define a timer source
+ *
+ * @name: name of the timer.
+ * @init: Probes and initializes the timer. Takes clock= override 
+ *        string as an argument. Returns 0 on success, anything else
+ *        on failure.
+ * @mark_offset: called by the timer interrupt.
+ * @get_offset:  called by gettimeofday(). Returns the number of microseconds
+ *               since the last timer interupt.
+ * @monotonic_clock: returns the number of nanoseconds since the init of the
+ *                   timer.
+ * @delay: delays this many clock cycles.
+ */
+struct timer_opts {
+	char* name;
+	void (*mark_offset)(void);
+	unsigned long (*get_offset)(void);
+	unsigned long long (*monotonic_clock)(void);
+	void (*delay)(unsigned long);
+};
+
+/******************************kernel/timer.c******************************/
+/* 
+ * The current time 
+ * wall_to_monotonic is what we need to add to xtime (or xtime corrected 
+ * for sub jiffie times) to get to monotonic time.  Monotonic is pegged
+ * at zero at system boot time, so wall_to_monotonic will be negative,
+ * however, we will ALWAYS keep the tv_nsec part positive so we can use
+ * the usual normalization.
+ */
+struct timespec xtime __attribute__ ((aligned (16)));
+struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
+
+
 /******************************include/asm-i386/rwsem.h******************************/
 
 /*
@@ -1705,6 +1741,10 @@ DECLARE_PER_CPU(struct kernel_stat, kstat);
 
 /******************************include/linux/timer.h******************************/
 
+struct timespec {
+	time_t	tv_sec;		/* seconds */
+	long	tv_nsec;	/* nanoseconds */
+};
 
 struct timer_list {
 	struct list_head entry;
@@ -1752,4 +1792,13 @@ struct tvec_t_base_s {
 } ____cacheline_aligned_in_smp;
 
 typedef struct tvec_t_base_s tvec_base_t;
+
+/******************************include/linux/thread_info.h******************************/
+/*
+ * System call restart block. 
+ */
+struct restart_block {
+	long (*fn)(struct restart_block *);
+	unsigned long arg0, arg1, arg2, arg3;
+};
 

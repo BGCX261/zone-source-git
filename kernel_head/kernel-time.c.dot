@@ -1,0 +1,10 @@
+digraph time_c{
+        subgraph cluster_get_jiffies_64{
+                label="u64 get_jiffies_64(void)";
+                BITS_PER_LONG_small_64[label="BITS_PER_LONG_small_64"];
+                read_seqbegin_xtime_lock[label="read_seqbegin_xtime_lock"];
+                set_ret_jiffies_64[label="set_ret_jiffies_64"];
+                read_sqretry_xtime_lock_seq[label="read_sqretry_xtime_lock_seq"];
+                return_ret[label="return_ret"];
+        }        
+}
