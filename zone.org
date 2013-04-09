@@ -6163,3 +6163,12 @@ http://baike.baidu.com/view/46554.htm
 
 知道为什么大城市的医院又多又好吗？因为大城市的人的病又多又难治。
 我看到的很多大城市的人好像没我爸妈活得舒服。
+
+==============================[2013-04-08 一]==============================
+
+宏里可以用与或非的
+#if defined(CONFIG_MMC_DAVINCI) || \
+    defined(CONFIG_MMC_DAVINCI_MODULE)
+
+#elif defined(CONFIG_DA850_UI_CAMERA)
+
