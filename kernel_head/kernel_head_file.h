@@ -2350,3 +2350,24 @@ struct free_area {
 	unsigned long		nr_free;
 };
 
+
+struct per_cpu_pages {
+	int count;		/* number of pages in the list */
+	int low;		/* low watermark, refill needed */
+	int high;		/* high watermark, emptying needed */
+	int batch;		/* chunk size for buddy add/remove */
+	struct list_head list;	/* the list of pages */
+};
+
+struct per_cpu_pageset {
+	struct per_cpu_pages pcp[2];	/* 0: hot.  1: cold */
+#ifdef CONFIG_NUMA
+	unsigned long numa_hit;		/* allocated in intended node */
+	unsigned long numa_miss;	/* allocated in non intended node */
+	unsigned long numa_foreign;	/* was intended here, hit elsewhere */
+	unsigned long interleave_hit; 	/* interleaver prefered this zone */
+	unsigned long local_node;	/* allocation from local node */
+	unsigned long other_node;	/* allocation from other node */
+#endif
+} ____cacheline_aligned_in_smp;
+

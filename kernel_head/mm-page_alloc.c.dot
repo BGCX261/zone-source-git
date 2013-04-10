@@ -5,61 +5,182 @@ digraph page_alloc_c{
                 page_address_page[label="page_address_page"];
         }
 
-		subgraph cluster_get_zeroed_page{
-				label="fastcall unsigned long get_zeroed_page(unsigned int __nocast gfp_mask)";
-				alloc_pages_gfp_mask___GFP_ZERO_0[label="alloc_pages_gfp_mask___GFP_ZERO_0"];
-				page_address[label="page_address"];
-		}
+	subgraph cluster_get_zeroed_page{
+		label="fastcall unsigned long get_zeroed_page(unsigned int __nocast gfp_mask)";
+		alloc_pages_gfp_mask___GFP_ZERO_0[label="alloc_pages_gfp_mask___GFP_ZERO_0"];
+		page_address[label="page_address"];
+	}
 
-		subgraph cluster__free_pages{
-				label="fastcall void __free_pages(struct page *page, unsigned int order)";
-				PageReserved_page_false_and_put_page_testzero_page[label="PageReserved_page_false_and_put_page_testzero_page"];
-				order_eq_0[label="order_eq_0"];
-				free_hot_page_page[label="free_hot_page_page"];
-				__free_pages_ok[label="__free_pages_ok (page, order)"];
-		}
+	subgraph cluster__free_pages{
+		label="fastcall void __free_pages(struct page *page, unsigned int order)";
+		PageReserved_page_false_and_put_page_testzero_page[label="PageReserved_page_false_and_put_page_testzero_page"];
+		order_eq_0[label="order_eq_0"];
+		free_hot_page_page[label="free_hot_page_page"];
+		__free_pages_ok[label="__free_pages_ok (page, order)"];
+	}
 
-		subgraph cluster_free_pages{
-				label="fastcall void free_pages(unsigned long addr, unsigned int order)";
-				addr_not_null[label="addr_not_null"];
-				__free_pages_virt_to_page_addr_order[label="__free_pages_virt_to_page_addr_order"];
-		}
+	subgraph cluster_free_pages{
+		label="fastcall void free_pages(unsigned long addr, unsigned int order)";
+		addr_not_null[label="addr_not_null"];
+		__free_pages_virt_to_page_addr_order[label="__free_pages_virt_to_page_addr_order"];
+	}
 
-		subgraph cluster___rmqueue{
-				label="static struct page *__rmqueue(struct zone *zone, unsigned int order)";
-				for_set_current_order_order_current_order_little_MAX_ORDER_inc_current_order[label="for_set_current_order_order_current_order_little_MAX_ORDER_inc_current_order"];
-				set_area_zone_free_area_add_current_order[label="set_area_zone_free_area_add_current_order"];
-				list_empty_area_free_list[label="list_empty_area_free_list"];
-				set_page_list_entry_area_free_list_next_struct_page_lru[label="set_page_list_entry_area_free_list_next_struct_page_lru"];
-				list_del_page_lru[label="list_del_page_lru"];
-				rmv_page_order_page[label="rmv_page_order_page"];
-				dec_area_nr_free[label="dec_area_nr_free"];
-				zone_free_pages_self_sub_1_left_move_order[label="zone_free_pages_self_sub_1_left_move_order"];
-				return_expand_zone_page_order_current_order_area[label="return_expand_zone_page_order_current_order_area"];
-				return_NULL[label="return_NULL"];
-		}
+	subgraph cluster___rmqueue{
+		label="static struct page *__rmqueue(struct zone *zone, unsigned int order)";
+		for_set_current_order_order_current_order_little_MAX_ORDER_inc_current_order[label="for_set_current_order_order_current_order_little_MAX_ORDER_inc_current_order"];
+		set_area_zone_free_area_add_current_order[label="set_area_zone_free_area_add_current_order"];
+		list_empty_area_free_list[label="list_empty_area_free_list"];
+		set_page_list_entry_area_free_list_next_struct_page_lru[label="set_page_list_entry_area_free_list_next_struct_page_lru"];
+		list_del_page_lru[label="list_del_page_lru"];
+		rmv_page_order_page[label="rmv_page_order_page"];
+		dec_area_nr_free[label="dec_area_nr_free"];
+		zone_free_pages_self_sub_1_left_move_order[label="zone_free_pages_self_sub_1_left_move_order"];
+		return_expand_zone_page_order_current_order_area[label="return_expand_zone_page_order_current_order_area"];
+		return_NULL[label="return_NULL"];
+	}
 
-		subgraph cluster___free_pages_bulk{
-				label="static inline void __free_pages_bulk (struct page *page,struct zone *zone, unsigned int order)";
-				get_order_size_1_move_left_order[label="get_order_size_1_move_left_order"];
-				order_not_null[label="order_not_null"];
-				destroy_compound_page_page_order[label="destroy_compound_page_page_order"];
-				set_page_idx[label="page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);"];
-				zone_free_page_self_add_order_size[label="zone_free_page_self_add_order_size"];
-				order_small_MAX_ORDER_sub_1[label="order_small_MAX_ORDER_sub_1"];
-				set_combined_idx___find_combined_index_page_idx_order[label="set_combined_idx___find_combined_index_page_idx_order"];
-				bad_range_zone_buddy[label="bad_range_zone_buddy"];
-				page_is_buddy_buddy_order[label="page_is_buddy_buddy_order"];
-				list_del_buddy_lru[label="list_del_buddy_lru"];
-				set_area_zone_free_area_add_order[label="set_area_zone_free_area_add_order"];
-				dec_area_nr_free[label="dec_area_nr_free"];
-				rmv_page_order_buddy[label="rmv_page_order_buddy"];
-				set_page_page_add_combined_idx_sub_page_idx[label="set_page_page_add_combined_idx_sub_page_idx"];
-				set_page_idx_combined_idx[label="set_page_idx_combined_idx"];
-				inc_order[label="inc_order"];
-				set_page_order_page_order[label="set_page_order_page_order"];
-				list_add[label="list_add(&page->lru, &zone->free_area[order].free_list);"];
-				inc_set_zone_free_area_orer_nr_free[label="inc_set_zone_free_area_orer_nr_free"];
-		}
-        
+	subgraph cluster___free_pages_bulk{
+		label="static inline void __free_pages_bulk (struct page *page,struct zone *zone, unsigned int order)";
+		get_order_size_1_move_left_order[label="get_order_size_1_move_left_order"];
+		order_not_null[label="order_not_null"];
+		destroy_compound_page_page_order[label="destroy_compound_page_page_order"];
+		set_page_idx[label="page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);"];
+		zone_free_page_self_add_order_size[label="zone_free_page_self_add_order_size"];
+		order_small_MAX_ORDER_sub_1[label="order_small_MAX_ORDER_sub_1"];
+		set_combined_idx___find_combined_index_page_idx_order[label="set_combined_idx___find_combined_index_page_idx_order"];
+		bad_range_zone_buddy[label="bad_range_zone_buddy"];
+		page_is_buddy_buddy_order[label="page_is_buddy_buddy_order"];
+		list_del_buddy_lru[label="list_del_buddy_lru"];
+		set_area_zone_free_area_add_order[label="set_area_zone_free_area_add_order"];
+		dec_area_nr_free[label="dec_area_nr_free"];
+		rmv_page_order_buddy[label="rmv_page_order_buddy"];
+		set_page_page_add_combined_idx_sub_page_idx[label="set_page_page_add_combined_idx_sub_page_idx"];
+		set_page_idx_combined_idx[label="set_page_idx_combined_idx"];
+		inc_order[label="inc_order"];
+		set_page_order_page_order[label="set_page_order_page_order"];
+		list_add[label="list_add(&page->lru, &zone->free_area[order].free_list);"];
+		inc_set_zone_free_area_orer_nr_free[label="inc_set_zone_free_area_orer_nr_free"];
+	}
+
+        subgraph cluster_buffered_rmqueue{
+                label="static struct page *buffered_rmqueue(struct zone *zone, int order, unsigned int __nocast gfp_flags";
+                order_eq_0[label="order_eq_0"];
+                set_cold[label="int cold = !!(gfp_flags & __GFP_COLD);"];
+                set_per_cpu_pages_pcp_zone_pageset_get_cpu_pcp_cold[label="set_per_cpu_pages_pcp_zone_pageset_get_cpu_pcp_cold"];
+                local_irq_save[label="local_irq_save"];
+                pcp_count_great_pcp_low[label="pcp_count_great_pcp_low"];
+                set_pcp_count[label="pcp->count += rmqueue_bulk(zone, 0,pcp->batch, &pcp->list);"];
+                pcp_count_not_0[label="pcp_count_not_0"];
+                set_page_list_entry_pcp_list_next_struct_page_lru[label="set_page_list_entry_pcp_list_next_struct_page_lru"];
+                list_del_page_lru[label="list_del_page_lru"];
+                dec_pcp_count[label="dec_pcp_count"];
+                local_irq_restore[label="local_irq_restore"];
+                put_cpu[label="put_cpu ()"];
+                page_null[label="page_null"];
+                lock_zone_lock[label="lock_zone_lock"];
+                set_page___rmqueue_zone_order[label="set_page___rmqueue_zone_order"];
+                unlock_zone_lock[label="unlock_zone_lock"];
+                page_not_null[label="page_not_null"];
+                mod_page_state_zone_zone_pgalloc_1_move_left_order[label="mod_page_state_zone_zone_pgalloc_1_move_left_order"];
+                prep_new_page_page_order[label="prep_new_page_page_order"];
+                gfp_flags_GFP_ZERO_set[label="gfp_flags_GFP_ZERO_set"];
+                prep_zero_page_page_order_gfp_flags[label="prep_zero_page_page_order_gfp_flags"];
+                order_true_and_gfp_flags___GFP_COMP_set[label="order_true_and_gfp_flags___GFP_COMP_set"];
+                prep_compound_page_page_order[label="prep_compound_page_page_order"];
+                return_page[label="return_page"];
+        }
+
+        subgraph cluster_free_hot_cold_page{
+                label="static void fastcall free_hot_cold_page(struct page *page, int cold)";
+                set_zone_page_zone_page[label="set_zone_page_zone_page"];
+                arch_free_page_page_0[label="arch_free_page_page_0"];
+                kernel_map_pages_page_1_0[label="kernel_map_pages_page_1_0"];
+                inc_page_state_pgfree[label="inc_page_state_pgfree"];
+                PageAnon_page_not_null[label="PageAnon_page_not_null"];
+                clear_page_mapping[label="clear_page_mapping"];
+                free_pages_check___FUNCTION___page[label="free_pages_check___FUNCTION___page"];
+                set_pcp[label="	pcp = &zone->pageset[get_cpu()].pcp[cold];"];
+                local_irq_save[label="local_irq_save"];
+                pcp_count_great_pcp_high[label="pcp_count_great_pcp_high"];
+                pcp_count[label="pcp->count -= free_pages_bulk(zone, pcp->batch, &pcp->list, 0);"];
+                list_add_page_lru_pcp_list[label="list_add_page_lru_pcp_list"];
+                inc_pcp_count[label="inc_pcp_count"];
+                local_irq_restore[label="local_irq_restore"];
+                put_cpu[label="put_cpu ()"];
+        }
+
+        subgraph cluster_free_hot_page{
+                label="void fastcall free_hot_page(struct page *page)";
+                free_hot_cold_page_page_0[label="free_hot_cold_page_page_0"];
+        }
+
+        subgraph cluster_free_cold_page{
+                label="void fastcall free_cold_page(struct page *page)";
+                free_hot_cold_page_page_1[label="free_hot_cold_page_page_1"];
+        }
+
+        subgraph cluster___alloc_pages{
+                label="struct page * fastcall __alloc_pages(unsigned int __nocast gfp_mask, unsigned int order,struct zonelist *zonelist)";
+                set_wait_gfp_mask_and___GFP_WAIT[label="set_wait_gfp_mask_and___GFP_WAIT"];
+                might_sleep_if_wait[label="might_sleep_if_wait"];
+                set_can_try_harder_rt_task_p_and_in_interrupt_not_true_or_wait_null[label="set_can_try_harder_rt_task_p_and_in_interrupt_not_true_or_wait_null"];
+                set_zones_zonelist_zones[label="set_zones_zonelist_zones"];
+                zones_0_NULL[label="zones_0_NULL"];
+                return_NULL[label="return_NULL"];
+                set_classzone[label="classzone_idx = zone_idx(zones[0]);"];
+                for_zones[label="for (i = 0; (z = zones[i]) != NULL; i++)"];
+                zone_watermark_ok_z_order_z_pages_low_classzone_idx_0_0[label="zone_watermark_ok_z_order_z_pages_low_classzone_idx_0_0"];
+                continue[label="continue"];
+                cpuset_zone_allowed_z[label="cpuset_zone_allowed_z"];
+                continue_1[label="continue"];
+                set_page_buffered_rmqueue_z_order_gfp_mask[label="set_page_buffered_rmqueue_z_order_gfp_mask"];
+                page_not_null[label="page_not_null"];
+                for_zones_1[label="for (i = 0; (z = zones[i]) != NULL; i++)"];
+                wakeup_kswapd_z_order[label="wakeup_kswapd_z_order"];
+                for_zones_2[label="for (i = 0; (z = zones[i]) != NULL; i++)"];
+                zone_watermark_ok_z_order_z_pages_min_clsszone_idx_can_try_harder_gfp_mask___GFP_HIGH_set[label="zone_watermark_ok_z_order_z_pages_min_clsszone_idx_can_try_harder_gfp_mask___GFP_HIGH_set"];
+                wait_true_and_cpuset_zone_allowed_z_not_true[label="wait_true_and_cpuset_zone_allowed_z_not_true"];
+                set_page_buffered_rmqueue_z_order_gfp_mask_1[label="set_page_buffered_rmqueue_z_order_gfp_mask"];
+                page_not_null_1[label="page_not_null"];
+                current_flags_PG_MEMALLOC_set_or_test_thread_flag_TIF_MEMDIE_true_in_interrupt_not_true[label="current_flags_PG_MEMALLOC_set_or_test_thread_flag_TIF_MEMDIE_true_in_interrupt_not_true"];
+                gfp_mask___GFP_NOMEMALLOC_set[label="gfp_mask___GFP_NOMEMALLOC_set"];
+                for_zones_3[label="for (i = 0; (z = zones[i]) != NULL; i++)"];
+                cpuset_zone_allowed_z_not_true[label="cpuset_zone_allowed_z_not_true"];
+                set_page_buffered_rmqueue_z_order_gfp_mask_2[label="set_page_buffered_rmqueue_z_order_gfp_mask"];
+                page_not_null_2[label="page_not_null"];
+                wait_null[label="wait_null"];
+                cond_resched[label="cond_resched"];
+                set_current_flags_PF_MEMALLOC[label="set_current_flags_PF_MEMALLOC"];
+                clear_reclaim_state_reclaimed_slab[label="clear_reclaim_state_reclaimed_slab"];
+                set_current_reclaim_state_reclaim_state[label="set_current_reclaim_state_reclaim_state"];
+                set_did_some_progress_try_to_free_pages_zones_gfp_mask_order[label="set_did_some_progress_try_to_free_pages_zones_gfp_mask_order"];
+                clear_current_reclaim_state[label="clear_current_reclaim_state"];
+                clear_current_flags_PF_MEMALLOC[label="clear_current_flags_PF_MEMALLOC"];
+                cond_resched[label="cond_resched ()"];
+                did_some_progress_true[label="did_some_progress_true"];
+                for_zones_4[label="for (i = 0; (z = zones[i]) != NULL; i++)"];
+                zone_watermark_ok_z_order_z_pages_min_clsszone_idx_can_try_harder_gfp_mask___GFP_HIGH_set_1[label="zone_watermark_ok_z_order_z_pages_min_clsszone_idx_can_try_harder_gfp_mask___GFP_HIGH_set"];
+                cpuset_zone_allowed_z_not_true_1[label="cpuset_zone_allowed_z_not_true"];
+                set_page_buffered_rmqueue_z_order_gfp_mask_3[label="set_page_buffered_rmqueue_z_order_gfp_mask"];
+                page_not_null_3[label="page_not_null"];
+                gfp_mask___GFP_FS_set_and_gfp_mask___GFP_NORETRY_not_set[label="gfp_mask___GFP_FS_set_and_gfp_mask___GFP_NORETRY_not_set"];
+                for_zones_5[label="for (i = 0; (z = zones[i]) != NULL; i++)"];
+                cpuset_zone_allowed_z_not_true_2[label="cpuset_zone_allowed_z_not_true"];
+                set_page_buffered_rmqueue_z_order_gfp_mask_4[label="set_page_buffered_rmqueue_z_order_gfp_mask"];
+                out_of_memory_gfp_mask[label="out_of_memory_gfp_mask"];
+                clear_do_retry[label="clear_do_retry"];
+                gfp_mask___GFP_NOTETRY_not_set[label="gfp_mask___GFP_NOTETRY_not_set"];
+                order_great_3_or_gf_mask___GFP_REPEAT_set[label="order_great_3_or_gf_mask___GFP_REPEAT_set"];
+                set_do_retry_1[label="set_do_retry_1"];
+                gfp_mask___GFP_NOFAIL_set[label="gfp_mask___GFP_NOFAIL_set"];
+                set_do_retry_1_1[label="set_do_retry_1"];
+                do_retry_true[label="do_retry_true"];
+                blk_congestion_wait_WRITE_HZ_div_50[label="blk_congestion_wait_WRITE_HZ_div_50"];
+                gfp_mask___GFP_NOWARN_not_set_and_printk_ratelimit[label="gfp_mask___GFP_NOWARN_not_set_and_printk_ratelimit"];
+                printk[label="printk"];
+                dump_stack[label="dump_stack"];
+                return_NULL[label="return_NULL"];
+                zone_statistics_zonelist_z[label="zone_statistics_zonelist_z"];
+                return_page[label="return_page"];
+        }
 }
