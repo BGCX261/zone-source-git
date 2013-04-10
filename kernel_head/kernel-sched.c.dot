@@ -275,4 +275,192 @@ digraph sched_c{
 				timesile_granularity -> unlock_rq;
 		}
 
+		subgraph cluster_this_rq{
+				label="#define this_rq()";
+				__get_cpu_var[label="(&__get_cpu_var(runqueues))"];
+		}
+
+		subgraph cluster_sched_fork{
+				label="void fastcall sched_fork(task_t *p)";
+				set_p_state_TASK_RUNNING[label="set_p_state_TASK_RUNNING"];
+				INIT_LIST_HEAD_p_run_list[label="INIT_LIST_HEAD_p_run_list"];
+				clear_p_array[label="clear_p_array"];
+				lock_p_switch_lock[label="lock_p_switch_lock"];
+				memset_p_sched_info[label="memset_p_sched_info"];
+				set_p_thread_info_preempt_count_1[label="set_p_thread_info_preempt_count_1"];
+				local_irq_disable[label="local_irq_disable"];
+				set_p_time_slice_current_time_slice_add_1_move_right_1[label="set_p_time_slice_current_time_slice_add_1_move_right_1"];
+				set_p_first_time_slice_1[label="set_p_first_time_slice_1"];
+				current_time_slice_self_move_right_1[label="current_time_slice_self_move_right_1"];
+				set_p_timestamp_sched_clock[label="set_p_timestamp_sched_clock"];
+				current_time_slice_null[label="current_time_slice_null"];
+				set_current_time_slice_1[label="set_current_time_slice_1"];
+				preempt_disable[label="preempt_disable ()"];
+				scheduler_tick[label="scheduler_tick ()"];
+				local_irq_enable[label="local_irq_enable ()"];
+				preempt_enable[label="preempt_enable ()"];
+				local_irq_enable_1[label="local_irq_enable ()"];
+		}
+
+		subgraph cluster_try_to_wake_up{
+				label="try_to_wake_up(p, stat, sync)";
+				bgcolor=gray;
+				size="10,10";
+				ratio=filled;
+				node[style=filled,shape=box,fillcolor=darkorange1];
+				
+				task_rq_lock[label="task_rq_lock()\ldisable irq and lock rq"];
+				mask[label="cmp with mask of process states"];
+				set_TASK_RUNNING[label="set TASK_RUNNING;"];
+				array[label="task-\>array"];
+				task_rq_unlock[label="task_rq_unlock()\lenable irq and unlock rq"];
+				move_to_cpu[label="move to cpu"];
+				uninterruptible[label="nr_uninterruptible--\lp-\>actived=-1"];
+				resched_task[shape=record,label="{resched_task()|{uniprocessor|multiprocessor}}"];
+
+				subgraph cluster_active_task{
+						label= "active_task()";
+						sched_clock[label="sched_clock()"];
+						recalc_task_prio[label="recalc_task_prio()"];
+						p_actived[label="p-\>actived"];
+						timestamp[label="timestamp"];
+						insert_active_list[label="insert active list"];
+
+						sched_clock -> recalc_task_prio;
+						recalc_task_prio -> p_actived;
+						p_actived -> timestamp;
+						timestamp -> insert_active_list;
+                }
+                
+
+				task_rq_lock -> mask;
+				mask -> task_rq_unlock[label="correspond"];
+				mask -> array;
+				array -> set_TASK_RUNNING;
+				array -> move_to_cpu[label="NULL"];
+				move_to_cpu -> uninterruptible[label="is UNINTRRUPT"];
+				uninterruptible -> sched_clock;
+				move_to_cpu -> sched_clock;
+				insert_active_list -> resched_task[label="is local cpu or sync=1"];
+				insert_active_list -> set_TASK_RUNNING;
+				resched_task -> set_TASK_RUNNING;
+				set_TASK_RUNNING -> task_rq_unlock;
+		}
+
+		subgraph cluster_recalc_task_prio{
+				label="recalc_task_prio(p,now)";
+				size="16,10";
+				ratio=filled;
+
+				node[style=filled,shape=box,fillcolor=gray];
+				sleep_time_min[label="sleep_time = min(now - p->timestamp, 10^9)"];
+				effective_prio[label="effective_prio()"];
+				p_sleep_avg[label="p->sleep_avg = 900"];
+				CURRENT_BONUSE[label="CURRENT_BONUSE for bonuse"];
+				sleep_time_0[label="sleep_time = 0"];
+				sleep_avg_reach_the_limit[label="sleep_avg reach the limit"];
+				
+				uninterruptible_not_thread[shape=hexagon,label="uninterruptible and \lnot kernel thread"];
+				add_sleep_time_avg[label="add sleep_time to sleep_avg"];
+				add_and_greater[shape=diamond,label="sleep_time+sleep_avg"];
+				set_sleep_avg_lmt[label="set sleep_avg limit\land sleep_time 0"];
+				limit_sleep_avg[label="sleep_avg under 1000"];
+				
+				sleep_time_min -> effective_prio[decorate=true,label="smaller than 0"];
+				sleep_time_min -> p_sleep_avg[decorate=true,label="kernel thread, \lTASK_UNINTERRUPTIBLE,\lsleep time limit"];
+				p_sleep_avg -> effective_prio;
+				sleep_time_min -> CURRENT_BONUSE;
+				CURRENT_BONUSE -> uninterruptible_not_thread;
+				uninterruptible_not_thread -> sleep_avg_reach_the_limit[label="true"];
+				sleep_avg_reach_the_limit -> sleep_time_0[label="true"];
+				sleep_avg_reach_the_limit -> add_and_greater[label="false"];
+				add_and_greater -> set_sleep_avg_lmt[label="greater limit"];
+				add_and_greater -> add_sleep_time_avg;
+				uninterruptible_not_thread -> add_sleep_time_avg[label="false"];
+				sleep_time_0 -> add_sleep_time_avg;
+				// sleep_time_0 -> set_sleep_avg_lmt[decorate=true,label="sleep_time+p->slep_avg \lnot smaller than limit"];
+				set_sleep_avg_lmt -> add_sleep_time_avg;
+				add_sleep_time_avg -> limit_sleep_avg;
+				limit_sleep_avg -> effective_prio;
+		}
+
+		subgraph cluster_schedule{
+				label="schedule()";
+				size="10,18";
+				ratio=filled;
+				
+				node[style=filled, shape = box, margin="0.05,0.005",
+					 height="0.1",width="0.1"];
+
+					 exiting_atomic;
+					 dump_stack[label="dump_stack()"];
+					 dump_stack_1[label="dump_stack()"];
+					 profile_hit[label="profile_hit()"];
+					 preempt_disable[label="preempt_disable()"];
+					 
+					 release_kernel_lock[label="release_kernel_lock()"];
+					 idle_running;
+					 
+					 sched_clock[label="calc cpu time, limit in 1s"];
+					 schedstat_inc_rq_sched_cnt;
+					 
+					 disable_irq_lock[label="disalbe_irq, lock rq"];
+					 PF_DEAD[label="check PF_DEAD, set EXIT_DEAD"];
+					 deactivate_task[label="deactivate_task"];
+					 set_task_running[label="set TASK_RUNNING"];
+					 dependent_sleeper[label="dependent_sleeper()"];
+					 idle_balance[label="idle_balance()"];
+					 exch_active_expired[label="switch active and expired"];
+					 search_process[label="search process by bitmask"];
+					 add_sleeptime[label="add sleeptime"];
+					 add_all_time[label="add all time"];
+					 add_fraction_time[label="add fraction time"];
+					 prefect;
+					 clear_TIF_NEED_RESCHED[label="clear TIF NEED RESCHED"];
+					 rcq_qsctr_inc;
+					 substract_sleeptime[label="substract sleeptime"];
+					 set_timestamps[label="set timestamps"];
+					 same_process[label="same process"];
+					 context_switch[label="context_switch()"];
+					 set_prev_mm[label="set prev_mm field"];
+					 barrier[label="barrier()"];
+					 finish_task_switch[label="finish_task_switch()"];
+					 
+					 exiting_atomic -> dump_stack[color=red];
+					 exiting_atomic -> profile_hit;
+					 profile_hit -> preempt_disable;
+					 preempt_disable -> release_kernel_lock;
+					 release_kernel_lock -> idle_running;
+					 idle_running -> schedstat_inc_rq_sched_cnt;
+					 idle_running -> dump_stack_1[color=red];
+					 schedstat_inc_rq_sched_cnt -> sched_clock;
+					 sched_clock -> disable_irq_lock;
+					 disable_irq_lock -> PF_DEAD;
+					 PF_DEAD -> deactivate_task[label="NOT TASK_RUNNINT\land not preempt in kernel mode"];
+					 deactivate_task -> set_task_running[label="not signal pend \land in TASK_INTERRUPTIBLE"];
+					 set_task_running -> dependent_sleeper[label="have processes in rq"];
+					 dependent_sleeper -> exch_active_expired[label="haven't processes in active"];
+					 dependent_sleeper -> search_process[label="have processes in active"];
+					 set_task_running -> idle_balance[label="haven't processes in rq"];
+					 idle_balance -> exch_active_expired[label="haven't processes in active"];
+					 idle_balance -> search_process[label="have processes in active"];
+					 exch_active_expired -> search_process;
+					 search_process -> add_sleeptime;
+					 add_sleeptime -> add_all_time[label="by intr or defer"];
+					 add_sleeptime -> add_fraction_time[label="by sys call"];
+					 
+					 add_all_time -> prefect;
+					 add_fraction_time -> prefect;
+					 prefect -> clear_TIF_NEED_RESCHED;
+					 clear_TIF_NEED_RESCHED -> rcq_qsctr_inc;
+					 rcq_qsctr_inc -> substract_sleeptime;
+					 substract_sleeptime -> set_timestamps;
+					 set_timestamps -> same_process;
+					 same_process -> context_switch[label="not the same"];
+					 same_process -> barrier;
+					 context_switch -> set_prev_mm;
+					 set_prev_mm -> barrier;
+					 barrier -> finish_task_switch;
+			 }
+
 }

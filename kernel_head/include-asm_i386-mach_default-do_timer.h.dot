@@ -4,6 +4,6 @@ digraph do_timer_h{
 				do_timer[label="do_timer (regs)"];
 				CONFIG_SMP[label="CONFIG_SMP"];
 				update_Process_times[label="update_Process_times (user_mode(resg))"];
-
+				
 		}
 }
