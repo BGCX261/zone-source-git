@@ -2157,3 +2157,196 @@ struct page {
 /******************************mm/page_alloc.c******************************/
 int min_free_kbytes = 1024;
 
+/******************************include/linux/gfp.h******************************/
+
+/*
+ * GFP bitmasks..
+ */
+/* Zone modifiers in GFP_ZONEMASK (see linux/mmzone.h - low two bits) */
+#define __GFP_DMA	0x01
+#define __GFP_HIGHMEM	0x02
+
+/*
+ * Action modifiers - doesn't change the zoning
+ *
+ * __GFP_REPEAT: Try hard to allocate the memory, but the allocation attempt
+ * _might_ fail.  This depends upon the particular VM implementation.
+ *
+ * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
+ * cannot handle allocation failures.
+ *
+ * __GFP_NORETRY: The VM implementation must not retry indefinitely.
+ */
+#define __GFP_WAIT	0x10u	/* Can wait and reschedule? */
+#define __GFP_HIGH	0x20u	/* Should access emergency pools? */
+#define __GFP_IO	0x40u	/* Can start physical IO? */
+#define __GFP_FS	0x80u	/* Can call down to low-level FS? */
+#define __GFP_COLD	0x100u	/* Cache-cold page required */
+#define __GFP_NOWARN	0x200u	/* Suppress page allocation failure warning */
+#define __GFP_REPEAT	0x400u	/* Retry the allocation.  Might fail */
+#define __GFP_NOFAIL	0x800u	/* Retry for ever.  Cannot fail */
+#define __GFP_NORETRY	0x1000u	/* Do not retry.  Might fail */
+#define __GFP_NO_GROW	0x2000u	/* Slab internal usage */
+#define __GFP_COMP	0x4000u	/* Add compound page metadata */
+#define __GFP_ZERO	0x8000u	/* Return zeroed page on success */
+#define __GFP_NOMEMALLOC 0x10000u /* Don't use emergency reserves */
+
+
+#define GFP_ATOMIC	(__GFP_HIGH)
+#define GFP_NOIO	(__GFP_WAIT)
+#define GFP_NOFS	(__GFP_WAIT | __GFP_IO)
+#define GFP_KERNEL	(__GFP_WAIT | __GFP_IO | __GFP_FS)
+#define GFP_USER	(__GFP_WAIT | __GFP_IO | __GFP_FS)
+#define GFP_HIGHUSER	(__GFP_WAIT | __GFP_IO | __GFP_FS | __GFP_HIGHMEM)
+
+/* Flag - indicates that the buffer will be suitable for DMA.  Ignored on some
+   platforms, used as appropriate on others */
+
+#define GFP_DMA		__GFP_DMA
+
+/******************************mm/highmem.c******************************/
+pte_t * pkmap_page_table;
+
+
+/*
+ * Hash table bucket
+ */
+static struct page_address_slot {
+	struct list_head lh;			/* List of page_address_maps */
+	spinlock_t lock;			/* Protect this bucket's list */
+} ____cacheline_aligned_in_smp page_address_htable[1<<PA_HASH_ORDER];
+
+/*
+ * Describes one page->virtual association
+ */
+struct page_address_map {
+	struct page *page;
+	void *virtual;
+	struct list_head list;
+};
+
+/******************************include/asm-i386/highmem.h******************************/
+/*
+ * Right now we initialize only a single pte table. It can be extended
+ * easily, subsequent pte tables have to be allocated in one physical
+ * chunk of RAM.
+ */
+#ifdef CONFIG_X86_PAE
+#define LAST_PKMAP 512
+#else
+#define LAST_PKMAP 1024
+#endif
+/*
+ * Ordering is:
+ *
+ * FIXADDR_TOP
+ * 			fixed_addresses
+ * FIXADDR_START
+ * 			temp fixed addresses
+ * FIXADDR_BOOT_START
+ * 			Persistent kmap area
+ * PKMAP_BASE
+ * VMALLOC_END
+ * 			Vmalloc area
+ * VMALLOC_START
+ * high_memory
+ */
+#define PKMAP_BASE ( (FIXADDR_BOOT_START - PAGE_SIZE*(LAST_PKMAP + 1)) & PMD_MASK )
+#define LAST_PKMAP_MASK (LAST_PKMAP-1)
+#define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+#define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
+
+/******************************include/asm-i386/kmap_types.h******************************/
+
+#ifdef CONFIG_DEBUG_HIGHMEM
+# define D(n) __KM_FENCE_##n ,
+#else
+# define D(n)
+#endif
+
+enum km_type {
+D(0)	KM_BOUNCE_READ,
+D(1)	KM_SKB_SUNRPC_DATA,
+D(2)	KM_SKB_DATA_SOFTIRQ,
+D(3)	KM_USER0,
+D(4)	KM_USER1,
+D(5)	KM_BIO_SRC_IRQ,
+D(6)	KM_BIO_DST_IRQ,
+D(7)	KM_PTE0,
+D(8)	KM_PTE1,
+D(9)	KM_IRQ0,
+D(10)	KM_IRQ1,
+D(11)	KM_SOFTIRQ0,
+D(12)	KM_SOFTIRQ1,
+D(13)	KM_TYPE_NR
+};
+
+/******************************include/asm-i386/fixmap.h******************************/
+
+/*
+ * Here we define all the compile-time 'special' virtual
+ * addresses. The point is to have a constant address at
+ * compile time, but to set the physical address only
+ * in the boot process. We allocate these special addresses
+ * from the end of virtual memory (0xfffff000) backwards.
+ * Also this lets us do fail-safe vmalloc(), we
+ * can guarantee that these special addresses and
+ * vmalloc()-ed addresses never overlap.
+ *
+ * these 'compile-time allocated' memory buffers are
+ * fixed-size 4k pages. (or larger if used with an increment
+ * highger than 1) use fixmap_set(idx,phys) to associate
+ * physical memory with fixmap indices.
+ *
+ * TLB entries of such buffers will not be flushed across
+ * task switches.
+ */
+enum fixed_addresses {
+	FIX_HOLE,
+	FIX_VSYSCALL,
+#ifdef CONFIG_X86_LOCAL_APIC
+	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
+#endif
+#ifdef CONFIG_X86_IO_APIC
+	FIX_IO_APIC_BASE_0,
+	FIX_IO_APIC_BASE_END = FIX_IO_APIC_BASE_0 + MAX_IO_APICS-1,
+#endif
+#ifdef CONFIG_X86_VISWS_APIC
+	FIX_CO_CPU,	/* Cobalt timer */
+	FIX_CO_APIC,	/* Cobalt APIC Redirection Table */ 
+	FIX_LI_PCIA,	/* Lithium PCI Bridge A */
+	FIX_LI_PCIB,	/* Lithium PCI Bridge B */
+#endif
+#ifdef CONFIG_X86_F00F_BUG
+	FIX_F00F_IDT,	/* Virtual mapping for IDT */
+#endif
+#ifdef CONFIG_X86_CYCLONE_TIMER
+	FIX_CYCLONE_TIMER, /*cyclone timer register*/
+#endif 
+#ifdef CONFIG_HIGHMEM
+	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
+	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
+#endif
+#ifdef CONFIG_ACPI_BOOT
+	FIX_ACPI_BEGIN,
+	FIX_ACPI_END = FIX_ACPI_BEGIN + FIX_ACPI_PAGES - 1,
+#endif
+#ifdef CONFIG_PCI_MMCONFIG
+	FIX_PCIE_MCFG,
+#endif
+	__end_of_permanent_fixed_addresses,
+	/* temporary boot-time mappings, used before ioremap() is functional */
+#define NR_FIX_BTMAPS	16
+	FIX_BTMAP_END = __end_of_permanent_fixed_addresses,
+	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS - 1,
+	FIX_WP_TEST,
+	__end_of_fixed_addresses
+};
+
+/******************************include/linux/mmzone.h******************************/
+
+struct free_area {
+	struct list_head	free_list;
+	unsigned long		nr_free;
+};
+

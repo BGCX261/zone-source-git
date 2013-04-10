@@ -1,0 +1,56 @@
+digraph highmem_c{
+		subgraph cluster_kmap{
+				label="void *kmap(struct page *page)";
+				CONFIG_HIGHMEM[label="CONFIG_HIGHMEM"];
+				might_sleep[label="might_sleep ()"];
+				PageHighMem_page[label="PageHighMem_page_null"];
+				page_address_page[label="page_address_page"];
+				kmap_high_page[label="kmap_high_page"];
+		}
+
+		subgraph cluster_kunmap{
+				label="void kunmap(struct page *page)";
+				in_interrupt[label="in_interrupt ()"];
+				PageHighMem_page_null[label="PageHighMem_page_null"];
+				return[label="return"];
+				kunmap_high_page[label="kunmap_high_page"];
+		}
+
+		subgraph cluster_kmap_atomic{
+				label="void *kmap_atomic(struct page *page, enum km_type type)";
+				inc_preempt_count[label="inc_preempt_count"];
+				PageHighMem_page_not_null[label="PageHighMem_page_not_null"];
+				return_page_address_page[label="return_page_address_page"];
+				set_idx_type_add_KM_TYPE_NR_multi_smp_processor_id[label="set_idx_type_add_KM_TYPE_NR_multi_smp_processor_id"];
+				set_vaddr___fix_to_virt_FIX_KMAP_BEGIN_idx[label="set_vaddr___fix_to_virt_FIX_KMAP_BEGIN_idx"];
+				set_pte_kmap_pte_idx_mk_pte_page_kmap_prot[label="set_pte_kmap_pte_idx_mk_pte_page_kmap_prot"];
+				__flush_tlb_one_vaddr[label="__flush_tlb_one_vaddr"];
+				return_vaddr[label="return_vaddr"];
+		}
+
+		subgraph clster_kunmap_atomice{
+				label="void kunmap_atomic(void *kvaddr, enum km_type type)";
+				CONFIG_DEBUG_HIGHMEM[label="CONFIG_DEBUG_HIGHMEM"];
+				set_vaddr_kvaddr_and_PAGE_MASK[label="set_vaddr_kvaddr_and_PAGE_MASK"];
+				set_idx_type_add_KM_TYPE_NR_multi_smp_processor_id[label="set_idx_type_add_KM_TYPE_NR_multi_smp_processor_id"];
+				vaddr_little_FIXADDR_START[label="vaddr_little_FIXADDR_START"];
+				dec_preempt_count[label="dec_preempt_count"];
+				preempt_check_resched[label="preempt_check_resched ()"];
+				return[label="return"];
+				vaddr_not_eq___fix_to_virt_FIX_KMAP_BEGIN_add_idx[label="vaddr_not_eq___fix_to_virt_FIX_KMAP_BEGIN_add_idx"];
+				pte_clear_init_mm_vaddr_kmap_pte_sub_idx[label="pte_clear_init_mm_vaddr_kmap_pte_sub_idx"];
+				__flush_tlb_one_vaddr[label="__flush_tlb_one_vaddr"];
+				dec_preempt_count[label="dec_preempt_count"];
+				preempt_check_resched[label="preempt_check_resched"];
+		}
+
+		subgraph cluster_kmap_atomic_to_page{
+				label="struct page *kmap_atomic_to_page(void *ptr)";
+				set_vaddr_ptr[label="set_vaddr_ptr"];
+				vaddr_little_FIXADDR_START[label="vaddr_little_FIXADDR_START"];
+				return_virt_to_page_ptr[label="return_virt_to_page_ptr"];
+				set_idx_virt_to_fix_vaddr[label="set_idx_virt_to_fix_vaddr"];
+				set_pte_kmap_pte_sub_idx_sub_FIX_KMAP_BEGIN[label="set_pte_kmap_pte_sub_idx_sub_FIX_KMAP_BEGIN"];
+				return_pte_page_pte[label="return_pte_page_pte"];
+		}
+}

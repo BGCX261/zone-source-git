@@ -1,0 +1,16 @@
+digraph highmem_h{
+		subgraph cluster_kmap{
+				label="static inline void *kmap(struct page *page)";
+				CONFIG_HIGHMEM[label="CONFIG_HIGHMEM"];
+				might_sleep[label="might_sleep ()"];
+				page_address_page[label="page_address_page"];
+		}
+
+		subgraph cluster_kmap_atomic{
+				label="#define kmap_atomic(page, idx)";
+				CONFIG_HIGHMEM[label="CONFIG_HIGHMEM"];
+				page_address_page[label="page_address_page"];
+		}
+
+		subgraph cluster
+}

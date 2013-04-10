@@ -5,5 +5,61 @@ digraph page_alloc_c{
                 page_address_page[label="page_address_page"];
         }
 
+		subgraph cluster_get_zeroed_page{
+				label="fastcall unsigned long get_zeroed_page(unsigned int __nocast gfp_mask)";
+				alloc_pages_gfp_mask___GFP_ZERO_0[label="alloc_pages_gfp_mask___GFP_ZERO_0"];
+				page_address[label="page_address"];
+		}
+
+		subgraph cluster__free_pages{
+				label="fastcall void __free_pages(struct page *page, unsigned int order)";
+				PageReserved_page_false_and_put_page_testzero_page[label="PageReserved_page_false_and_put_page_testzero_page"];
+				order_eq_0[label="order_eq_0"];
+				free_hot_page_page[label="free_hot_page_page"];
+				__free_pages_ok[label="__free_pages_ok (page, order)"];
+		}
+
+		subgraph cluster_free_pages{
+				label="fastcall void free_pages(unsigned long addr, unsigned int order)";
+				addr_not_null[label="addr_not_null"];
+				__free_pages_virt_to_page_addr_order[label="__free_pages_virt_to_page_addr_order"];
+		}
+
+		subgraph cluster___rmqueue{
+				label="static struct page *__rmqueue(struct zone *zone, unsigned int order)";
+				for_set_current_order_order_current_order_little_MAX_ORDER_inc_current_order[label="for_set_current_order_order_current_order_little_MAX_ORDER_inc_current_order"];
+				set_area_zone_free_area_add_current_order[label="set_area_zone_free_area_add_current_order"];
+				list_empty_area_free_list[label="list_empty_area_free_list"];
+				set_page_list_entry_area_free_list_next_struct_page_lru[label="set_page_list_entry_area_free_list_next_struct_page_lru"];
+				list_del_page_lru[label="list_del_page_lru"];
+				rmv_page_order_page[label="rmv_page_order_page"];
+				dec_area_nr_free[label="dec_area_nr_free"];
+				zone_free_pages_self_sub_1_left_move_order[label="zone_free_pages_self_sub_1_left_move_order"];
+				return_expand_zone_page_order_current_order_area[label="return_expand_zone_page_order_current_order_area"];
+				return_NULL[label="return_NULL"];
+		}
+
+		subgraph cluster___free_pages_bulk{
+				label="static inline void __free_pages_bulk (struct page *page,struct zone *zone, unsigned int order)";
+				get_order_size_1_move_left_order[label="get_order_size_1_move_left_order"];
+				order_not_null[label="order_not_null"];
+				destroy_compound_page_page_order[label="destroy_compound_page_page_order"];
+				set_page_idx[label="page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);"];
+				zone_free_page_self_add_order_size[label="zone_free_page_self_add_order_size"];
+				order_small_MAX_ORDER_sub_1[label="order_small_MAX_ORDER_sub_1"];
+				set_combined_idx___find_combined_index_page_idx_order[label="set_combined_idx___find_combined_index_page_idx_order"];
+				bad_range_zone_buddy[label="bad_range_zone_buddy"];
+				page_is_buddy_buddy_order[label="page_is_buddy_buddy_order"];
+				list_del_buddy_lru[label="list_del_buddy_lru"];
+				set_area_zone_free_area_add_order[label="set_area_zone_free_area_add_order"];
+				dec_area_nr_free[label="dec_area_nr_free"];
+				rmv_page_order_buddy[label="rmv_page_order_buddy"];
+				set_page_page_add_combined_idx_sub_page_idx[label="set_page_page_add_combined_idx_sub_page_idx"];
+				set_page_idx_combined_idx[label="set_page_idx_combined_idx"];
+				inc_order[label="inc_order"];
+				set_page_order_page_order[label="set_page_order_page_order"];
+				list_add[label="list_add(&page->lru, &zone->free_area[order].free_list);"];
+				inc_set_zone_free_area_orer_nr_free[label="inc_set_zone_free_area_orer_nr_free"];
+		}
         
 }

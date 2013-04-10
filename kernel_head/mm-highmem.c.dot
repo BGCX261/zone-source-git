@@ -1,0 +1,66 @@
+digraph highmem_c{
+		subgraph cluster_page_address{
+				label="void *page_address(struct page *page)";
+				PageHighMem_page[label="PageHighMem_page(page)"];
+				lowmem_page_address_page[label="lowmem_page_address_page"];
+				set_page_address_slot_pas_page_slot_page[label="set_page_address_slot_pas_page_slot_page"];
+				set_ret_NULL[label="set_ret_NULL"];
+				lock_pas_lock[label="lock_pas_lock"];
+				list_empty_pas_lh_not[label="list_empty_pas_lh_not"];
+				list_for_each_entry_page_address_map_pam_pas_lh_list[label="list_for_each_entry_page_address_map_pam_pas_lh_list"];
+				pam_page_eq_page[label="pam_page_eq_page"];
+				set_ret_pam_virtual[label="set_ret_pam_virtual"];
+				unlock_pas_lock[label="unlock_pas_lock"];
+				return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_kmap_high{
+				label="void fastcall *kmap_high(struct page *page)";
+				lock_kmap_lock[label="lock_kmap_lock"];
+				page_address_page[label="page_address_page"];
+				vaddr_null[label="vaddr_null"];
+				set_vaddr_map_new_virtual_page[label="set_vaddr_map_new_virtual_page"];
+				inc_pkmap_count_PKMAP_NR_vaddr[label="inc_pkmap_count_PKMAP_NR_vaddr"];
+				unlock_kmap_lock[label="unlock_kmap_lock"];
+				return_vaddr[label="return_vaddr"];
+		}
+
+		subgraph cluster_map_new_virtual{
+				label="static inline unsigned long map_new_virtual(struct page *page)";
+				set_count_LAST_PKMAP[label="set_count_LAST_PKMAP"];
+				dead_for[label="dead_for"];
+				set_last_pkmap_nr_last_pkmap_nr_add_1_and_LAST_PKMAP_MASK[label="set_last_pkmap_nr_last_pkmap_nr_add_1_and_LAST_PKMAP_MASK"];
+				last_pkmap_nr_null[label="last_pkmap_nr_null"];
+				flush_all_zero_pkmaps[label="flush_all_zero_pkmaps ()"];
+				set_count_LAST_PKMAP[label="set_count_LAST_PKMAP"];
+				pkmap_count_last_pkmap_nr_null[label="pkmap_count_last_pkmap_nr_null"];
+				dec_count_not_null[label="dec_count_not_null"];
+				DECLARE_WAITQUEUE_wait_current[label="DECLARE_WAITQUEUE_wait_current"];
+				add_wait_queue_pkmap_map_wait_wait[label="add_wait_queue_pkmap_map_wait_waite"];
+				unlock_kmap_lock[label="unlock_kmap_lock"];
+				schedule[label="schedule ()"];
+				remove_wait_queue_pkmap_map_wait_wait[label="remove_wait_queue_pkmap_map_wait_wait"];
+				lock_kmap_lock[label="lock_kmap_lock"];
+				page_address_page[label="page_address_page"];
+				return_page_address_page[label="return_page_address_page"];
+				set_vaddr_PKMAP_ADDR_last_pkmap_nr[label="set_vaddr_PKMAP_ADDR_last_pkmap_nr"];
+				set_pte_at_init_mm_vaddr_pkmap_page_table_last_pkmap_nr_mk_pte_page_kmap_prot[label="set_pte_at_init_mm_vaddr_pkmap_page_table_last_pkmap_nr_mk_pte_page_kmap_prot"];
+				set_pkmap_count_last_pkmap_nr_1[label="set_pkmap_count_last_pkmap_nr_1"];
+				set_page_address_page_vaddr[label="set_page_address_page_vaddr"];
+				return_vaddr[label="return_vaddr"];
+		}
+
+		subgraph cluster_flush_all_zero_pkmaps{
+				label="static void flush_all_zero_pkmaps(void)";
+				flush_cache_kmaps[label="flush_cache_kmaps ()"];
+				for_LAST_PKMAP[label="for_LAST_PKMAP"];
+				pkmap_count_i_not_eq_1[label="pkmap_count_i_not_eq_1"];
+				set_pkmap_count_i_0[label="set_pkmap_count_i_0"];
+				set_pte_page_pkmap_page_table_i[label="set_pte_page_pkmap_page_table_i"];
+				pte_clear_init_mm_page_address_page_pkmap_page_table_i[label="pte_clear_init_mm_page_address_page_pkmap_page_table_i"];
+				set_page_address_page_NULL[label="set_page_address_page_NULL"];
+				flush_tlb_kernel_range_PKMAP_ADDR_0_PKMAP_ADDR_LAST_PKMAP[label="flush_tlb_kernel_range_PKMAP_ADDR_0_PKMAP_ADDR_LAST_PKMAP"];
+		}
+
+		
+}

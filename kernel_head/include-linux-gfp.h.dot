@@ -31,5 +31,15 @@ digraph gfp_h{
         subgraph cluster___get_free_pages{
                 label="fastcall unsigned long __get_free_pages(unsigned int __nocast gfp_mask, unsigned int order)";
                 alloc_pages_ord
-                }
+        }
+
+		subgraph cluster___get_dma_pages{
+				label="#define __get_dma_pages(gfp_mask, order)";
+				__get_free_pages_gfp_mask_GFP_DMA_order[label="__get_free_pages_gfp_mask_GFP_DMA_order"];
+		}
+
+		subgraph cluster_free_page{
+				label="#define free_page(addr)";
+				free_pages_addr_0[label="free_pages_addr_0"];
+		}
 }
