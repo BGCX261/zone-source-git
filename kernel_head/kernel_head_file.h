@@ -1887,3 +1887,273 @@ struct timezone {
 	int	tz_minuteswest;	/* minutes west of Greenwich */
 	int	tz_dsttime;	/* type of dst correction */
 };
+
+/******************************mm/memory.c******************************/
+struct page *mem_map;
+
+/******************************include/asm-i386/page.h******************************/
+#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+
+#define pfn_to_page(pfn)	(mem_map + (pfn))
+
+/******************************include/asm-i386/mmzone.h******************************/
+#define pfn_to_page(pfn)						\
+({									\
+	unsigned long __pfn = pfn;					\
+	int __node  = pfn_to_nid(__pfn);				\
+	&node_mem_map(__node)[node_localnr(__pfn,__node)];		\
+})
+
+typedef struct pglist_data {
+	struct zone node_zones[MAX_NR_ZONES];
+	struct zonelist node_zonelists[GFP_ZONETYPES];
+	int nr_zones;
+	struct page *node_mem_map;
+	struct bootmem_data *bdata;
+	unsigned long node_start_pfn;
+	unsigned long node_present_pages; /* total number of physical pages */
+	unsigned long node_spanned_pages; /* total size of physical page
+					     range, including holes */
+	int node_id;
+	struct pglist_data *pgdat_next;
+	wait_queue_head_t kswapd_wait;
+	struct task_struct *kswapd;
+	int kswapd_max_order;
+} pg_data_t;
+
+/*
+ * On machines where it is needed (eg PCs) we divide physical memory
+ * into multiple physical zones. On a PC we have 3 zones:
+ *
+ * ZONE_DMA	  < 16 MB	ISA DMA capable memory
+ * ZONE_NORMAL	16-896 MB	direct mapped by the kernel
+ * ZONE_HIGHMEM	 > 896 MB	only page cache and user processes
+ */
+
+struct zone {
+	/* Fields commonly accessed by the page allocator */
+	unsigned long		free_pages;
+	unsigned long		pages_min, pages_low, pages_high;
+	/*
+	 * We don't know if the memory that we're going to allocate will be freeable
+	 * or/and it will be released eventually, so to avoid totally wasting several
+	 * GB of ram we must reserve some of the lower zone memory (otherwise we risk
+	 * to run OOM on the lower zones despite there's tons of freeable ram
+	 * on the higher zones). This array is recalculated at runtime if the
+	 * sysctl_lowmem_reserve_ratio sysctl changes.
+	 */
+	unsigned long		lowmem_reserve[MAX_NR_ZONES];
+
+	struct per_cpu_pageset	pageset[NR_CPUS];
+
+	/*
+	 * free areas of different sizes
+	 */
+	spinlock_t		lock;
+	struct free_area	free_area[MAX_ORDER];
+
+
+	ZONE_PADDING(_pad1_)
+
+	/* Fields commonly accessed by the page reclaim scanner */
+	spinlock_t		lru_lock;	
+	struct list_head	active_list;
+	struct list_head	inactive_list;
+	unsigned long		nr_scan_active;
+	unsigned long		nr_scan_inactive;
+	unsigned long		nr_active;
+	unsigned long		nr_inactive;
+	unsigned long		pages_scanned;	   /* since last reclaim */
+	int			all_unreclaimable; /* All pages pinned */
+
+	/*
+	 * prev_priority holds the scanning priority for this zone.  It is
+	 * defined as the scanning priority at which we achieved our reclaim
+	 * target at the previous try_to_free_pages() or balance_pgdat()
+	 * invokation.
+	 *
+	 * We use prev_priority as a measure of how much stress page reclaim is
+	 * under - it drives the swappiness decision: whether to unmap mapped
+	 * pages.
+	 *
+	 * temp_priority is used to remember the scanning priority at which
+	 * this zone was successfully refilled to free_pages == pages_high.
+	 *
+	 * Access to both these fields is quite racy even on uniprocessor.  But
+	 * it is expected to average out OK.
+	 */
+	int temp_priority;
+	int prev_priority;
+
+
+	ZONE_PADDING(_pad2_)
+	/* Rarely used or read-mostly fields */
+
+	/*
+	 * wait_table		-- the array holding the hash table
+	 * wait_table_size	-- the size of the hash table array
+	 * wait_table_bits	-- wait_table_size == (1 << wait_table_bits)
+	 *
+	 * The purpose of all these is to keep track of the people
+	 * waiting for a page to become available and make them
+	 * runnable again when possible. The trouble is that this
+	 * consumes a lot of space, especially when so few things
+	 * wait on pages at a given time. So instead of using
+	 * per-page waitqueues, we use a waitqueue hash table.
+	 *
+	 * The bucket discipline is to sleep on the same queue when
+	 * colliding and wake all in that wait queue when removing.
+	 * When something wakes, it must check to be sure its page is
+	 * truly available, a la thundering herd. The cost of a
+	 * collision is great, but given the expected load of the
+	 * table, they should be so rare as to be outweighed by the
+	 * benefits from the saved space.
+	 *
+	 * __wait_on_page_locked() and unlock_page() in mm/filemap.c, are the
+	 * primary users of these fields, and in mm/page_alloc.c
+	 * free_area_init_core() performs the initialization of them.
+	 */
+	wait_queue_head_t	* wait_table;
+	unsigned long		wait_table_size;
+	unsigned long		wait_table_bits;
+
+	/*
+	 * Discontig memory support fields.
+	 */
+	struct pglist_data	*zone_pgdat;
+	struct page		*zone_mem_map;
+	/* zone_start_pfn == zone_start_paddr >> PAGE_SHIFT */
+	unsigned long		zone_start_pfn;
+
+	unsigned long		spanned_pages;	/* total size, including holes */
+	unsigned long		present_pages;	/* amount of memory (excluding holes) */
+
+	/*
+	 * rarely used fields:
+	 */
+	char			*name;
+} ____cacheline_maxaligned_in_smp;
+
+
+/******************************include/linux/mm.h******************************/
+
+/*
+ * Each physical page in the system has a struct page associated with
+ * it to keep track of whatever it is we are using the page for at the
+ * moment. Note that we have no way to track which tasks are using
+ * a page.
+ */
+struct page {
+	page_flags_t flags;		/* Atomic flags, some possibly
+					 * updated asynchronously */
+	atomic_t _count;		/* Usage count, see below. */
+	atomic_t _mapcount;		/* Count of ptes mapped in mms,
+					 * to show when page is mapped
+					 * & limit reverse map searches.
+					 */
+	unsigned long private;		/* Mapping-private opaque data:
+					 * usually used for buffer_heads
+					 * if PagePrivate set; used for
+					 * swp_entry_t if PageSwapCache
+					 * When page is free, this indicates
+					 * order in the buddy system.
+					 */
+	struct address_space *mapping;	/* If low bit clear, points to
+					 * inode address_space, or NULL.
+					 * If page mapped as anonymous
+					 * memory, low bit is set, and
+					 * it points to anon_vma object:
+					 * see PAGE_MAPPING_ANON below.
+					 */
+	pgoff_t index;			/* Our offset within mapping. */
+	struct list_head lru;		/* Pageout list, eg. active_list
+					 * protected by zone->lru_lock !
+					 */
+	/*
+	 * On machines where all RAM is mapped into kernel address space,
+	 * we can simply calculate the virtual address. On machines with
+	 * highmem some memory is mapped into kernel virtual memory
+	 * dynamically, so we need a place to store that address.
+	 * Note that this field could be 16 bits on x86 ... ;)
+	 *
+	 * Architectures with slow multiplication can define
+	 * WANT_PAGE_VIRTUAL in asm/page.h
+	 */
+#if defined(WANT_PAGE_VIRTUAL)
+	void *virtual;			/* Kernel virtual address (NULL if
+					   not kmapped, ie. highmem) */
+#endif /* WANT_PAGE_VIRTUAL */
+};
+
+/******************************include/linux/page-flags.h******************************/
+/*
+ * Various page->flags bits:
+ *
+ * PG_reserved is set for special pages, which can never be swapped out. Some
+ * of them might not even exist (eg empty_bad_page)...
+ *
+ * The PG_private bitflag is set if page->private contains a valid value.
+ *
+ * During disk I/O, PG_locked is used. This bit is set before I/O and
+ * reset when I/O completes. page_waitqueue(page) is a wait queue of all tasks
+ * waiting for the I/O on this page to complete.
+ *
+ * PG_uptodate tells whether the page's contents is valid.  When a read
+ * completes, the page becomes uptodate, unless a disk I/O error happened.
+ *
+ * For choosing which pages to swap out, inode pages carry a PG_referenced bit,
+ * which is set any time the system accesses that page through the (mapping,
+ * index) hash table.  This referenced bit, together with the referenced bit
+ * in the page tables, is used to manipulate page->age and move the page across
+ * the active, inactive_dirty and inactive_clean lists.
+ *
+ * Note that the referenced bit, the page->lru list_head and the active,
+ * inactive_dirty and inactive_clean lists are protected by the
+ * zone->lru_lock, and *NOT* by the usual PG_locked bit!
+ *
+ * PG_error is set to indicate that an I/O error occurred on this page.
+ *
+ * PG_arch_1 is an architecture specific page state bit.  The generic code
+ * guarantees that this bit is cleared for a page when it first is entered into
+ * the page cache.
+ *
+ * PG_highmem pages are not permanently mapped into the kernel virtual address
+ * space, they need to be kmapped separately for doing IO on the pages.  The
+ * struct page (these bits with information) are always mapped into kernel
+ * address space...
+ */
+
+/*
+ * Don't use the *_dontuse flags.  Use the macros.  Otherwise you'll break
+ * locked- and dirty-page accounting.  The top eight bits of page->flags are
+ * used for page->zone, so putting flag bits there doesn't work.
+ */
+#define PG_locked	 	 0	/* Page is locked. Don't touch. */
+#define PG_error		 1
+#define PG_referenced		 2
+#define PG_uptodate		 3
+
+#define PG_dirty	 	 4
+#define PG_lru			 5
+#define PG_active		 6
+#define PG_slab			 7	/* slab debug (Suparna wants this) */
+
+#define PG_highmem		 8
+#define PG_checked		 9	/* kill me in 2.5.<early>. */
+#define PG_arch_1		10
+#define PG_reserved		11
+
+#define PG_private		12	/* Has something at ->private */
+#define PG_writeback		13	/* Page is under writeback */
+#define PG_nosave		14	/* Used for system suspend/resume */
+#define PG_compound		15	/* Part of a compound page */
+
+#define PG_swapcache		16	/* Swap page: swp_entry_t in private */
+#define PG_mappedtodisk		17	/* Has blocks allocated on-disk */
+#define PG_reclaim		18	/* To be reclaimed asap */
+#define PG_nosave_free		19	/* Free, should not be written */
+#define PG_uncached		20	/* Page has been mapped as uncached */
+
+/******************************mm/page_alloc.c******************************/
+int min_free_kbytes = 1024;
+
