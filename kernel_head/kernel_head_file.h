@@ -2491,3 +2491,28 @@ static kmem_cache_t cache_cache = {
 	.reallen	= sizeof(kmem_cache_t),
 #endif
 };
+
+
+/*
+ * struct array_cache
+ *
+ * Per cpu structures
+ * Purpose:
+ * - LIFO ordering, to hand out cache-warm objects from _alloc
+ * - reduce the number of linked list operations
+ * - reduce spinlock operations
+ *
+ * The limit is stored in the per-cpu structure to reduce the data cache
+ * footprint.
+ *
+ */
+struct array_cache {
+	unsigned int avail;
+	unsigned int limit;
+	unsigned int batchcount;
+	unsigned int touched;
+};
+
+/******************************include/asm-i386/types.h******************************/
+typedef unsigned int kmem_bufctl_t;
+

@@ -171,4 +171,162 @@ digraph slab_c{
 				cachep_null_and_flags_SLAB_PANIC_set[label="cachep_null_and_flags_SLAB_PANIC_set"];
 				return_cachep[label="return_cachep"];
 		}
+
+		subgraph cluster_kmem_cache_destroy{
+				label="int kmem_cache_destroy(kmem_cache_t * cachep)";
+				cachep_null_or_in_interrupt[label="cachep_null_or_in_interrupt"];
+				lock_cpu_hotplug[label="lock_cpu_hotplug"];
+				donw_cache_chain_sem[label="donw_cache_chain_sem"];
+				list_del_cachep_next[label="list_del_cachep_next"];
+				up_cache_chain_sem[label="up_cache_chain_sem"];
+				__cache_shrink_cachep[label="__cache_shrink_cachep"];
+				donw_cache_chain_sem[label="donw_cache_chain_sem"];
+				list_add_cachep_next_cache_chain[label="list_add_cachep_next_cache_chain"];
+				up_cache_chain_sem[label="up_cache_chain_sem"];
+				unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+				return_1[label="return_1"];
+				cachep_flags_SLAB_DESTROY_BY_RCU_set[label="cachep_flags_SLAB_DESTROY_BY_RCU_set"];
+				synchronize_rcu[label="synchronize_rcu"];
+				for_NR_CPUS[label="for_NR_CPUS"];
+				kfree_cachep_array_i[label="kfree_cachep_array_i"];
+				kfree_cachep_lists_chared[label="kfree_cachep_lists_chared"];
+				clear_cachep_lists_chared[label="clear_cachep_lists_chared"];
+				kmem_cache_free_cache_cache_cachep[label="kmem_cache_free_cache_cache_cachep"];
+				unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+		}
+
+		subgraph cluster_cache_grow{
+				label="static int cache_grow(kmem_cache_t *cachep, unsigned int __nocast flags, int nodeid)";
+				flags_rever_SLAB_DMA_or_SLAB_LEVEL_MASK_or_SLAB_NO_GROW_set[label="flags_rever_SLAB_DMA_or_SLAB_LEVEL_MASK_or_SLAB_NO_GROW_set"];
+				BUG[label="BUG"];
+				flags_SLAB_NO_GROW_set[label="flags_SLAB_NO_GROW_set"];
+				return_0[label="return_0"];
+				set_ctor_flags_SLAB_CTOR_CONSTRUCTOR[label="set_ctor_flags_SLAB_CTOR_CONSTRUCTOR"];
+				set_local_flags[label="local_flags = (flags & SLAB_LEVEL_MASK);"];
+				local_flags___GFP_WAIT_clear[label="local_flags___GFP_WAIT_clear"];
+				set_ctor_flags_SLAB_CTOR_ATOMIC[label="set_ctor_flags_SLAB_CTOR_ATOMIC"];
+				check_irq_off[label="check_irq_off"];
+				lock_cachep_spinlock[label="lock_cachep_spinlock"];
+				set_offset_cachep_colour_next[label="set_offset_cachep_colour_next"];
+				inc_cachep_colour_next[label="inc_cachep_colour_next"];
+				cachep_colour_next_not_small_cachep_colour[label="cachep_colour_next_not_small_cachep_colour"];
+				clear_cachep_colour_next[label="clear_cachep_colour_next"];
+				offset_self_multi_cachep_colour_off[label="offset_self_multi_cachep_colour_off"];
+				unlock_cachep_spinlock[label="unlock_cachep_spinlock"];
+				local_flags___GFP_WAIT_set[label="local_flags___GFP_WAIT_set"];
+				local_irq_enable[label="local_irq_enable"];
+				kmem_flagchech_cachep_flags[label="kmem_flagchech_cachep_flags"];
+				set_objp_kmem_getpages_cachep_flags_nodeid[label="set_objp_kmem_getpages_cachep_flags_nodeid"];
+				objp_null[label="objp_null"];
+				set_slabp_alloc_slabmgmt_cachep_objp_offset_local_flags[label="set_slabp_alloc_slabmgmt_cachep_objp_offset_local_flags"];
+				set_slab_attr_cachep_slabp_objp[label="set_slab_attr_cachep_slabp_objp"];
+				cache_init_objs_cachep_slabp_ctor_flags[label="cache_init_objs_cachep_slabp_ctor_flags"];
+				local_flags___GFP_WAIT_set[label="local_flags___GFP_WAIT_set"];
+				local_irq_disable[label="local_irq_disable"];
+				check_irq_off[label="check_irq_off"];
+				spin_lock_cachep_spinlock[label="spin_lock_cachep_spinlock"];
+				list_add_tail[label="list_add_tail(&slabp->list, &(list3_data(cachep)->slabs_free));"];
+				STATS_INC_GROWN_cachep[label="STATS_INC_GROWN_cachep"];
+				list3_data_cachep_free_objects_self_add_cachep_num[label="list3_data_cachep_free_objects_self_add_cachep_num"];
+				unlock_cachep_spinlock[label="unlock_cachep_spinlock"];
+				return_1[label="return_1"];
+				kmem_freepages_cachep_objp[label="kmem_freepages_cachep_objp"];
+				local_flags___GFP_WAIT_set[label="local_flags___GFP_WAIT_set"];
+				local_irq_disable[label="local_irq_disable"];
+				return_0[label="return_0"];
+		}
+
+		subgraph cluster_kmem_getpages{
+				label="static void *kmem_getpages(kmem_cache_t *cachep, unsigned int __nocast flags, int nodeid)";
+				set_flags_cachep_gfpflags[label="set_flags_cachep_gfpflags"];
+				nodeid_eq_neg_1[label="nodeid_eq_neg_1"];
+				set_page_alloc_pages_flags_cachep_gfporder[label="set_page_alloc_pages_flags_cachep_gfporder"];
+				set_page_alloc_pages_node_nodeid_flags_cachep_gfporder[label="set_page_alloc_pages_node_nodeid_flags_cachep_gfporder"];
+				page_null[label="page_null"];
+				return_NULL[label="return_NULL"];
+				set_addr_page_address_page[label="set_addr_page_address_page"];
+				set_i_1_move_left_cachep_gfporder[label="set_i_1_move_left_cachep_gfporder"];
+				cachep_flags_SLAB_RECLAIM_ACCOUNT_set[label="cachep_flags_SLAB_RECLAIM_ACCOUNT_set"];
+				atomic_add_i_slab_reclaim_pages[label="atomic_add_i_slab_reclaim_pages"];
+				add_page_state_nr_slab_i[label="add_page_state_nr_slab_i"];
+				dec_i[label="dec_i"];
+				SetPageSlab_page[label="SetPageSlab_page"];
+				inc_page[label="inc_page"];
+				return_addr[label="return_addr"];
+		}
+
+		subgraph cluster_kmem_freepages{
+				label="static void kmem_freepages(kmem_cache_t *cachep, void *addr)";
+				set_i_1_move_left_cachep_gfporder[label="set_i_1_move_left_cachep_gfporder"];
+				set_page_virt_to_page_addr[label="set_page_virt_to_page_addr"];
+				dec_i[label="dec_i"];
+				TestClearPageSlab_page_false[label="TestClearPageSlab_page"];
+				BUG[label="BUG"];
+				inc_page[label="inc_page"];
+				sub_page_state_nr_slab_nr_freed[label="sub_page_state_nr_slab_nr_freed"];
+				current_reclaim_state[label="current_reclaim_state"];
+				current_reclaim_state_reclaimed_slab_self_add_nr_freed[label="current_reclaim_state_reclaimed_slab_self_add_nr_freed"];
+				free_pages_addr_cachep_gfporder[label="free_pages_addr_cachep_gfporder"];
+				cachep_flags_SLAB_RECLAIM_ACCOUNT_set[label="cachep_flags_SLAB_RECLAIM_ACCOUNT_set"];
+				atomic_sub_1_move_left_cachep_gfporder_slab_reclaim_pages[label="atomic_sub_1_move_left_cachep_gfporder_slab_reclaim_pages"];
+		}
+
+		subgraph cluster_alloc_slabmgmt{
+				label="static struct slab* alloc_slabmgmt(kmem_cache_t *cachep,void *objp, int colour_off, unsigned int __nocast local_flags)";
+				OFF_SLAB_cachep[label="OFF_SLAB_cachep"];
+				set_slabp_kmem_cache_alloc_cachep_slabp_cache_local_flags[label="set_slabp_kmem_cache_alloc_cachep_slabp_cache_local_flags"];
+				slabp_null[label="slabp_null"];
+				return_NULL[label="return_NULL"];
+				set_slabp_objp_add_colour_off[label="set_slabp_objp_add_colour_off"];
+				colour_off_self_add_cachep_slab_size[label="colour_off_self_add_cachep_slab_size"];
+				clear_slabp_inuse[label="clear_slabp_inuse"];
+				set_slabp_colouroff_colour_off[label="set_slabp_colouroff_colour_off"];
+				set_slabp_s_mem_objp_add_colour_off[label="set_slabp_s_mem_objp_add_colour_off"];
+				return_slabp[label="return_slabp"];
+		}
+
+		subgraph cluster_cache_init_objs{
+				label="static void cache_init_objs(kmem_cache_t *cachep,struct slab *slabp, unsigned long ctor_flags)";
+				for_cachep_num[label="for_cachep_num"];
+				set_slabp_s_mem_add_cachep_objsize_multi_i[label="set_slabp_s_mem_add_cachep_objsize_multi_i"];
+				cachep_ctor_not_null[label="cachep_ctor_not_null"];
+				cachep_ctor_objp_cachep_ctor_flags[label="cachep_ctor_objp_cachep_ctor_flags"];
+				set_slab_bufctl[label="slab_bufctl(slabp)[i] = i+1;"];
+				set_bufctl_i_sub_1[label="slab_bufctl(slabp)[i-1] = BUFCTL_END;"];
+				set_slabp_free_0[label="set_slabp_free_0"];
+		}
+
+		subgraph cluster_slab_destroy{
+			label="static void slab_destroy (kmem_cache_t *cachep, struct slab *slabp)";
+			set_addr_slabp_s_mem_sub_slabp_colouroff[label="set_addr_slabp_s_mem_sub_slabp_colouroff"];
+			cachep_flags_SLAB_DESTROY_BY_RCU[label="cachep_flags_SLAB_DESTROY_BY_RCU"];
+			set_slab_rcu_slabp[label="set_slab_rcu_slabp"];
+			slab_rcu_cachep_cachep[label="slab_rcu_cachep_cachep"];
+			set_slab_rcu_addr_addr[label="set_slab_rcu_addr_addr"];
+			call_rcu_slab_rcu_head_kmem_rcu_free[label="call_rcu_slab_rcu_head_kmem_rcu_free"];
+			keme_freepages_cachep_addr[label="keme_freepages_cachep_addr"];
+			OFF_SLAB_cachep[label="OFF_SLAB_cachep"];
+			kmem_cache_free_cachep_slabp_cache_slabp[label="kmem_cache_free_cachep_slabp_cache_slabp"];
+		}
+
+		subgraph cluster_kmem_cache_alloc{
+			label="void *kmem_cache_alloc(kmem_cache_t *cachep, unsigned int __nocast flags)";
+			__cache_alloc_cachep_flags[label="__cache_alloc_cachep_flags"];
+		}
+
+		subgraph cluster___cache_alloc{
+			label="static inline void *__cache_alloc(kmem_cache_t *cachep, unsigned int __nocast flags)";
+			cache_alloc_debugcheck_before_cachep_flags[label="cache_alloc_debugcheck_before_cachep_flags"];
+			local_irq_save[label="local_irq_save"];
+			set_ac_ac_data_cachep[label="set_ac_ac_data_cachep"];
+			ac_avail[label="ac_avail"];
+			STATS_INC_ALLOCHIT[label="STATS_INC_ALLOCHIT"];
+			set_ac_touched_1[label="set_ac_touched_1"];
+			set_objp_ac_entry[label="objp = ac_entry(ac)[--ac->avail];"];
+			STATS_INC_ALLOCMISS_cachep[label="STATS_INC_ALLOCMISS_cachep"];
+			set_objp_cache_alloc_refill_cachep_flags[label="set_objp_cache_alloc_refill_cachep_flags"];
+			local_irq_restore[label="local_irq_restore"];
+			set_objp_cache_alloc_debugcheck_after[label="objp = cache_alloc_debugcheck_after(cachep, flags, objp, __builtin_return_address(0));"];
+			return_objp[label="return_objp"];
+		}
 }
