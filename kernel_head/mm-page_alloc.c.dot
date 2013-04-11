@@ -184,28 +184,28 @@ digraph page_alloc_c{
                 return_page[label="return_page"];
         }
 
-		subgraph cluster___free_pages{
-				label="fastcall void __free_pages(struct page *page, unsigned int order)";
-				PageReserved_page_false_and_put_page_testzero_page_true[label="PageReserved_page_false_and_put_page_testzero_page_true"];
-				order_eq_0[label="order_eq_0"];
-				__free_pages_ok_page_order[label="__free_pages_ok_page_order"];
-		}
+	subgraph cluster___free_pages{
+		label="fastcall void __free_pages(struct page *page, unsigned int order)";
+		PageReserved_page_false_and_put_page_testzero_page_true[label="PageReserved_page_false_and_put_page_testzero_page_true"];
+		order_eq_0[label="order_eq_0"];
+		__free_pages_ok_page_order[label="__free_pages_ok_page_order"];
+	}
 
-		subgraph clustet___free_pages_ok{
-				label="void __free_pages_ok(struct page *page, unsigned int order)";
-				LIST_HEAD_list[label="LIST_HEAD_list"];
-				arch_free_page_page_order[label="arch_free_page_page_order"];
-				mod_page_state[label="mod_page_state(pgfree, 1 << order);"];
-				CONFIG_MMU[label="CONFIG_MMU"];
-				order_great_0[label="order_great_0"];
-				for_order[label="for (i = 1 ; i < (1 << order) ; ++i)"];
-				__put_page_page_add_i[label="__put_page_page_add_i"];
-				for_order_1[label="for (i = 1 ; i < (1 << order) ; ++i)"];
-				free_page_check___FUNCTION___page_add_i[label="free_page_check___FUNCTION___page_add_i"];
-				list_add_page_lru_list[label="list_add_page_lru_list"];
-				kernel_map_page[label="kernel_map_pages(page, 1<<order, 0);"];
-				free_pages_bulk[label="free_pages_bulk(page_zone(page), 1, &list, order);"];
-		}
+	subgraph clustet___free_pages_ok{
+		label="void __free_pages_ok(struct page *page, unsigned int order)";
+		LIST_HEAD_list[label="LIST_HEAD_list"];
+		arch_free_page_page_order[label="arch_free_page_page_order"];
+		mod_page_state[label="mod_page_state(pgfree, 1 << order);"];
+		CONFIG_MMU[label="CONFIG_MMU"];
+		order_great_0[label="order_great_0"];
+		for_order[label="for (i = 1 ; i < (1 << order) ; ++i)"];
+		__put_page_page_add_i[label="__put_page_page_add_i"];
+		for_order_1[label="for (i = 1 ; i < (1 << order) ; ++i)"];
+		free_page_check___FUNCTION___page_add_i[label="free_page_check___FUNCTION___page_add_i"];
+		list_add_page_lru_list[label="list_add_page_lru_list"];
+		kernel_map_page[label="kernel_map_pages(page, 1<<order, 0);"];
+		free_pages_bulk[label="free_pages_bulk(page_zone(page), 1, &list, order);"];
+	}
 
-		
+	
 }
