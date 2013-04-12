@@ -1,0 +1,158 @@
+digraph vmalloc_c{
+	subgraph cluster_vmalloc{
+		label="void *vmalloc(unsigned long size)";
+		__vmalloc_size_GFP_KERNEL_or___GFP_HIGHMEM_PAGE_KERNEL[label="__vmalloc_size_GFP_KERNEL_or___GFP_HIGHMEM_PAGE_KERNEL"];
+	}
+
+	subgraph cluster___vmalloc{
+		label="void *__vmalloc(unsigned long size, unsigned int __nocast gfp_mask, pgprot_t prot)";
+		set_size_PAGE_ALIGN[label="set_size_PAGE_ALIGN"];
+		size_null_or_size_move_right_PAGE-SHIFT_great_num_physpages[label="size_null_or_size_move_right_PAGE-SHIFT_great_num_physpages"];
+		set_area_get_vm_are_size_VM_ALLOC[label="set_area_get_vm_are_size_VM_ALLOC"];
+		__vmalloc_area_area_gfp_mask_prot[label="__vmalloc_area_area_gfp_mask_prot"];
+	}
+
+	subgrapch cluster___vmalloc_area{
+		label="void *__vmalloc_area(struct vm_struct *area, unsigned int __nocast gfp_mask, pgprot_t prot)";
+		set_nr_pages_area_size_sub_PAGE_SIZE_move_right_PAGE_SHIFT[label="set_nr_pages_area_size_sub_PAGE_SIZE_move_right_PAGE_SHIFT"];
+		set_array_size_nr_pages_multi_sizeof_struct_page[label="set_array_size_nr_pages_multi_sizeof_struct_page"];
+		area_nr_pages_nr_pages[label="area_nr_pages_nr_pages"];
+		array_size_great_PAGE_SIZE[label="array_size_great_PAGE_SIZE"];
+		set_pages___vmalloc_array_size_gfp_mask_PAGE_KERNEL[label="set_pages___vmalloc_array_size_gfp_mask_PAGE_KERNEL"];
+		set_pages_kmalloc_array_size_gfp_mask_clear___GFP_HIGHMEM[label="set_pages_kmalloc_array_size_gfp_mask_clear___GFP_HIGHMEM"];
+		set_area_pages_pages[label="set_area_pages_pages"];
+		area_pages_null[label="area_pages_null"];
+		remove_vm_area_area_addr[label="remove_vm_area_area_addr"];
+		kfree_area[label="kfree_area"];
+		return_NULL[label="return_NULL"];
+		memset_area_pages_0[label="memset_area_pages_0"];
+		for_area_nr_pages[label="for_area_nr_pages"];
+		set_area_pages_i_alloc_page_gfp_mask[label="set_area_pages_i_alloc_page_gfp_mask"];
+		area_pages_i_null[label="area_pages_i_null"];
+		set_area_nr_pages_i[label="set_area_nr_pages_i"];
+		map_vm_area_area_prot_pages[label="map_vm_area_area_prot_pages"];
+		return_area_addr[label="return_area_addr"];
+		vfree_area_addr[label="vfree_area_addr"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_get_vm_area{
+		label="struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)";
+
+		__get_vm_area_size_flags_VMALLOC_START_VMALLOC_END[label="__get_vm_area_size_flags_VMALLOC_START_VMALLOC_END"];
+	}
+
+	subgraph cluster___get_vm_area{
+		label="struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,unsigned long start, unsigned long end)";
+		flags_VM_IOREMAP_set[label="flags_VM_IOREMAP_set"];
+		set_bit_fls_size[label="set_bit_fls_size"];
+		bit_great_IOREMAP_MAX_ORDER[label="bit_great_IOREMAP_MAX_ORDER"];
+		set_bit_greate_IOREMAP_MAX_ORDER[label="set_bit_greate_IOREMAP_MAX_ORDER"];
+		bit_small_PAGE_SHIFT[label="bit_small_PAGE_SHIFT"];
+		set_align_1_move_left_bit[label="set_align_1_move_left_bit"];
+		set_addr_ALIGH_start_align[label="set_addr_ALIGH_start_align"];
+		set_size_PAGE_AIGN_size[label="set_size_PAGE_AIGN_size"];
+		set_area_kmalloc_sizeof_area_GFP_KERNEL[label="set_area_kmalloc_sizeof_area_GFP_KERNEL"];
+		size_sefl_add_PAGE_SIZE[label="size_sefl_add_PAGE_SIZE"];
+		write_lock_vmlist_lock[label="write_lock_vmlist_lock"];
+		for_vmlist[label="for (p = &vmlist; (tmp = *p) != NULL ;p = &tmp->next)"];
+		tmp_addr_small_addr[label="tmp_addr_small_addr"];
+		tmp_addr_add_tmp_size_not_small_addr[label="tmp_addr_add_tmp_size_not_small_addr"];
+		set_addr_ALIGH_tmp_size_add_tmp_addr_align[label="set_addr_ALIGH_tmp_size_add_tmp_addr_align"];
+		size_add_addr_small_addr[label="size_add_addr_small_addr"];
+		size_add_addr_not_great_tmp_addr[label="size_add_addr_not_great_tmp_addr"];
+		set_addr_ALIGN_tmp_size_add_tmp_addr_align[label="set_addr_ALIGN_tmp_size_add_tmp_addr_align"];
+		set_area_next_p[label="set_area_next_p"];
+		set_p_area[label="set_p_area"];
+		set_area_flags_flags[label="set_flags_flags"];
+		set_area_size_size[label="set_area_size_size"];
+		set_area_page_NULL[label="set_area_page_NULL"];
+		set_area_nr_pages_0[label="set_area_nr_pages_0"];
+		set_area_phys_addr_0[label="set_area_phys_addr_0"];
+		write_unlock_vmlist_lock[label="write_unlock_vmlist_lock"];
+		return_area[label="return_area"];
+		write_unlock_vmlist_lock[label="write_unlock_vmlist_lock"];
+		kfree_area[label="kfree_area"];
+		printk_ratelimit[label="printk_ratelimit"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_map_vm_area{
+		label="int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page ***pages)";
+
+		set_addr_area_addr[label="set_addr_area_addr"];
+		set_end_addr_add_area_size_PAGE_SIZE[label="set_end_addr_add_area_size_PAGE_SIZE"];
+		lock_init_mm_page_table_lock[label="lock_init_mm_page_table_lock"];
+		set_pgd_pgd_offset_k_addr[label="set_pgd_pgd_offset_k_addr"];
+		set_next_pgd_addr_end_addr_end[label="set_next_pgd_addr_end_addr_end"];
+		set_err_vmap_pud_rang_pgd_addr_next_prot_pages[label="set_err_vmap_pud_rang_pgd_addr_next_prot_pages"];
+		err_not_null[label="err_not_null"];
+		inc_pgd_set_addr_next_addr_not_eq_end[label="inc_pgd_set_addr_next_addr_not_eq_end"];
+		unlock_init_mm_page_table_lock[label="unlock_init_mm_page_table_lock"];
+		flush_cache_vmap_area_addr_end[label="flush_cache_vmap_area_addr_end"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_vmalloc_32{
+		label="void *vmalloc_32(unsigned long size)";
+		__vmalloc_size_GFP_KERNEL_PAGE_KERNEL[label="__vmalloc_size_GFP_KERNEL_PAGE_KERNEL"];
+	}
+
+	subgraph cluster_vfree{
+		label="void vfree(void *addr)";
+		__vunmap_addr_1[label="__vunmap_addr_1"];
+	}
+
+	subgraph cluster___vunmap{
+		label="void __vunmap(void *addr, int deallocate_pages)";
+		set_area_remove_vm_area_addr[label="set_area_remove_vm_area_addr"];
+		deallocate_pages[label="deallocate_pages"];
+		for_area_nr_pages[label="for_area_nr_pages"];
+		__free_page_area_pages_i[label="__free_page_area_pages_i"];
+		area_nr_pages_great_PAGE_SIZE_div_sizeof_page[label="area_nr_pages_great_PAGE_SIZE_div_sizeof_page"];
+		vfree_area_pages[label="vfree_area_pages"];
+		kfree_area_pages[label="kfree_area_pages"];
+		kfree_area[label="kfree_area"];
+	}
+
+	subgraph cluster_remove_vm_area{
+		label="struct vm_struct *remove_vm_area(void *addr)";
+		write_lock_vmlist_lock[label="write_lock_vmlist_lock"];
+		set_v_remove_vm_area_addr[label="set_v_remove_vm_area_addr"];
+		write_unlock_vmlist_lock[label="write_unlock_vmlist_lock"];
+		return_v[label="return_v"];
+	}
+
+	subgraph cluster___remove_vm_area{
+		label="struct vm_struct *__remove_vm_area(void *addr)";
+		for_vmlist[label="for (p = &vmlist ; (tmp = *p) != NULL ;p = &tmp->next)"];
+		tmp_addr_eq_addr[label="tmp_addr_eq_addr"];
+		return_NULL[label="return_NULL"];
+		unmap_vm_area_tmp[label="unmap_vm_area_tmp"];
+		set_p_tmp_next[label="set_p_tmp_next"];
+		tmp_size_self_sub_PAGE_SIZE[label="tmp_size_self_sub_PAGE_SIZE"];
+		return_tmp[label="return_tmp"];
+	}
+
+	subgraph cluster_unmap_vm_area{
+		label="void unmap_vm_area(struct vm_struct *area)";
+		set_addr_area_addr[label="set_addr_area_addr"];
+		set_end_addr_area_size[label="set_end_addr_area_size"];
+		set_pgd_pgd_offset_k_addr[label="set_pgd_pgd_offset_k_addr"];
+		flush_cache_vunmap_addr_end[label="flush_cache_vunmap_addr_end"];
+		set_next_pgd_addr_end_addr_end[label="set_next_pgd_addr_end_addr_end"];
+		pgd_none_or_clear_bad_pgd[label="pgd_none_or_clear_bad_pgd"];
+		vunmap_pud_range_pgd_addr_next[label="vunmap_pud_range_pgd_addr_next"];
+		inc_pgd_set_addr_next_addr_not_eq_end[label="inc_pgd_set_addr_next_addr_not_eq_end"];
+		flush_tlb_kernel_range_area_addr_end[label="flush_tlb_kernel_range_area_addr_end"];
+	}
+
+	subgraph cluster_vmap{
+		label="void *vmap(struct page **pages, unsigned int count,unsigned long flags, pgprot_t prot)";
+		count_great_num_physpages[label="count_great_num_physpages"];
+		return_NULL[label="return_NULL"];
+		set_area_get_vm_area_count_move_left_PAGE_SHIFT_flags[label="set_area_get_vm_area_count_move_left_PAGE_SHIFT_flags"];
+		map_vm_area_area_prot_pages[label="map_vm_area_area_prot_pages"];
+		return_area_addr[label="return_area_addr"];
+	}
+}

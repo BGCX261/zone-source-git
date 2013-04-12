@@ -1,0 +1,23 @@
+digraph slab_h{
+		subgraph cluster_kmalloc{
+				label="static inline void *kmalloc(size_t size, unsigned int __nocast flags)";
+				__builtin_constant_p_size[label="__builtin_constant_p_size"];
+				size_not_great_x[label="size_not_great_x"];
+				inc_i[label="inc_i"];
+				__you_cannot_kmalloc_that_much[label="__you_cannot_kmalloc_that_much"];
+				return_kmem_cache_alloc[label="kmem_cache_alloc((flags & GFP_DMA) ? malloc_sizes[i].cs_dmacachep : malloc_sizes[i].cs_cachep, flags);"];
+				return___kmalloc_size_flags[label="return___kmalloc_size_flags"];
+		}
+
+		subgraph cluster_kmem_cache_alloc_node{
+			label="static inline void *kmem_cache_alloc_node(kmem_cache_t *cachep, int flags, int node)";
+			CONFIG_NUMA[label="CONFIG_NUMA"];
+			return_kmem_cache_alloc_cachep_flags[label="return_kmem_cache_alloc_cachep_flags"];
+		}
+
+		subgraph cluster_kmalloc_node{
+			label="static inline void *kmalloc_node(size_t size, int flags, int node)";
+			CONFIG_NUMA_1[label="CONFIG_NUMA"];
+			kmalloc_size_flags[label="kmalloc_size_flags"];
+		}
+}

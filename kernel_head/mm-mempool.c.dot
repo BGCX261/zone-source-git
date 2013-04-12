@@ -1,0 +1,97 @@
+digraph mempool_c{
+	subgraph cluster_mempool_create{
+		label="mempool_t * mempool_create(int min_nr, mempool_alloc_t *alloc_fn,mempool_free_t *free_fn, void *pool_data)";
+		set_pool_kmalloc_sizeof_pool_GPF_KERNEL[label="set_pool_kmalloc_sizeof_pool_GPF_KERNEL"];
+		pool_null[label="pool_null"];
+		memset_pool_0_sizeof_pool[label="memset_pool_0_sizeof_pool"];
+		set_pool_elements_kmalloc_min_nr[label="set_pool_elements_kmalloc_min_nr"];
+		pool_elements_null[label="pool_elements_null"];
+		lock_init_pool_lock[label="lock_init_pool_lock"];
+		set_pool_min_nr_min_nr[label="set_pool_min_nr_min_nr"];
+		set_pool_pool_data_pool_data[label="set_pool_pool_data_pool_data"];
+		init_waitqueue_head_pool_wait[label="init_waitqueue_head_pool_wait"];
+		set_pool_alloc_alloc_fn[label="set_pool_alloc_alloc_fn"];
+		set_pool_free_free_fn[label="set_pool_free_free_fn"];
+		pool_curr_nr_small_pool_min_nr[label="pool_curr_nr_small_pool_min_nr"];
+		set_element_pool_alloc_GFP_KERNEL_pool_pool_data[label="set_element_pool_alloc_GFP_KERNEL_pool_pool_data"];
+		element_null[label="element_null"];
+		free_pool_pool[label="free_pool_pool"];
+		return_NULL[label="return_NULL"];
+		add_element_pool_element[label="add_element_pool_element"];
+		return_pool[label="return_pool"];
+	}
+
+	subgraph clsuter_mempool_destroy{
+		label="void mempool_destroy(mempool_t *pool)";
+		pool_curr_nr_not_eq_pool_min_nr[label="pool_curr_nr_not_eq_pool_min_nr"];
+		free_pool_pool_1[label="free_pool_pool_1"];
+	}
+
+	subgraph cluster_free_pool{
+		label="static void free_pool(mempool_t *pool)";
+		pool_curr_nr_not_null[label="pool_curr_nr_not_null"];
+		set_element_remove_element_pool[label="set_element_remove_element_pool"];
+		pool_free_element_pool_pool_data[label="pool_free_element_pool_pool_data"];
+		kfree_pool_elements[label="kfree_pool_elements"];
+		kfree_pool[label="kfree_pool"];
+	}
+
+	subgraph cluster_remove_element{
+		label="static void *remove_element(mempool_t *pool)";
+		pool_elements[label="return pool->elements[--pool->curr_nr];"];
+	}
+
+	subgraph cluster_mempool_alloc{
+		label="void * mempool_alloc(mempool_t *pool, unsigned int __nocast gfp_mask)";
+		DEFINE_WAIT_wait[label="DEFINE_WAIT_wait"];
+		might_sleep_if_gfp_mask___GFP_WAIT[label="might_sleep_if_gfp_mask___GFP_WAIT"];
+		set_gfp_mask___GFP_NOMEMALLOC[label="set_gfp_mask___GFP_NOMEMALLOC"];
+		set_gfp_mask___GFP_NORETRY[label="set_gfp_mask___GFP_NORETRY"];
+		set_gfp_mask___GFP_NOWARN[label="set_gfp_mask___GFP_NOWARN"];
+		set_gfp_temp_gfp_mask_clear___GFP_WAIT_and_GFP_IO[label="set_gfp_temp_gfp_mask_clear___GFP_WAIT_and_GFP_IO"];
+		set_elemet_pool_alloc_gfp_temp_pool_pool_data[label="set_elemet_pool_alloc_gfp_temp_pool_pool_data"];
+		element_not_NULL[label="element_not_NULL"];
+		return_element[label="return_element"];
+		lock_pool_lock[label="lock_pool_lock"];
+		pool_curr_nr_not_null[label="pool_curr_nr_not_null"];
+		set_element_remove_element_pool[label="set_element_remove_element_pool"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		return_element_1[label="return_element_1"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		gfp_mask___GFP_WAIT_clear[label="gfp_mask___GFP_WAIT_clear"];
+		return_NULL[label="return_NULL"];
+		set_gfp_temp_gfp_mask[label="set_gfp_temp_gfp_mask"];
+		prepare_to_wait_pool_wait_wait_TASK_UNINTERRUPTIBLE[label="prepare_to_wait_pool_wait_wait_TASK_UNINTERRUPTIBLE"];
+		smp_mb[label="smp_mb ()"];
+		pool_curr_nr_null[label="pool_curr_nr_null"];
+		io_schedule[label="io_schedule ()"];
+		finish_wait_pool_wait_wait[label="finish_wait_pool_wait_wait"];
+	}
+
+	subgraph cluster_mempool_free{
+		label="void mempool_free(void *element, mempool_t *pool)";
+		smp_mb[label="smp_mb ()"];
+		lock_pool_lock[label="lock_pool_lock"];
+		pool_curr_nr_small_pool_min_nr[label="pool_curr_nr_small_pool_min_nr"];
+		add_element_pool_element[label="add_element_pool_element"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		wake_up_pool_wait[label="wake_up_pool_wait"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		pool_free_element_pool_pool_data[label="pool_free_element_pool_pool_data"];
+	}
+
+	subgraph cluster_add_element{
+		label="static void add_element(mempool_t *pool, void *element)";
+		set_pool_elements[label="pool->elements[pool->curr_nr++] = element;"];
+	}
+
+	subgraph cluster_mempool_alloc_slab{
+		label="void *mempool_alloc_slab(unsigned int __nocast gfp_mask, void *pool_data)";
+		kmem_cache_alloc_mem_gfp_mask[label="kmem_cache_alloc_mem_gfp_mask"];
+	}
+
+	subgraph cluster_mempool_free_slab{
+		label="void mempool_free_slab(void *element, void *pool_data)";
+		kmem_cache_free_mem_element[label="kmem_cache_free_mem_element"];
+	}
+}
