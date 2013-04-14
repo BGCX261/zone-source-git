@@ -1,0 +1,116 @@
+digraph signal_c{
+        subgraph cluster_do_signal{
+                label="int fastcall do_signal(struct pt_regs *regs, sigset_t *oldset)";
+                regs_xcs_not_include_3[label="regs_xcs_not_include_3"];
+                return_1[label="return_1"];
+                current_flags_PF_FREEZE[label="current_flags_PF_FREEZE"];
+                refrigerator_0[label="refrigerator_0"];
+                oldset_null[label="oldset_null"];
+                set_oldset_current_blocked[label="set_oldset_current_blocked"];
+                set_signr_get_signal_to_deliver_info_ka_regs_NULL[label="set_signr_get_signal_to_deliver_info_ka_regs_NULL"];
+                signr_great_0[label="signr_great_0"];
+                current_thread_debugreg_7_not_null[label="current_thread_debugreg_7_not_null"];
+                loaddebug_current_thread_7[label="loaddebug_current_thread_7"];
+                handle_signal_signr_info_ka_oldset_regs[label="handle_signal_signr_info_ka_oldset_regs"];
+                return_1[label="return_1"];
+                regs_orig_eax_not_small_0[label="regs_orig_eax_not_small_0"];
+                regs_eax_eq_ERESTARTNOHAND_or_regs_eax_eq_ERSTARTSYS_or_regs_eax_eq_ERESTARTNOINTR[label="regs_eax_eq_ERESTARTNOHAND_or_regs_eax_eq_ERSTARTSYS_or_regs_eax_eq_ERESTARTNOINTR"];
+                set_resg_eax_regs_orig_eax[label="set_resg_eax_regs_orig_eax"];
+                regs_eip_self_sub_2[label="regs_eip_self_sub_2"];
+                regs_eax_eq_ERESTART_RESTARTBLOCK[label="regs_eax_eq_ERESTART_RESTARTBLOCK"];
+                set_regs_eax___NR_restart_syscall[label="set_regs_eax___NR_restart_syscall"];
+                regs_eip_self_sub_2[label="regs_eip_self_sub_2"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_handle_signal{
+                label="static void handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka, sigset_t *oldset,	struct pt_regs * regs)";
+                regs_orig_eax_not_small_0[label="regs_orig_eax_not_small_0"];
+                switch_regs_eax[label="switch_regs_eax"];
+                case_ERESTART_RESTARTBLOCK[label="case_ERESTART_RESTARTBLOCK"];
+                case_ERESTARTNOHAND[label="case_ERESTARTNOHAND"];
+                set_regs_eax_EINTR[label="set_regs_eax_EINTR"];
+                case_ERESTARTSYS[label="case_ERESTARTSYS"];
+                ka_sa_sa_flags_SA_RESTART_set[label="ka_sa_sa_flags_SA_RESTART_set"];
+                set_regs_eax_EINTR[label="set_regs_eax_EINTR"];
+                case_ERESTARTNOINTR[label="case_ERESTARTNOINTR"];
+                set_regs_eax_regs_orig_eax[label="set_regs_eax_regs_orig_eax"];
+                regs_eip_self_sub_2[label="regs_eip_self_sub_2"];
+                regs_eflags_TF_MASK_set_and_current_ptrace_PT_DTRACE_set[label="regs_eflags_TF_MASK_set_and_current_ptrace_PT_DTRACE_set"];
+                clear_current_ptrace_PT_DTRACE[label="clear_current_ptrace_PT_DTRACE"];
+                clear_regs_eflags_TF_MASK[label="clear_regs_eflags_TF_MASK"];
+                ka_sa_sa_flags_SA_SIGINFO_set[label="ka_sa_sa_flags_SA_SIGINFO_set"];
+                setup_rt_frame_sig_ka_info_oldset_regs[label="setup_rt_frame_sig_ka_info_oldset_regs"];
+                setup_frame_sig_ka_oldset_regs[label="setup_frame_sig_ka_oldset_regs"];
+                ka_sa_sa_flags_SA_NODEFER_not_set[label="ka_sa_sa_flags_SA_NODEFER_not_set"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                sigorsets_current_blocked_current_blocked_ka_sa_sa_mask[label="sigorsets_current_blocked_current_blocked_ka_sa_sa_mask"];
+                sigaddset_current_blocked_sig[label="sigaddset_current_blocked_sig"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+        }
+
+        subgraph cluster_setup_frame{
+                label="static void setup_frame(int sig, struct k_sigaction *ka, sigset_t *set, struct pt_regs * regs)";
+                set_frame_get_sigframe_ka_regs_sizeof_frame[label="set_frame_get_sigframe_ka_regs_sizeof_frame"];
+                access_ok_VERIFY_WRITE_frame_sizeof_frame[label="access_ok_VERIFY_WRITE_frame_sizeof_frame"];
+                set_usig_current_thread_info_exec_domain_and_current_thread_info_exec_domain_signal_invmap_and_current_thread_info_exec_domain_signal_invmap_sig_sig_decided_sig_small_32[label="set_usig_current_thread_info_exec_domain_and_current_thread_info_exec_domain_signal_invmap_and_current_thread_info_exec_domain_signal_invmap_sig_sig_decided_sig_small_32"];
+                set_err___put_user_usig_frame_sig[label="set_err___put_user_usig_frame_sig"];
+                err_not_null[label="err_not_null"];
+                set_err_setup_sigcontext_frame_cs_frame_fpstate_regs_set_sig_0[label="set_err_setup_sigcontext_frame_cs_frame_fpstate_regs_set_sig_0"];
+                _NSIG_WORDS_great_1[label="_NSIG_WORDS_great_1"];
+                set_err___copy_to_user_frame_extramask_set_sig_1_sizeof_grame_extramask[label="set_err___copy_to_user_frame_extramask_set_sig_1_sizeof_grame_extramask"];
+                set_restorer___kernel_sigreturn[label="set_restorer___kernel_sigreturn"];
+                ka_sa_sa_flgas_SA_RESTORER_set[label="ka_sa_sa_flgas_SA_RESTORER_set"];
+                set_restorer_ka_sa_sa_restorer[label="set_restorer_ka_sa_sa_restorer"];
+                __put_user_restorer_frame_pretcode[label="__put_user_restorer_frame_pretcode"];
+                __put_user_0xb858_frame_retcode[label="__put_user_0xb858_frame_retcode"];
+                __put_user___NR_sigreturn_frame_retcode_add_2[label="__put_user___NR_sigreturn_frame_retcode_add_2"];
+                __put_user_0x80cd_frame_retcode_add_6[label="__put_user_0x80cd_frame_retcode_add_6"];
+                set_regs_esp_frame[label="set_regs_esp_frame"];
+                regs_eip_ka_sa_sa_handler[label="regs_eip_ka_sa_sa_handler"];
+                set_regs_eax_sig[label="set_regs_eax_sig"];
+                regs_edx_0[label="regs_edx_0"];
+                regs_ecx_0[label="regs_ecx_0"];
+                set_fs_USER_DS[label="set_fs_USER_DS"];
+                regs_xds___USER_DS[label="regs_xds___USER_DS"];
+                regs_xes___USER_DS[label="regs_xes___USER_DS"];
+                regs_xss___USER_DS[label="regs_xss___USER_DS"];
+                regs_xcs___USER_CS[label="regs_xcs___USER_CS"];
+                clear_regs_eflags_TF_MASK[label="clear_regs_eflags_TF_MASK"];
+                test_thread_flag_TIF_SINGLESTEP_true[label="test_thread_flag_TIF_SINGLESTEP_true"];
+                ptrace_notify_SIGTRAP[label="ptrace_notify_SIGTRAP"];
+                return[label="return"];
+        }
+
+        subgraph cluster_sys_sigaction{
+                label="asmlinkage int sys_sigaction(int sig, const struct old_sigaction __user *act, struct old_sigaction __user *oact)";
+                act_not_nulll[label="act_not_nulll"];
+                access_ok_VERIFY_READ_act_null_or___get_user_new_ka_sa_sa_handler_act_sa_handler_not_null_or___get_user_new_ka_sa_sa_restorer_act_sa_restorer[label="access_ok_VERIFY_READ_act_null_or___get_user_new_ka_sa_sa_handler_act_sa_handler_not_null_or___get_user_new_ka_sa_sa_restorer_act_sa_restorer"];
+                return_EFAULT[label="return_EFAULT"];
+                __get_user_new_ka_sa_sa_flags_act_sa_flags[label="__get_user_new_ka_sa_sa_flags_act_sa_flags"];
+                __get_user_mask_act_sa_mask[label="__get_user_mask_act_sa_mask"];
+                siginitset_new_ka_sa_sa_mask_mask[label="siginitset_new_ka_sa_sa_mask_mask"];
+                do_sigaction_sig_new_ka_or_null_decided_act_old_ka_or_null_decided_oact_null_and_oact_not_null[label="do_sigaction_sig_new_ka_or_null_decided_act_old_ka_or_null_decided_oact_null_and_oact_not_null"];
+                access_ok_VERIFY_WRITE_oact_null_or___put_user_old_ka_sa_sa_handler_oact_sa_handler_not_null_or___put_user_old_ka_sa_sa_restorer_oact_sa_restorer_not_null[label="access_ok_VERIFY_WRITE_oact_null_or___put_user_old_ka_sa_sa_handler_oact_sa_handler_not_null_or___put_user_old_ka_sa_sa_restorer_oact_sa_restorer_not_null"];
+                return_EFAULT[label="return_EFAULT"];
+                __put_user_old_ka_sa_sa_flags_oact_as_flags[label="__put_user_old_ka_sa_sa_flags_oact_as_flags"];
+                __put_user_old_ka_sa_sa_mask_sig_0_oact_sa_mask[label="__put_user_old_ka_sa_sa_mask_sig_0_oact_sa_mask"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_sys_sigsuspend{
+                label="asmlinkage int sys_sigsuspend(int history0, int history1, old_sigset_t mask)";
+                mask_self_and__BLOCKABLE[label="mask_self_and__BLOCKABLE"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_saveset_current_blocked[label="set_saveset_current_blocked"];
+                siginitset_current_blocked_mask[label="siginitset_current_blocked_mask"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                set_regs_eax_EINTR[label="set_regs_eax_EINTR"];
+                current_state_TASK_INTERRUPTIBLE[label="current_state_TASK_INTERRUPTIBLE"];
+                schedule[label="schedule"];
+                do_signal_regs_saveset[label="do_signal_regs_saveset"];
+                return_EINTR[label="return_EINTR"];
+        }
+}

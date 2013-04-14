@@ -4,5 +4,21 @@ digraph mm_h{
 	        zone_table[label="zone_table[page->flags >> NODEZONE_SHIFT];"];
         }
 
-        subgraph 
+        subgraph find_vma_intersection{
+                label="static inline struct vm_area_struct * find_vma_intersection(struct mm_struct * mm, unsigned long start_addr, unsigned long end_addr)";
+                set_vma_find_vma_mm_start_addr[label="set_vma_find_vma_mm_start_addr"];
+                vma_not_null_and_end_addr_not_great_vma_vm_start[label="vma_not_null_and_end_addr_not_great_vma_vm_start"];
+                clear_vma[label="clear_vma"];
+                return_vma[label="return_vma"];
+        }
+
+        subgraph cluster_do_mmap{
+                label="static inline unsigned long do_mmap(struct file *file, unsigned long addr,unsigned long len, unsigned long prot,unsigned long flag, unsigned long offset)";
+                set_ret_EINVAL[label="set_ret_EINVAL"];
+                offset_andd_PAGE_ALING_len_small_offset[label="offset_andd_PAGE_ALING_len_small_offset"];
+                offset_not_set_PAGE_MASK_false[label="offset_not_set_PAGE_MASK_false"];
+                set_ret_do_mmap_pgoff[label="ret = do_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);"];
+                return_ret[label="return_ret"];
+        }
+
 }

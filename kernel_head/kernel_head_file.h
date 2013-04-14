@@ -1221,6 +1221,106 @@ struct mm_struct {
 	unsigned long hiwater_vm;	/* High-water virtual memory usage */
 };
 
+        
+
+struct sighand_struct {
+	atomic_t		count;
+	struct k_sigaction	action[_NSIG];
+	spinlock_t		siglock;
+};
+
+/*
+ * NOTE! "signal_struct" does not have it's own
+ * locking, because a shared signal_struct always
+ * implies a shared sighand_struct, so locking
+ * sighand_struct is always a proper superset of
+ * the locking of signal_struct.
+ */
+struct signal_struct {
+	atomic_t		count;
+	atomic_t		live;
+
+	wait_queue_head_t	wait_chldexit;	/* for wait4() */
+
+	/* current thread group signal load-balancing target: */
+	task_t			*curr_target;
+
+	/* shared signal handling: */
+	struct sigpending	shared_pending;
+
+	/* thread group exit support */
+	int			group_exit_code;
+	/* overloaded:
+	 * - notify group_exit_task when ->count is equal to notify_count
+	 * - everyone except group_exit_task is stopped during signal delivery
+	 *   of fatal signals, group_exit_task processes the signal.
+	 */
+	struct task_struct	*group_exit_task;
+	int			notify_count;
+
+	/* thread group stop support, overloads group_exit_code too */
+	int			group_stop_count;
+	unsigned int		flags; /* see SIGNAL_* flags below */
+
+	/* POSIX.1b Interval Timers */
+	struct list_head posix_timers;
+
+	/* ITIMER_REAL timer for the process */
+	struct timer_list real_timer;
+	unsigned long it_real_value, it_real_incr;
+
+	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
+	cputime_t it_prof_expires, it_virt_expires;
+	cputime_t it_prof_incr, it_virt_incr;
+
+	/* job control IDs */
+	pid_t pgrp;
+	pid_t tty_old_pgrp;
+	pid_t session;
+	/* boolean value for session group leader */
+	int leader;
+
+	struct tty_struct *tty; /* NULL if no tty */
+
+	/*
+	 * Cumulative resource counters for dead threads in the group,
+	 * and for reaped dead child processes forked by this group.
+	 * Live threads maintain their own counters and add to these
+	 * in __exit_signal, except for the group leader.
+	 */
+	cputime_t utime, stime, cutime, cstime;
+	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
+	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+
+	/*
+	 * Cumulative ns of scheduled CPU time for dead threads in the
+	 * group, not including a zombie group leader.  (This only differs
+	 * from jiffies_to_ns(utime + stime) if sched_clock uses something
+	 * other than jiffies.)
+	 */
+	unsigned long long sched_time;
+
+	/*
+	 * We don't bother to synchronize most readers of this at all,
+	 * because there is no reader checking a limit that actually needs
+	 * to get both rlim_cur and rlim_max atomically, and either one
+	 * alone is a single word that can safely be read normally.
+	 * getrlimit/setrlimit use task_lock(current->group_leader) to
+	 * protect this instead of the siglock, because they really
+	 * have no need to disable irqs.
+	 */
+	struct rlimit rlim[RLIM_NLIMITS];
+
+	struct list_head cpu_timers[3];
+
+	/* keep the process-shared keyrings here so that they do the right
+	 * thing in threads created with CLONE_THREAD */
+#ifdef CONFIG_KEYS
+	struct key *session_keyring;	/* keyring inherited over fork */
+	struct key *process_keyring;	/* keyring private to this process */
+#endif
+};
+
 	/******************************kernel/pid.c******************************/
 #define PIDMAP_ENTRIES		((PID_MAX_LIMIT + 8*PAGE_SIZE - 1)/PAGE_SIZE/8)
 	static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
@@ -2573,4 +2673,352 @@ struct vm_operations_struct {
 #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
 #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
 
+
+/******************************include/asm-generic/errno-base.h******************************/
+
+#define	EPERM		 1	/* Operation not permitted */
+#define	ENOENT		 2	/* No such file or directory */
+#define	ESRCH		 3	/* No such process */
+#define	EINTR		 4	/* Interrupted system call */
+#define	EIO		 5	/* I/O error */
+#define	ENXIO		 6	/* No such device or address */
+#define	E2BIG		 7	/* Argument list too long */
+#define	ENOEXEC		 8	/* Exec format error */
+#define	EBADF		 9	/* Bad file number */
+#define	ECHILD		10	/* No child processes */
+#define	EAGAIN		11	/* Try again */
+#define	ENOMEM		12	/* Out of memory */
+#define	EACCES		13	/* Permission denied */
+#define	EFAULT		14	/* Bad address */
+#define	ENOTBLK		15	/* Block device required */
+#define	EBUSY		16	/* Device or resource busy */
+#define	EEXIST		17	/* File exists */
+#define	EXDEV		18	/* Cross-device link */
+#define	ENODEV		19	/* No such device */
+#define	ENOTDIR		20	/* Not a directory */
+#define	EISDIR		21	/* Is a directory */
+#define	EINVAL		22	/* Invalid argument */
+#define	ENFILE		23	/* File table overflow */
+#define	EMFILE		24	/* Too many open files */
+#define	ENOTTY		25	/* Not a typewriter */
+#define	ETXTBSY		26	/* Text file busy */
+#define	EFBIG		27	/* File too large */
+#define	ENOSPC		28	/* No space left on device */
+#define	ESPIPE		29	/* Illegal seek */
+#define	EROFS		30	/* Read-only file system */
+#define	EMLINK		31	/* Too many links */
+#define	EPIPE		32	/* Broken pipe */
+#define	EDOM		33	/* Math argument out of domain of func */
+#define	ERANGE		34	/* Math result not representable */
+
+/******************************include/asm-i386/errno.h******************************/
+
+#define	EDEADLK		35	/* Resource deadlock would occur */
+#define	ENAMETOOLONG	36	/* File name too long */
+#define	ENOLCK		37	/* No record locks available */
+#define	ENOSYS		38	/* Function not implemented */
+#define	ENOTEMPTY	39	/* Directory not empty */
+#define	ELOOP		40	/* Too many symbolic links encountered */
+#define	EWOULDBLOCK	EAGAIN	/* Operation would block */
+#define	ENOMSG		42	/* No message of desired type */
+#define	EIDRM		43	/* Identifier removed */
+#define	ECHRNG		44	/* Channel number out of range */
+#define	EL2NSYNC	45	/* Level 2 not synchronized */
+#define	EL3HLT		46	/* Level 3 halted */
+#define	EL3RST		47	/* Level 3 reset */
+#define	ELNRNG		48	/* Link number out of range */
+#define	EUNATCH		49	/* Protocol driver not attached */
+#define	ENOCSI		50	/* No CSI structure available */
+#define	EL2HLT		51	/* Level 2 halted */
+#define	EBADE		52	/* Invalid exchange */
+#define	EBADR		53	/* Invalid request descriptor */
+#define	EXFULL		54	/* Exchange full */
+#define	ENOANO		55	/* No anode */
+#define	EBADRQC		56	/* Invalid request code */
+#define	EBADSLT		57	/* Invalid slot */
+
+#define	EDEADLOCK	EDEADLK
+
+#define	EBFONT		59	/* Bad font file format */
+#define	ENOSTR		60	/* Device not a stream */
+#define	ENODATA		61	/* No data available */
+#define	ETIME		62	/* Timer expired */
+#define	ENOSR		63	/* Out of streams resources */
+#define	ENONET		64	/* Machine is not on the network */
+#define	ENOPKG		65	/* Package not installed */
+#define	EREMOTE		66	/* Object is remote */
+#define	ENOLINK		67	/* Link has been severed */
+#define	EADV		68	/* Advertise error */
+#define	ESRMNT		69	/* Srmount error */
+#define	ECOMM		70	/* Communication error on send */
+#define	EPROTO		71	/* Protocol error */
+#define	EMULTIHOP	72	/* Multihop attempted */
+#define	EDOTDOT		73	/* RFS specific error */
+#define	EBADMSG		74	/* Not a data message */
+#define	EOVERFLOW	75	/* Value too large for defined data type */
+#define	ENOTUNIQ	76	/* Name not unique on network */
+#define	EBADFD		77	/* File descriptor in bad state */
+#define	EREMCHG		78	/* Remote address changed */
+#define	ELIBACC		79	/* Can not access a needed shared library */
+#define	ELIBBAD		80	/* Accessing a corrupted shared library */
+#define	ELIBSCN		81	/* .lib section in a.out corrupted */
+#define	ELIBMAX		82	/* Attempting to link in too many shared libraries */
+#define	ELIBEXEC	83	/* Cannot exec a shared library directly */
+#define	EILSEQ		84	/* Illegal byte sequence */
+#define	ERESTART	85	/* Interrupted system call should be restarted */
+#define	ESTRPIPE	86	/* Streams pipe error */
+#define	EUSERS		87	/* Too many users */
+#define	ENOTSOCK	88	/* Socket operation on non-socket */
+#define	EDESTADDRREQ	89	/* Destination address required */
+#define	EMSGSIZE	90	/* Message too long */
+#define	EPROTOTYPE	91	/* Protocol wrong type for socket */
+#define	ENOPROTOOPT	92	/* Protocol not available */
+#define	EPROTONOSUPPORT	93	/* Protocol not supported */
+#define	ESOCKTNOSUPPORT	94	/* Socket type not supported */
+#define	EOPNOTSUPP	95	/* Operation not supported on transport endpoint */
+#define	EPFNOSUPPORT	96	/* Protocol family not supported */
+#define	EAFNOSUPPORT	97	/* Address family not supported by protocol */
+#define	EADDRINUSE	98	/* Address already in use */
+#define	EADDRNOTAVAIL	99	/* Cannot assign requested address */
+#define	ENETDOWN	100	/* Network is down */
+#define	ENETUNREACH	101	/* Network is unreachable */
+#define	ENETRESET	102	/* Network dropped connection because of reset */
+#define	ECONNABORTED	103	/* Software caused connection abort */
+#define	ECONNRESET	104	/* Connection reset by peer */
+#define	ENOBUFS		105	/* No buffer space available */
+#define	EISCONN		106	/* Transport endpoint is already connected */
+#define	ENOTCONN	107	/* Transport endpoint is not connected */
+#define	ESHUTDOWN	108	/* Cannot send after transport endpoint shutdown */
+#define	ETOOMANYREFS	109	/* Too many references: cannot splice */
+#define	ETIMEDOUT	110	/* Connection timed out */
+#define	ECONNREFUSED	111	/* Connection refused */
+#define	EHOSTDOWN	112	/* Host is down */
+#define	EHOSTUNREACH	113	/* No route to host */
+#define	EALREADY	114	/* Operation already in progress */
+#define	EINPROGRESS	115	/* Operation now in progress */
+#define	ESTALE		116	/* Stale NFS file handle */
+#define	EUCLEAN		117	/* Structure needs cleaning */
+#define	ENOTNAM		118	/* Not a XENIX named type file */
+#define	ENAVAIL		119	/* No XENIX semaphores available */
+#define	EISNAM		120	/* Is a named type file */
+#define	EREMOTEIO	121	/* Remote I/O error */
+#define	EDQUOT		122	/* Quota exceeded */
+
+#define	ENOMEDIUM	123	/* No medium found */
+#define	EMEDIUMTYPE	124	/* Wrong medium type */
+#define	ECANCELED	125	/* Operation Canceled */
+#define	ENOKEY		126	/* Required key not available */
+#define	EKEYEXPIRED	127	/* Key has expired */
+#define	EKEYREVOKED	128	/* Key has been revoked */
+#define	EKEYREJECTED	129	/* Key was rejected by service */
+
+/* for robust mutexes */
+#define	EOWNERDEAD	130	/* Owner died */
+#define	ENOTRECOVERABLE	131	/* State not recoverable */
+
+/******************************include/linux/errno.h******************************/
+
+/* Should never be seen by user programs */
+#define ERESTARTSYS	512
+#define ERESTARTNOINTR	513
+#define ERESTARTNOHAND	514	/* restart if no handler.. */
+#define ENOIOCTLCMD	515	/* No ioctl command */
+#define ERESTART_RESTARTBLOCK 516 /* restart by calling sys_restart_syscall */
+
+/* Defined for the NFSv3 protocol */
+#define EBADHANDLE	521	/* Illegal NFS file handle */
+#define ENOTSYNC	522	/* Update synchronization mismatch */
+#define EBADCOOKIE	523	/* Cookie is stale */
+#define ENOTSUPP	524	/* Operation is not supported */
+#define ETOOSMALL	525	/* Buffer or request is too small */
+#define ESERVERFAULT	526	/* An untranslatable error occurred */
+#define EBADTYPE	527	/* Type not supported by server */
+#define EJUKEBOX	528	/* Request initiated, but will not complete before timeout */
+#define EIOCBQUEUED	529	/* iocb queued, will get completion event */
+#define EIOCBRETRY	530	/* iocb queued, will trigger a retry */
+
+/******************************include/asm-i386/signal.h******************************/
+#ifdef __KERNEL__
+/* Most things should be clean enough to redefine this at will, if care
+   is taken to make libc match.  */
+
+#define _NSIG		64
+#define _NSIG_BPW	32
+#define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
+
+typedef unsigned long old_sigset_t;		/* at least 32 bits */
+
+typedef struct {
+	unsigned long sig[_NSIG_WORDS];
+} sigset_t;
+
+#else
+/* Here we must cater to libcs that poke about in kernel headers.  */
+
+#define NSIG		32
+typedef unsigned long sigset_t;
+
+#endif /* __KERNEL__ */
+
+#define SIGHUP		 1
+#define SIGINT		 2
+#define SIGQUIT		 3
+#define SIGILL		 4
+#define SIGTRAP		 5
+#define SIGABRT		 6
+#define SIGIOT		 6
+#define SIGBUS		 7
+#define SIGFPE		 8
+#define SIGKILL		 9
+#define SIGUSR1		10
+#define SIGSEGV		11
+#define SIGUSR2		12
+#define SIGPIPE		13
+#define SIGALRM		14
+#define SIGTERM		15
+#define SIGSTKFLT	16
+#define SIGCHLD		17
+#define SIGCONT		18
+#define SIGSTOP		19
+#define SIGTSTP		20
+#define SIGTTIN		21
+#define SIGTTOU		22
+#define SIGURG		23
+#define SIGXCPU		24
+#define SIGXFSZ		25
+#define SIGVTALRM	26
+#define SIGPROF		27
+#define SIGWINCH	28
+#define SIGIO		29
+#define SIGPOLL		SIGIO
+/*
+#define SIGLOST		29
+*/
+#define SIGPWR		30
+#define SIGSYS		31
+#define	SIGUNUSED	31
+
+/* These should not be considered constants from userland.  */
+#define SIGRTMIN	32
+#define SIGRTMAX	_NSIG
+
+#ifdef __KERNEL__
+struct old_sigaction {
+	__sighandler_t sa_handler;
+	old_sigset_t sa_mask;
+	unsigned long sa_flags;
+	__sigrestore_t sa_restorer;
+};
+
+struct sigaction {
+	__sighandler_t sa_handler;
+	unsigned long sa_flags;
+	__sigrestore_t sa_restorer;
+	sigset_t sa_mask;		/* mask last for extensibility */
+};
+
+struct k_sigaction {
+	struct sigaction sa;
+};
+#else
+/* Here we must cater to libcs that poke about in kernel headers.  */
+
+struct sigaction {
+	union {
+	  __sighandler_t _sa_handler;
+	  void (*_sa_sigaction)(int, struct siginfo *, void *);
+	} _u;
+	sigset_t sa_mask;
+	unsigned long sa_flags;
+	void (*sa_restorer)(void);
+};
+
+/*
+ * SA_FLAGS values:
+ *
+ * SA_ONSTACK indicates that a registered stack_t will be used.
+ * SA_INTERRUPT is a no-op, but left due to historical reasons. Use the
+ * SA_RESTART flag to get restarting signals (which were the default long ago)
+ * SA_NOCLDSTOP flag to turn off SIGCHLD when children stop.
+ * SA_RESETHAND clears the handler when the signal is delivered.
+ * SA_NOCLDWAIT flag on SIGCHLD to inhibit zombies.
+ * SA_NODEFER prevents the current signal from being masked in the handler.
+ *
+ * SA_ONESHOT and SA_NOMASK are the historical Linux names for the Single
+ * Unix names RESETHAND and NODEFER respectively.
+ */
+#define SA_NOCLDSTOP	0x00000001u
+#define SA_NOCLDWAIT	0x00000002u
+#define SA_SIGINFO	0x00000004u
+#define SA_ONSTACK	0x08000000u
+#define SA_RESTART	0x10000000u
+#define SA_NODEFER	0x40000000u
+#define SA_RESETHAND	0x80000000u
+
+#define SA_NOMASK	SA_NODEFER
+#define SA_ONESHOT	SA_RESETHAND
+#define SA_INTERRUPT	0x20000000 /* dummy -- ignored */
+
+#define SA_RESTORER	0x04000000
+
+/******************************include/asm-generic/siginfo.h******************************/
+
+#ifndef HAVE_ARCH_SIGINFO_T
+
+typedef struct siginfo {
+	int si_signo;
+	int si_errno;
+	int si_code;
+
+	union {
+		int _pad[SI_PAD_SIZE];
+
+		/* kill() */
+		struct {
+			pid_t _pid;		/* sender's pid */
+			__ARCH_SI_UID_T _uid;	/* sender's uid */
+		} _kill;
+
+		/* POSIX.1b timers */
+		struct {
+			timer_t _tid;		/* timer id */
+			int _overrun;		/* overrun count */
+			char _pad[sizeof( __ARCH_SI_UID_T) - sizeof(int)];
+			sigval_t _sigval;	/* same as below */
+			int _sys_private;       /* not to be passed to user */
+		} _timer;
+
+		/* POSIX.1b signals */
+		struct {
+			pid_t _pid;		/* sender's pid */
+			__ARCH_SI_UID_T _uid;	/* sender's uid */
+			sigval_t _sigval;
+		} _rt;
+
+		/* SIGCHLD */
+		struct {
+			pid_t _pid;		/* which child */
+			__ARCH_SI_UID_T _uid;	/* sender's uid */
+			int _status;		/* exit code */
+			clock_t _utime;
+			clock_t _stime;
+		} _sigchld;
+
+		/* SIGILL, SIGFPE, SIGSEGV, SIGBUS */
+		struct {
+			void __user *_addr; /* faulting insn/memory ref. */
+#ifdef __ARCH_SI_TRAPNO
+			int _trapno;	/* TRAP # which caused the signal */
+#endif
+		} _sigfault;
+
+		/* SIGPOLL */
+		struct {
+			__ARCH_SI_BAND_T _band;	/* POLL_IN, POLL_OUT, POLL_MSG */
+			int _fd;
+		} _sigpoll;
+	} _sifields;
+} siginfo_t;
+
+#endif
 

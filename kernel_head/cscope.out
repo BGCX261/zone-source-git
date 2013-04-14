@@ -1,0 +1,12048 @@
+cscope 15 $HOME/zone-source/kernel_head               0000064187
+	@function.h
+
+5 
+	#pmd_vÆ
+(
+x
+Ë((x).
+pmd
+)
+
+	)
+
+6 
+	#±e_vÆ
+(
+x
+Ë((x).
+±e_low
+ | (()(x).
+±e_high
+ << 32))
+
+	)
+
+8 
+	#pud_n⁄e
+(
+pud
+Ë0
+
+	)
+
+9 
+	#pud_bad
+(
+pud
+Ë0
+
+	)
+
+10 
+	#pud_¥e£¡
+(
+pud
+Ë1
+
+	)
+
+13 
+ölöe
+ 
+	$±e_n⁄e
+(
+±e_t
+ 
+±e
+)
+
+14 
+	#pmd_n⁄e
+(
+x
+Ë(!
+	`pmd_vÆ
+(x))
+
+	)
+
+16 
+	#±e_˛ór
+(
+mm
+,
+addr
+,
+xp
+Ëdÿ{ 
+	`£t_±e_©
+(mm,áddr, xp, 
+	`__±e
+(0)); 
+	}
+} 0)
+
+	)
+
+18 
+	#£t_±e_©
+(
+mm
+,
+addr
+,
+±ï
+,
+±evÆ
+Ë
+	`£t_±e
+’ãp,±evÆ)
+
+	)
+
+20 
+	#£t_±e
+(
+±ïå
+, 
+±evÆ
+Ë(*’ã±rË±evÆ)
+
+	)
+
+23 
+ölöe
+ 
+	$£t_±e
+(
+±e_t
+ *
+±ï
+,Öã_à
+±e
+)
+
+25 
+	#£t_pmd
+(
+pmd±r
+, 
+pmdvÆ
+Ë(*’md±rË’mdvÆ))
+
+	)
+
+27 
+	#£t_pmd
+(
+pmd±r
+,
+pmdvÆ
+Ë
+	`£t_64bô
+((*)’md±r),
+	`pmd_vÆ
+’mdvÆ))
+
+	)
+
+29 
+	#£t_pud
+(
+pud±r
+,
+pudvÆ
+Ë
+	`£t_64bô
+((*)’ud±r),
+	`pud_vÆ
+’udvÆ))
+
+	)
+
+31 
+	#±e_ßme
+(
+a
+, 
+b
+Ë(◊).
+±e_low
+ =(b).±e_low)
+
+	)
+
+34 
+ölöe
+ 
+	$±e_ßme
+(
+±e_t
+ 
+a
+,Öã_à
+b
+)
+
+37 
+	#pmd_œrge
+(
+pmd
+Ë((
+	`pmd_vÆ
+’mdË& (
+_PAGE_PSE
+|
+_PAGE_PRESENT
+)Ë=(_PAGE_PSE|_PAGE_PRESENT))
+
+	)
+
+39 
+	#±e_¥e£¡
+(
+x
+Ë((x).
+±e_low
+ & (
+_PAGE_PRESENT
+ | 
+_PAGE_PROTNONE
+))
+
+	)
+
+41 
+	#pmd_¥e£¡
+(
+x
+Ë(
+	`pmd_vÆ
+(xË& 
+_PAGE_PRESENT
+)
+
+	)
+
+43 
+ölöe
+ 
+	$±e_u£r
+(
+±e_t
+ 
+±e
+Ë{  (±e).
+±e_low
+ & 
+_PAGE_USER
+; 
+	}
+}
+
+45 
+ölöe
+ 
+	$±e_ªad
+(
+±e_t
+ 
+±e
+Ë{  (±e).
+±e_low
+ & 
+_PAGE_USER
+; 
+	}
+}
+
+47 
+ölöe
+ 
+	$±e_wrôe
+(
+±e_t
+ 
+±e
+Ë{  (±e).
+±e_low
+ & 
+_PAGE_RW
+; 
+	}
+}
+
+50 
+ölöe
+ 
+	$±e_exec
+(
+±e_t
+ 
+±e
+)
+
+52 
+ölöe
+ 
+	$±e_dúty
+(
+±e_t
+ 
+±e
+Ë{  (±e).
+±e_low
+ & 
+_PAGE_DIRTY
+; 
+	}
+}
+
+54 
+ölöe
+ 
+	$±e_young
+(
+±e_t
+ 
+±e
+Ë{  (±e).
+±e_low
+ & 
+_PAGE_ACCESSED
+; 
+	}
+}
+
+56 
+ölöe
+ 
+	$±e_fûe
+(
+±e_t
+ 
+±e
+Ë{  (±e).
+±e_low
+ & 
+_PAGE_FILE
+; 
+	}
+}
+
+58 
+	#mk_±e_huge
+(
+íåy
+Ë(”¡ry).
+±e_low
+ |
+_PAGE_PRESENT
+ | 
+_PAGE_PSE
+)
+
+	)
+
+60 
+	#±e_ödex
+(
+addªss
+Ë((◊ddªssË>> 
+PAGE_SHIFT
+Ë& (
+PTRS_PER_PTE
+ - 1)Ë
+
+	)
+
+62 
+	#pgd_ödex
+(
+addªss
+Ë((◊ddªssË>> 
+PGDIR_SHIFT
+Ë& (
+PTRS_PER_PGD
+-1))
+
+	)
+
+64 
+	#±e_off£t_kî√l
+(
+dú
+, 
+addªss
+Ë((
+±e_t
+ *Ë
+	`pmd_∑ge_kî√l
+(*(dú)Ë+ 
+	`±e_ödex
+◊ddªss))
+
+	)
+
+66 
+	#pmd_ödex
+(
+addªss
+Ë((◊ddªssË>> 
+PMD_SHIFT
+Ë& (
+PTRS_PER_PMD
+-1))
+
+	)
+
+68 
+	#pgd_off£t
+(
+mm
+, 
+addªss
+Ë((mm)->
+pgd
++
+	`pgd_ödex
+◊ddªss))
+
+	)
+
+70 
+	#pmd_∑ge_kî√l
+(
+pmd
+Ë((Ë
+	`__va
+(
+	`pmd_vÆ
+’mdË& 
+PAGE_MASK
+))
+
+	)
+
+71 
+	#pud_∑ge
+(
+pud
+Ë((
+∑ge
+ *Ë
+	`__va
+(
+	`pud_vÆ
+’udË& 
+PAGE_MASK
+))
+
+	)
+
+72 
+	#pud_∑ge_kî√l
+(
+pud
+Ë((Ë
+	`__va
+(
+	`pud_vÆ
+’udË& 
+PAGE_MASK
+))
+
+	)
+
+73 
+	#pmd_off£t
+(
+pud
+, 
+addªss
+Ë((
+pmd_t
+ *Ë
+	`pud_∑ge
+(*’ud)Ë+ 
+	`pmd_ödex
+◊ddªss))
+
+	)
+
+76 
+	#±e_∑ge
+(
+x
+Ë
+	`p‚_to_∑ge
+(
+	`±e_p‚
+(x))
+
+	)
+
+79 
+	#±e_p‚
+(
+x
+Ë(()(((x).
+±e_low
+ >> 
+PAGE_SHIFT
+)))
+
+	)
+
+85 #ifde‡
+CONFIG_DISCONTIGMEM
+
+
+87 
+	#p‚_to_∑ge
+(
+p‚
+) \
+
+89 
+__p‚
+ = 
+p‚
+; \
+
+90 
+__node
+ = 
+	`p‚_to_nid
+(
+__p‚
+); \
+
+91 &
+	`node_mem_m≠
+(
+__node
+)[
+	`node_loˇ r
+(
+__p‚
+,__node)]; \
+
+92 })
+
+	)
+
+93 
+	#∑ge_to_p‚
+(
+pg
+) \
+
+95 
+∑ge
+ *
+__∑ge
+ = 
+pg
+; \
+
+96 
+z⁄e
+ *
+__z⁄e
+ = 
+	`∑ge_z⁄e
+(
+__∑ge
+); \
+
+97 ()(
+__∑ge
+ - 
+__z⁄e
+->
+z⁄e_mem_m≠
+) \
+
+98 + 
+__z⁄e
+->
+z⁄e_°¨t_p‚
+; \
+
+99 })
+
+	)
+
+101 
+	#p‚_to_∑ge
+(
+p‚
+Ë(
+mem_m≠
+ + (p‚))
+
+	)
+
+102 
+	#∑ge_to_p‚
+(
+∑ge
+Ë(()(’ageË- 
+mem_m≠
+))
+
+	)
+
+104 
+	#pmd_∑ge
+(
+pmd
+Ë(
+	`p‚_to_∑ge
+(
+	`pmd_vÆ
+’mdË>> 
+PAGE_SHIFT
+))
+
+	)
+
+106 
+	#mk_±e
+(
+∑ge
+, 
+pg¥Ÿ
+Ë
+	`p‚_±e
+(
+	`∑ge_to_p‚
+’age), (pg¥Ÿ))
+
+	)
+
+108 
+	#p‚_±e
+(
+p‚
+, 
+¥Ÿ
+Ë
+	`__±e
+((’‚Ë<< 
+PAGE_SHIFT
+Ë| 
+	`pg¥Ÿ_vÆ
+’rŸ))
+
+	)
+
+110 
+ölöe
+ 
+±e_t
+ 
+	$p‚_±e
+(
+∑ge_ƒ
+, 
+pg¥Ÿ_t
+ 
+pg¥Ÿ
+)
+
+112 
+	#±e_off£t_m≠
+(
+dú
+, 
+addªss
+) \
+
+113 ((
+±e_t
+ *)
+	`km≠_©omic
+(
+	`pmd_∑ge
+(*(
+dú
+)),
+KM_PTE0
+Ë+ 
+	`±e_ödex
+(
+addªss
+))
+
+	)
+
+114 
+	#±e_off£t_m≠
+(
+dú
+, 
+addªss
+) \
+
+115 ((
+±e_t
+ *)
+	`∑ge_addªss
+(
+	`pmd_∑ge
+(*(
+dú
+))Ë+ 
+	`±e_ödex
+(
+addªss
+))
+
+	)
+
+117 
+	#__∑
+(
+x
+Ë(()(x)-
+PAGE_OFFSET
+)
+
+	)
+
+118 
+	#__va
+(
+x
+Ë((*)(()(x)+
+PAGE_OFFSET
+))
+
+	)
+
+120 
+pgd_t
+ *
+	$pgd_Æloc
+(
+mm_°ru˘
+ *
+mm
+)
+
+126 
+	#LIST_HEAD_INIT
+(
+«me
+)
+
+	)
+
+127 
+	#LIST_HEAD
+(
+«me
+Ë
+
+	)
+
+128 
+	#INIT_LIST_HEAD
+(
+±r
+)
+
+	)
+
+129 
+ölöe
+ 
+	`__li°_add
+(
+li°_hód
+*,li°_hód* 
+¥ev
+,li°_hód* 
+√xt
+);
+
+130 
+ölöe
+ 
+	`li°_add
+(
+li°_hód
+ *
+√w
+, li°_hód *
+hód
+);
+
+131 
+ölöe
+ 
+	`li°_add_èû
+(
+li°_hód
+ *
+√w
+, li°_hód *
+hód
+);
+
+132 
+ölöe
+ 
+	`__li°_add_rcu
+(
+li°_hód
+ * 
+√w
+,
+
+133 
+li°_hód
+ * 
+¥ev
+, li°_hód * 
+√xt
+);
+
+134 
+ölöe
+ 
+	`li°_add_rcu
+(
+li°_hód
+ *
+√w
+, li°_hód *
+hód
+);
+
+135 
+ölöe
+ 
+	`li°_add_èû_rcu
+(
+li°_hód
+ *
+√w
+,
+
+136 
+li°_hód
+ *
+hód
+);
+
+137 
+ölöe
+ 
+	`__li°_dñ
+(
+li°_hód
+ * 
+¥ev
+, li°_hód * 
+√xt
+);
+
+138 
+ölöe
+ 
+	`li°_dñ
+(
+li°_hód
+ *
+íåy
+);
+
+164 
+ölöe
+ 
+	`li°_dñ_rcu
+(
+li°_hód
+ *
+íåy
+);
+
+172 
+ölöe
+ 
+	`li°_ª∂a˚_rcu
+(
+li°_hód
+ *
+ﬁd
+, li°_hód *
+√w
+);
+
+178 
+ölöe
+ 
+	`li°_move
+(
+li°_hód
+ *
+li°
+, li°_hód *
+hód
+);
+
+179 
+ölöe
+ 
+	`li°_move_èû
+(
+li°_hód
+ *
+li°
+,
+
+180 
+li°_hód
+ *
+hód
+);
+
+181 
+ölöe
+ 
+	`li°_em±y
+(c⁄° 
+li°_hód
+ *
+hód
+);
+
+183 
+ölöe
+ 
+	`li°_em±y_ˇªful
+(c⁄° 
+li°_hód
+ *
+hód
+);
+
+187 
+ölöe
+ 
+	`__li°_•li˚
+(
+li°_hód
+ *
+li°
+,
+
+188 
+li°_hód
+ *
+hód
+);
+
+189 
+ölöe
+ 
+	`li°_•li˚
+(
+li°_hód
+ *
+li°
+,
+
+190 
+li°_hód
+ *
+hód
+);
+
+192 
+ölöe
+ 
+	`li°_•li˚_öô
+(
+li°_hód
+ *
+li°
+,
+
+193 
+li°_hód
+ *
+hód
+);
+
+196 
+ölöe
+ 
+	`li°_dñ_öô
+(
+li°_hód
+ *
+íåy
+);
+
+197 
+	#li°_íåy
+(
+±r
+, 
+ty≥
+, 
+membî
+)
+
+	)
+
+199 
+	#li°_f‹_óch
+(
+pos
+, 
+hód
+);
+
+	)
+
+201 
+	#li°_f‹_óch_íåy
+(
+pos
+, 
+hód
+, 
+membî
+);
+
+	)
+
+203 
+	#li°_f‹_óch_¥ev
+(
+pos
+, 
+hód
+);
+
+	)
+
+205 
+	#li°_f‹_óch_ß„
+(
+pos
+, 
+n
+, 
+hód
+)
+
+	)
+
+207 
+	#li°_f‹_óch_íåy_ªvî£
+(
+pos
+, 
+hód
+, 
+membî
+)
+
+	)
+
+208 
+	#li°_¥ï¨e_íåy
+(
+pos
+, 
+hód
+, 
+membî
+)
+
+	)
+
+209 
+	#li°_f‹_óch_íåy_c⁄töue
+(
+pos
+, 
+hód
+, 
+membî
+)
+
+	)
+
+219 
+	#li°_f‹_óch_rcu
+(
+pos
+, 
+hód
+)
+
+	)
+
+220 
+	#__li°_f‹_óch_rcu
+(
+pos
+, 
+hód
+)
+
+	)
+
+222 
+	#li°_f‹_óch_ß„_rcu
+(
+pos
+, 
+n
+, 
+hód
+)
+
+	)
+
+223 
+	#li°_f‹_óch_íåy_rcu
+(
+pos
+, 
+hód
+, 
+membî
+)
+
+	)
+
+224 
+	#li°_f‹_óch_c⁄töue_rcu
+(
+pos
+, 
+hód
+)
+
+	)
+
+233 
+ölöe
+ 
+	`hli°_add_hód
+(
+hli°_node
+ *
+n
+, 
+hli°_hód
+ *
+h
+);
+
+237 
+ölöe
+ 
+	`hli°_dñ
+(
+hli°_node
+ *
+n
+);
+
+238 
+ölöe
+ 
+	`__hli°_dñ
+(
+hli°_node
+ *
+n
+);
+
+239 
+ölöe
+ 
+	`hli°_dñ_rcu
+(
+hli°_node
+ *
+n
+);
+
+242 
+ölöe
+ 
+	`hli°_add_bef‹e
+(
+hli°_node
+ *
+n
+,
+
+243 
+hli°_node
+ *
+√xt
+);
+
+245 
+ölöe
+ 
+	`hli°_add_a·î
+(
+hli°_node
+ *
+n
+,
+
+246 
+hli°_node
+ *
+√xt
+);
+
+247 
+	#hli°_f‹_óch_ß„
+(
+pos
+, 
+n
+, 
+hód
+)
+
+	)
+
+248 
+	#hli°_f‹_óch_rcu
+(
+pos
+, 
+hód
+)
+
+	)
+
+250 
+ölöe
+ 
+	`hli°_em±y
+(c⁄° 
+hli°_hód
+ *
+h
+);
+
+251 
+	#hli°_íåy
+(
+±r
+, 
+ty≥
+, 
+membî
+Ë
+	`c⁄èöî_of
+’å,ty≥,membî)
+
+	)
+
+252 
+	#hli°_f‹_óch_íåy
+(
+ços
+, 
+pos
+, 
+hód
+, 
+membî
+);
+
+	)
+
+254 
+	#hli°_f‹_óch_íåy_c⁄töue
+(
+ços
+, 
+pos
+, 
+membî
+)
+
+	)
+
+256 
+	#hli°_f‹_óch_íåy_‰om
+(
+ços
+, 
+pos
+, 
+membî
+)
+
+	)
+
+257 
+	#hli°_f‹_óch_íåy_ß„
+(
+ços
+, 
+pos
+, 
+n
+, 
+hód
+, 
+membî
+)
+
+	)
+
+258 
+	#hli°_f‹_óch_íåy_rcu
+(
+ços
+, 
+pos
+, 
+hód
+, 
+membî
+)
+
+	)
+
+264 
+	#SET_LINKS
+(
+p
+);
+
+	)
+
+265 
+	#thªad_group_Àadî
+(
+p
+);
+
+	)
+
+266 
+	#add_∑ª¡
+(
+p
+, 
+∑ª¡
+);
+
+	)
+
+267 
+	#REMOVE_LINKS
+(
+p
+);
+
+	)
+
+269 
+	#ªmove_∑ª¡
+(
+p
+);
+
+	)
+
+270 
+	#f‹_óch_¥o˚ss
+(
+p
+);
+
+	)
+
+271 
+	#√xt_èsk
+(
+p
+);
+
+	)
+
+272 
+	#pid_hash‚
+(
+ƒ
+);
+
+	)
+
+273 
+ölöe
+ 
+	`hash_l⁄g
+(
+vÆ
+, 
+bôs
+);
+
+274 
+pid
+ * 
+Á°ˇŒ
+ 
+	`föd_pid
+(
+pid_ty≥
+ 
+ty≥
+, 
+ƒ
+);
+
+277 
+	#pid_èsk
+(
+ñem
+, 
+ty≥
+);
+
+	)
+
+279 
+pid
+ * 
+Á°ˇŒ
+ 
+	`föd_pid
+(
+pid_ty≥
+ 
+ty≥
+, 
+ƒ
+);
+
+280 
+Á°ˇŒ
+ 
+	`‰ì_pidm≠
+(
+pid
+);
+
+281 
+	`Æloc_pidm≠
+();
+
+284 
+èsk_t
+ *
+	`föd_èsk_by_pid_ty≥
+(
+ty≥
+, 
+ƒ
+);
+
+287 
+	#do_óch_èsk_pid
+(
+who
+, 
+ty≥
+, 
+èsk
+);
+
+	)
+
+288 
+	#whûe_óch_èsk_pid
+(
+who
+, 
+ty≥
+, 
+èsk
+);
+
+	)
+
+290 
+ölöe
+ 
+	`hli°_unhashed
+(c⁄° 
+hli°_node
+ *
+h
+);
+
+299 
+	`swôch_exec_pids
+(
+èsk_t
+ *
+Àadî
+,Åask_à*
+thªad
+);
+
+304 
+Á°ˇŒ
+ 
+	`©èch_pid
+(
+èsk_t
+ *
+èsk
+, 
+pid_ty≥
+ 
+ty≥
+, 
+ƒ
+);
+
+306 
+Á°ˇŒ
+ 
+	`__dëach_pid
+(
+èsk_t
+ *
+èsk
+, 
+pid_ty≥
+ 
+ty≥
+);
+
+315 
+Á°ˇŒ
+ 
+	`dëach_pid
+(
+èsk_t
+ *
+èsk
+, 
+pid_ty≥
+ 
+ty≥
+);
+
+317 
+	#föd_èsk_by_pid
+(
+ƒ
+);
+
+	)
+
+318 
+	#Ês
+(
+x
+Ë
+	`gíîic_Ês
+(x)
+
+	)
+
+322 
+__ölöe__
+ 
+	`gíîic_Ês
+(
+x
+);
+
+323 
+__öô
+ 
+	`pidhash_öô
+();
+
+324 
+__öô
+ 
+	`pidm≠_öô
+();
+
+326 
+èsk_t
+ 
+Á°ˇŒ
+ *
+	`√xt_thªad
+(c⁄°Åask_à*
+p
+);
+
+331 
+	#DECLARE_WAIT_QUEUE_HEAD
+(
+«me
+)
+
+	)
+
+332 
+ölöe
+ 
+	`öô_waôqueue_hód
+(
+waô_queue_hód_t
+ *
+q
+);
+
+334 
+ölöe
+ 
+	`__add_waô_queue
+(
+waô_queue_hód_t
+ *
+hód
+, 
+waô_queue_t
+ *
+√w
+);
+
+336 
+	`deÁu…_wake_fun˘i⁄
+(
+waô_queue_t
+ *
+cuº
+, 
+mode
+, 
+sync
+, *
+key
+);
+
+339 
+ölöe
+ 
+	`öô_waôqueue_íåy
+(
+waô_queue_t
+ *
+q
+, 
+èsk_°ru˘
+ *
+p
+);
+
+343 
+	`aut‹emove_wake_fun˘i⁄
+(
+waô_queue_t
+ *
+waô
+, 
+mode
+, 
+sync
+, *
+key
+);
+
+344 
+	#DEFINE_WAIT
+(
+«me
+)
+
+	)
+
+347 
+ölöe
+ 
+	`öô_waôqueue_func_íåy
+(
+waô_queue_t
+ *
+q
+,
+
+348 
+waô_queue_func_t
+ 
+func
+);
+
+350 
+Á°ˇŒ
+ 
+	`add_waô_queue
+(
+waô_queue_hód_t
+ *
+q
+, 
+waô_queue_t
+ *
+waô
+);
+
+351 
+ölöe
+ 
+	`__add_waô_queue
+(
+waô_queue_hód_t
+ *
+hód
+, 
+waô_queue_t
+ *
+√w
+);
+
+352 
+ölöe
+ 
+	`__add_waô_queue_èû
+(
+waô_queue_hód_t
+ *
+hód
+,
+
+353 
+waô_queue_t
+ *
+√w
+);
+
+354 
+Á°ˇŒ
+ 
+	`add_waô_queue_ex˛usive
+(
+waô_queue_hód_t
+ *
+q
+, 
+waô_queue_t
+ *
+waô
+);
+
+357 
+Á°ˇŒ
+ 
+__sched
+ 
+	`¶ìp_⁄
+(
+waô_queue_hód_t
+ *
+q
+);
+
+358 
+Á°ˇŒ
+ 
+__sched
+ 
+	`öãºu±ibÀ_¶ìp_⁄
+(
+waô_queue_hód_t
+ *
+q
+);
+
+359 
+Á°ˇŒ
+ 
+__sched
+ 
+	`¶ìp_⁄_timeout
+(
+waô_queue_hód_t
+ *
+q
+, 
+timeout
+);
+
+360 
+Á°ˇŒ
+ 
+__sched
+ 
+	`öãºu±ibÀ_¶ìp_⁄_timeout
+(
+waô_queue_hód_t
+ *
+q
+, 
+timeout
+);
+
+378 
+	`¥ï¨e_to_waô
+(
+waô_queue_hód_t
+ *
+q
+, 
+waô_queue_t
+ *
+waô
+, 
+°©e
+);
+
+379 
+	#is_sync_waô
+(
+waô
+Ë(!(waôË|| ((waô)->
+èsk
+))
+
+	)
+
+385 
+ölöe
+ 
+	`li°_em±y_ˇªful
+(c⁄° 
+li°_hód
+ *
+hód
+);
+
+388 
+Á°ˇŒ
+ 
+	`föish_waô
+(
+waô_queue_hód_t
+ *
+q
+, 
+waô_queue_t
+ *
+waô
+);
+
+392 
+	`do_f‹k
+(
+˛⁄e_Êags
+,
+
+393 
+°ack_°¨t
+,
+
+394 
+±_ªgs
+ *
+ªgs
+,
+
+395 
+°ack_size
+,
+
+396 
+__u£r
+ *
+∑ª¡_tid±r
+,
+
+397 
+__u£r
+ *
+chûd_tid±r
+);
+
+399 
+	`Æloc_pidm≠
+();
+
+402 
+__öô
+ 
+	`pidhash_öô
+();
+
+409 
+__ölöe__
+ 
+	`gíîic_Ês
+(
+x
+);
+
+411 
+__öô
+ 
+	`pidm≠_öô
+();
+
+413 
+ölöe
+ 
+	`f‹k_åa˚Êag
+ (
+˛⁄e_Êags
+);
+
+415 
+èsk_t
+ *
+	`c›y_¥o˚ss
+(
+˛⁄e_Êags
+,
+
+416 
+°ack_°¨t
+,
+
+417 
+±_ªgs
+ *
+ªgs
+,
+
+418 
+°ack_size
+,
+
+419 
+__u£r
+ *
+∑ª¡_tid±r
+,
+
+420 
+__u£r
+ *
+chûd_tid±r
+,
+
+421 
+pid
+);
+
+423 
+ölöe
+ 
+	`£curôy_èsk_¸óã
+ (
+˛⁄e_Êags
+);
+
+425 
+èsk_°ru˘
+ *
+	`dup_èsk_°ru˘
+(èsk_°ru˘ *
+‹ig
+);
+
+427 
+	`¥ï¨e_to_c›y
+(
+èsk_°ru˘
+ *
+tsk
+);
+
+429 
+	#Æloc_èsk_°ru˘
+(Ë
+	`kmem_ˇche_Æloc
+(
+èsk_°ru˘_ˇchï
+, 
+GFP_KERNEL
+)
+
+	)
+
+431 
+	#Æloc_thªad_öfo
+(
+tsk
+Ë
+	`kmÆloc
+(
+THREAD_SIZE
+, 
+GFP_KERNEL
+)
+
+	)
+
+433 
+	#‰ì_èsk_°ru˘
+(
+tsk
+Ë
+	`kmem_ˇche_‰ì
+(
+èsk_°ru˘_ˇchï
+, (tsk))
+
+	)
+
+435 
+	#gë_group_öfo
+(
+group_öfo
+Ë;
+
+	)
+
+436 
+	`Æloc_pidm≠
+();
+
+440 
+èsk_t
+ *
+	`c›y_¥o˚ss
+(
+˛⁄e_Êags
+,
+
+441 
+°ack_°¨t
+,
+
+442 
+±_ªgs
+ *
+ªgs
+,
+
+443 
+°ack_size
+,
+
+444 
+__u£r
+ *
+∑ª¡_tid±r
+,
+
+445 
+__u£r
+ *
+chûd_tid±r
+,
+
+446 
+pid
+);
+
+448 
+ölöe
+ 
+	`åy_moduÀ_gë
+(
+moduÀ
+ *module);
+
+455 
+	`¥ï¨e_to_c›y
+(
+èsk_°ru˘
+ *
+tsk
+);
+
+457 
+èsk_°ru˘
+ *
+	`dup_èsk_°ru˘
+(èsk_°ru˘ *
+‹ig
+);
+
+458 
+ölöe
+ 
+	`c›y_Êags
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ *
+p
+);
+
+459 
+	`c›y_£mundo
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ *
+tsk
+);
+
+460 
+	`c›y_fûes
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ * 
+tsk
+);
+
+461 
+ölöe
+ 
+	`c›y_fs
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ * 
+tsk
+);
+
+462 
+ölöe
+ 
+	`c›y_sigh™d
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ * 
+tsk
+);
+
+463 
+ölöe
+ 
+	`c›y_sig«l
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ * 
+tsk
+);
+
+464 
+	`c›y_mm
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ * 
+tsk
+);
+
+465 
+	`c›y_keys
+(
+˛⁄e_Êags
+, 
+èsk_°ru˘
+ *
+tsk
+);
+
+466 
+	`c›y_«me•a˚
+(
+Êags
+, 
+èsk_°ru˘
+ *
+tsk
+);
+
+468 
+	`c›y_thªad
+(
+ƒ
+, 
+˛⁄e_Êags
+, 
+e•
+,
+
+469 
+unu£d
+,
+
+470 
+èsk_°ru˘
+ * 
+p
+, 
+±_ªgs
+ * 
+ªgs
+);
+
+	@include-wait.h
+
+1 
+digøph
+ 
+	gwaô_h
+{
+
+2 
+	gsize
+="10,18";
+
+3 
+	gøtio
+=
+fûÀd
+;
+
+5 
+	gnode
+[
+°yÀ
+=
+fûÀd
+, 
+sh≠e
+ = 
+box
+, 
+m¨gö
+="0.05,0.005",
+height
+="0.1",
+width
+="0.1"];
+
+7 
+subgøph
+ 
+	g˛u°î_öô_waôqueue_hód
+{
+
+8 
+	gœbñ
+="static inline void init_waitqueue_head(wait_queue_head_t *q)";
+
+10 
+	g•ö_lock_öô
+[
+œbñ
+="spin_lock_init(&q->lock);"];
+
+11 
+	gINIT_LIST_HEAD
+[
+œbñ
+="INIT_LIST_HEAD(&q->task_list);"];
+
+13 
+	g•ö_lock_öô
+ -> 
+	gINIT_LIST_HEAD
+;
+
+16 
+subgøph
+ 
+	g˛u°î_öô_waôqueue_íåy
+{
+
+17 
+	gœbñ
+="init_waitqueue_entry(wait_queue_t *q, structÅask_struct *p)";
+
+19 
+	gÊags_0
+[
+œbñ
+="flags_0"];
+
+20 
+	gèsk_p
+[
+œbñ
+="task_p"];
+
+21 
+	gfunc_deÁu…_wake_fun˘i⁄
+[
+œbñ
+="func_default_wake_function"];
+
+23 
+	gÊags_0
+ -> 
+	gèsk_p
+;
+
+24 
+	gèsk_p
+ -> 
+	gfunc_deÁu…_wake_fun˘i⁄
+;
+
+27 
+subgøph
+ 
+	g˛u°î_aut‹emove_wake_fun˘i⁄
+{
+
+28 
+	gœbñ
+="intáutoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)";
+
+30 
+	gdeÁu…_wake_fun˘i⁄
+[
+œbñ
+="default_wake_function(wait, mode, sync, key)"];
+
+31 
+	gli°_dñ_öô
+[
+œbñ
+="list_del_init(&wait->task_list);"];
+
+33 
+	gdeÁu…_wake_fun˘i⁄
+ -> 
+	gli°_dñ_öô
+;
+
+37 
+subgøph
+ 
+	g˛u°î__add_waô_queue
+{
+
+38 
+	gœbñ
+="__add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)";
+
+40 
+	gli°_add
+[
+œbñ
+="list_add(&new->task_list, &head->task_list);"];
+
+43 
+subgøph
+ 
+	g˛u°î__ªmove_waô_queue
+{
+
+44 
+	gœbñ
+="static inline void __remove_wait_queue(wait_queue_head_t *head,wait_queue_t *old)";
+
+46 
+	gli°_dñ
+[
+œbñ
+="list_del(&old->task_list);"];
+
+49 
+digøph
+ 
+	g˛u°î_waôqueue_a˘ive
+{
+
+50 
+	gœbñ
+="int waitqueue_active(wait_queue_head_t *q)";
+
+52 
+	gnŸ_li°_em±y
+[
+œbñ
+="!list_empty(&q->task_list);"];
+
+	@kernel_head_file.h
+
+87 
+	#PAGE_SHIFT
+ 12
+
+	)
+
+88 
+	#PAGE_SIZE
+ (1UL << 
+PAGE_SHIFT
+)
+
+	)
+
+89 
+	#PAGE_MASK
+ (~(
+PAGE_SIZE
+-1))
+
+	)
+
+92 
+	#PMD_SHIFT
+ 21
+
+	)
+
+93 
+	#PTRS_PER_PMD
+ 512
+
+	)
+
+94 
+	#PGDIR_SHIFT
+ 30
+
+	)
+
+95 
+	#PTRS_PER_PGD
+ 4
+
+	)
+
+98 
+	#PGDIR_SHIFT
+ 22
+
+	)
+
+101 
+	#_PAGE_BIT_PRESENT
+ 0
+
+	)
+
+102 
+	#_PAGE_BIT_RW
+ 1
+
+	)
+
+103 
+	#_PAGE_BIT_USER
+ 2
+
+	)
+
+104 
+	#_PAGE_BIT_PWT
+ 3
+
+	)
+
+105 
+	#_PAGE_BIT_PCD
+ 4
+
+	)
+
+106 
+	#_PAGE_BIT_ACCESSED
+ 5
+
+	)
+
+107 
+	#_PAGE_BIT_DIRTY
+ 6
+
+	)
+
+108 
+	#_PAGE_BIT_PSE
+ 7
+
+	)
+
+109 
+	#_PAGE_BIT_GLOBAL
+ 8
+
+	)
+
+110 
+	#_PAGE_BIT_UNUSED1
+ 9
+
+	)
+
+111 
+	#_PAGE_BIT_UNUSED2
+ 10
+
+	)
+
+112 
+	#_PAGE_BIT_UNUSED3
+ 11
+
+	)
+
+113 
+	#_PAGE_BIT_NX
+ 63
+
+	)
+
+115 
+	#_PAGE_PRESENT
+ 0x001
+
+	)
+
+116 
+	#_PAGE_RW
+ 0x002
+
+	)
+
+117 
+	#_PAGE_USER
+ 0x004
+
+	)
+
+118 
+	#_PAGE_PWT
+ 0x008
+
+	)
+
+119 
+	#_PAGE_PCD
+ 0x010
+
+	)
+
+120 
+	#_PAGE_ACCESSED
+ 0x020
+
+	)
+
+121 
+	#_PAGE_DIRTY
+ 0x040
+
+	)
+
+122 
+	#_PAGE_PSE
+ 0x080
+
+	)
+
+123 
+	#_PAGE_GLOBAL
+ 0x100
+
+	)
+
+124 
+	#_PAGE_UNUSED1
+ 0x200
+
+	)
+
+125 
+	#_PAGE_UNUSED2
+ 0x400
+
+	)
+
+126 
+	#_PAGE_UNUSED3
+ 0x800
+
+	)
+
+130 
+	#L_PTE_PRESENT
+ (1 << 0)
+
+	)
+
+131 
+	#L_PTE_FILE
+ (1 << 1Ë
+
+	)
+
+132 
+	#L_PTE_YOUNG
+ (1 << 1)
+
+	)
+
+133 
+	#L_PTE_BUFFERABLE
+ (1 << 2Ë
+
+	)
+
+134 
+	#L_PTE_CACHEABLE
+ (1 << 3Ë
+
+	)
+
+135 
+	#L_PTE_USER
+ (1 << 4)
+
+	)
+
+136 
+	#L_PTE_WRITE
+ (1 << 5)
+
+	)
+
+137 
+	#L_PTE_EXEC
+ (1 << 6)
+
+	)
+
+138 
+	#L_PTE_DIRTY
+ (1 << 7)
+
+	)
+
+141 #ifde‡
+CONFIG_X86_PAE
+
+
+142 
+__suµ‹ãd_±e_mask
+;
+
+143 °ru˘ { 
+	m±e_low
+, 
+	m±e_high
+; } 
+	t±e_t
+;
+
+144 °ru˘ { 
+	mpmd
+; } 
+	tpmd_t
+;
+
+145 °ru˘ { 
+	mpgd
+; } 
+	tpgd_t
+;
+
+146 °ru˘ { 
+	mpg¥Ÿ
+; } 
+	tpg¥Ÿ_t
+;
+
+147 
+	#pmd_vÆ
+(
+x
+Ë((x).
+pmd
+)
+
+	)
+
+148 
+	#±e_vÆ
+(
+x
+Ë((x).
+±e_low
+ | (()(x).
+±e_high
+ << 32))
+
+	)
+
+151 
+	#__±e
+(
+x
+Ë((
+±e_t
+Ë{ (xË} )
+
+	)
+
+152 
+	#__pgd
+(
+x
+Ë((
+pgd_t
+Ë{ (xË} )
+
+	)
+
+153 
+	#__pg¥Ÿ
+(
+x
+Ë((
+pg¥Ÿ_t
+Ë{ (xË} )
+
+	)
+
+157 
+	sèsk_°ru˘
+ {
+
+158 vﬁ©ûê
+	m°©e
+;
+
+159 
+thªad_öfo
+ *
+	mthªad_öfo
+;
+
+160 
+©omic_t
+ 
+	mußge
+;
+
+161 
+	mÊags
+;
+
+162 
+	m±ø˚
+;
+
+164 
+	mlock_dïth
+;
+
+166 
+	m¥io
+, 
+	m°©ic_¥io
+;
+
+167 
+li°_hód
+ 
+	mrun_li°
+;
+
+168 
+¥io_¨øy_t
+ *
+	m¨øy
+;
+
+170 
+	m¶ìp_avg
+;
+
+171 
+	mtime°amp
+, 
+	mœ°_øn
+;
+
+172 
+	msched_time
+;
+
+173 
+	ma˘iv©ed
+;
+
+175 
+	mpﬁicy
+;
+
+176 
+˝umask_t
+ 
+	m˝us_Ælowed
+;
+
+177 
+	mtime_¶i˚
+, 
+	mfú°_time_¶i˚
+;
+
+179 #ifde‡
+CONFIG_SCHEDSTATS
+
+
+180 
+sched_öfo
+ 
+	msched_öfo
+;
+
+183 
+li°_hód
+ 
+	mèsks
+;
+
+190 
+li°_hód
+ 
+	m±ø˚_chûdªn
+;
+
+194 
+li°_hód
+ 
+	m±ø˚_li°
+;
+
+201 
+mm_°ru˘
+ *
+	mmm
+, *
+	ma˘ive_mm
+;
+
+204 
+löux_böfmt
+ *
+	mböfmt
+;
+
+205 
+	mexô_°©e
+;
+
+206 
+	mexô_code
+, 
+	mexô_sig«l
+;
+
+207 
+	mpdóth_sig«l
+;
+
+209 
+	m≥rs⁄Æôy
+;
+
+210 
+	mdid_exec
+:1;
+
+213 
+pid_t
+ 
+	mpid
+;
+
+214 
+pid_t
+ 
+	mtgid
+;
+
+222 
+èsk_°ru˘
+ *
+	mªÆ_∑ª¡
+;
+
+223 
+èsk_°ru˘
+ *
+	m∑ª¡
+;
+
+228 
+li°_hód
+ 
+	mchûdªn
+;
+
+229 
+li°_hód
+ 
+	msiblög
+;
+
+230 
+èsk_°ru˘
+ *
+	mgroup_Àadî
+;
+
+233 
+pid
+ 
+	mpids
+[
+PIDTYPE_MAX
+];
+
+235 
+com∂ëi⁄
+ *
+	mvf‹k_d⁄e
+;
+
+238 
+__u£r
+ *
+	m£t_chûd_tid
+;
+
+239 
+__u£r
+ *
+	m˛ór_chûd_tid
+;
+
+241 
+	mπ_¥i‹ôy
+;
+
+242 
+˝utime_t
+ 
+	mutime
+, 
+	m°ime
+;
+
+248 
+	mnvcsw
+, 
+	mnivcsw
+;
+
+249 
+time•ec
+ 
+	m°¨t_time
+;
+
+253 
+	mmö_Êt
+, 
+	mmaj_Êt
+;
+
+260 
+˝utime_t
+ 
+	mô_¥of_expúes
+, 
+	mô_vút_expúes
+;
+
+261 
+	mô_sched_expúes
+;
+
+262 
+li°_hód
+ 
+	m˝u_timîs
+[3];
+
+265 
+uid_t
+ 
+	muid
+,
+	meuid
+,
+	msuid
+,
+	mfsuid
+;
+
+272 
+gid_t
+ 
+	mgid
+,
+	megid
+,
+	msgid
+,
+	mfsgid
+;
+
+278 
+group_öfo
+ *
+	mgroup_öfo
+;
+
+279 
+kî√l_ˇp_t
+ 
+	mˇp_ef„˘ive
+, 
+	mˇp_öhîôabÀ
+, 
+	mˇp_≥rmôãd
+;
+
+284 
+	mkìp_ˇ∑bûôõs
+:1;
+
+287 
+u£r_°ru˘
+ *
+	mu£r
+;
+
+290 #ifde‡
+CONFIG_KEYS
+
+
+291 
+key
+ *
+	mthªad_keyrög
+;
+
+293 
+	moomkûœdj
+;
+
+294 
+	mcomm
+[
+TASK_COMM_LEN
+];
+
+299 
+	mlök_cou¡
+, 
+	mtŸÆ_lök_cou¡
+;
+
+301 
+sysv_£m
+ 
+	msysv£m
+;
+
+303 
+thªad_°ru˘
+ 
+	mthªad
+;
+
+305 
+fs_°ru˘
+ *
+	mfs
+;
+
+307 
+fûes_°ru˘
+ *
+	mfûes
+;
+
+309 
+«me•a˚
+ *
+	m«me•a˚
+;
+
+311 
+sig«l_°ru˘
+ *
+	msig«l
+;
+
+314 
+sigh™d_°ru˘
+ *
+	msigh™d
+;
+
+318 
+sig£t_t
+ 
+	mblocked
+, 
+	mªÆ_blocked
+;
+
+321 
+sig≥ndög
+ 
+	m≥ndög
+;
+
+325 
+	mßs_ss_•
+;
+
+326 
+size_t
+ 
+	mßs_ss_size
+;
+
+327 (*
+	mnŸifõr
+)(*
+	m¥iv
+);
+
+328 *
+	mnŸifõr_d©a
+;
+
+329 
+sig£t_t
+ *
+	mnŸifõr_mask
+;
+
+331 *
+	m£curôy
+;
+
+332 
+audô_c⁄ãxt
+ *
+	maudô_c⁄ãxt
+;
+
+333 
+£ccomp_t
+ 
+	m£ccomp
+;
+
+336 
+u32
+ 
+	m∑ª¡_exec_id
+;
+
+337 
+u32
+ 
+	m£lf_exec_id
+;
+
+343 
+•ölock_t
+ 
+	mÆloc_lock
+;
+
+345 
+•ölock_t
+ 
+	m¥oc_lock
+;
+
+347 
+•ölock_t
+ 
+	mswôch_lock
+;
+
+350 *
+	mjou∫Æ_öfo
+;
+
+353 
+ª˛aim_°©e
+ *
+	mª˛aim_°©e
+;
+
+354 
+díåy
+ *
+	m¥oc_díåy
+;
+
+355 
+backög_dev_öfo
+ *
+	mbackög_dev_öfo
+;
+
+357 
+io_c⁄ãxt
+ *
+	mio_c⁄ãxt
+;
+
+359 
+	m±ø˚_mesßge
+;
+
+360 
+sigöfo_t
+ *
+	mœ°_sigöfo
+;
+
+367 
+waô_queue_t
+ *
+	mio_waô
+;
+
+369 
+u64
+ 
+	mrch¨
+, 
+	mwch¨
+, 
+	msys¸
+, 
+	msyscw
+;
+
+370 #i‡
+deföed
+(
+CONFIG_BSD_PROCESS_ACCT
+)
+
+371 
+u64
+ 
+	mac˘_rss_mem1
+;
+
+372 
+u64
+ 
+	mac˘_vm_mem1
+;
+
+373 
+˛ock_t
+ 
+	mac˘_°imexpd
+;
+
+375 #ifde‡
+CONFIG_NUMA
+
+
+376 
+mempﬁicy
+ *
+	mmempﬁicy
+;
+
+377 
+	mû_√xt
+;
+
+379 #ifde‡
+CONFIG_CPUSETS
+
+
+380 
+˝u£t
+ *
+	m˝u£t
+;
+
+381 
+nodemask_t
+ 
+	mmems_Ælowed
+;
+
+382 
+	m˝u£t_mems_gíî©i⁄
+;
+
+387 
+	uthªad_uni⁄
+ {
+
+388 
+thªad_öfo
+ 
+	mthªad_öfo
+;
+
+389 
+	m°ack
+[
+THREAD_SIZE
+/()];
+
+393 
+	sthªad_öfo
+ {
+
+394 
+èsk_°ru˘
+ *
+	mèsk
+;
+
+395 
+exec_domaö
+ *
+	mexec_domaö
+;
+
+396 
+	mÊags
+;
+
+397 
+	m°©us
+;
+
+398 
+__u32
+ 
+	m˝u
+;
+
+399 
+__s32
+ 
+	m¥ìm±_cou¡
+;
+
+402 
+mm_£gmít_t
+ 
+	maddr_limô
+;
+
+406 
+ª°¨t_block
+ 
+	mª°¨t_block
+;
+
+408 
+	m¥evious_e•
+;
+
+411 
+__u8
+ 
+	msu≥rvis‹_°ack
+[0];
+
+415 
+pidm≠_t
+ 
+	gpidm≠_¨øy
+[
+PIDMAP_ENTRIES
+] =
+
+416 { [ 0 ... 
+PIDMAP_ENTRIES
+-1 ] = { 
+ATOMIC_INIT
+(
+BITS_PER_PAGE
+), 
+NULL
+ } };
+
+419 
+	sli°_hód
+ {
+
+420 
+li°_hód
+ *
+	m√xt
+, *
+	m¥ev
+;
+
+431 
+	shli°_hód
+ {
+
+432 
+hli°_node
+ *
+	mfú°
+;
+
+435 
+	shli°_node
+ {
+
+436 
+hli°_node
+ *
+	m√xt
+, **
+	mµªv
+;
+
+439 
+	s¥io_¨øy
+ {
+
+440 
+	mƒ_a˘ive
+;
+
+441 
+	mbôm≠
+[
+BITMAP_SIZE
+];
+
+442 
+li°_hód
+ 
+	mqueue
+[
+MAX_PRIO
+];
+
+453 
+	ssig«l_°ru˘
+ {
+
+454 
+©omic_t
+ 
+	mcou¡
+;
+
+455 
+©omic_t
+ 
+	mlive
+;
+
+457 
+waô_queue_hód_t
+ 
+	mwaô_chldexô
+;
+
+460 
+èsk_t
+ *
+	mcuº_èrgë
+;
+
+463 
+sig≥ndög
+ 
+	msh¨ed_≥ndög
+;
+
+466 
+	mgroup_exô_code
+;
+
+472 
+èsk_°ru˘
+ *
+	mgroup_exô_èsk
+;
+
+473 
+	mnŸify_cou¡
+;
+
+476 
+	mgroup_°›_cou¡
+;
+
+477 
+	mÊags
+;
+
+480 
+li°_hód
+ 
+	mposix_timîs
+;
+
+492 
+timî_li°
+ 
+	mªÆ_timî
+;
+
+493 
+	mô_ªÆ_vÆue
+, 
+	mô_ªÆ_ö¸
+;
+
+496 
+˝utime_t
+ 
+	mô_¥of_expúes
+, 
+	mô_vút_expúes
+;
+
+497 
+˝utime_t
+ 
+	mô_¥of_ö¸
+, 
+	mô_vút_ö¸
+;
+
+500 
+pid_t
+ 
+	mpgΩ
+;
+
+503 
+pid_t
+ 
+	mây_ﬁd_pgΩ
+;
+
+504 
+pid_t
+ 
+	m£ssi⁄
+;
+
+508 
+	mÀadî
+;
+
+510 
+ây_°ru˘
+ *
+	mây
+;
+
+518 
+˝utime_t
+ 
+	mutime
+, 
+	m°ime
+, 
+	mcutime
+, 
+	mc°ime
+;
+
+524 
+	mnvcsw
+, 
+	mnivcsw
+, 
+	m˙vcsw
+, 
+	m˙ivcsw
+;
+
+527 
+	mmö_Êt
+, 
+	mmaj_Êt
+, 
+	mcmö_Êt
+, 
+	mcmaj_Êt
+;
+
+540 
+	msched_time
+;
+
+551 
+æimô
+ 
+	mæim
+[
+RLIM_NLIMITS
+];
+
+553 
+li°_hód
+ 
+	m˝u_timîs
+[3];
+
+557 #ifde‡
+CONFIG_KEYS
+
+
+558 
+key
+ *
+	m£ssi⁄_keyrög
+;
+
+559 
+key
+ *
+	m¥o˚ss_keyrög
+;
+
+564 
+	epid_ty≥
+
+
+566 
+	mPIDTYPE_PID
+,
+
+567 
+	mPIDTYPE_TGID
+,
+
+568 
+	mPIDTYPE_PGID
+,
+
+569 
+	mPIDTYPE_SID
+,
+
+570 
+	mPIDTYPE_MAX
+
+
+574 
+	spid
+
+
+577 
+	mƒ
+;
+
+580 
+hli°_node
+ 
+	mpid_chaö
+;
+
+582 
+li°_hód
+ 
+	mpid_li°
+;
+
+588 
+hli°_hód
+ *
+	gpid_hash
+[
+PIDTYPE_MAX
+];
+
+591 
+	s__waô_queue_hód
+ {
+
+592 
+•ölock_t
+ 
+	mlock
+;
+
+593 
+li°_hód
+ 
+	mèsk_li°
+;
+
+595 
+__waô_queue_hód
+ 
+	twaô_queue_hód_t
+;
+
+598 
+	s__waô_queue
+ {
+
+599 
+	mÊags
+;
+
+600 
+	#WQ_FLAG_EXCLUSIVE
+ 0x01
+
+	)
+
+601 
+èsk_°ru˘
+ * 
+	mèsk
+;
+
+602 
+waô_queue_func_t
+ 
+	mfunc
+;
+
+604 
+li°_hód
+ 
+	mèsk_li°
+;
+
+611 
+	#CSIGNAL
+ 0x000000f‡
+
+	)
+
+612 
+	#CLONE_VM
+ 0x00000100
+
+	)
+
+615 
+	#CLONE_FS
+ 0x00000200
+
+	)
+
+616 
+	#CLONE_FILES
+ 0x00000400
+
+	)
+
+617 
+	#CLONE_SIGHAND
+ 0x00000800
+
+	)
+
+618 
+	#CLONE_PTRACE
+ 0x00002000
+
+	)
+
+619 
+	#CLONE_VFORK
+ 0x00004000
+
+	)
+
+620 
+	#CLONE_PARENT
+ 0x00008000
+
+	)
+
+621 
+	#CLONE_THREAD
+ 0x00010000
+
+	)
+
+622 
+	#CLONE_NEWNS
+ 0x00020000
+
+	)
+
+628 
+	#CLONE_SYSVSEM
+ 0x00040000
+
+	)
+
+629 
+	#CLONE_SETTLS
+ 0x00080000
+
+	)
+
+630 
+	#CLONE_PARENT_SETTID
+ 0x00100000
+
+	)
+
+631 
+	#CLONE_CHILD_CLEARTID
+ 0x00200000
+
+	)
+
+632 
+	#CLONE_DETACHED
+ 0x00400000
+
+	)
+
+633 
+	#CLONE_UNTRACED
+ 0x00800000
+
+	)
+
+634 
+	#CLONE_CHILD_SETTID
+ 0x01000000
+
+	)
+
+635 
+	#CLONE_STOPPED
+ 0x02000000
+
+	)
+
+645 
+	spidm≠
+ {
+
+646 
+©omic_t
+ 
+	mƒ_‰ì
+;
+
+647 *
+	m∑ge
+;
+
+648 } 
+	tpidm≠_t
+;
+
+650 
+	gpid_max
+ = 
+PID_MAX_DEFAULT
+;
+
+657 
+	#CSIGNAL
+ 0x000000f‡
+
+	)
+
+658 
+	#CLONE_VM
+ 0x00000100
+
+	)
+
+659 
+	#CLONE_FS
+ 0x00000200
+
+	)
+
+660 
+	#CLONE_FILES
+ 0x00000400
+
+	)
+
+661 
+	#CLONE_SIGHAND
+ 0x00000800
+
+	)
+
+662 
+	#CLONE_PTRACE
+ 0x00002000
+
+	)
+
+663 
+	#CLONE_VFORK
+ 0x00004000
+
+	)
+
+664 
+	#CLONE_PARENT
+ 0x00008000
+
+	)
+
+665 
+	#CLONE_THREAD
+ 0x00010000
+
+	)
+
+666 
+	#CLONE_NEWNS
+ 0x00020000
+
+	)
+
+667 
+	#CLONE_SYSVSEM
+ 0x00040000
+
+	)
+
+668 
+	#CLONE_SETTLS
+ 0x00080000
+
+	)
+
+669 
+	#CLONE_PARENT_SETTID
+ 0x00100000
+
+	)
+
+670 
+	#CLONE_CHILD_CLEARTID
+ 0x00200000
+
+	)
+
+671 
+	#CLONE_DETACHED
+ 0x00400000
+
+	)
+
+672 
+	#CLONE_UNTRACED
+ 0x00800000
+
+	)
+
+673 
+	#CLONE_CHILD_SETTID
+ 0x01000000
+
+	)
+
+674 
+	#CLONE_STOPPED
+ 0x02000000
+
+	)
+
+676 
+	su£r_°ru˘
+ {
+
+677 
+©omic_t
+ 
+	m__cou¡
+;
+
+678 
+©omic_t
+ 
+	m¥o˚s£s
+;
+
+679 
+©omic_t
+ 
+	mfûes
+;
+
+680 
+©omic_t
+ 
+	msig≥ndög
+;
+
+682 
+	mmq_byãs
+;
+
+683 
+	mlocked_shm
+;
+
+685 #ifde‡
+CONFIG_KEYS
+
+
+686 
+key
+ *
+	muid_keyrög
+;
+
+687 
+key
+ *
+	m£ssi⁄_keyrög
+;
+
+691 
+li°_hód
+ 
+	muidhash_li°
+;
+
+692 
+uid_t
+ 
+	muid
+;
+
+695 
+	sgroup_öfo
+ {
+
+696 
+	mngroups
+;
+
+697 
+©omic_t
+ 
+	mußge
+;
+
+698 
+gid_t
+ 
+	msmÆl_block
+[
+NGROUPS_SMALL
+];
+
+699 
+	mnblocks
+;
+
+700 
+gid_t
+ *
+	mblocks
+[0];
+
+702 
+	sexec_domaö
+ {
+
+703 c⁄° *
+	m«me
+;
+
+704 
+h™dÀr_t
+ 
+	mh™dÀr
+;
+
+705 
+	m≥rs_low
+;
+
+706 
+	m≥rs_high
+;
+
+707 *
+	msig«l_m≠
+;
+
+708 *
+	msig«l_övm≠
+;
+
+709 
+m≠_£gmít
+ *
+	mîr_m≠
+;
+
+710 
+m≠_£gmít
+ *
+	msockty≥_m≠
+;
+
+711 
+m≠_£gmít
+ *
+	msock›t_m≠
+;
+
+712 
+m≠_£gmít
+ *
+	maf_m≠
+;
+
+713 
+moduÀ
+ *
+	mmoduÀ
+;
+
+714 
+exec_domaö
+ *
+	m√xt
+;
+
+721 
+	#PF_ALIGNWARN
+ 0x00000001
+
+	)
+
+723 
+	#PF_STARTING
+ 0x00000002
+
+	)
+
+724 
+	#PF_EXITING
+ 0x00000004
+
+	)
+
+725 
+	#PF_DEAD
+ 0x00000008
+
+	)
+
+726 
+	#PF_FORKNOEXEC
+ 0x00000040
+
+	)
+
+727 
+	#PF_SUPERPRIV
+ 0x00000100
+
+	)
+
+728 
+	#PF_DUMPCORE
+ 0x00000200
+
+	)
+
+729 
+	#PF_SIGNALED
+ 0x00000400
+
+	)
+
+730 
+	#PF_MEMALLOC
+ 0x00000800
+
+	)
+
+731 
+	#PF_FLUSHER
+ 0x00001000
+
+	)
+
+732 
+	#PF_USED_MATH
+ 0x00002000
+
+	)
+
+733 
+	#PF_FREEZE
+ 0x00004000
+
+	)
+
+734 
+	#PF_NOFREEZE
+ 0x00008000
+
+	)
+
+735 
+	#PF_FROZEN
+ 0x00010000
+
+	)
+
+736 
+	#PF_FSTRANS
+ 0x00020000
+
+	)
+
+737 
+	#PF_KSWAPD
+ 0x00040000
+
+	)
+
+738 
+	#PF_SWAPOFF
+ 0x00080000
+
+	)
+
+739 
+	#PF_LESS_THROTTLE
+ 0x00100000
+
+	)
+
+740 
+	#PF_SYNCWRITE
+ 0x00200000
+
+	)
+
+741 
+	#PF_BORROWED_MM
+ 0x00400000
+
+	)
+
+742 
+	#PF_RANDOMIZE
+ 0x00800000
+
+	)
+
+745 
+	s±_ªgs
+ {
+
+746 
+	mebx
+;
+
+747 
+	mecx
+;
+
+748 
+	medx
+;
+
+749 
+	mesi
+;
+
+750 
+	medi
+;
+
+751 
+	mebp
+;
+
+752 
+	móx
+;
+
+753 
+	mxds
+;
+
+754 
+	mxes
+;
+
+755 
+	m‹ig_óx
+;
+
+756 
+	meù
+;
+
+757 
+	mxcs
+;
+
+758 
+	meÊags
+;
+
+759 
+	me•
+;
+
+760 
+	mxss
+;
+
+764 
+	sthªad_°ru˘
+ {
+
+766 
+desc_°ru˘
+ 
+	més_¨øy
+[
+GDT_ENTRY_TLS_ENTRIES
+];
+
+767 
+	me•0
+;
+
+768 
+	msy£¡î_cs
+;
+
+769 
+	meù
+;
+
+770 
+	me•
+;
+
+771 
+	mfs
+;
+
+772 
+	mgs
+;
+
+774 
+	mdebugªg
+[8];
+
+776 
+	m¸2
+, 
+	må≠_no
+, 
+	mîr‹_code
+;
+
+778 
+i387_uni⁄
+ 
+	mi387
+;
+
+780 
+vm86_°ru˘
+ 
+__u£r
+ * 
+	mvm86_öfo
+;
+
+781 
+	ms¸ìn_bôm≠
+;
+
+782 
+	mv86Êags
+, 
+	mv86mask
+, 
+	mßved_e•0
+;
+
+783 
+	mßved_fs
+, 
+	mßved_gs
+;
+
+785 *
+	mio_bôm≠_±r
+;
+
+787 
+	mio_bôm≠_max
+;
+
+796 
+	#SIGNAL_STOP_STOPPED
+ 0x00000001
+
+	)
+
+797 
+	#SIGNAL_STOP_DEQUEUED
+ 0x00000002
+
+	)
+
+798 
+	#SIGNAL_STOP_CONTINUED
+ 0x00000004
+
+	)
+
+799 
+	#SIGNAL_GROUP_EXIT
+ 0x00000008
+
+	)
+
+805 
+	#TASK_RUNNING
+ 0
+
+	)
+
+806 
+	#TASK_INTERRUPTIBLE
+ 1
+
+	)
+
+807 
+	#TASK_UNINTERRUPTIBLE
+ 2
+
+	)
+
+808 
+	#TASK_STOPPED
+ 4
+
+	)
+
+809 
+	#TASK_TRACED
+ 8
+
+	)
+
+810 
+	#EXIT_ZOMBIE
+ 16
+
+	)
+
+811 
+	#EXIT_DEAD
+ 32
+
+	)
+
+814 
+	sèsk_°ru˘
+ {
+
+815 vﬁ©ûê
+	m°©e
+;
+
+816 
+thªad_öfo
+ *
+	mthªad_öfo
+;
+
+817 
+©omic_t
+ 
+	mußge
+;
+
+828 
+	#PF_ALIGNWARN
+ 0x00000001
+
+	)
+
+830 
+	#PF_STARTING
+ 0x00000002
+
+	)
+
+831 
+	#PF_EXITING
+ 0x00000004
+
+	)
+
+832 
+	#PF_DEAD
+ 0x00000008
+
+	)
+
+833 
+	#PF_FORKNOEXEC
+ 0x00000040
+
+	)
+
+834 
+	#PF_SUPERPRIV
+ 0x00000100
+
+	)
+
+835 
+	#PF_DUMPCORE
+ 0x00000200
+
+	)
+
+836 
+	#PF_SIGNALED
+ 0x00000400
+
+	)
+
+837 
+	#PF_MEMALLOC
+ 0x00000800
+
+	)
+
+838 
+	#PF_FLUSHER
+ 0x00001000
+
+	)
+
+839 
+	#PF_USED_MATH
+ 0x00002000
+
+	)
+
+840 
+	#PF_FREEZE
+ 0x00004000
+
+	)
+
+841 
+	#PF_NOFREEZE
+ 0x00008000
+
+	)
+
+842 
+	#PF_FROZEN
+ 0x00010000
+
+	)
+
+843 
+	#PF_FSTRANS
+ 0x00020000
+
+	)
+
+844 
+	#PF_KSWAPD
+ 0x00040000
+
+	)
+
+845 
+	#PF_SWAPOFF
+ 0x00080000
+
+	)
+
+846 
+	#PF_LESS_THROTTLE
+ 0x00100000
+
+	)
+
+847 
+	#PF_SYNCWRITE
+ 0x00200000
+
+	)
+
+848 
+	#PF_BORROWED_MM
+ 0x00400000
+
+	)
+
+849 
+	#PF_RANDOMIZE
+ 0x00800000
+
+	)
+
+850 
+	mÊags
+;
+
+867 
+	#PT_PTRACED
+ 0x00000001
+
+	)
+
+868 
+	#PT_DTRACE
+ 0x00000002
+
+	)
+
+869 
+	#PT_TRACESYSGOOD
+ 0x00000004
+
+	)
+
+870 
+	#PT_PTRACE_CAP
+ 0x00000008
+
+	)
+
+871 
+	#PT_TRACE_FORK
+ 0x00000010
+
+	)
+
+872 
+	#PT_TRACE_VFORK
+ 0x00000020
+
+	)
+
+873 
+	#PT_TRACE_CLONE
+ 0x00000040
+
+	)
+
+874 
+	#PT_TRACE_EXEC
+ 0x00000080
+
+	)
+
+875 
+	#PT_TRACE_VFORK_DONE
+ 0x00000100
+
+	)
+
+876 
+	#PT_TRACE_EXIT
+ 0x00000200
+
+	)
+
+877 
+	#PT_ATTACHED
+ 0x00000400
+
+	)
+
+878 
+	m±ø˚
+;
+
+879 
+	mlock_dïth
+;
+
+881 
+	m¥io
+, 
+	m°©ic_¥io
+;
+
+894 
+li°_hód
+ 
+	mrun_li°
+;
+
+906 
+¥io_¨øy_t
+ *
+	m¨øy
+;
+
+910 
+	m¶ìp_avg
+;
+
+913 
+	mtime°amp
+, 
+	mœ°_øn
+;
+
+917 
+	msched_time
+;
+
+918 
+	ma˘iv©ed
+;
+
+920 
+	mpﬁicy
+;
+
+924 
+˝umask_t
+ 
+	m˝us_Ælowed
+;
+
+927 
+	mtime_¶i˚
+, 
+	mfú°_time_¶i˚
+;
+
+931 #ifde‡
+CONFIG_SCHEDSTATS
+
+
+932 
+sched_öfo
+ 
+	msched_öfo
+;
+
+935 
+li°_hód
+ 
+	mèsks
+;
+
+942 
+li°_hód
+ 
+	m±ø˚_chûdªn
+;
+
+946 
+li°_hód
+ 
+	m±ø˚_li°
+;
+
+953 
+mm_°ru˘
+ *
+	mmm
+, *
+	ma˘ive_mm
+;
+
+960 
+löux_böfmt
+ *
+	mböfmt
+;
+
+964 
+	mexô_°©e
+;
+
+971 
+	mexô_code
+, 
+	mexô_sig«l
+;
+
+972 
+	mpdóth_sig«l
+;
+
+974 
+	m≥rs⁄Æôy
+;
+
+983 
+	mdid_exec
+:1;
+
+986 
+pid_t
+ 
+	mpid
+;
+
+987 
+pid_t
+ 
+	mtgid
+;
+
+995 
+èsk_°ru˘
+ *
+	mªÆ_∑ª¡
+;
+
+996 
+èsk_°ru˘
+ *
+	m∑ª¡
+;
+
+1001 
+li°_hód
+ 
+	mchûdªn
+;
+
+1002 
+li°_hód
+ 
+	msiblög
+;
+
+1003 
+èsk_°ru˘
+ *
+	mgroup_Àadî
+;
+
+1006 
+pid
+ 
+	mpids
+[
+PIDTYPE_MAX
+];
+
+1008 
+com∂ëi⁄
+ *
+	mvf‹k_d⁄e
+;
+
+1011 
+__u£r
+ *
+	m£t_chûd_tid
+;
+
+1012 
+__u£r
+ *
+	m˛ór_chûd_tid
+;
+
+1014 
+	mπ_¥i‹ôy
+;
+
+1017 
+˝utime_t
+ 
+	mutime
+, 
+	m°ime
+;
+
+1023 
+	mnvcsw
+, 
+	mnivcsw
+;
+
+1024 
+time•ec
+ 
+	m°¨t_time
+;
+
+1028 
+	mmö_Êt
+, 
+	mmaj_Êt
+;
+
+1035 
+˝utime_t
+ 
+	mô_¥of_expúes
+, 
+	mô_vút_expúes
+;
+
+1036 
+	mô_sched_expúes
+;
+
+1037 
+li°_hód
+ 
+	m˝u_timîs
+[3];
+
+1040 
+uid_t
+ 
+	muid
+,
+	meuid
+,
+	msuid
+,
+	mfsuid
+;
+
+1041 
+gid_t
+ 
+	mgid
+,
+	megid
+,
+	msgid
+,
+	mfsgid
+;
+
+1042 
+group_öfo
+ *
+	mgroup_öfo
+;
+
+1043 
+kî√l_ˇp_t
+ 
+	mˇp_ef„˘ive
+, 
+	mˇp_öhîôabÀ
+, 
+	mˇp_≥rmôãd
+;
+
+1044 
+	mkìp_ˇ∑bûôõs
+:1;
+
+1045 
+u£r_°ru˘
+ *
+	mu£r
+;
+
+1046 #ifde‡
+CONFIG_KEYS
+
+
+1047 
+key
+ *
+	mthªad_keyrög
+;
+
+1049 
+	moomkûœdj
+;
+
+1050 
+	mcomm
+[
+TASK_COMM_LEN
+];
+
+1055 
+	mlök_cou¡
+, 
+	mtŸÆ_lök_cou¡
+;
+
+1057 
+sysv_£m
+ 
+	msysv£m
+;
+
+1059 
+thªad_°ru˘
+ 
+	mthªad
+;
+
+1061 
+fs_°ru˘
+ *
+	mfs
+;
+
+1063 
+fûes_°ru˘
+ *
+	mfûes
+;
+
+1065 
+«me•a˚
+ *
+	m«me•a˚
+;
+
+1067 
+sig«l_°ru˘
+ *
+	msig«l
+;
+
+1068 
+sigh™d_°ru˘
+ *
+	msigh™d
+;
+
+1070 
+sig£t_t
+ 
+	mblocked
+, 
+	mªÆ_blocked
+;
+
+1071 
+sig≥ndög
+ 
+	m≥ndög
+;
+
+1073 
+	mßs_ss_•
+;
+
+1074 
+size_t
+ 
+	mßs_ss_size
+;
+
+1075 (*
+	mnŸifõr
+)(*
+	m¥iv
+);
+
+1076 *
+	mnŸifõr_d©a
+;
+
+1077 
+sig£t_t
+ *
+	mnŸifõr_mask
+;
+
+1079 *
+	m£curôy
+;
+
+1080 
+audô_c⁄ãxt
+ *
+	maudô_c⁄ãxt
+;
+
+1081 
+£ccomp_t
+ 
+	m£ccomp
+;
+
+1084 
+u32
+ 
+	m∑ª¡_exec_id
+;
+
+1085 
+u32
+ 
+	m£lf_exec_id
+;
+
+1087 
+•ölock_t
+ 
+	mÆloc_lock
+;
+
+1089 
+•ölock_t
+ 
+	m¥oc_lock
+;
+
+1091 
+•ölock_t
+ 
+	mswôch_lock
+;
+
+1094 *
+	mjou∫Æ_öfo
+;
+
+1097 
+ª˛aim_°©e
+ *
+	mª˛aim_°©e
+;
+
+1101 
+díåy
+ *
+	m¥oc_díåy
+;
+
+1102 
+backög_dev_öfo
+ *
+	mbackög_dev_öfo
+;
+
+1104 
+io_c⁄ãxt
+ *
+	mio_c⁄ãxt
+;
+
+1106 
+	m±ø˚_mesßge
+;
+
+1109 
+sigöfo_t
+ *
+	mœ°_sigöfo
+;
+
+1116 
+waô_queue_t
+ *
+	mio_waô
+;
+
+1118 
+u64
+ 
+	mrch¨
+, 
+	mwch¨
+, 
+	msys¸
+, 
+	msyscw
+;
+
+1119 #i‡
+deföed
+(
+CONFIG_BSD_PROCESS_ACCT
+)
+
+1120 
+u64
+ 
+	mac˘_rss_mem1
+;
+
+1121 
+u64
+ 
+	mac˘_vm_mem1
+;
+
+1122 
+˛ock_t
+ 
+	mac˘_°imexpd
+;
+
+1124 #ifde‡
+CONFIG_NUMA
+
+
+1125 
+mempﬁicy
+ *
+	mmempﬁicy
+;
+
+1126 
+	mû_√xt
+;
+
+1128 #ifde‡
+CONFIG_CPUSETS
+
+
+1129 
+˝u£t
+ *
+	m˝u£t
+;
+
+1130 
+nodemask_t
+ 
+	mmems_Ælowed
+;
+
+1131 
+	m˝u£t_mems_gíî©i⁄
+;
+
+1135 
+	uthªad_uni⁄
+ {
+
+1136 
+thªad_öfo
+ 
+	mthªad_öfo
+;
+
+1137 
+	m°ack
+[
+THREAD_SIZE
+/()];
+
+1143 
+	#PF_ALIGNWARN
+ 0x00000001
+
+	)
+
+1145 
+	#PF_STARTING
+ 0x00000002
+
+	)
+
+1146 
+	#PF_EXITING
+ 0x00000004
+
+	)
+
+1147 
+	#PF_DEAD
+ 0x00000008
+
+	)
+
+1148 
+	#PF_FORKNOEXEC
+ 0x00000040
+
+	)
+
+1149 
+	#PF_SUPERPRIV
+ 0x00000100
+
+	)
+
+1150 
+	#PF_DUMPCORE
+ 0x00000200
+
+	)
+
+1151 
+	#PF_SIGNALED
+ 0x00000400
+
+	)
+
+1152 
+	#PF_MEMALLOC
+ 0x00000800
+
+	)
+
+1153 
+	#PF_FLUSHER
+ 0x00001000
+
+	)
+
+1154 
+	#PF_USED_MATH
+ 0x00002000
+
+	)
+
+1155 
+	#PF_FREEZE
+ 0x00004000
+
+	)
+
+1156 
+	#PF_NOFREEZE
+ 0x00008000
+
+	)
+
+1157 
+	#PF_FROZEN
+ 0x00010000
+
+	)
+
+1158 
+	#PF_FSTRANS
+ 0x00020000
+
+	)
+
+1159 
+	#PF_KSWAPD
+ 0x00040000
+
+	)
+
+1160 
+	#PF_SWAPOFF
+ 0x00080000
+
+	)
+
+1161 
+	#PF_LESS_THROTTLE
+ 0x00100000
+
+	)
+
+1162 
+	#PF_SYNCWRITE
+ 0x00200000
+
+	)
+
+1163 
+	#PF_BORROWED_MM
+ 0x00400000
+
+	)
+
+1164 
+	#PF_RANDOMIZE
+ 0x00800000
+
+	)
+
+1166 
+	smm_°ru˘
+ {
+
+1167 
+vm_¨ó_°ru˘
+ * 
+	mmm≠
+;
+
+1168 
+rb_roŸ
+ 
+	mmm_rb
+;
+
+1169 
+vm_¨ó_°ru˘
+ * 
+	mmm≠_ˇche
+;
+
+1170 (*
+	mgë_unm≠≥d_¨ó
+Ë(
+fûe
+ *
+	mfûp
+,
+
+1171 
+	maddr
+, 
+	mÀn
+,
+
+1172 
+	mpgoff
+, 
+	mÊags
+);
+
+1173 (*
+	munm≠_¨ó
+Ë(
+vm_¨ó_°ru˘
+ *
+	m¨ó
+);
+
+1174 
+	mmm≠_ba£
+;
+
+1175 
+	m‰ì_¨ó_ˇche
+;
+
+1176 
+pgd_t
+ * 
+	mpgd
+;
+
+1177 
+©omic_t
+ 
+	mmm_u£rs
+;
+
+1178 
+©omic_t
+ 
+	mmm_cou¡
+;
+
+1179 
+	mm≠_cou¡
+;
+
+1180 
+rw_£m≠h‹e
+ 
+	mmm≠_£m
+;
+
+1181 
+•ölock_t
+ 
+	m∑ge_èbÀ_lock
+;
+
+1183 
+li°_hód
+ 
+	mmmli°
+;
+
+1188 
+	m°¨t_code
+, 
+	míd_code
+, 
+	m°¨t_d©a
+, 
+	míd_d©a
+;
+
+1189 
+	m°¨t_brk
+, 
+	mbrk
+, 
+	m°¨t_°ack
+;
+
+1190 
+	m¨g_°¨t
+, 
+	m¨g_íd
+, 
+	mív_°¨t
+, 
+	mív_íd
+;
+
+1191 
+	mtŸÆ_vm
+, 
+	mlocked_vm
+, 
+	msh¨ed_vm
+;
+
+1192 
+	mexec_vm
+, 
+	m°ack_vm
+, 
+	mª£rved_vm
+, 
+	mdef_Êags
+, 
+	mƒ_±es
+;
+
+1195 
+mm_cou¡î_t
+ 
+	m_rss
+;
+
+1196 
+mm_cou¡î_t
+ 
+	m_™⁄_rss
+;
+
+1198 
+	mßved_auxv
+[42];
+
+1200 
+	mdum∑bÀ
+:1;
+
+1201 
+˝umask_t
+ 
+	m˝u_vm_mask
+;
+
+1204 
+mm_c⁄ãxt_t
+ 
+	mc⁄ãxt
+;
+
+1207 
+	msw≠_tokí_time
+;
+
+1208 
+	mª˚¡_∑geö
+;
+
+1211 
+	mc‹e_waôîs
+;
+
+1212 
+com∂ëi⁄
+ *
+	mc‹e_°¨tup_d⁄e
+, 
+	mc‹e_d⁄e
+;
+
+1215 
+rwlock_t
+ 
+	mio˘x_li°_lock
+;
+
+1216 
+kio˘x
+ *
+	mio˘x_li°
+;
+
+1218 
+kio˘x
+ 
+	mdeÁu…_kio˘x
+;
+
+1220 
+	mhiw©î_rss
+;
+
+1221 
+	mhiw©î_vm
+;
+
+1226 
+	ssigh™d_°ru˘
+ {
+
+1227 
+©omic_t
+ 
+	mcou¡
+;
+
+1228 
+k_siga˘i⁄
+ 
+	ma˘i⁄
+[
+_NSIG
+];
+
+1229 
+•ölock_t
+ 
+	msiglock
+;
+
+1239 
+	ssig«l_°ru˘
+ {
+
+1240 
+©omic_t
+ 
+	mcou¡
+;
+
+1241 
+©omic_t
+ 
+	mlive
+;
+
+1243 
+waô_queue_hód_t
+ 
+	mwaô_chldexô
+;
+
+1246 
+èsk_t
+ *
+	mcuº_èrgë
+;
+
+1249 
+sig≥ndög
+ 
+	msh¨ed_≥ndög
+;
+
+1252 
+	mgroup_exô_code
+;
+
+1258 
+èsk_°ru˘
+ *
+	mgroup_exô_èsk
+;
+
+1259 
+	mnŸify_cou¡
+;
+
+1262 
+	mgroup_°›_cou¡
+;
+
+1263 
+	mÊags
+;
+
+1266 
+li°_hód
+ 
+	mposix_timîs
+;
+
+1269 
+timî_li°
+ 
+	mªÆ_timî
+;
+
+1270 
+	mô_ªÆ_vÆue
+, 
+	mô_ªÆ_ö¸
+;
+
+1273 
+˝utime_t
+ 
+	mô_¥of_expúes
+, 
+	mô_vút_expúes
+;
+
+1274 
+˝utime_t
+ 
+	mô_¥of_ö¸
+, 
+	mô_vút_ö¸
+;
+
+1277 
+pid_t
+ 
+	mpgΩ
+;
+
+1278 
+pid_t
+ 
+	mây_ﬁd_pgΩ
+;
+
+1279 
+pid_t
+ 
+	m£ssi⁄
+;
+
+1281 
+	mÀadî
+;
+
+1283 
+ây_°ru˘
+ *
+	mây
+;
+
+1291 
+˝utime_t
+ 
+	mutime
+, 
+	m°ime
+, 
+	mcutime
+, 
+	mc°ime
+;
+
+1292 
+	mnvcsw
+, 
+	mnivcsw
+, 
+	m˙vcsw
+, 
+	m˙ivcsw
+;
+
+1293 
+	mmö_Êt
+, 
+	mmaj_Êt
+, 
+	mcmö_Êt
+, 
+	mcmaj_Êt
+;
+
+1301 
+	msched_time
+;
+
+1312 
+æimô
+ 
+	mæim
+[
+RLIM_NLIMITS
+];
+
+1314 
+li°_hód
+ 
+	m˝u_timîs
+[3];
+
+1318 #ifde‡
+CONFIG_KEYS
+
+
+1319 
+key
+ *
+	m£ssi⁄_keyrög
+;
+
+1320 
+key
+ *
+	m¥o˚ss_keyrög
+;
+
+1325 
+	#PIDMAP_ENTRIES
+ ((
+PID_MAX_LIMIT
+ + 8*
+PAGE_SIZE
+ - 1)/PAGE_SIZE/8)
+
+	)
+
+1326 
+pidm≠_t
+ 
+	mpidm≠_¨øy
+[
+PIDMAP_ENTRIES
+] =
+
+1327 { [ 0 ... 
+PIDMAP_ENTRIES
+-1 ] = { 
+ATOMIC_INIT
+(
+BITS_PER_PAGE
+), 
+NULL
+ } };
+
+1330 #ifde‡
+CONFIG_4KSTACKS
+
+
+1331 
+	#THREAD_SIZE
+ (4096)
+
+	)
+
+1333 
+	#THREAD_SIZE
+ (8192)
+
+	)
+
+1336 
+	sthªad_öfo
+ {
+
+1337 
+èsk_°ru˘
+ *
+	mèsk
+;
+
+1338 
+exec_domaö
+ *
+	mexec_domaö
+;
+
+1339 
+	mÊags
+;
+
+1340 
+	m°©us
+;
+
+1341 
+__u32
+ 
+	m˝u
+;
+
+1342 
+__s32
+ 
+	m¥ìm±_cou¡
+;
+
+1345 
+mm_£gmít_t
+ 
+	maddr_limô
+;
+
+1349 
+ª°¨t_block
+ 
+	mª°¨t_block
+;
+
+1351 
+	m¥evious_e•
+;
+
+1354 
+__u8
+ 
+	msu≥rvis‹_°ack
+[0];
+
+1363 
+	#TIF_SYSCALL_TRACE
+ 0
+
+	)
+
+1364 
+	#TIF_NOTIFY_RESUME
+ 1
+
+	)
+
+1365 
+	#TIF_SIGPENDING
+ 2
+
+	)
+
+1366 
+	#TIF_NEED_RESCHED
+ 3
+
+	)
+
+1367 
+	#TIF_SINGLESTEP
+ 4
+
+	)
+
+1368 
+	#TIF_IRET
+ 5
+
+	)
+
+1369 
+	#TIF_SYSCALL_AUDIT
+ 7
+
+	)
+
+1370 
+	#TIF_SECCOMP
+ 8
+
+	)
+
+1371 
+	#TIF_POLLING_NRFLAG
+ 16
+
+	)
+
+1372 
+	#TIF_MEMDIE
+ 17
+
+	)
+
+1376 
+	s¥io_¨øy
+ {
+
+1377 
+	mƒ_a˘ive
+;
+
+1378 
+	mbôm≠
+[
+BITMAP_SIZE
+];
+
+1379 
+li°_hód
+ 
+	mqueue
+[
+MAX_PRIO
+];
+
+1389 
+	srunqueue
+ {
+
+1390 
+•ölock_t
+ 
+	mlock
+;
+
+1396 
+	mƒ_ru¬ög
+;
+
+1397 #ifde‡
+CONFIG_SMP
+
+
+1398 
+	m˝u_lﬂd
+;
+
+1400 
+	mƒ_swôches
+;
+
+1408 
+	mƒ_unöãºu±ibÀ
+;
+
+1410 
+	mexpúed_time°amp
+;
+
+1411 
+	mtime°amp_œ°_tick
+;
+
+1415 
+èsk_t
+ *
+	mcuº
+, *
+	midÀ
+;
+
+1419 
+mm_°ru˘
+ *
+	m¥ev_mm
+;
+
+1420 
+¥io_¨øy_t
+ *
+	ma˘ive
+, *
+	mexpúed
+, 
+	m¨øys
+[2];
+
+1421 
+	mbe°_expúed_¥io
+;
+
+1422 
+©omic_t
+ 
+	mƒ_iowaô
+;
+
+1424 #ifde‡
+CONFIG_SMP
+
+
+1425 
+sched_domaö
+ *
+	msd
+;
+
+1428 
+	ma˘ive_bÆ™˚
+;
+
+1429 
+	mpush_˝u
+;
+
+1431 
+èsk_t
+ *
+	mmigøti⁄_thªad
+;
+
+1432 
+li°_hód
+ 
+	mmigøti⁄_queue
+;
+
+1435 #ifde‡
+CONFIG_SCHEDSTATS
+
+
+1437 
+sched_öfo
+ 
+	mrq_sched_öfo
+;
+
+1440 
+	myld_exp_em±y
+;
+
+1441 
+	myld_a˘_em±y
+;
+
+1442 
+	myld_bŸh_em±y
+;
+
+1443 
+	myld_˙t
+;
+
+1446 
+	msched_swôch
+;
+
+1447 
+	msched_˙t
+;
+
+1448 
+	msched_goidÀ
+;
+
+1451 
+	mâwu_˙t
+;
+
+1452 
+	mâwu_loˇl
+;
+
+1458 
+hli°_hód
+ *
+	mpid_hash
+[
+PIDTYPE_MAX
+];
+
+1461 
+	spid
+
+
+1464 
+	mƒ
+;
+
+1465 
+hli°_node
+ 
+	mpid_chaö
+;
+
+1467 
+li°_hód
+ 
+	mpid_li°
+;
+
+1471 
+	s__waô_queue_hód
+ {
+
+1472 
+•ölock_t
+ 
+	mlock
+;
+
+1473 
+li°_hód
+ 
+	mèsk_li°
+;
+
+1475 
+__waô_queue_hód
+ 
+	twaô_queue_hód_t
+;
+
+1477 
+	s__waô_queue
+ {
+
+1478 
+	mÊags
+;
+
+1479 
+	#WQ_FLAG_EXCLUSIVE
+ 0x01
+
+	)
+
+1480 
+èsk_°ru˘
+ * 
+	mèsk
+;
+
+1481 
+waô_queue_func_t
+ 
+	mfunc
+;
+
+1482 
+li°_hód
+ 
+	mèsk_li°
+;
+
+1485 
+	#__WAIT_QUEUE_HEAD_INITIALIZER
+(
+«me
+) { \
+
+1486 .
+lock
+ = 
+SPIN_LOCK_UNLOCKED
+, \
+
+1487 .
+èsk_li°
+ = { &(
+«me
+).èsk_li°, &“ame).èsk_li° } }
+
+	)
+
+1489 
+	#DECLARE_WAIT_QUEUE_HEAD
+(
+«me
+) \
+
+1490 
+waô_queue_hód_t
+ 
+«me
+ = 
+	`__WAIT_QUEUE_HEAD_INITIALIZER
+“ame)
+
+	)
+
+1494 
+	sthªad_°ru˘
+ {
+
+1496 
+desc_°ru˘
+ 
+	més_¨øy
+[
+GDT_ENTRY_TLS_ENTRIES
+];
+
+1497 
+	me•0
+;
+
+1498 
+	msy£¡î_cs
+;
+
+1499 
+	meù
+;
+
+1500 
+	me•
+;
+
+1501 
+	mfs
+;
+
+1502 
+	mgs
+;
+
+1504 
+	mdebugªg
+[8];
+
+1506 
+	m¸2
+, 
+	må≠_no
+, 
+	mîr‹_code
+;
+
+1508 
+i387_uni⁄
+ 
+	mi387
+;
+
+1510 
+vm86_°ru˘
+ 
+__u£r
+ * 
+	mvm86_öfo
+;
+
+1511 
+	ms¸ìn_bôm≠
+;
+
+1512 
+	mv86Êags
+, 
+	mv86mask
+, 
+	mßved_e•0
+;
+
+1513 
+	mßved_fs
+, 
+	mßved_gs
+;
+
+1515 *
+	mio_bôm≠_±r
+;
+
+1517 
+	mio_bôm≠_max
+;
+
+1526 
+	#PT_PTRACED
+ 0x00000001
+
+	)
+
+1527 
+	#PT_DTRACE
+ 0x00000002
+
+	)
+
+1528 
+	#PT_TRACESYSGOOD
+ 0x00000004
+
+	)
+
+1529 
+	#PT_PTRACE_CAP
+ 0x00000008
+
+	)
+
+1530 
+	#PT_TRACE_FORK
+ 0x00000010
+
+	)
+
+1531 
+	#PT_TRACE_VFORK
+ 0x00000020
+
+	)
+
+1532 
+	#PT_TRACE_CLONE
+ 0x00000040
+
+	)
+
+1533 
+	#PT_TRACE_EXEC
+ 0x00000080
+
+	)
+
+1534 
+	#PT_TRACE_VFORK_DONE
+ 0x00000100
+
+	)
+
+1535 
+	#PT_TRACE_EXIT
+ 0x00000200
+
+	)
+
+1536 
+	#PT_ATTACHED
+ 0x00000400
+
+	)
+
+1543 
+	#IRQ_INPROGRESS
+ 1
+
+	)
+
+1544 
+	#IRQ_DISABLED
+ 2
+
+	)
+
+1545 
+	#IRQ_PENDING
+ 4
+
+	)
+
+1546 
+	#IRQ_REPLAY
+ 8
+
+	)
+
+1547 
+	#IRQ_AUTODETECT
+ 16
+
+	)
+
+1548 
+	#IRQ_WAITING
+ 32
+
+	)
+
+1549 
+	#IRQ_LEVEL
+ 64
+
+	)
+
+1550 
+	#IRQ_MASKED
+ 128
+
+	)
+
+1551 
+	#IRQ_PER_CPU
+ 256
+
+	)
+
+1557 
+	shw_öãºu±_ty≥
+ {
+
+1558 c⁄° * 
+	mty≥«me
+;
+
+1559 (*
+	m°¨tup
+)(
+	múq
+);
+
+1560 (*
+	mshutdown
+)(
+	múq
+);
+
+1561 (*
+	míabÀ
+)(
+	múq
+);
+
+1562 (*
+	mdißbÀ
+)(
+	múq
+);
+
+1563 (*
+	mack
+)(
+	múq
+);
+
+1564 (*
+	míd
+)(
+	múq
+);
+
+1565 (*
+	m£t_afföôy
+)(
+	múq
+, 
+˝umask_t
+ 
+	mde°
+);
+
+1568 
+hw_öãºu±_ty≥
+ 
+	thw_úq_c⁄åﬁÀr
+;
+
+1577 
+	súq_desc
+ {
+
+1578 
+hw_úq_c⁄åﬁÀr
+ *
+	mh™dÀr
+;
+
+1579 *
+	mh™dÀr_d©a
+;
+
+1580 
+úqa˘i⁄
+ *
+	ma˘i⁄
+;
+
+1581 
+	m°©us
+;
+
+1582 
+	mdïth
+;
+
+1583 
+	múq_cou¡
+;
+
+1584 
+	múqs_unh™dÀd
+;
+
+1585 
+•ölock_t
+ 
+	mlock
+;
+
+1586 } 
+	t____ˇchñöe_Æig√d
+ 
+	túq_desc_t
+;
+
+1587 
+úq_desc_t
+ 
+úq_desc
+ [
+NR_IRQS
+];
+
+1590 
+	súqa˘i⁄
+ {
+
+1591 
+úqªtu∫_t
+ (*
+h™dÀr
+)(, *, 
+	m±_ªgs
+ *);
+
+1592 
+	mÊags
+;
+
+1593 
+˝umask_t
+ 
+	mmask
+;
+
+1594 c⁄° *
+	m«me
+;
+
+1595 *
+	mdev_id
+;
+
+1596 
+úqa˘i⁄
+ *
+	m√xt
+;
+
+1597 
+	múq
+;
+
+1598 
+¥oc_dú_íåy
+ *
+	mdú
+;
+
+1609 
+	mHI_SOFTIRQ
+=0,
+
+1610 
+	mTIMER_SOFTIRQ
+,
+
+1611 
+	mNET_TX_SOFTIRQ
+,
+
+1612 
+	mNET_RX_SOFTIRQ
+,
+
+1613 
+	mSCSI_SOFTIRQ
+,
+
+1614 
+	mTASKLET_SOFTIRQ
+
+
+1622 
+	sso·úq_a˘i⁄
+
+
+1624 (*
+	ma˘i⁄
+)(
+	mso·úq_a˘i⁄
+ *);
+
+1625 *
+	md©a
+;
+
+1649 
+	sèskÀt_°ru˘
+
+
+1651 
+èskÀt_°ru˘
+ *
+	m√xt
+;
+
+1652 
+	m°©e
+;
+
+1653 
+©omic_t
+ 
+	mcou¡
+;
+
+1654 (*
+	mfunc
+)();
+
+1655 
+	md©a
+;
+
+1659 
+	#SA_PROBE
+ 
+SA_ONESHOT
+
+
+	)
+
+1660 
+	#SA_SAMPLE_RANDOM
+ 
+SA_RESTART
+
+
+	)
+
+1661 
+	#SA_SHIRQ
+ 0x04000000
+
+	)
+
+1665 
+	m__so·úq_≥ndög
+;
+
+1666 
+	midÀ_time°amp
+;
+
+1667 
+	m__nmi_cou¡
+;
+
+1668 
+	m≠ic_timî_úqs
+;
+
+1669 } 
+	t____ˇchñöe_Æig√d
+ 
+	túq_˝u°©_t
+;
+
+1672 
+úq_˝u°©_t
+ 
+	múq_°©
+[
+NR_CPUS
+] 
+	m____ˇchñöe_Æig√d
+;
+
+1673 
+so·úq_a˘i⁄
+ 
+	mso·úq_vec
+[32] 
+	m__ˇchñöe_Æig√d_ö_smp
+;
+
+1676 
+	sèskÀt_hód
+
+
+1678 
+èskÀt_°ru˘
+ *
+	mli°
+;
+
+1683 
+DEFINE_PER_CPU
+(
+èskÀt_hód
+, 
+èskÀt_vec
+Ë{ 
+NULL
+ };
+
+1684 
+DEFINE_PER_CPU
+(
+èskÀt_hód
+, 
+èskÀt_hi_vec
+Ë{ 
+NULL
+ };
+
+1687 
+	mso·úq_°ack
+[
+NR_CPUS
+ * 
+THREAD_SIZE
+]
+
+1688 
+__©åibuã__
+((
+__Æig√d__
+(
+THREAD_SIZE
+)));
+
+1690 
+	mh¨dúq_°ack
+[
+NR_CPUS
+ * 
+THREAD_SIZE
+]
+
+1691 
+__©åibuã__
+((
+__Æig√d__
+(
+THREAD_SIZE
+)));
+
+1694 
+	skî√l_°©
+ {
+
+1695 
+˝u_ußge_°©
+ 
+	m˝u°©
+;
+
+1696 
+	múqs
+[
+NR_IRQS
+];
+
+1699 
+DECLARE_PER_CPU
+(
+kî√l_°©
+, 
+k°©
+);
+
+1702 
+hw_öãºu±_ty≥
+ 
+	mno_úq_ty≥
+ = {
+
+1703 .
+ty≥«me
+ = "none",
+
+1704 .
+	m°¨tup
+ = 
+°¨tup_n⁄e
+,
+
+1705 .
+	mshutdown
+ = 
+shutdown_n⁄e
+,
+
+1706 .
+	míabÀ
+ = 
+íabÀ_n⁄e
+,
+
+1707 .
+	mdißbÀ
+ = 
+dißbÀ_n⁄e
+,
+
+1708 .
+	mack
+ = 
+ack_n⁄e
+,
+
+1709 .
+	míd
+ = 
+íd_n⁄e
+,
+
+1710 .
+	m£t_afföôy
+ = 
+NULL
+
+
+1723 
+	s˝u_w‹kqueue_°ru˘
+ {
+
+1725 
+•ölock_t
+ 
+	mlock
+;
+
+1727 
+	mªmove_£quí˚
+;
+
+1728 
+	mö£π_£quí˚
+;
+
+1730 
+li°_hód
+ 
+	mw‹kli°
+;
+
+1731 
+waô_queue_hód_t
+ 
+	mm‹e_w‹k
+;
+
+1732 
+waô_queue_hód_t
+ 
+	mw‹k_d⁄e
+;
+
+1734 
+w‹kqueue_°ru˘
+ *
+	mwq
+;
+
+1735 
+èsk_t
+ *
+	mthªad
+;
+
+1737 
+	mrun_dïth
+;
+
+1738 } 
+	m____ˇchñöe_Æig√d
+;
+
+1744 
+	sw‹kqueue_°ru˘
+ {
+
+1745 
+˝u_w‹kqueue_°ru˘
+ 
+	m˝u_wq
+[
+NR_CPUS
+];
+
+1746 c⁄° *
+	m«me
+;
+
+1747 
+li°_hód
+ 
+	mli°
+;
+
+1750 
+w‹kqueue_°ru˘
+ *
+	mkevítd_wq
+;
+
+1753 
+	sw‹k_°ru˘
+ {
+
+1754 
+	m≥ndög
+;
+
+1755 
+li°_hód
+ 
+	míåy
+;
+
+1756 (*
+	mfunc
+)(*);
+
+1757 *
+	md©a
+;
+
+1758 *
+	mwq_d©a
+;
+
+1759 
+timî_li°
+ 
+	mtimî
+;
+
+1763 
+	#¸óã_sögÀthªad_w‹kqueue
+(
+«me
+Ë
+	`__¸óã_w‹kqueue
+(“ame), 1)
+
+	)
+
+1764 
+	#¸óã_w‹kqueue
+(
+«me
+Ë
+	`__¸óã_w‹kqueue
+(“ame), 0)
+
+	)
+
+1767 #ifde‡
+CONFIG_SMP
+
+
+1768 
+	s≥r˝u_d©a
+ {
+
+1769 *
+	m±rs
+[
+NR_CPUS
+];
+
+1770 *
+	mblkp
+;
+
+1779 °ru˘ { vﬁ©ûê
+	mcou¡î
+; } 
+	t©omic_t
+;
+
+1783 vﬁ©ûê
+	m¶ock
+;
+
+1784 #ifde‡
+CONFIG_DEBUG_SPINLOCK
+
+
+1785 
+	mmagic
+;
+
+1787 #ifde‡
+CONFIG_PREEMPT
+
+
+1788 
+	mbªak_lock
+;
+
+1790 } 
+	t•ölock_t
+;
+
+1792 
+	#SPINLOCK_MAGIC
+ 0xdód4ód
+
+	)
+
+1794 #ifde‡
+CONFIG_DEBUG_SPINLOCK
+
+
+1795 
+	#SPINLOCK_MAGIC_INIT
+ , 
+SPINLOCK_MAGIC
+
+
+	)
+
+1797 
+	#SPINLOCK_MAGIC_INIT
+
+
+	)
+
+1799 
+	#SPIN_LOCK_UNLOCKED
+ (
+•ölock_t
+Ë{ 1 
+SPINLOCK_MAGIC_INIT
+ }
+
+	)
+
+1812 vﬁ©ûê
+	mlock
+;
+
+1813 #ifde‡
+CONFIG_DEBUG_SPINLOCK
+
+
+1814 
+	mmagic
+;
+
+1816 #ifde‡
+CONFIG_PREEMPT
+
+
+1817 
+	mbªak_lock
+;
+
+1819 } 
+	trwlock_t
+;
+
+1823 
+	m£quí˚
+;
+
+1824 
+•ölock_t
+ 
+	mlock
+;
+
+1825 } 
+	t£qlock_t
+;
+
+1833 
+	srcu_hód
+ {
+
+1834 
+rcu_hód
+ *
+	m√xt
+;
+
+1835 (*
+	mfunc
+)(
+rcu_hód
+ *
+	mhód
+);
+
+1844 
+	srcu_d©a
+ {
+
+1846 
+	mquõscb©ch
+;
+
+1847 
+	m∑s£d_quõsc
+;
+
+1848 
+	mqs_≥ndög
+;
+
+1851 
+	mb©ch
+;
+
+1852 
+rcu_hód
+ *
+	mnxéi°
+;
+
+1853 
+rcu_hód
+ **
+	mnxâaû
+;
+
+1854 
+rcu_hód
+ *
+	mcuæi°
+;
+
+1855 
+rcu_hód
+ **
+	mcuπaû
+;
+
+1856 
+rcu_hód
+ *
+	md⁄ñi°
+;
+
+1857 
+rcu_hód
+ **
+	md⁄ëaû
+;
+
+1858 
+	m˝u
+;
+
+1863 
+	s£m≠h‹e
+ {
+
+1864 
+©omic_t
+ 
+	mcou¡
+;
+
+1865 
+	m¶ì≥rs
+;
+
+1866 
+waô_queue_hód_t
+ 
+	mwaô
+;
+
+1884 
+	stimî_›ts
+ {
+
+1885 * 
+	m«me
+;
+
+1886 (*
+	mm¨k_off£t
+)();
+
+1887 (*
+	mgë_off£t
+)();
+
+1888 (*
+	mm⁄Ÿ⁄ic_˛ock
+)();
+
+1889 (*
+	mdñay
+)();
+
+1901 
+time•ec
+ 
+xtime
+ 
+__©åibuã__
+ ((
+Æig√d
+ (16)));
+
+1902 
+time•ec
+ 
+wÆl_to_m⁄Ÿ⁄ic
+ 
+__©åibuã__
+ ((
+Æig√d
+ (16)));
+
+1910 
+	srw_£m≠h‹e
+ {
+
+1911 sig√d 
+	mcou¡
+;
+
+1912 
+	#RWSEM_UNLOCKED_VALUE
+ 0x00000000
+
+	)
+
+1913 
+	#RWSEM_ACTIVE_BIAS
+ 0x00000001
+
+	)
+
+1914 
+	#RWSEM_ACTIVE_MASK
+ 0x0000ffff
+
+	)
+
+1915 
+	#RWSEM_WAITING_BIAS
+ (-0x00010000)
+
+	)
+
+1916 
+	#RWSEM_ACTIVE_READ_BIAS
+ 
+RWSEM_ACTIVE_BIAS
+
+
+	)
+
+1917 
+	#RWSEM_ACTIVE_WRITE_BIAS
+ (
+RWSEM_WAITING_BIAS
+ + 
+RWSEM_ACTIVE_BIAS
+)
+
+	)
+
+1918 
+•ölock_t
+ 
+	mwaô_lock
+;
+
+1919 
+li°_hód
+ 
+	mwaô_li°
+;
+
+1920 #i‡
+RWSEM_DEBUG
+
+
+1921 
+	mdebug
+;
+
+1933 
+	srw_£m≠h‹e
+ {
+
+1934 
+__s32
+ 
+	ma˘ivôy
+;
+
+1935 
+•ölock_t
+ 
+	mwaô_lock
+;
+
+1936 
+li°_hód
+ 
+	mwaô_li°
+;
+
+1937 #i‡
+RWSEM_DEBUG
+
+
+1938 
+	mdebug
+;
+
+1943 
+	scom∂ëi⁄
+ {
+
+1944 
+	md⁄e
+;
+
+1945 
+waô_queue_hód_t
+ 
+	mwaô
+;
+
+1958 
+	s˝u_ußge_°©
+ {
+
+1959 
+˝utime64_t
+ 
+	mu£r
+;
+
+1960 
+˝utime64_t
+ 
+	mni˚
+;
+
+1961 
+˝utime64_t
+ 
+	msy°em
+;
+
+1962 
+˝utime64_t
+ 
+	mso·úq
+;
+
+1963 
+˝utime64_t
+ 
+	múq
+;
+
+1964 
+˝utime64_t
+ 
+	midÀ
+;
+
+1965 
+˝utime64_t
+ 
+	miowaô
+;
+
+1966 
+˝utime64_t
+ 
+	m°ól
+;
+
+1969 
+	skî√l_°©
+ {
+
+1970 
+˝u_ußge_°©
+ 
+	m˝u°©
+;
+
+1971 
+	múqs
+[
+NR_IRQS
+];
+
+1974 
+DECLARE_PER_CPU
+(
+kî√l_°©
+, 
+k°©
+);
+
+1976 
+	#k°©_˝u
+(
+˝u
+Ë
+	`≥r_˝u
+(
+k°©
+, cpu)
+
+	)
+
+1978 
+	#k°©_this_˝u
+ 
+	`__gë_˝u_v¨
+(
+k°©
+)
+
+	)
+
+1982 
+	stime•ec
+ {
+
+1983 
+time_t
+ 
+	mtv_£c
+;
+
+1984 
+	mtv_n£c
+;
+
+1987 
+	stimî_li°
+ {
+
+1988 
+li°_hód
+ 
+	míåy
+;
+
+1989 
+	mexpúes
+;
+
+1991 
+•ölock_t
+ 
+	mlock
+;
+
+1992 
+	mmagic
+;
+
+1994 (*
+	mfun˘i⁄
+)();
+
+1995 
+	md©a
+;
+
+1997 
+tvec_t_ba£_s
+ *
+	mba£
+;
+
+2006 
+	#TVN_BITS
+ (
+CONFIG_BASE_SMALL
+ ? 4 : 6)
+
+	)
+
+2007 
+	#TVR_BITS
+ (
+CONFIG_BASE_SMALL
+ ? 6 : 8)
+
+	)
+
+2008 
+	#TVN_SIZE
+ (1 << 
+TVN_BITS
+)
+
+	)
+
+2009 
+	#TVR_SIZE
+ (1 << 
+TVR_BITS
+)
+
+	)
+
+2010 
+	#TVN_MASK
+ (
+TVN_SIZE
+ - 1)
+
+	)
+
+2011 
+	#TVR_MASK
+ (
+TVR_SIZE
+ - 1)
+
+	)
+
+2013 
+	stvec_s
+ {
+
+2014 
+li°_hód
+ 
+	mvec
+[
+TVN_SIZE
+];
+
+2015 } 
+	ttvec_t
+;
+
+2017 
+	stvec_roŸ_s
+ {
+
+2018 
+li°_hód
+ 
+	mvec
+[
+TVR_SIZE
+];
+
+2019 } 
+	ttvec_roŸ_t
+;
+
+2021 
+	stvec_t_ba£_s
+ {
+
+2022 
+•ölock_t
+ 
+	mlock
+;
+
+2023 
+	mtimî_jiffõs
+;
+
+2024 
+timî_li°
+ *
+	mru¬ög_timî
+;
+
+2025 
+tvec_roŸ_t
+ 
+	mtv1
+;
+
+2026 
+tvec_t
+ 
+	mtv2
+;
+
+2027 
+tvec_t
+ 
+	mtv3
+;
+
+2028 
+tvec_t
+ 
+	mtv4
+;
+
+2029 
+tvec_t
+ 
+	mtv5
+;
+
+2030 } 
+	m____ˇchñöe_Æig√d_ö_smp
+;
+
+2032 
+tvec_t_ba£_s
+ 
+	ttvec_ba£_t
+;
+
+2038 
+	sª°¨t_block
+ {
+
+2039 (*
+	m‚
+)(
+	mª°¨t_block
+ *);
+
+2040 
+	m¨g0
+, 
+	m¨g1
+, 
+	m¨g2
+, 
+	m¨g3
+;
+
+2044 
+	stimez⁄e
+ {
+
+2045 
+	mtz_möuãswe°
+;
+
+2046 
+	mtz_d°time
+;
+
+2050 
+∑ge
+ *
+	mmem_m≠
+;
+
+2053 
+	#vút_to_∑ge
+(
+kaddr
+Ë
+	`p‚_to_∑ge
+(
+	`__∑
+(kaddrË>> 
+PAGE_SHIFT
+)
+
+	)
+
+2055 
+	#p‚_to_∑ge
+(
+p‚
+Ë(
+mem_m≠
+ + (p‚))
+
+	)
+
+2058 
+	#p‚_to_∑ge
+(
+p‚
+) \
+
+2060 
+__p‚
+ = 
+p‚
+; \
+
+2061 
+__node
+ = 
+	`p‚_to_nid
+(
+__p‚
+); \
+
+2062 &
+	`node_mem_m≠
+(
+__node
+)[
+	`node_loˇ r
+(
+__p‚
+,__node)]; \
+
+2063 })
+
+	)
+
+2065 
+	spgli°_d©a
+ {
+
+2066 
+z⁄e
+ 
+	mnode_z⁄es
+[
+MAX_NR_ZONES
+];
+
+2067 
+z⁄ñi°
+ 
+	mnode_z⁄ñi°s
+[
+GFP_ZONETYPES
+];
+
+2068 
+	mƒ_z⁄es
+;
+
+2069 
+∑ge
+ *
+	mnode_mem_m≠
+;
+
+2070 
+boŸmem_d©a
+ *
+	mbd©a
+;
+
+2071 
+	mnode_°¨t_p‚
+;
+
+2072 
+	mnode_¥e£¡_∑ges
+;
+
+2073 
+	mnode_•™√d_∑ges
+;
+
+2075 
+	mnode_id
+;
+
+2076 
+pgli°_d©a
+ *
+	mpgd©_√xt
+;
+
+2077 
+waô_queue_hód_t
+ 
+	mksw≠d_waô
+;
+
+2078 
+èsk_°ru˘
+ *
+	mksw≠d
+;
+
+2079 
+	mksw≠d_max_‹dî
+;
+
+2080 } 
+	tpg_d©a_t
+;
+
+2091 
+	sz⁄e
+ {
+
+2093 
+	m‰ì_∑ges
+;
+
+2094 
+	m∑ges_mö
+, 
+	m∑ges_low
+, 
+	m∑ges_high
+;
+
+2103 
+	mlowmem_ª£rve
+[
+MAX_NR_ZONES
+];
+
+2105 
+≥r_˝u_∑ge£t
+ 
+	m∑ge£t
+[
+NR_CPUS
+];
+
+2110 
+•ölock_t
+ 
+	mlock
+;
+
+2111 
+‰ì_¨ó
+ 
+	m‰ì_¨ó
+[
+MAX_ORDER
+];
+
+2114 
+ZONE_PADDING
+(
+_∑d1_
+)
+
+2117 
+•ölock_t
+ 
+	mÃu_lock
+;
+
+2118 
+li°_hód
+ 
+	ma˘ive_li°
+;
+
+2119 
+li°_hód
+ 
+	möa˘ive_li°
+;
+
+2120 
+	mƒ_sˇn_a˘ive
+;
+
+2121 
+	mƒ_sˇn_öa˘ive
+;
+
+2122 
+	mƒ_a˘ive
+;
+
+2123 
+	mƒ_öa˘ive
+;
+
+2124 
+	m∑ges_sˇ¬ed
+;
+
+2125 
+	mÆl_uƒe˛aimabÀ
+;
+
+2143 
+	mãmp_¥i‹ôy
+;
+
+2144 
+	m¥ev_¥i‹ôy
+;
+
+2147 
+ZONE_PADDING
+(
+_∑d2_
+)
+
+2174 
+waô_queue_hód_t
+ * 
+	mwaô_èbÀ
+;
+
+2175 
+	mwaô_èbÀ_size
+;
+
+2176 
+	mwaô_èbÀ_bôs
+;
+
+2181 
+pgli°_d©a
+ *
+	mz⁄e_pgd©
+;
+
+2182 
+∑ge
+ *
+	mz⁄e_mem_m≠
+;
+
+2184 
+	mz⁄e_°¨t_p‚
+;
+
+2186 
+	m•™√d_∑ges
+;
+
+2187 
+	m¥e£¡_∑ges
+;
+
+2192 *
+	m«me
+;
+
+2193 } 
+	m____ˇchñöe_maxÆig√d_ö_smp
+;
+
+2204 
+	s∑ge
+ {
+
+2205 
+∑ge_Êags_t
+ 
+	mÊags
+;
+
+2207 
+©omic_t
+ 
+	m_cou¡
+;
+
+2208 
+©omic_t
+ 
+	m_m≠cou¡
+;
+
+2212 
+	m¥iv©e
+;
+
+2219 
+addªss_•a˚
+ *
+	mm≠pög
+;
+
+2226 
+pgoff_t
+ 
+	mödex
+;
+
+2227 
+li°_hód
+ 
+	mÃu
+;
+
+2240 #i‡
+deföed
+(
+WANT_PAGE_VIRTUAL
+)
+
+2241 *
+	mvútuÆ
+;
+
+2289 
+	#PG_locked
+ 0
+
+	)
+
+2290 
+	#PG_îr‹
+ 1
+
+	)
+
+2291 
+	#PG_ª„ªn˚d
+ 2
+
+	)
+
+2292 
+	#PG_u±od©e
+ 3
+
+	)
+
+2294 
+	#PG_dúty
+ 4
+
+	)
+
+2295 
+	#PG_Ãu
+ 5
+
+	)
+
+2296 
+	#PG_a˘ive
+ 6
+
+	)
+
+2297 
+	#PG_¶ab
+ 7
+
+	)
+
+2299 
+	#PG_highmem
+ 8
+
+	)
+
+2300 
+	#PG_checked
+ 9
+
+	)
+
+2301 
+	#PG_¨ch_1
+ 10
+
+	)
+
+2302 
+	#PG_ª£rved
+ 11
+
+	)
+
+2304 
+	#PG_¥iv©e
+ 12
+
+	)
+
+2305 
+	#PG_wrôeback
+ 13
+
+	)
+
+2306 
+	#PG_noßve
+ 14
+
+	)
+
+2307 
+	#PG_compound
+ 15
+
+	)
+
+2309 
+	#PG_sw≠ˇche
+ 16
+
+	)
+
+2310 
+	#PG_m≠≥dtodisk
+ 17
+
+	)
+
+2311 
+	#PG_ª˛aim
+ 18
+
+	)
+
+2312 
+	#PG_noßve_‰ì
+ 19
+
+	)
+
+2313 
+	#PG_unˇched
+ 20
+
+	)
+
+2316 
+	mmö_‰ì_kbyãs
+ = 1024;
+
+2324 
+	#__GFP_DMA
+ 0x01
+
+	)
+
+2325 
+	#__GFP_HIGHMEM
+ 0x02
+
+	)
+
+2338 
+	#__GFP_WAIT
+ 0x10u
+
+	)
+
+2339 
+	#__GFP_HIGH
+ 0x20u
+
+	)
+
+2340 
+	#__GFP_IO
+ 0x40u
+
+	)
+
+2341 
+	#__GFP_FS
+ 0x80u
+
+	)
+
+2342 
+	#__GFP_COLD
+ 0x100u
+
+	)
+
+2343 
+	#__GFP_NOWARN
+ 0x200u
+
+	)
+
+2344 
+	#__GFP_REPEAT
+ 0x400u
+
+	)
+
+2345 
+	#__GFP_NOFAIL
+ 0x800u
+
+	)
+
+2346 
+	#__GFP_NORETRY
+ 0x1000u
+
+	)
+
+2347 
+	#__GFP_NO_GROW
+ 0x2000u
+
+	)
+
+2348 
+	#__GFP_COMP
+ 0x4000u
+
+	)
+
+2349 
+	#__GFP_ZERO
+ 0x8000u
+
+	)
+
+2350 
+	#__GFP_NOMEMALLOC
+ 0x10000u
+
+	)
+
+2353 
+	#GFP_ATOMIC
+ (
+__GFP_HIGH
+)
+
+	)
+
+2354 
+	#GFP_NOIO
+ (
+__GFP_WAIT
+)
+
+	)
+
+2355 
+	#GFP_NOFS
+ (
+__GFP_WAIT
+ | 
+__GFP_IO
+)
+
+	)
+
+2356 
+	#GFP_KERNEL
+ (
+__GFP_WAIT
+ | 
+__GFP_IO
+ | 
+__GFP_FS
+)
+
+	)
+
+2357 
+	#GFP_USER
+ (
+__GFP_WAIT
+ | 
+__GFP_IO
+ | 
+__GFP_FS
+)
+
+	)
+
+2358 
+	#GFP_HIGHUSER
+ (
+__GFP_WAIT
+ | 
+__GFP_IO
+ | 
+__GFP_FS
+ | 
+__GFP_HIGHMEM
+)
+
+	)
+
+2363 
+	#GFP_DMA
+ 
+__GFP_DMA
+
+
+	)
+
+2366 
+±e_t
+ * 
+	mpkm≠_∑ge_èbÀ
+;
+
+2372 
+	s∑ge_addªss_¶Ÿ
+ {
+
+2373 
+li°_hód
+ 
+	mlh
+;
+
+2374 
+•ölock_t
+ 
+	mlock
+;
+
+2375 } 
+____ˇchñöe_Æig√d_ö_smp
+ 
+	m∑ge_addªss_hèbÀ
+[1<<
+PA_HASH_ORDER
+];
+
+2380 
+	s∑ge_addªss_m≠
+ {
+
+2381 
+∑ge
+ *
+	m∑ge
+;
+
+2382 *
+	mvútuÆ
+;
+
+2383 
+li°_hód
+ 
+	mli°
+;
+
+2392 #ifde‡
+CONFIG_X86_PAE
+
+
+2393 
+	#LAST_PKMAP
+ 512
+
+	)
+
+2395 
+	#LAST_PKMAP
+ 1024
+
+	)
+
+2412 
+	#PKMAP_BASE
+ ( (
+FIXADDR_BOOT_START
+ - 
+PAGE_SIZE
+*(
+LAST_PKMAP
+ + 1)Ë& 
+PMD_MASK
+ )
+
+	)
+
+2413 
+	#LAST_PKMAP_MASK
+ (
+LAST_PKMAP
+-1)
+
+	)
+
+2414 
+	#PKMAP_NR
+(
+vút
+Ë((vút-
+PKMAP_BASE
+Ë>> 
+PAGE_SHIFT
+)
+
+	)
+
+2415 
+	#PKMAP_ADDR
+(
+ƒ
+Ë(
+PKMAP_BASE
+ + (“rË<< 
+PAGE_SHIFT
+))
+
+	)
+
+2419 #ifde‡
+CONFIG_DEBUG_HIGHMEM
+
+
+2420 
+	#D
+(
+n
+Ë
+__KM_FENCE_
+##¿,
+
+	)
+
+2422 
+	#D
+(
+n
+)
+
+	)
+
+2425 
+	ekm_ty≥
+ {
+
+2426 
+D
+(0Ë
+	mKM_BOUNCE_READ
+,
+
+2427 
+D
+(1Ë
+	mKM_SKB_SUNRPC_DATA
+,
+
+2428 
+D
+(2Ë
+	mKM_SKB_DATA_SOFTIRQ
+,
+
+2429 
+D
+(3Ë
+	mKM_USER0
+,
+
+2430 
+D
+(4Ë
+	mKM_USER1
+,
+
+2431 
+D
+(5Ë
+	mKM_BIO_SRC_IRQ
+,
+
+2432 
+D
+(6Ë
+	mKM_BIO_DST_IRQ
+,
+
+2433 
+D
+(7Ë
+	mKM_PTE0
+,
+
+2434 
+D
+(8Ë
+	mKM_PTE1
+,
+
+2435 
+D
+(9Ë
+	mKM_IRQ0
+,
+
+2436 
+D
+(10Ë
+	mKM_IRQ1
+,
+
+2437 
+D
+(11Ë
+	mKM_SOFTIRQ0
+,
+
+2438 
+D
+(12Ë
+	mKM_SOFTIRQ1
+,
+
+2439 
+D
+(13Ë
+	mKM_TYPE_NR
+
+
+2462 
+	efixed_addªs£s
+ {
+
+2463 
+	mFIX_HOLE
+,
+
+2464 
+	mFIX_VSYSCALL
+,
+
+2465 #ifde‡
+CONFIG_X86_LOCAL_APIC
+
+
+2466 
+	mFIX_APIC_BASE
+,
+
+2468 #ifde‡
+CONFIG_X86_IO_APIC
+
+
+2469 
+	mFIX_IO_APIC_BASE_0
+,
+
+2470 
+	mFIX_IO_APIC_BASE_END
+ = 
+FIX_IO_APIC_BASE_0
+ + 
+MAX_IO_APICS
+-1,
+
+2472 #ifde‡
+CONFIG_X86_VISWS_APIC
+
+
+2473 
+	mFIX_CO_CPU
+,
+
+2474 
+	mFIX_CO_APIC
+,
+
+2475 
+	mFIX_LI_PCIA
+,
+
+2476 
+	mFIX_LI_PCIB
+,
+
+2478 #ifde‡
+CONFIG_X86_F00F_BUG
+
+
+2479 
+	mFIX_F00F_IDT
+,
+
+2481 #ifde‡
+CONFIG_X86_CYCLONE_TIMER
+
+
+2482 
+	mFIX_CYCLONE_TIMER
+,
+
+2484 #ifde‡
+CONFIG_HIGHMEM
+
+
+2485 
+	mFIX_KMAP_BEGIN
+,
+
+2486 
+	mFIX_KMAP_END
+ = 
+FIX_KMAP_BEGIN
++(
+KM_TYPE_NR
+*
+NR_CPUS
+)-1,
+
+2488 #ifde‡
+CONFIG_ACPI_BOOT
+
+
+2489 
+	mFIX_ACPI_BEGIN
+,
+
+2490 
+	mFIX_ACPI_END
+ = 
+FIX_ACPI_BEGIN
+ + 
+FIX_ACPI_PAGES
+ - 1,
+
+2492 #ifde‡
+CONFIG_PCI_MMCONFIG
+
+
+2493 
+	mFIX_PCIE_MCFG
+,
+
+2495 
+	m__íd_of_≥rm™ít_fixed_addªs£s
+,
+
+2497 
+	#NR_FIX_BTMAPS
+ 16
+
+	)
+
+2498 
+	mFIX_BTMAP_END
+ = 
+__íd_of_≥rm™ít_fixed_addªs£s
+,
+
+2499 
+	mFIX_BTMAP_BEGIN
+ = 
+FIX_BTMAP_END
+ + 
+NR_FIX_BTMAPS
+ - 1,
+
+2500 
+	mFIX_WP_TEST
+,
+
+2501 
+	m__íd_of_fixed_addªs£s
+
+
+2506 
+	s‰ì_¨ó
+ {
+
+2507 
+li°_hód
+ 
+	m‰ì_li°
+;
+
+2508 
+	mƒ_‰ì
+;
+
+2512 
+	s≥r_˝u_∑ges
+ {
+
+2513 
+	mcou¡
+;
+
+2514 
+	mlow
+;
+
+2515 
+	mhigh
+;
+
+2516 
+	mb©ch
+;
+
+2517 
+li°_hód
+ 
+	mli°
+;
+
+2520 
+	s≥r_˝u_∑ge£t
+ {
+
+2521 
+≥r_˝u_∑ges
+ 
+	mp˝
+[2];
+
+2522 #ifde‡
+CONFIG_NUMA
+
+
+2523 
+	mnuma_hô
+;
+
+2524 
+	mnuma_miss
+;
+
+2525 
+	mnuma_f‹eign
+;
+
+2526 
+	möãæóve_hô
+;
+
+2527 
+	mloˇl_node
+;
+
+2528 
+	mŸhî_node
+;
+
+2530 } 
+	m____ˇchñöe_Æig√d_ö_smp
+;
+
+2535 
+	smempoﬁ_s
+ {
+
+2536 
+•ölock_t
+ 
+	mlock
+;
+
+2537 
+	mmö_ƒ
+;
+
+2538 
+	mcuº_ƒ
+;
+
+2539 **
+	mñemíts
+;
+
+2541 *
+	mpoﬁ_d©a
+;
+
+2542 
+mempoﬁ_Æloc_t
+ *
+	mÆloc
+;
+
+2543 
+mempoﬁ_‰ì_t
+ *
+	m‰ì
+;
+
+2544 
+waô_queue_hód_t
+ 
+	mwaô
+;
+
+2545 } 
+	tmempoﬁ_t
+;
+
+2549 
+	svm_°ru˘
+ {
+
+2550 *
+	maddr
+;
+
+2551 
+	msize
+;
+
+2552 
+	mÊags
+;
+
+2553 
+∑ge
+ **
+	m∑ges
+;
+
+2554 
+	mƒ_∑ges
+;
+
+2555 
+	mphys_addr
+;
+
+2556 
+vm_°ru˘
+ *
+	m√xt
+;
+
+2566 
+	svm_¨ó_°ru˘
+ {
+
+2567 
+mm_°ru˘
+ * 
+	mvm_mm
+;
+
+2568 
+	mvm_°¨t
+;
+
+2569 
+	mvm_íd
+;
+
+2573 
+vm_¨ó_°ru˘
+ *
+	mvm_√xt
+;
+
+2575 
+pg¥Ÿ_t
+ 
+	mvm_∑ge_¥Ÿ
+;
+
+2576 
+	mvm_Êags
+;
+
+2578 
+rb_node
+ 
+	mvm_rb
+;
+
+2588 
+li°_hód
+ 
+	mli°
+;
+
+2589 *
+	m∑ª¡
+;
+
+2590 
+vm_¨ó_°ru˘
+ *
+	mhód
+;
+
+2591 } 
+	mvm_£t
+;
+
+2593 
+øw_¥io_åì_node
+ 
+	m¥io_åì_node
+;
+
+2594 } 
+	msh¨ed
+;
+
+2602 
+li°_hód
+ 
+	m™⁄_vma_node
+;
+
+2603 
+™⁄_vma
+ *
+	m™⁄_vma
+;
+
+2606 
+vm_›î©i⁄s_°ru˘
+ * 
+	mvm_›s
+;
+
+2609 
+	mvm_pgoff
+;
+
+2611 
+fûe
+ * 
+	mvm_fûe
+;
+
+2612 * 
+	mvm_¥iv©e_d©a
+;
+
+2613 
+	mvm_åunˇã_cou¡
+;
+
+2615 #i‚de‡
+CONFIG_MMU
+
+
+2616 
+©omic_t
+ 
+	mvm_ußge
+;
+
+2618 #ifde‡
+CONFIG_NUMA
+
+
+2619 
+mempﬁicy
+ *
+	mvm_pﬁicy
+;
+
+2629 
+	svm_›î©i⁄s_°ru˘
+ {
+
+2630 (*
+	m›í
+)(
+vm_¨ó_°ru˘
+ * 
+	m¨ó
+);
+
+2631 (*
+	m˛o£
+)(
+vm_¨ó_°ru˘
+ * 
+	m¨ó
+);
+
+2632 
+	m∑ge
+ * (*
+	mn›age
+)(
+vm_¨ó_°ru˘
+ * 
+	m¨ó
+, 
+	maddªss
+, *
+	mty≥
+);
+
+2633 (*
+	mp›uœã
+)(
+vm_¨ó_°ru˘
+ * 
+	m¨ó
+, 
+	maddªss
+, 
+	mÀn
+, 
+pg¥Ÿ_t
+ 
+	m¥Ÿ
+, 
+	mpgoff
+, 
+	mn⁄block
+);
+
+2634 #ifde‡
+CONFIG_NUMA
+
+
+2635 (*
+	m£t_pﬁicy
+)(
+vm_¨ó_°ru˘
+ *
+	mvma
+, 
+mempﬁicy
+ *
+	m√w
+);
+
+2636 
+	mmempﬁicy
+ *(*
+	mgë_pﬁicy
+)(
+vm_¨ó_°ru˘
+ *
+	mvma
+,
+
+2637 
+	maddr
+);
+
+2645 
+	#VM_READ
+ 0x00000001
+
+	)
+
+2646 
+	#VM_WRITE
+ 0x00000002
+
+	)
+
+2647 
+	#VM_EXEC
+ 0x00000004
+
+	)
+
+2648 
+	#VM_SHARED
+ 0x00000008
+
+	)
+
+2650 
+	#VM_MAYREAD
+ 0x00000010
+
+	)
+
+2651 
+	#VM_MAYWRITE
+ 0x00000020
+
+	)
+
+2652 
+	#VM_MAYEXEC
+ 0x00000040
+
+	)
+
+2653 
+	#VM_MAYSHARE
+ 0x00000080
+
+	)
+
+2655 
+	#VM_GROWSDOWN
+ 0x00000100
+
+	)
+
+2656 
+	#VM_GROWSUP
+ 0x00000200
+
+	)
+
+2657 
+	#VM_SHM
+ 0x00000400
+
+	)
+
+2658 
+	#VM_DENYWRITE
+ 0x00000800
+
+	)
+
+2660 
+	#VM_EXECUTABLE
+ 0x00001000
+
+	)
+
+2661 
+	#VM_LOCKED
+ 0x00002000
+
+	)
+
+2662 
+	#VM_IO
+ 0x00004000
+
+	)
+
+2665 
+	#VM_SEQ_READ
+ 0x00008000
+
+	)
+
+2666 
+	#VM_RAND_READ
+ 0x00010000
+
+	)
+
+2668 
+	#VM_DONTCOPY
+ 0x00020000
+
+	)
+
+2669 
+	#VM_DONTEXPAND
+ 0x00040000
+
+	)
+
+2670 
+	#VM_RESERVED
+ 0x00080000
+
+	)
+
+2671 
+	#VM_ACCOUNT
+ 0x00100000
+
+	)
+
+2672 
+	#VM_HUGETLB
+ 0x00400000
+
+	)
+
+2673 
+	#VM_NONLINEAR
+ 0x00800000
+
+	)
+
+2674 
+	#VM_MAPPED_COPY
+ 0x01000000
+
+	)
+
+2679 
+	#EPERM
+ 1
+
+	)
+
+2680 
+	#ENOENT
+ 2
+
+	)
+
+2681 
+	#ESRCH
+ 3
+
+	)
+
+2682 
+	#EINTR
+ 4
+
+	)
+
+2683 
+	#EIO
+ 5
+
+	)
+
+2684 
+	#ENXIO
+ 6
+
+	)
+
+2685 
+	#E2BIG
+ 7
+
+	)
+
+2686 
+	#ENOEXEC
+ 8
+
+	)
+
+2687 
+	#EBADF
+ 9
+
+	)
+
+2688 
+	#ECHILD
+ 10
+
+	)
+
+2689 
+	#EAGAIN
+ 11
+
+	)
+
+2690 
+	#ENOMEM
+ 12
+
+	)
+
+2691 
+	#EACCES
+ 13
+
+	)
+
+2692 
+	#EFAULT
+ 14
+
+	)
+
+2693 
+	#ENOTBLK
+ 15
+
+	)
+
+2694 
+	#EBUSY
+ 16
+
+	)
+
+2695 
+	#EEXIST
+ 17
+
+	)
+
+2696 
+	#EXDEV
+ 18
+
+	)
+
+2697 
+	#ENODEV
+ 19
+
+	)
+
+2698 
+	#ENOTDIR
+ 20
+
+	)
+
+2699 
+	#EISDIR
+ 21
+
+	)
+
+2700 
+	#EINVAL
+ 22
+
+	)
+
+2701 
+	#ENFILE
+ 23
+
+	)
+
+2702 
+	#EMFILE
+ 24
+
+	)
+
+2703 
+	#ENOTTY
+ 25
+
+	)
+
+2704 
+	#ETXTBSY
+ 26
+
+	)
+
+2705 
+	#EFBIG
+ 27
+
+	)
+
+2706 
+	#ENOSPC
+ 28
+
+	)
+
+2707 
+	#ESPIPE
+ 29
+
+	)
+
+2708 
+	#EROFS
+ 30
+
+	)
+
+2709 
+	#EMLINK
+ 31
+
+	)
+
+2710 
+	#EPIPE
+ 32
+
+	)
+
+2711 
+	#EDOM
+ 33
+
+	)
+
+2712 
+	#ERANGE
+ 34
+
+	)
+
+2716 
+	#EDEADLK
+ 35
+
+	)
+
+2717 
+	#ENAMETOOLONG
+ 36
+
+	)
+
+2718 
+	#ENOLCK
+ 37
+
+	)
+
+2719 
+	#ENOSYS
+ 38
+
+	)
+
+2720 
+	#ENOTEMPTY
+ 39
+
+	)
+
+2721 
+	#ELOOP
+ 40
+
+	)
+
+2722 
+	#EWOULDBLOCK
+ 
+EAGAIN
+
+
+	)
+
+2723 
+	#ENOMSG
+ 42
+
+	)
+
+2724 
+	#EIDRM
+ 43
+
+	)
+
+2725 
+	#ECHRNG
+ 44
+
+	)
+
+2726 
+	#EL2NSYNC
+ 45
+
+	)
+
+2727 
+	#EL3HLT
+ 46
+
+	)
+
+2728 
+	#EL3RST
+ 47
+
+	)
+
+2729 
+	#ELNRNG
+ 48
+
+	)
+
+2730 
+	#EUNATCH
+ 49
+
+	)
+
+2731 
+	#ENOCSI
+ 50
+
+	)
+
+2732 
+	#EL2HLT
+ 51
+
+	)
+
+2733 
+	#EBADE
+ 52
+
+	)
+
+2734 
+	#EBADR
+ 53
+
+	)
+
+2735 
+	#EXFULL
+ 54
+
+	)
+
+2736 
+	#ENOANO
+ 55
+
+	)
+
+2737 
+	#EBADRQC
+ 56
+
+	)
+
+2738 
+	#EBADSLT
+ 57
+
+	)
+
+2740 
+	#EDEADLOCK
+ 
+EDEADLK
+
+
+	)
+
+2742 
+	#EBFONT
+ 59
+
+	)
+
+2743 
+	#ENOSTR
+ 60
+
+	)
+
+2744 
+	#ENODATA
+ 61
+
+	)
+
+2745 
+	#ETIME
+ 62
+
+	)
+
+2746 
+	#ENOSR
+ 63
+
+	)
+
+2747 
+	#ENONET
+ 64
+
+	)
+
+2748 
+	#ENOPKG
+ 65
+
+	)
+
+2749 
+	#EREMOTE
+ 66
+
+	)
+
+2750 
+	#ENOLINK
+ 67
+
+	)
+
+2751 
+	#EADV
+ 68
+
+	)
+
+2752 
+	#ESRMNT
+ 69
+
+	)
+
+2753 
+	#ECOMM
+ 70
+
+	)
+
+2754 
+	#EPROTO
+ 71
+
+	)
+
+2755 
+	#EMULTIHOP
+ 72
+
+	)
+
+2756 
+	#EDOTDOT
+ 73
+
+	)
+
+2757 
+	#EBADMSG
+ 74
+
+	)
+
+2758 
+	#EOVERFLOW
+ 75
+
+	)
+
+2759 
+	#ENOTUNIQ
+ 76
+
+	)
+
+2760 
+	#EBADFD
+ 77
+
+	)
+
+2761 
+	#EREMCHG
+ 78
+
+	)
+
+2762 
+	#ELIBACC
+ 79
+
+	)
+
+2763 
+	#ELIBBAD
+ 80
+
+	)
+
+2764 
+	#ELIBSCN
+ 81
+
+	)
+
+2765 
+	#ELIBMAX
+ 82
+
+	)
+
+2766 
+	#ELIBEXEC
+ 83
+
+	)
+
+2767 
+	#EILSEQ
+ 84
+
+	)
+
+2768 
+	#ERESTART
+ 85
+
+	)
+
+2769 
+	#ESTRPIPE
+ 86
+
+	)
+
+2770 
+	#EUSERS
+ 87
+
+	)
+
+2771 
+	#ENOTSOCK
+ 88
+
+	)
+
+2772 
+	#EDESTADDRREQ
+ 89
+
+	)
+
+2773 
+	#EMSGSIZE
+ 90
+
+	)
+
+2774 
+	#EPROTOTYPE
+ 91
+
+	)
+
+2775 
+	#ENOPROTOOPT
+ 92
+
+	)
+
+2776 
+	#EPROTONOSUPPORT
+ 93
+
+	)
+
+2777 
+	#ESOCKTNOSUPPORT
+ 94
+
+	)
+
+2778 
+	#EOPNOTSUPP
+ 95
+
+	)
+
+2779 
+	#EPFNOSUPPORT
+ 96
+
+	)
+
+2780 
+	#EAFNOSUPPORT
+ 97
+
+	)
+
+2781 
+	#EADDRINUSE
+ 98
+
+	)
+
+2782 
+	#EADDRNOTAVAIL
+ 99
+
+	)
+
+2783 
+	#ENETDOWN
+ 100
+
+	)
+
+2784 
+	#ENETUNREACH
+ 101
+
+	)
+
+2785 
+	#ENETRESET
+ 102
+
+	)
+
+2786 
+	#ECONNABORTED
+ 103
+
+	)
+
+2787 
+	#ECONNRESET
+ 104
+
+	)
+
+2788 
+	#ENOBUFS
+ 105
+
+	)
+
+2789 
+	#EISCONN
+ 106
+
+	)
+
+2790 
+	#ENOTCONN
+ 107
+
+	)
+
+2791 
+	#ESHUTDOWN
+ 108
+
+	)
+
+2792 
+	#ETOOMANYREFS
+ 109
+
+	)
+
+2793 
+	#ETIMEDOUT
+ 110
+
+	)
+
+2794 
+	#ECONNREFUSED
+ 111
+
+	)
+
+2795 
+	#EHOSTDOWN
+ 112
+
+	)
+
+2796 
+	#EHOSTUNREACH
+ 113
+
+	)
+
+2797 
+	#EALREADY
+ 114
+
+	)
+
+2798 
+	#EINPROGRESS
+ 115
+
+	)
+
+2799 
+	#ESTALE
+ 116
+
+	)
+
+2800 
+	#EUCLEAN
+ 117
+
+	)
+
+2801 
+	#ENOTNAM
+ 118
+
+	)
+
+2802 
+	#ENAVAIL
+ 119
+
+	)
+
+2803 
+	#EISNAM
+ 120
+
+	)
+
+2804 
+	#EREMOTEIO
+ 121
+
+	)
+
+2805 
+	#EDQUOT
+ 122
+
+	)
+
+2807 
+	#ENOMEDIUM
+ 123
+
+	)
+
+2808 
+	#EMEDIUMTYPE
+ 124
+
+	)
+
+2809 
+	#ECANCELED
+ 125
+
+	)
+
+2810 
+	#ENOKEY
+ 126
+
+	)
+
+2811 
+	#EKEYEXPIRED
+ 127
+
+	)
+
+2812 
+	#EKEYREVOKED
+ 128
+
+	)
+
+2813 
+	#EKEYREJECTED
+ 129
+
+	)
+
+2816 
+	#EOWNERDEAD
+ 130
+
+	)
+
+2817 
+	#ENOTRECOVERABLE
+ 131
+
+	)
+
+2822 
+	#ERESTARTSYS
+ 512
+
+	)
+
+2823 
+	#ERESTARTNOINTR
+ 513
+
+	)
+
+2824 
+	#ERESTARTNOHAND
+ 514
+
+	)
+
+2825 
+	#ENOIOCTLCMD
+ 515
+
+	)
+
+2826 
+	#ERESTART_RESTARTBLOCK
+ 516
+
+	)
+
+2829 
+	#EBADHANDLE
+ 521
+
+	)
+
+2830 
+	#ENOTSYNC
+ 522
+
+	)
+
+2831 
+	#EBADCOOKIE
+ 523
+
+	)
+
+2832 
+	#ENOTSUPP
+ 524
+
+	)
+
+2833 
+	#ETOOSMALL
+ 525
+
+	)
+
+2834 
+	#ESERVERFAULT
+ 526
+
+	)
+
+2835 
+	#EBADTYPE
+ 527
+
+	)
+
+2836 
+	#EJUKEBOX
+ 528
+
+	)
+
+2837 
+	#EIOCBQUEUED
+ 529
+
+	)
+
+2838 
+	#EIOCBRETRY
+ 530
+
+	)
+
+2841 #ifde‡
+__KERNEL__
+
+
+2845 
+	#_NSIG
+ 64
+
+	)
+
+2846 
+	#_NSIG_BPW
+ 32
+
+	)
+
+2847 
+	#_NSIG_WORDS
+ (
+_NSIG
+ / 
+_NSIG_BPW
+)
+
+	)
+
+2849 
+	tﬁd_sig£t_t
+;
+
+2852 
+	msig
+[
+_NSIG_WORDS
+];
+
+2853 } 
+	tsig£t_t
+;
+
+2858 
+	#NSIG
+ 32
+
+	)
+
+2859 
+	tsig£t_t
+;
+
+2863 
+	#SIGHUP
+ 1
+
+	)
+
+2864 
+	#SIGINT
+ 2
+
+	)
+
+2865 
+	#SIGQUIT
+ 3
+
+	)
+
+2866 
+	#SIGILL
+ 4
+
+	)
+
+2867 
+	#SIGTRAP
+ 5
+
+	)
+
+2868 
+	#SIGABRT
+ 6
+
+	)
+
+2869 
+	#SIGIOT
+ 6
+
+	)
+
+2870 
+	#SIGBUS
+ 7
+
+	)
+
+2871 
+	#SIGFPE
+ 8
+
+	)
+
+2872 
+	#SIGKILL
+ 9
+
+	)
+
+2873 
+	#SIGUSR1
+ 10
+
+	)
+
+2874 
+	#SIGSEGV
+ 11
+
+	)
+
+2875 
+	#SIGUSR2
+ 12
+
+	)
+
+2876 
+	#SIGPIPE
+ 13
+
+	)
+
+2877 
+	#SIGALRM
+ 14
+
+	)
+
+2878 
+	#SIGTERM
+ 15
+
+	)
+
+2879 
+	#SIGSTKFLT
+ 16
+
+	)
+
+2880 
+	#SIGCHLD
+ 17
+
+	)
+
+2881 
+	#SIGCONT
+ 18
+
+	)
+
+2882 
+	#SIGSTOP
+ 19
+
+	)
+
+2883 
+	#SIGTSTP
+ 20
+
+	)
+
+2884 
+	#SIGTTIN
+ 21
+
+	)
+
+2885 
+	#SIGTTOU
+ 22
+
+	)
+
+2886 
+	#SIGURG
+ 23
+
+	)
+
+2887 
+	#SIGXCPU
+ 24
+
+	)
+
+2888 
+	#SIGXFSZ
+ 25
+
+	)
+
+2889 
+	#SIGVTALRM
+ 26
+
+	)
+
+2890 
+	#SIGPROF
+ 27
+
+	)
+
+2891 
+	#SIGWINCH
+ 28
+
+	)
+
+2892 
+	#SIGIO
+ 29
+
+	)
+
+2893 
+	#SIGPOLL
+ 
+SIGIO
+
+
+	)
+
+2897 
+	#SIGPWR
+ 30
+
+	)
+
+2898 
+	#SIGSYS
+ 31
+
+	)
+
+2899 
+	#SIGUNUSED
+ 31
+
+	)
+
+2902 
+	#SIGRTMIN
+ 32
+
+	)
+
+2903 
+	#SIGRTMAX
+ 
+_NSIG
+
+
+	)
+
+	@spi-subsystem-spi-structure.c
+
+54 
+	s•i_devi˚
+ {
+
+55 
+devi˚
+ 
+	mdev
+;
+
+56 
+•i_ma°î
+ *
+	mma°î
+;
+
+57 
+u32
+ 
+	mmax_•ìd_hz
+;
+
+58 
+u8
+ 
+	mchù_£À˘
+;
+
+59 
+u8
+ 
+	mmode
+;
+
+60 
+	#SPI_CPHA
+ 0x01
+
+	)
+
+61 
+	#SPI_CPOL
+ 0x02
+
+	)
+
+62 
+	#SPI_MODE_0
+ (0|0Ë
+
+	)
+
+63 
+	#SPI_MODE_1
+ (0|
+SPI_CPHA
+)
+
+	)
+
+64 
+	#SPI_MODE_2
+ (
+SPI_CPOL
+|0)
+
+	)
+
+65 
+	#SPI_MODE_3
+ (
+SPI_CPOL
+|
+SPI_CPHA
+)
+
+	)
+
+66 
+	#SPI_CS_HIGH
+ 0x04
+
+	)
+
+67 
+	#SPI_LSB_FIRST
+ 0x08
+
+	)
+
+68 
+	#SPI_3WIRE
+ 0x10
+
+	)
+
+69 
+	#SPI_LOOP
+ 0x20
+
+	)
+
+70 
+	#SPI_NO_CS
+ 0x40
+
+	)
+
+71 
+	#SPI_READY
+ 0x80
+
+	)
+
+72 
+u8
+ 
+	mbôs_≥r_w‹d
+;
+
+73 
+	múq
+;
+
+74 *
+	mc⁄åﬁÀr_°©e
+;
+
+75 *
+	mc⁄åﬁÀr_d©a
+;
+
+76 
+	mmodÆüs
+[
+SPI_NAME_SIZE
+];
+
+126 
+	s•i_drivî
+ {
+
+127 c⁄° 
+•i_devi˚_id
+ *
+	mid_èbÀ
+;
+
+128 (*
+	m¥obe
+)(
+•i_devi˚
+ *
+	m•i
+);
+
+129 (*
+	mªmove
+)(
+•i_devi˚
+ *
+	m•i
+);
+
+130 (*
+	mshutdown
+)(
+•i_devi˚
+ *
+	m•i
+);
+
+131 (*
+	msu•íd
+)(
+•i_devi˚
+ *
+	m•i
+, 
+pm_mesßge_t
+ 
+	mmesg
+);
+
+132 (*
+	mªsume
+)(
+•i_devi˚
+ *
+	m•i
+);
+
+133 
+devi˚_drivî
+ 
+	mdrivî
+;
+
+189 
+	s•i_ma°î
+ {
+
+190 
+devi˚
+ 
+	mdev
+;
+
+192 
+li°_hód
+ 
+	mli°
+;
+
+200 
+s16
+ 
+	mbus_num
+;
+
+205 
+u16
+ 
+	mnum_chù£À˘
+;
+
+210 
+u16
+ 
+	mdma_Æignmít
+;
+
+213 
+u16
+ 
+	mmode_bôs
+;
+
+216 
+u16
+ 
+	mÊags
+;
+
+217 
+	#SPI_MASTER_HALF_DUPLEX
+ 
+	`BIT
+(0Ë
+
+	)
+
+218 
+	#SPI_MASTER_NO_RX
+ 
+	`BIT
+(1Ë
+
+	)
+
+219 
+	#SPI_MASTER_NO_TX
+ 
+	`BIT
+(2Ë
+
+	)
+
+222 
+•ölock_t
+ 
+	mbus_lock_•ölock
+;
+
+223 
+muãx
+ 
+	mbus_lock_muãx
+;
+
+226 
+boﬁ
+ 
+	mbus_lock_Êag
+;
+
+234 (*
+	m£tup
+)(
+•i_devi˚
+ *
+	m•i
+);
+
+254 (*
+	må™s„r
+)(
+•i_devi˚
+ *
+	m•i
+,
+
+255 
+•i_mesßge
+ *
+	mmesg
+);
+
+258 (*
+	m˛ónup
+)(
+•i_devi˚
+ *
+	m•i
+);
+
+339 
+	s•i_å™s„r
+ {
+
+345 c⁄° *
+	mtx_buf
+;
+
+346 *
+	mrx_buf
+;
+
+347 
+	mÀn
+;
+
+349 
+dma_addr_t
+ 
+	mtx_dma
+;
+
+350 
+dma_addr_t
+ 
+	mrx_dma
+;
+
+352 
+	mcs_ch™ge
+:1;
+
+353 
+u8
+ 
+	mbôs_≥r_w‹d
+;
+
+354 
+u16
+ 
+	mdñay_u£cs
+;
+
+355 
+u32
+ 
+	m•ìd_hz
+;
+
+357 
+li°_hód
+ 
+	må™s„r_li°
+;
+
+400 
+	s•i_mesßge
+ {
+
+401 
+li°_hód
+ 
+	må™s„rs
+;
+
+403 
+•i_devi˚
+ *
+	m•i
+;
+
+405 
+	mis_dma_m≠≥d
+:1;
+
+419 (*
+	mcom∂ëe
+)(*
+	mc⁄ãxt
+);
+
+420 *
+	mc⁄ãxt
+;
+
+421 
+	ma˘uÆ_Àngth
+;
+
+422 
+	m°©us
+;
+
+428 
+li°_hód
+ 
+	mqueue
+;
+
+429 *
+	m°©e
+;
+
+476 
+	s•i_bﬂrd_öfo
+ {
+
+484 
+	mmodÆüs
+[
+SPI_NAME_SIZE
+];
+
+485 c⁄° *
+	m∂©f‹m_d©a
+;
+
+486 *
+	mc⁄åﬁÀr_d©a
+;
+
+487 
+	múq
+;
+
+490 
+u32
+ 
+	mmax_•ìd_hz
+;
+
+499 
+u16
+ 
+	mbus_num
+;
+
+500 
+u16
+ 
+	mchù_£À˘
+;
+
+505 
+u8
+ 
+	mmode
+;
+
+517 
+	s∂©f‹m_devi˚
+ {
+
+518 c⁄° * 
+	m«me
+;
+
+519 
+	mid
+;
+
+520 
+devi˚
+ 
+	mdev
+;
+
+521 
+u32
+ 
+	mnum_ªsour˚s
+;
+
+522 
+ªsour˚
+ * 
+	mªsour˚
+;
+
+524 c⁄° 
+∂©f‹m_devi˚_id
+ *
+	mid_íåy
+;
+
+527 
+pdev_¨chd©a
+ 
+	m¨chd©a
+;
+
+535 
+	sªsour˚
+ {
+
+536 
+ªsour˚_size_t
+ 
+	m°¨t
+;
+
+537 
+ªsour˚_size_t
+ 
+	míd
+;
+
+538 c⁄° *
+	m«me
+;
+
+539 
+	mÊags
+;
+
+540 
+ªsour˚
+ *
+	m∑ª¡
+, *
+	msiblög
+, *
+	mchûd
+;
+
+543 
+	sªsour˚_li°
+ {
+
+544 
+ªsour˚_li°
+ *
+	m√xt
+;
+
+545 
+ªsour˚
+ *
+	mªs
+;
+
+546 
+pci_dev
+ *
+	mdev
+;
+
+552 
+	#IORESOURCE_BITS
+ 0x000000f‡
+
+	)
+
+554 
+	#IORESOURCE_TYPE_BITS
+ 0x00001f00
+
+	)
+
+555 
+	#IORESOURCE_IO
+ 0x00000100
+
+	)
+
+556 
+	#IORESOURCE_MEM
+ 0x00000200
+
+	)
+
+557 
+	#IORESOURCE_IRQ
+ 0x00000400
+
+	)
+
+558 
+	#IORESOURCE_DMA
+ 0x00000800
+
+	)
+
+559 
+	#IORESOURCE_BUS
+ 0x00001000
+
+	)
+
+561 
+	#IORESOURCE_PREFETCH
+ 0x00002000
+
+	)
+
+562 
+	#IORESOURCE_READONLY
+ 0x00004000
+
+	)
+
+563 
+	#IORESOURCE_CACHEABLE
+ 0x00008000
+
+	)
+
+564 
+	#IORESOURCE_RANGELENGTH
+ 0x00010000
+
+	)
+
+565 
+	#IORESOURCE_SHADOWABLE
+ 0x00020000
+
+	)
+
+567 
+	#IORESOURCE_SIZEALIGN
+ 0x00040000
+
+	)
+
+568 
+	#IORESOURCE_STARTALIGN
+ 0x00080000
+
+	)
+
+570 
+	#IORESOURCE_MEM_64
+ 0x00100000
+
+	)
+
+571 
+	#IORESOURCE_WINDOW
+ 0x00200000
+
+	)
+
+572 
+	#IORESOURCE_MUXED
+ 0x00400000
+
+	)
+
+574 
+	#IORESOURCE_EXCLUSIVE
+ 0x08000000
+
+	)
+
+575 
+	#IORESOURCE_DISABLED
+ 0x10000000
+
+	)
+
+576 
+	#IORESOURCE_UNSET
+ 0x20000000
+
+	)
+
+577 
+	#IORESOURCE_AUTO
+ 0x40000000
+
+	)
+
+578 
+	#IORESOURCE_BUSY
+ 0x80000000
+
+	)
+
+	@spi-subsystem-spi_bitbang.h
+
+22 
+	s•i_bôb™g_cs
+ {
+
+23 
+	mn£cs
+;
+
+24 
+u32
+ (*
+txrx_w‹d
+)(
+•i_devi˚
+ *
+	m•i
+, 
+	mn£cs
+,
+
+25 
+u32
+ 
+	mw‹d
+, 
+u8
+ 
+	mbôs
+);
+
+26 (*
+	mtxrx_bufs
+)(
+	m•i_devi˚
+ *,
+
+27 
+u32
+ (*
+txrx_w‹d
+)(
+
+28 
+•i_devi˚
+ *
+	m•i
+,
+
+29 
+	mn£cs
+,
+
+30 
+u32
+ 
+	mw‹d
+, 
+u8
+ 
+	mbôs
+),
+
+31 , 
+	m•i_å™s„r
+ *);
+
+44 
+	s•i_bôb™g
+ {
+
+45 
+w‹kqueue_°ru˘
+ *
+	mw‹kqueue
+;
+
+46 
+w‹k_°ru˘
+ 
+	mw‹k
+;
+
+48 
+•ölock_t
+ 
+	mlock
+;
+
+49 
+li°_hód
+ 
+	mqueue
+;
+
+50 
+u8
+ 
+	mbusy
+;
+
+51 
+u8
+ 
+	mu£_dma
+;
+
+52 
+u8
+ 
+	mÊags
+;
+
+54 
+•i_ma°î
+ *
+	mma°î
+;
+
+59 (*
+	m£tup_å™s„r
+)(
+•i_devi˚
+ *
+	m•i
+,
+
+60 
+•i_å™s„r
+ *
+	mt
+);
+
+62 (*
+	mchù£À˘
+)(
+•i_devi˚
+ *
+	m•i
+, 
+	mis_⁄
+);
+
+63 
+	#BITBANG_CS_ACTIVE
+ 1
+
+	)
+
+64 
+	#BITBANG_CS_INACTIVE
+ 0
+
+	)
+
+69 (*
+	mtxrx_bufs
+)(
+•i_devi˚
+ *
+	m•i
+, 
+•i_å™s„r
+ *
+	mt
+);
+
+72 
+u32
+ (*
+txrx_w‹d
+[4])(
+•i_devi˚
+ *
+	m•i
+,
+
+73 
+	mn£cs
+,
+
+74 
+u32
+ 
+	mw‹d
+, 
+u8
+ 
+	mbôs
+);
+
+78 
+bôb™g_txrx_8
+(
+
+79 
+•i_devi˚
+ *
+•i
+,
+
+80 
+	$u32
+ (*
+txrx_w‹d
+)(
+•i_devi˚
+ *
+•i
+,
+
+81 
+n£cs
+,
+
+82 
+u32
+ 
+w‹d
+, 
+u8
+ 
+bôs
+),
+
+83 
+ns
+,
+
+84 
+•i_å™s„r
+ *
+t
+
+
+87 
+	`bôb™g_txrx_16
+(
+
+88 
+•i_devi˚
+ *
+•i
+,
+
+89 
+	$u32
+ (*
+txrx_w‹d
+)(
+•i_devi˚
+ *
+•i
+,
+
+90 
+n£cs
+,
+
+91 
+u32
+ 
+w‹d
+, 
+u8
+ 
+bôs
+),
+
+92 
+ns
+,
+
+93 
+•i_å™s„r
+ *
+t
+
+
+96 
+	`bôb™g_txrx_32
+(
+
+97 
+•i_devi˚
+ *
+•i
+,
+
+98 
+	$u32
+ (*
+txrx_w‹d
+)(
+•i_devi˚
+ *
+•i
+,
+
+99 
+n£cs
+,
+
+100 
+u32
+ 
+w‹d
+, 
+u8
+ 
+bôs
+),
+
+101 
+ns
+,
+
+102 
+•i_å™s„r
+ *
+t
+
+
+107 
+	`•i_bôb™g_£tup_å™s„r
+(
+•i_devi˚
+ *
+•i
+, 
+•i_å™s„r
+ *
+t
+);
+
+127 
+	`•i_bôb™g_£tup
+(
+•i_devi˚
+ *
+•i
+);
+
+137 
+	`bôb™g_w‹k
+(
+w‹k_°ru˘
+ *
+w‹k
+);
+
+142 
+	`•i_bôb™g_å™s„r
+(
+•i_devi˚
+ *
+•i
+, 
+•i_mesßge
+ *
+m
+);
+
+179 
+	`•i_bôb™g_°¨t
+(
+•i_bôb™g
+ *
+bôb™g
+);
+
+184 
+	`•i_bôb™g_°›
+(
+•i_bôb™g
+ *
+bôb™g
+);
+
+	@spi-subsystem-spi_gpio.h
+
+16 
+	s•i_gpio
+ {
+
+17 
+•i_bôb™g
+ 
+	mbôb™g
+;
+
+18 
+•i_gpio_∂©f‹m_d©a
+ 
+	mpd©a
+;
+
+19 
+∂©f‹m_devi˚
+ *
+	mpdev
+;
+
+61 
+	#SPI_GPIO_NO_CHIPSELECT
+ (()-1l)
+
+	)
+
+62 
+	#SPI_GPIO_NO_MISO
+ (()-1l)
+
+	)
+
+63 
+	#SPI_GPIO_NO_MOSI
+ (()-1l)
+
+	)
+
+85 
+	s•i_gpio_∂©f‹m_d©a
+ {
+
+86 
+	msck
+;
+
+87 
+	mmosi
+;
+
+88 
+	mmiso
+;
+
+90 
+u16
+ 
+	mnum_chù£À˘
+;
+
+94 
+ölöe
+ c⁄° 
+•i_gpio_∂©f‹m_d©a
+ * 
+__puª
+
+
+95 
+•i_to_pd©a
+(c⁄° 
+•i_devi˚
+ *
+•i
+);
+
+	@spi-subsystem.c
+
+1 
+•idev_ªÀa£
+(
+devi˚
+ *
+dev
+);
+
+2 
+ssize_t
+ 
+modÆüs_show
+(
+devi˚
+ *
+dev
+, 
+devi˚_©åibuã
+ *
+a
+, *
+buf
+);
+
+7 c⁄° 
+•i_devi˚_id
+ *
+•i_m©ch_id
+(c⁄° •i_devi˚_id *
+id
+,
+
+8 c⁄° 
+•i_devi˚
+ *
+sdev
+);
+
+10 c⁄° 
+•i_devi˚_id
+ *
+•i_gë_devi˚_id
+(c⁄° 
+•i_devi˚
+ *
+sdev
+);
+
+13 
+•i_m©ch_devi˚
+(
+devi˚
+ *
+dev
+, 
+devi˚_drivî
+ *
+drv
+);
+
+15 
+•i_uevít
+(
+devi˚
+ *
+dev
+, 
+kobj_uevít_ív
+ *
+ív
+);
+
+17 
+•i_su•íd
+(
+devi˚
+ *
+dev
+, 
+pm_mesßge_t
+ 
+mesßge
+);
+
+18 
+•i_ªsume
+(
+devi˚
+ *
+dev
+, 
+pm_mesßge_t
+ 
+mesßge
+);
+
+19 
+•i_drv_¥obe
+(
+devi˚
+ *
+dev
+);
+
+20 
+•i_drv_ªmove
+(
+devi˚
+ *
+dev
+);
+
+21 
+•i_drv_shutdown
+(
+devi˚
+ *
+dev
+);
+
+25 
+•i_ªgi°î_drivî
+(
+•i_drivî
+ *
+sdrv
+);
+
+52 
+•i_devi˚
+ *
+•i_Æloc_devi˚
+(
+•i_ma°î
+ *
+ma°î
+);
+
+63 
+•i_add_devi˚
+(
+•i_devi˚
+ *
+•i
+);
+
+79 
+•i_devi˚
+ *
+•i_√w_devi˚
+(
+•i_ma°î
+ *
+ma°î
+,
+
+80 
+•i_bﬂrd_öfo
+ *
+chù
+);
+
+82 
+•i_m©ch_ma°î_to_bﬂrdöfo
+(
+•i_ma°î
+ *
+ma°î
+,
+
+83 
+•i_bﬂrd_öfo
+ *
+bi
+);
+
+104 
+__öô
+
+
+105 
+•i_ªgi°î_bﬂrd_öfo
+(
+•i_bﬂrd_öfo
+ c⁄° *
+öfo
+, 
+n
+);
+
+107 
+•i_ma°î_ªÀa£
+(
+devi˚
+ *
+dev
+);
+
+128 
+•i_ma°î
+ *
+•i_Æloc_ma°î
+(
+devi˚
+ *
+dev
+, 
+size
+);
+
+150 
+•i_ªgi°î_ma°î
+(
+•i_ma°î
+ *
+ma°î
+);
+
+163 
+•i_uƒegi°î_ma°î
+(
+•i_ma°î
+ *
+ma°î
+);
+
+165 
+__•i_ma°î_m©ch
+(
+devi˚
+ *
+dev
+, *
+d©a
+);
+
+178 
+•i_ma°î
+ *
+•i_bu¢um_to_ma°î
+(
+u16
+ 
+bus_num
+);
+
+198 
+•i_£tup
+(
+•i_devi˚
+ *
+•i
+);
+
+201 
+__•i_async
+(
+•i_devi˚
+ *
+•i
+, 
+•i_mesßge
+ *
+mesßge
+);
+
+232 
+•i_async
+(
+•i_devi˚
+ *
+•i
+, 
+•i_mesßge
+ *
+mesßge
+);
+
+263 
+•i_async_locked
+(
+•i_devi˚
+ *
+•i
+, 
+•i_mesßge
+ *
+mesßge
+);
+
+265 
+•i_com∂ëe
+(*
+¨g
+);
+
+267 
+__•i_sync
+(
+•i_devi˚
+ *
+•i
+, 
+•i_mesßge
+ *
+mesßge
+, 
+bus_locked
+);
+
+290 
+•i_sync
+(
+•i_devi˚
+ *
+•i
+, 
+•i_mesßge
+ *
+mesßge
+);
+
+308 
+•i_sync_locked
+(
+•i_devi˚
+ *
+•i
+, 
+•i_mesßge
+ *
+mesßge
+);
+
+325 
+•i_bus_lock
+(
+•i_ma°î
+ *
+ma°î
+);
+
+340 
+•i_bus_u∆ock
+(
+•i_ma°î
+ *
+ma°î
+);
+
+361 
+•i_wrôe_thí_ªad
+(
+•i_devi˚
+ *
+•i
+,
+
+362 c⁄° 
+u8
+ *
+txbuf
+, 
+n_tx
+,
+
+363 
+u8
+ *
+rxbuf
+, 
+n_rx
+);
+
+365 
+__öô
+ 
+•i_öô
+();
+
+	@test.c
+
+1 
+	gØØØa
+[
+œbñ
+="aaaaaaa"];
+
+2 
+	gbbbbbbb
+[
+œbñ
+"b"];
+
+3 
+	gØØØa
+; 
+	gbbbbbbb
+;
+
+4 
+	gbbbbbbb
+; 
+	gØØØa
+;
+
+5 
+	gØØØa
+; 
+	gbbbbbbb
+;
+
+6 
+	gabab
+; 
+	gababa
+;
+
+7 
+	gababa
+;
+
+	@
+1
+.
+1
+/usr/include
+8
+151
+function.h
+include-wait.h
+kernel_head_file.h
+spi-subsystem-spi-structure.c
+spi-subsystem-spi_bitbang.h
+spi-subsystem-spi_gpio.h
+spi-subsystem.c
+test.c
