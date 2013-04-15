@@ -81,6 +81,21 @@ lib/rwsem-spinlock.c里出现
 * arm好像是不调用calibrate_delay()的
 
 * 还有__devinit之类的修辞符号的
+
+* struct task_struct 里的 struct signal_struct *signal;是一个指针，因为它是共享的,
+  struct sighand_struct *sighand;也是同理
+* 各种flags和state: task_struct->flags; task_struct->state; thread_info->flags; signal_struct_flags;
+  task_struct->ptrace; irqaction->flags; page->flags; vm_struct->flags; vm_area_struct->vm_flags;
+  sigaction->sa_flags;
+
+  * kill_something_info()里有一句这样的话：if (p->pid > 1 && p->tgid != current->tgid)
+  是不是说pid=-1时不能杀current所属线程组里所有的成员,但与ulk说的不一样
+
+  *__group_send_sig_info()里有一句if (((unsigned long)info > 2) && (info->si_code == SI_TIMER))
+  不知道什么意思。哦，知道了，原来是第一个成员。
+
+  * struct sigpending和struct sigqueue的关系还是要再次弄清一下：sigpending.list是sigqueue的链表头，
+  sigpendig.signal的位掩码没有说明信号产生的顺序，而sigqueue的链表顺序说明了产生的顺序。
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */
@@ -475,6 +490,11 @@ struct signal_struct {
 	/* thread group stop support, overloads group_exit_code too */
 	int			group_stop_count;
 	unsigned int		flags; /* see SIGNAL_* flags below */
+#define SIGNAL_STOP_STOPPED	0x00000001 /* job control stop in effect */
+#define SIGNAL_STOP_DEQUEUED	0x00000002 /* stop signal dequeued */
+#define SIGNAL_STOP_CONTINUED	0x00000004 /* SIGCONT since WCONTINUED reap */
+#define SIGNAL_GROUP_EXIT	0x00000008 /* group exit in progress */
+
 
 	/* POSIX.1b Interval Timers */
 	struct list_head posix_timers;
@@ -1243,7 +1263,10 @@ struct signal_struct {
 	wait_queue_head_t	wait_chldexit;	/* for wait4() */
 
 	/* current thread group signal load-balancing target: */
-	task_t			*curr_target;
+	task_t			*curr_target;/**
+									Descriptor of the last process
+									in the thread group that received a signal
+								  **/
 
 	/* shared signal handling: */
 	struct sigpending	shared_pending;
@@ -1265,6 +1288,15 @@ struct signal_struct {
 	/* POSIX.1b Interval Timers */
 	struct list_head posix_timers;
 
+	/**
+	   - unsigned long it_real_value, it_prof_value, it_virt_value;
+	   holds the current timer value. It's used to implement the specific 
+	   interval timer (itmer). 
+	   
+	   - unsigned long it_real_incr, it_prof_incr, it_virt_incr;
+	   holds the duration of the interval. It's used to implement the specific 
+	   interval timer (itmer). 
+	 **/
 	/* ITIMER_REAL timer for the process */
 	struct timer_list real_timer;
 	unsigned long it_real_value, it_real_incr;
@@ -1274,9 +1306,13 @@ struct signal_struct {
 	cputime_t it_prof_incr, it_virt_incr;
 
 	/* job control IDs */
-	pid_t pgrp;
+	pid_t pgrp;					/**
+								 PID of the group leader of P
+								 */
 	pid_t tty_old_pgrp;
-	pid_t session;
+	pid_t session;				/**
+								 PID of the login session leader of P
+								*/
 	/* boolean value for session group leader */
 	int leader;
 
@@ -1288,9 +1324,21 @@ struct signal_struct {
 	 * Live threads maintain their own counters and add to these
 	 * in __exit_signal, except for the group leader.
 	 */
-	cputime_t utime, stime, cutime, cstime;
-	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
-	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+	cputime_t utime, stime, cutime, cstime;/**
+											  utime = user time,
+											  stime = system time,
+											  cutime = cumulative user time (process + its children),
+											  cstime = cumulative system time (process + its children) 
+											**/
+	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;/**
+													context switch counts
+												  **/
+	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;/**
+														  min_flt: minor fault, 
+														  maj_flt: major fault (means that it had access to the disk),
+														  cmin_flt: cumulative minor fault (process + its children),
+														  cmaj_flt: cumulative major fault (process + its children)
+													   **/
 
 	/*
 	 * Cumulative ns of scheduled CPU time for dead threads in the
@@ -1659,6 +1707,26 @@ struct tasklet_struct
 #define SA_PROBE		SA_ONESHOT
 #define SA_SAMPLE_RANDOM	SA_RESTART
 #define SA_SHIRQ		0x04000000
+
+/*
+ * Real Time signals may be queued.
+ */
+
+struct sigqueue {
+	struct list_head list;
+	spinlock_t *lock;
+	int flags;
+	siginfo_t info;
+	struct user_struct *user;
+};
+
+/* flags values. */
+#define SIGQUEUE_PREALLOC	1
+
+struct sigpending {
+	struct list_head list;
+	sigset_t signal;
+};
 
     /******************************include/asm-i386/hardirq.h******************************/
 typedef struct {
@@ -2933,6 +3001,10 @@ struct sigaction {
 	void (*sa_restorer)(void);
 };
 
+#define sa_handler	_u._sa_handler
+#define sa_sigaction	_u._sa_sigaction
+
+#endif /* __KERNEL__ */
 /*
  * SA_FLAGS values:
  *
@@ -3022,3 +3094,54 @@ typedef struct siginfo {
 
 #endif
 
+/*
+ * How these fields are to be accessed.
+ */
+#define si_pid		_sifields._kill._pid
+#define si_uid		_sifields._kill._uid
+#define si_tid		_sifields._timer._tid
+#define si_overrun	_sifields._timer._overrun
+#define si_sys_private  _sifields._timer._sys_private
+#define si_status	_sifields._sigchld._status
+#define si_utime	_sifields._sigchld._utime
+#define si_stime	_sifields._sigchld._stime
+#define si_value	_sifields._rt._sigval
+#define si_int		_sifields._rt._sigval.sival_int
+#define si_ptr		_sifields._rt._sigval.sival_ptr
+#define si_addr		_sifields._sigfault._addr
+#ifdef __ARCH_SI_TRAPNO
+#define si_trapno	_sifields._sigfault._trapno
+#endif
+#define si_band		_sifields._sigpoll._band
+#define si_fd		_sifields._sigpoll._fd
+
+/*
+ * si_code values
+ * Digital reserves positive values for kernel-generated signals.
+ */
+#define SI_USER		0		/* sent by kill, sigsend, raise */
+#define SI_KERNEL	0x80		/* sent by the kernel from somewhere */
+#define SI_QUEUE	-1		/* sent by sigqueue */
+#define SI_TIMER __SI_CODE(__SI_TIMER,-2) /* sent by timer expiration */
+#define SI_MESGQ __SI_CODE(__SI_MESGQ,-3) /* sent by real time mesq state change */
+#define SI_ASYNCIO	-4		/* sent by AIO completion */
+#define SI_SIGIO	-5		/* sent by queued SIGIO */
+#define SI_TKILL	-6		/* sent by tkill system call */
+#define SI_DETHREAD	-7		/* sent by execve() killing subsidiary threads */
+
+#define SI_MAX_SIZE	128
+#ifndef SI_PAD_SIZE
+#define SI_PAD_SIZE	((SI_MAX_SIZE - __ARCH_SI_PREAMBLE_SIZE) / sizeof(int))
+#endif
+
+#ifndef __ASSEMBLY__
+typedef void __signalfn_t(int);
+typedef __signalfn_t __user *__sighandler_t;
+
+typedef void __restorefn_t(void);
+typedef __restorefn_t __user *__sigrestore_t;
+
+#define SIG_DFL	((__force __sighandler_t)0)	/* default signal handling */
+#define SIG_IGN	((__force __sighandler_t)1)	/* ignore signal */
+#define SIG_ERR	((__force __sighandler_t)-1)	/* error return from signal */
+#endif
