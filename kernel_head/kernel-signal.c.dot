@@ -638,4 +638,163 @@ digraph signal_c{
                 set_oldset_old_block[label="set_oldset_old_block"];
                 return_error[label="return_error"];
         }
- }
+
+        subgraph cluster_recalc_sigpending_tsk{
+                label="fastcall void recalc_sigpending_tsk(struct task_struct *t)";
+                t_signal_group_stop_count_great_0_or_PENDING_t_pending_t_blocked_or_PENDING_t_signal_shared_pending_t_blocked[label="t_signal_group_stop_count_great_0_or_PENDING_t_pending_t_blocked_or_PENDING_t_signal_shared_pending_t_blocked"];
+                set_tsk_thread_flag_t_TIF_SIGPENDING[label="set_tsk_thread_flag_t_TIF_SIGPENDING"];
+                clear_tsk_thread_flagt_TIF_SIGPENDING[label="clear_tsk_thread_flagt_TIF_SIGPENDING"];
+        }
+
+        subgraph cluster_recalc_sigpending{
+                label="void recalc_sigpending(void)";
+                recalc_sigpending_tsk_current[label="recalc_sigpending_tsk_current"];
+        }
+
+        subgraph cluster_PENDING{
+                label="#define PENDING(p,b)";
+                has_pending_signals_p_signal_b[label="has_pending_signals_p_signal_b"];
+        }
+
+        subgraph cluster_has_pending_signals{
+                label="static inline int has_pending_signals(sigset_t *signal, sigset_t *blocked)";
+                switch__NSIG_WORDS[label="switch__NSIG_WORDS"];
+                default_[label="default_"];
+                for__NISG_WORDS_countdown[label="for__NISG_WORDS_countdown"];
+                ready_self_or_signal_sig_i_and_rever_blocked_sig_i[label="ready_self_or_signal_sig_i_and_rever_blocked_sig_i"];
+                case_4[label="case_4"];
+                set_ready_signal_sig_3_and_rever_blocked_sig_3[label="set_ready_signal_sig_3_and_rever_blocked_sig_3"];
+                ready_self_or_signal_sig_2_and_rever_blocked_sig_2[label="ready_self_or_signal_sig_2_and_rever_blocked_sig_2"];
+                ready_self_or_signal_sig_1_and_rever_blocked_sig_1[label="ready_self_or_signal_sig_1_and_rever_blocked_sig_1"];
+                ready_self_or_signal_sig_0_and_rever_blocked_sig_0[label="ready_self_or_signal_sig_0_and_rever_blocked_sig_0"];
+                case_2[label="case_2"];
+                set_ready_signal_sig_1_and_rever_blocked_sig_1[label="set_ready_signal_sig_1_and_rever_blocked_sig_1"];
+                ready_self_or_signal_sig_0_and_rever_blocked_sig_0_1[label="ready_self_or_signal_sig_0_and_rever_blocked_sig_0"];
+                case_1[label="case_1"];
+                set_ready_signal_sig_0_and_rever_blocked_sig_0[label="set_ready_signal_sig_0_and_rever_blocked_sig_0"];
+                return_ready_not_eq_0[label="return_ready_not_eq_0"];
+        }
+
+        subgraph cluster_next_signal{
+                label="static int next_signal(struct sigpending *pending, sigset_t *mask)";
+                set_s_pending_signal_sig[label="set_s_pending_signal_sig"];
+                set_m_mask_sig[label="set_m_mask_sig"];
+                switch__NNSIG_WORDS[label="switch__NNSIG_WORDS"];
+                default_[label="default_"];
+                for__NSIG_WORDS_inc_i_s_m[label="for__NSIG_WORDS_inc_i_s_m"];
+                set_x_s_and_rever_m_not_null[label="set_s_and_rever_m_not_null"];
+                set_sig_ffz_rever_x_add_i_multi__NSIG_BPW_add_1[label="set_sig_ffz_rever_x_add_i_multi__NSIG_BPW_add_1"];
+                case_2[label="case_2"];
+                set_x_s_0_and_rever_m_0_not_eq_0[label="set_x_s_0_and_rever_m_0_not_eq_0"];
+                set_sig_1[label="set_sig_1"];
+                set_x_s_1_and_rever_m_1_not_eq_0[label="set_x_s_1_and_rever_m_1_not_eq_0"];
+                set_sig__NSIG_BPW_add_1[label="set_sig__NSIG_BPW_add_1"];
+                sig_self_add_ffz_rever_x[label="sig_self_add_ffz_rever_x"];
+                case_1[label="case_1"];
+                set_x_s_and_rever_m_not_eq_0[label="set_x_s_and_rever_m_not_eq_0"];
+                set_sig_ffz_rever_x_add_1[label="set_sig_ffz_rever_x_add_1"];
+                return_sig[label="return_sig"];
+        }
+
+        subgraph cluster___sigqueue_alloc{
+                label="static struct sigqueue *__sigqueue_alloc(struct task_struct *t, unsigned int __nocast flags,int override_rlimit)";
+                atomic_inc_t_user_sigpending[label="atomic_inc_t_user_sigpending"];
+                override_rlimit_or_atomic_read_t_user_sigpending_not_great_t_signal_rlim_RLIMIT_SIGPENDING_rlim_cur[label="override_rlimit_or_atomic_read_t_user_sigpending_not_great_t_signal_rlim_RLIMIT_SIGPENDING_rlim_cur"];
+                set_q_keme_cache_alloc_sigqueue_cachep_flags[label="set_q_keme_cache_alloc_sigqueue_cachep_flags"];
+                q_null[label="q_null"];
+                atomic_dec_t_user_sigpending[label="atomic_dec_t_user_sigpending"];
+                INIT_LIST_HEAD_q_list[label="INIT_LIST_HEAD_q_list"];
+                set_q_flags_0[label="set_q_flags_0"];
+                clear_q_lock[label="clear_q_lock"];
+                set_q_user_get_uid_t_user[label="set_q_user_get_uid_t_user"];
+                return_q[label="return_q"];
+        }
+
+        subgraph cluster___sigqueue_free{
+                label="static inline void __sigqueue_free(struct sigqueue *q)";
+                q_flags_SIGQUEUE_PREALLOC_set[label="q_flags_SIGQUEUE_PREALLOC_set"];
+                atomic_dec_q_user_sigpending[label="atomic_dec_q_user_sigpending"];
+                free_uid_q_user[label="free_uid_q_user"];
+                kmem_cache_free_sigqueue_cachep_q[label="kmem_cache_free_sigqueue_cachep_q"];
+        }
+
+        subgraph cluster_flush_sigqueue{
+                label="static void flush_sigqueue(struct sigpending *queue)";
+                sigemptyset_queue_signal[label="sigemptyset_queue_signal"];
+                list_empty_queue_list_false[label="list_empty_queue_list_false"];
+                set_q_list_entry_queue_list_next_struct_sigqueue_list[label="set_q_list_entry_queue_list_next_struct_sigqueue_list"];
+                list_del_init_q_list[label="list_del_init_q_list"];
+                __sigqueue_free_q[label="__sigqueue_free_q"];
+        }
+
+        subgraph cluster_flush_signals{
+                label="void flush_signals(struct task_struct *t)";
+                lock_t_sighand_siglock[label="lock_t_sighand_siglock"];
+                clear_tsk_thread_flag_t_TIF_SIGPENDING[label="clear_tsk_thread_flag_t_TIF_SIGPENDING"];
+                flush_sigqueue_t_pending[label="flush_sigqueue_t_pending"];
+                flush_sigqueue_t_signal_shared_pending[label="flush_sigqueue_t_signal_shared_pending"];
+                unlock_t_sighand_siglock[label="unlock_t_sighand_siglock"];
+        }
+
+        subgraph cluster__exit_sighand{
+                label="void __exit_sighand(struct task_struct *tsk)";
+                set_sighand_tsk_sighand[label="set_sighand_tsk_sighand"];
+                clear_tsk_sighand[label="clear_tsk_sighand"];
+                atomic_dec_and_test_sighand_count[label="atomic_dec_and_test_sighand_count"];
+                kmem_cache_free_sighand_cachep_sighand[label="kmem_cache_free_sighand_cachep_sighand"];
+        }
+
+        subgraph cluster_exit_sighand{
+                label="void exit_sighand(struct task_struct *tsk)";
+                write_lock_irq_tasklist_lock[label="write_lock_irq_tasklist_lock"];
+                __exit_sighand_tsk[label="__exit_sighand_tsk"];
+                write_unlock_irq_tasklist_lock[label="write_unlock_irq_tasklist_lock"];
+        }
+
+        subgraph cluster___exit_signal{
+                label="void __exit_signal(struct task_struct *tsk)";
+                set_sig_tsk_signal[label="set_sig_tsk_signal"];
+                set_sighand_tsk_sighand[label="set_sighand_tsk_sighand"];
+                sig_null[label="sig_null"];
+                BUG[label="BUG"];
+                atomic_read_sig_count_null[label="atomic_read_sig_count_null"];
+                BUG[label="BUG"];
+                lock_sighand_siglock[label="lock_sighand_siglock"];
+                posix_cpu_timers_exit_tsk[label="posix_cpu_timers_exit_tsk"];
+                atomic_dec_and_test_sig_count[label="atomic_dec_and_test_sig_count"];
+                posix_cpu_timers_exit_group_tsk[label="posix_cpu_timers_exit_group_tsk"];
+                tsk_eq_sig_curr_target[label="tsk_eq_sig_curr_target"];
+                set_sig_curr_target_next_thread_tsk[label="set_sig_curr_target_next_thread_tsk"];
+                clear_tsk_signal[label="clear_tsk_signal"];
+                unlock_sighand_siglock[label="unlock_sighand_siglock"];
+                flush_sigqueue_sig_shared_pending[label="flush_sigqueue_sig_shared_pending"];
+                sig_group_exit_task_and_atomic_read_sig_count_eq_sig_notify_count[label="sig_group_exit_task_and_atomic_read_sig_count_eq_sig_notify_count"];
+                wake_up_process_sig_group_exit_task[label="wake_up_process_sig_group_exit_task"];
+                clear_sig_grup_exit_task[label="clear_sig_grup_exit_task"];
+                tsk_eq_sig_curr_target[label="tsk_eq_sig_curr_target"];
+                set_sig_curr_target_next_thread_tsk[label="set_sig_curr_target_next_thread_tsk"];
+                clear_tsk_signal[label="clear_tsk_signal"];
+                set_sig_utime_cputime_add_sig_utime_tsk_utime[label="set_sig_utime_cputime_add_sig_utime_tsk_utime"];
+                set_sig_stime_cpuptime_add_sig_stime_tsk_stime[label="set_sig_stime_cpuptime_add_sig_stime_tsk_stime"];
+                sig_min_flt_self_add_tsk_min_flt[label="sig_min_flt_self_add_tsk_min_flt"];
+                sig_maj_flt_self_add_tsk_maj_flt[label="sig_maj_flt_self_add_tsk_maj_flt"];
+                sig_nvcsw_self_add_tsk_nvcsw[label="sig_nvcsw_self_add_tsk_nvcsw"];
+                sig_nivcsw_self_add_tsk_nivcsw[label="sig_nivcsw_self_add_tsk_nivcsw"];
+                sig_sched_time_self_add_tsk_sched_time[label="sig_sched_time_self_add_tsk_sched_time"];
+                unlock_sighand_siglock[label="unlock_sighand_siglock"];
+                clear_sig[label="clear_sig"];
+                clear_tsk_thread_flag_tsk_TIF_SIGPENDING[label="clear_tsk_thread_flag_tsk_TIF_SIGPENDING"];
+                flush_sigqueue_tsk_pending[label="flush_sigqueue_tsk_pending"];
+                sig_not_null[label="sig_not_null"];
+                exit_itimers_sig[label="exit_itimers_sig"];
+                exit_thread_group_keys_sig[label="exit_thread_group_keys_sig"];
+                kmem_cache_free_signal_cachep_sig[label="kmem_cache_free_signal_cachep_sig"];
+        }
+
+        subgraph cluster_exit_signal{
+                label="void exit_signal(struct task_struct *tsk)";
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                __exit_signal_tsk[label="__exit_signal_tsk"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+        }
+}

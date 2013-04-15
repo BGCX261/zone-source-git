@@ -6217,3 +6217,8 @@ http://bbs.csdn.net/topics/390421953
 瓶(uays)
 属(xmil)
 群(xmau)
+switch 里的default放在第一个位置好像不是一定会执行的样子。只是在其它条件不成立的时候才
+执行。has_pending_signals函数里有例子。
+
+return(q);这样写可以，不用空格
+
