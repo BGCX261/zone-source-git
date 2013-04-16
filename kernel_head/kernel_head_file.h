@@ -116,6 +116,8 @@ lib/rwsem-spinlock.c里出现
   * send_signal()的info参数可能是还没有分配的但也有可能已分配。在调用__sigqueue_alloc()里再分配。所以
   在send_signal()里会判断info是不是0或1，如果不是0、1或2，那么就说明info是已经被分配的了，这时就要把参数info
   拷贝到sigqueue->info里.
+  * 有可靠信号和非可靠信口之分，也有实时信号和非实时信号之分，好像这两种分类是有重合或一样的。ulk:real-time signals;
+  their signal numbers range from 32 to 64 on Linux. 是一样的:http://kenby.iteye.com/blog/1173862
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */
@@ -1387,6 +1389,28 @@ struct signal_struct {
 	struct key *session_keyring;	/* keyring inherited over fork */
 	struct key *process_keyring;	/* keyring private to this process */
 #endif
+};
+
+/*
+ * Some day this will be a full-fledged user tracking system..
+ */
+struct user_struct {
+	atomic_t __count;	/* reference count */
+	atomic_t processes;	/* How many processes does this user have? */
+	atomic_t files;		/* How many open files does this user have? */
+	atomic_t sigpending;	/* How many pending signals does this user have? */
+	/* protected by mq_lock	*/
+	unsigned long mq_bytes;	/* How many bytes can be allocated to mqueue? */
+	unsigned long locked_shm; /* How many pages of mlocked shm ? */
+
+#ifdef CONFIG_KEYS
+	struct key *uid_keyring;	/* UID specific keyring */
+	struct key *session_keyring;	/* UID's default session keyring */
+#endif
+
+	/* Hash table maintenance information */
+	struct list_head uidhash_list;
+	uid_t uid;
 };
 
 	/******************************kernel/pid.c******************************/

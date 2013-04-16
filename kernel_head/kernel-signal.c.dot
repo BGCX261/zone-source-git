@@ -245,8 +245,8 @@ digraph signal_c{
                 sig_fatal_p_sig_and_p_signal_flags_not_set_SIGNAL_GROUP_EXIT_and_sigismember_t_real_blocked_sig_not_true_and_sig_eq_SIGKILL_or_t_ptrace_not_ste_PT_PTRACED[label="sig_fatal_p_sig_and_p_signal_flags_not_set_SIGNAL_GROUP_EXIT_and_sigismember_t_real_blocked_sig_not_true_and_sig_eq_SIGKILL_or_t_ptrace_not_ste_PT_PTRACED"];
                 sig_kernel_coredump_sig_false[label="sig_kernel_coredump_sig_false"];
                 set_p_signal_flags_SIGNAL_GROUP_EXIT[label="set_p_signal_flags_SIGNAL_GROUP_EXIT"];
-                set_p_signal_groupt_exit_code_sig[label="set_p_signal_groupt_exit_code_sig"];
-                set_p_signal_groupt_stop_count_0[label="set_p_signal_groupt_stop_count_0"];
+                set_p_signal_group_exit_code_sig[label="set_p_signal_group_exit_code_sig"];
+                set_p_signal_group_stop_count_0[label="set_p_signal_group_stop_count_0"];
                 set_t_p[label="set_t_p"];
                 sigaddset_t_pending_signal_SIGKILL[label="sigaddset_t_pending_signal_SIGKILL"];
                 signal_wake_up_t_1[label="signal_wake_up_t_1"];
@@ -265,6 +265,46 @@ digraph signal_c{
                 wake_up_process_p_signal_group_exit_task[label="wake_up_process_p_signal_group_exit_task"];
                 return[label="return"];
                 signal_wake_up_t_sig_eq_SIGKILL[label="signal_wake_up_t_sig_eq_SIGKILL"];
+
+				set_mask_TASK_STOPPED_and_TASK_TRACED -> sig_eq_SIGKILL;
+				sig_eq_SIGKILL -> set_mask_0;
+				set_mask_0 -> wants_signal_sig_p_mask;
+				sig_eq_SIGKILL -> wants_signal_sig_p_mask;
+				wants_signal_sig_p_mask -> set_t_p;
+				wants_signal_sig_p_mask -> thread_group_empty_p;
+				thread_group_empty_p -> return;
+				thread_group_empty_p -> set_t_p_signal_curr_target;
+				set_t_p_signal_curr_target -> t_null;
+				t_null -> set_t_p_signal_current_target_p;
+				set_t_p_signal_current_target_p -> wants_signal_sig_t_mask;
+				wants_signal_sig_t_mask -> set_t_next_thread_t;
+				set_t_next_thread_t -> t_eq_p_signal_curr_target;
+				t_eq_p_signal_curr_target -> return;
+				t_eq_p_signal_curr_target -> wants_signal_sig_t_mask;
+				wants_signal_sig_t_mask -> set_p_signal_curr_target_t;
+				t_null -> wants_signal_sig_t_mask;
+				set_p_signal_curr_target_t -> sig_fatal_p_sig_and_p_signal_flags_not_set_SIGNAL_GROUP_EXIT_and_sigismember_t_real_blocked_sig_not_true_and_sig_eq_SIGKILL_or_t_ptrace_not_ste_PT_PTRACED;
+				set_t_p -> sig_fatal_p_sig_and_p_signal_flags_not_set_SIGNAL_GROUP_EXIT_and_sigismember_t_real_blocked_sig_not_true_and_sig_eq_SIGKILL_or_t_ptrace_not_ste_PT_PTRACED;
+				sig_fatal_p_sig_and_p_signal_flags_not_set_SIGNAL_GROUP_EXIT_and_sigismember_t_real_blocked_sig_not_true_and_sig_eq_SIGKILL_or_t_ptrace_not_ste_PT_PTRACED -> sig_kernel_coredump_sig_false;
+				sig_kernel_coredump_sig_false -> set_p_signal_flags_SIGNAL_GROUP_EXIT;
+				set_p_signal_flags_SIGNAL_GROUP_EXIT -> set_p_signal_group_exit_code_sig;
+				set_p_signal_group_exit_code_sig -> set_p_signal_group_stop_count_0;
+				set_p_signal_group_stop_count_0 -> set_t_p;
+				set_t_p -> sigaddset_t_pending_signal_SIGKILL;
+				sigaddset_t_pending_signal_SIGKILL -> signal_wake_up_t_1;
+				signal_wake_up_t_1 -> set_t_next_thread_t;
+				set_t_next_thread_t -> t_not_eq_p;
+				t_not_eq_p -> return;
+				return -> rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending;
+				sig_fatal_p_sig_and_p_signal_flags_not_set_SIGNAL_GROUP_EXIT_and_sigismember_t_real_blocked_sig_not_true_and_sig_eq_SIGKILL_or_t_ptrace_not_ste_PT_PTRACED -> rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending;
+				sig_kernel_coredump_sig_false -> rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending;
+				rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending -> rm_from_queue_SIG_KERNEL_STOP_MASK_p_signal_shared_pending;
+				rm_from_queue_SIG_KERNEL_STOP_MASK_p_signal_shared_pending -> set_p_signal_group_stop_count_0;
+				set_p_signal_group_stop_count_0 -> set_p_signal_group_exit_task_t;
+				set_p_signal_group_exit_task_t -> set_t_p;
+				set_t_p -> inc_p_signal_group_stop_count;
+				inc_p_signal_group_stop_count -> signal_wake_up_t_0;
+				signal_wake_up_t_0 -> 
         }
 
         subgraph cluster_signal_wake_up{

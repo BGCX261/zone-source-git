@@ -6233,3 +6233,5 @@ Typing certain key combinations at the controlling terminal of a running process
     (Those default key combinations can be changed with the stty command.)
 
 在终端里用minicom时显示的过长的一行会有问题，输入也有问题，所以我把它拉得很宽，宽过了显示器的宽度。
+
+kill -l可以查看信号
