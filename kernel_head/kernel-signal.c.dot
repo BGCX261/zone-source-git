@@ -195,7 +195,8 @@ digraph signal_c{
                 info_great_1_and_info_si_code_SI_TIMER[label="info_great_1_and_info_si_code_SI_TIMER"];
                 set_ret_info_si_sys_private[label="set_ret_info_si_sys_private"];
                 sigaddset_signals_signal_sig[label="sigaddset_signals_signal_sig"];
-
+				return_ret[label="return_ret"];
+				
 				info_eq_2 -> sigaddset_signals_signal_sig;
 				info_eq_2 -> set_q___sigqueue_alloc_t_GFP_ATOMIC_sig_small_SIGRTMIN_and_info_small_2_or_info_si_code_not_small_0;
 				set_q___sigqueue_alloc_t_GFP_ATOMIC_sig_small_SIGRTMIN_and_info_small_2_or_info_si_code_not_small_0 -> q_not_null;
@@ -700,7 +701,7 @@ digraph signal_c{
                 label="static struct sigqueue *__sigqueue_alloc(struct task_struct *t, unsigned int __nocast flags,int override_rlimit)";
                 atomic_inc_t_user_sigpending[label="atomic_inc_t_user_sigpending"];
                 override_rlimit_or_atomic_read_t_user_sigpending_not_great_t_signal_rlim_RLIMIT_SIGPENDING_rlim_cur[label="override_rlimit_or_atomic_read_t_user_sigpending_not_great_t_signal_rlim_RLIMIT_SIGPENDING_rlim_cur"];
-                set_q_keme_cache_alloc_sigqueue_cachep_flags[label="set_q_keme_cache_alloc_sigqueue_cachep_flags"];
+                set_q_kmem_cache_alloc_sigqueue_cachep_flags[label="set_q_kmem_cache_alloc_sigqueue_cachep_flags"];
                 q_null[label="q_null"];
                 atomic_dec_t_user_sigpending[label="atomic_dec_t_user_sigpending"];
                 INIT_LIST_HEAD_q_list[label="INIT_LIST_HEAD_q_list"];
@@ -708,6 +709,17 @@ digraph signal_c{
                 clear_q_lock[label="clear_q_lock"];
                 set_q_user_get_uid_t_user[label="set_q_user_get_uid_t_user"];
                 return_q[label="return_q"];
+
+				atomic_inc_t_user_sigpending -> override_rlimit_or_atomic_read_t_user_sigpending_not_great_t_signal_rlim_RLIMIT_SIGPENDING_rlim_cur;
+				override_rlimit_or_atomic_read_t_user_sigpending_not_great_t_signal_rlim_RLIMIT_SIGPENDING_rlim_cur -> set_q_kmem_cache_alloc_sigqueue_cachep_flags;
+				override_rlimit_or_atomic_read_t_user_sigpending_not_great_t_signal_rlim_RLIMIT_SIGPENDING_rlim_cur -> q_null;
+				set_q_kmem_cache_alloc_sigqueue_cachep_flags -> q_null;
+				q_null -> atomic_dec_t_user_sigpending;
+				q_null -> INIT_LIST_HEAD_q_list;
+				atomic_dec_t_user_sigpending -> return_q;
+				INIT_LIST_HEAD_q_list -> set_q_flags_0;
+				set_q_flags_0 -> clear_q_lock;
+				clear_q_lock -> set_q_user_get_uid_t_user;
         }
 
         subgraph cluster___sigqueue_free{

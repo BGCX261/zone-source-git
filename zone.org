@@ -6222,3 +6222,14 @@ switch 里的default放在第一个位置好像不是一定会执行的样子。
 
 return(q);这样写可以，不用空格
 
+==============================[2013-04-16 二]==============================
+
+http://en.wikipedia.org/wiki/Unix_signal
+Typing certain key combinations at the controlling terminal of a running process causes the system to send it certain signals:
+    Ctrl-C (in older Unixes, DEL) sends an INT signal (SIGINT); by default, this causes the process to terminate.
+    Ctrl-Z sends a TSTP signal (SIGTSTP); by default, this causes the process to suspend execution.
+    Ctrl-\ sends a QUIT signal (SIGQUIT); by default, this causes the process to terminate and dump core.
+    Ctrl-T (not supported on all UNIXes) sends an INFO signal (SIGINFO); by default, this causes the OS (and if supported by the command) to show information about the running command.
+    (Those default key combinations can be changed with the stty command.)
+
+在终端里用minicom时显示的过长的一行会有问题，输入也有问题，所以我把它拉得很宽，宽过了显示器的宽度。
