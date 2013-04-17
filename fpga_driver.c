@@ -89,13 +89,13 @@ typedef BOOLEAN fpga_ao_gain_a_t;
 typedef BOOLEAN fpga_ao_gain_b_t;
 typedef BOOLEAN fpga_ao_sce_t;
 typedef BOOLEAN fpga_ao_clear_t;
-typedef u16 fpga_ao_offset_a_t;
-typedef u16 fpga_ao_offset_b_t;
-typedef u16 fpga_ao_zero_t;
-typedef u16 fpga_ao_gain_t;
+typedef u32 fpga_ao_offset_a_t;
+typedef u32 fpga_ao_offset_b_t;
+typedef u32 fpga_ao_zero_t;
+typedef u32 fpga_ao_gain_t;
 typedef BOOLEAN fpga_ao_form_t;
 
-typedef u16 fpga_ao_t;
+typedef u32 fpga_ao_t;
 
 struct fpga_ram{
 	fpga_di_t di_raw[DI_WORDS];
@@ -306,8 +306,10 @@ static inline int __get_ti(fpga_ti_t __user *const dest)
 	int i;
 	fpga_ti_t source[TI_PORT_SIZE];
 
-	for (i = 0; i < TI_PORT_SIZE; i++)
-		fpga_read32(fpga_add_ti_read[i], source+i);
+	for (i = 0; i < TI_PORT_SIZE; i++){
+		source[i] = fpga_read32(fpga_add_ti_read[i]);
+		/* printk(KERN_NOTICE "%s: #%d - source:0x%x\n", __FUNCTION__, i, source[i]); */
+	}
 
 	if(__copy_to_user(dest, source, sizeof(fpga_ti_t)*TI_PORT_SIZE))
 		return -EFAULT;
@@ -342,7 +344,7 @@ static inline int __get_ai(fpga_ai_t __user *const dest)
 	fpga_ai_t source[AI_PORT_SIZE];
 
 	for (i = 0; i < AI_PORT_SIZE; i++)
-		fpga_read32(fpga_add_ai_read[i], source+i);
+		source[i] = fpga_read32(fpga_add_ai_read[i]);
 
 	if(__copy_to_user(dest, source, sizeof(fpga_ai_t)*AI_PORT_SIZE))
 		return -EFAULT;
@@ -380,7 +382,7 @@ static inline int __get_cnt(fpga_cnt_t __user *const dest)
 	fpga_cnt_t source[CNT_PORT_SIZE];
 
 	for (i = 0; i < CNT_PORT_SIZE; i++)
-		fpga_read32(fpga_add_cnt_read[i], source+i);
+		source[i] = fpga_read32(fpga_add_cnt_read[i]);
 
 	if(__copy_to_user(dest, source, sizeof(fpga_cnt_t)*CNT_PORT_SIZE))
 		return -EFAULT;
@@ -414,7 +416,7 @@ static inline int __get_di(fpga_di_t __user *const dest)
 	fpga_di_t source[DI_WORDS];
 
 	for (i = 0; i < DI_WORDS; i++)
-		fpga_read32(fpga_add_di_read[i], source+i);
+		source[i] = fpga_read32(fpga_add_di_read[i]);
 
 	if (__copy_to_user(dest, source, sizeof(fpga_di_t)*DI_WORDS))
 		return -EFAULT;
@@ -516,84 +518,105 @@ static int put_do_conf(fpga_do_cnf_t __user *const source)
 #define MSG(format, args...) \
   printk("%s:%d" format "\n", __FUNCTION__, __LINE__,  ##args)
 
+#ifdef DEBUG_FPGA_IOCTL
+#define FPGA_IOCTL_MSG(format, args...) \
+  printk("%s:%d" format "\n", __FUNCTION__, __LINE__,  ##args)
+#else
+#define FPGA_IOCTL_MSG(format, args...)
+#endif
+
 long fpga_unlocked_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd){
 	case FPGA_IOCTL_ALL_IN:{
-		/* MSG("FPGA_IOCTL_ALL_IN"); */
 		struct fpga_ram *raw_data = (struct fpga_ram *)arg;
 		if (!access_ok(VERIFY_WRITE, raw_data, sizeof(struct fpga_ram)))
 			return -EFAULT;
 		if (__get_ti(raw_data->ti_raw) || __get_ai(raw_data->ai_raw)
 			|| __get_di(raw_data->di_raw) || __get_cnt(raw_data->cnt_raw))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_ALL_IN");
 		break;
 	}
 	case FPGA_IOCTL_ALL_TI:{
-		/* MSG("FPGA_IOCTL_ALL_TI"); */
 		fpga_ti_t __user *ti_dat = (fpga_ti_t __user *)arg;
+		/* int j; */
 		if (get_ti(ti_dat))
 			return -EFAULT;
+		/* for (j = 0; j < TI_PORT_SIZE ;j++) */
+		/* 	printk(KERN_NOTICE "#%d : %x,  ", j, ti_dat[j]); */
+		/* printk(KERN_NOTICE "\n"); */
+		FPGA_IOCTL_MSG("FPGA_IOCTL_ALL_TI");
 		break;
 	}
 	case FPGA_IOCTL_ALL_AI:{
 		fpga_ai_t __user *ai_dat = (fpga_ai_t __user *)arg;
 		if (get_ai(ai_dat))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_ALL_AI");
 		break;
 	}
 	case FPGA_IOCTL_ALL_CNT:{
 		fpga_cnt_t __user *cnt_dat = (fpga_cnt_t __user *)arg;
 		if (get_cnt(cnt_dat))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_ALL_CNT");
 		break;
 	}
 	case FPGA_IOCTL_ALL_DI:{
 		fpga_di_t __user *di_dat = (fpga_di_t __user *)arg;
 		if (get_di(di_dat))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_ALL_DI");
 		break;
 	}
 	case FPGA_IOCTL_ALL_AO:{
 		fpga_ao_t __user *ao_dat = (fpga_ao_t __user *)arg;
 		if (put_ao(ao_dat))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_ALL_AO");
 		break;
 	}
 	case FPGA_IOCTL_ALL_DO:{
 		fpga_do_t __user *do_dat = (fpga_do_t __user *)arg;
 		if (put_do(do_dat))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_ALL_DO");
 		break;
 	}
 	case FPGA_IOCTL_CONF_DI:{
 		fpga_di_cnf_t __user *di_cnf = (fpga_di_cnf_t __user *)arg;
 		if (put_di_conf(di_cnf))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_DI");
 		break;
 	}
 	case FPGA_IOCTL_CONF_DO:{
 		fpga_do_cnf_t __user *do_cnf = (fpga_do_cnf_t __user *)arg;
 		if (put_do_conf(do_cnf))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_DO");
 		break;
 	}
 	case FPGA_IOCTL_CONF_TI:{
 		fpga_ti_cnf_t __user *ti_cnf = (fpga_ti_cnf_t __user *)arg;
 		if (put_ti_conf(ti_cnf))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_TI");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AI:{
 		fpga_ai_cnf_t __user *ai_cnf = (fpga_ai_cnf_t __user *)arg;
 		if (put_ai_conf(ai_cnf))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AI");
 		break;
 	}
 	case FPGA_IOCTL_CONF_CNT:{
 		fpga_cnt_cnf_t __user *cnt_cnf = (fpga_cnt_cnf_t __user *)arg;
 		if (put_cnt_conf(cnt_cnf))
 			return -EFAULT;
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_CNT");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_A:{
@@ -602,6 +625,7 @@ long fpga_unlocked_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 		else
 			dac8228_config_reg &= ~(1<<DAC8228_GAIN_A);
 		fpga_write32(FPGA_ADD_AO_CONF_GAIN_A, dac8228_config_reg);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_A");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_B:{
@@ -610,6 +634,7 @@ long fpga_unlocked_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 		else
 			dac8228_config_reg &= ~(1<<DAC8228_GAIN_B);
 		fpga_write32(FPGA_ADD_AO_CONF_GAIN_B, dac8228_config_reg);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_B");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_SCE:{
@@ -618,88 +643,110 @@ long fpga_unlocked_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 		else
 			dac8228_config_reg &= ~(1<<DAC8228_SCE);
 		fpga_write32(FPGA_ADD_AO_CONF_SCE, dac8228_config_reg);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_SCE");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_CLEAR:{
 		PUT_CONF(fpga_ao_clear_t, arg, FPGA_ADD_AO_CONF_CLEAR);
-		break;
-	}
-	case FPGA_ADD_AO_CONF_FORM:{
-		PUT_CONF(fpga_ao_form_t, arg, FPGA_ADD_AO_CONF_FORM);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_CLEAR");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_OFFSET_A:{
 		PUT_CONF(fpga_ao_offset_a_t, arg, FPGA_ADD_AO_CONF_OFFSET_A);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_OFFSET_A");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_OFFSET_B:{
 		PUT_CONF(fpga_ao_offset_b_t, arg, FPGA_ADD_AO_CONF_OFFSET_B);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_OFFSET_B");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_0:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_0);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_0");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_1:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_1);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_1");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_2:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_2);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_2");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_3:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_3);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_3");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_4:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_4);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_4");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_5:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_5);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_5");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_6:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_6);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_6");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_ZERO_7:{
 		PUT_CONF(fpga_ao_zero_t, arg, FPGA_ADD_AO_CONF_ZERO_7);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_ZERO_7");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_0:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_0);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_0");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_1:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_1);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_1");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_2:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_2);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_2");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_3:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_3);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_3");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_4:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_4);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_4");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_5:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_5);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_5");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_6:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_6);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_6");
 		break;
 	}
 	case FPGA_IOCTL_CONF_AO_GAIN_7:{
 		PUT_CONF(fpga_ao_gain_t, arg, FPGA_ADD_AO_CONF_GAIN_7);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_GAIN_7");
 		break;
 	}
+	case FPGA_IOCTL_CONF_AO_FORM:{
+		PUT_CONF(fpga_ao_form_t, arg, FPGA_ADD_AO_CONF_FORM);
+		FPGA_IOCTL_MSG("FPGA_IOCTL_CONF_AO_FORM");
+		break;
+	}
+
 	default :
 		printk(KERN_WARNING "fpga: ERROR ioctl command : %u.\n", cmd);
 		return -EINVAL;

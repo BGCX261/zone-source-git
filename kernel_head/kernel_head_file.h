@@ -84,7 +84,7 @@ lib/rwsem-spinlock.c里出现
 
 * struct task_struct 里的 struct signal_struct *signal;是一个指针，因为它是共享的,
   struct sighand_struct *sighand;也是同理
-* 各种flags和state: task_struct->flags; task_struct->state; thread_info->flags; signal_struct_flags;
+* 各种flags和state: task_struct->flags; task_struct->state; thread_info->flags; signal_struct->flags;
   task_struct->ptrace; irqaction->flags; page->flags; vm_struct->flags; vm_area_struct->vm_flags;
   sigaction->sa_flags;
 
@@ -120,6 +120,13 @@ lib/rwsem-spinlock.c里出现
   their signal numbers range from 32 to 64 on Linux. 是一样的:http://kenby.iteye.com/blog/1173862
 
   * 所有的信号共用一个struct sighand_struct 
+  * sys_tgkill()函数里调用的specific_send_sig_info()指定的info参数不是小于2的
+
+  * 在sys_tgkill()函数里的info.si_pid被设置成current.tgid所以可以看出一个线程在收到一个信号时被指明是由领头线程
+  发的。sys_tkill()函数也是这样子设置的。
+
+  * 在handle_stop_signal()函数里可以看出一个线程收到一个SIGCONT信号之后会把所有的属于这个线程组的线程都CONTINUE。
+  SIGSTOP之类的停止信号也是如此。
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */

@@ -266,7 +266,7 @@ digraph signal_c{
                 return[label="return"];
                 signal_wake_up_t_sig_eq_SIGKILL[label="signal_wake_up_t_sig_eq_SIGKILL"];
 
-		set_mask_TASK_STOPPED_and_TASK_TRACED -> sig_eq_SIGKILL;
+                set_mask_TASK_STOPPED_and_TASK_TRACED -> sig_eq_SIGKILL;
 		sig_eq_SIGKILL -> set_mask_0;
 		set_mask_0 -> wants_signal_sig_p_mask;
 		sig_eq_SIGKILL -> wants_signal_sig_p_mask;
@@ -304,7 +304,13 @@ digraph signal_c{
 		set_p_signal_group_exit_task_t -> set_t_p;
 		set_t_p -> inc_p_signal_group_stop_count;
 		inc_p_signal_group_stop_count -> signal_wake_up_t_0;
-		signal_wake_up_t_0 -> 
+		signal_wake_up_t_0 -> set_t_next_thread_t;
+		set_t_next_thread_t -> t_not_eq_p;
+		t_not_eq_p -> wake_up_process_p_signal_group_exit_task;
+		t_not_eq_p -> inc_p_signal_group_stop_count;
+		wake_up_process_p_signal_group_exit_task -> return;
+		sig_fatal_p_sig_and_p_signal_flags_not_set_SIGNAL_GROUP_EXIT_and_sigismember_t_real_blocked_sig_not_true_and_sig_eq_SIGKILL_or_t_ptrace_not_ste_PT_PTRACED -> signal_wake_up_t_sig_eq_SIGKILL;
+		signal_wake_up_t_sig_eq_SIGKILL -> return;
         }
 
         subgraph cluster_wants_signal{
@@ -321,6 +327,13 @@ digraph signal_c{
                 mask_self_set_TASK_STOPPED_TASK_TRACED[label="mask_self_set_TASK_STOPPED_TASK_TRACED"];
                 wake_up_state_t_mask_null[label="wake_up_state_t_mask_null"];
                 kick_process_t[label="kick_process_t"];
+
+				set_tsk_thread_flag_t_TIF_SIGPENDING -> set_mask_TASK_INTERRUPTIBLE;
+				set_mask_TASK_INTERRUPTIBLE -> resume_not_null;
+				resume_not_null -> mask_self_set_TASK_STOPPED_TASK_TRACED;
+				resume_not_null -> wake_up_state_t_mask;
+				mask_self_set_TASK_STOPPED_TASK_TRACED -> wake_up_state_t_mask;
+				wake_up_state_t_mask -> kick_process_t;
         }
 
         subgraph cluster_sys_tgkill{
@@ -344,13 +357,34 @@ digraph signal_c{
                 unlock_p_sighand_siglock[label="unlock_p_sighand_siglock"];
                 read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
                 return_error[label="return_error"];
+
+				pid_not_great_0_or_tgid_not_great_0 -> return_EINVAL;
+				return_EINVAL -> set_info_si_signo_sig;
+				pid_not_great_0_or_tgid_not_great_0 -> set_info_si_signo_sig;
+				set_info_si_signo_sig -> set_info_si_errno_0;
+				set_info_si_errno_0 -> set_info_si_code_SI_TKILL;
+				set_info_si_code_SI_TKILL -> set_info_si_pid_current_tgid;
+				set_info_si_pid_current_tgid -> set_info_si_uid_current_uid;
+				set_info_si_uid_current_uid -> read_lock_tasklist_lock;
+				read_lock_tasklist_lock -> set_p_find_task_by_pid_pid;
+				set_p_find_task_by_pid_pid -> set_error_ESPCH;
+				set_error_ESPCH -> p_not_null_and_p_tgid_eq_tgid;
+				p_not_null_and_p_tgid_eq_tgid -> set_error_check_kill_permission_sig_info_p;
+				set_error_check_kill_permission_sig_info_p -> error_null_and_sig_not_null_and_p_sighand_not_null;
+				error_null_and_sig_not_null_and_p_sighand_not_null -> lock_p_sighand_siglock;
+				lock_p_sighand_siglock -> handle_stop_signal_sig_p;
+				handle_stop_signal_sig_p -> set_error_specific_send_sig_info_sig_info_p;
+				set_error_specific_send_sig_info_sig_info_p -> unlock_p_sighand_siglock;
+				p_not_null_and_p_tgid_eq_tgid -> unlock_tasklist_lock;
+				error_null_and_sig_not_null_and_p_sighand_not_null -> unlock_tasklist_lock;
+				unlock_tasklist_lock -> return_error;
         }
 
         subgraph cluster_handle_stop_signal{
                 label="static void handle_stop_signal(int sig, struct task_struct *p)";
                 p_flags_SIGNAL_GROUP_EXIT_set[label="p_flags_SIGNAL_GROUP_EXIT_set"];
                 return[label="return"];
-                sig_kernel_stop_sig[label="sig_kernel_stop_sig"];
+                sig_kernel_stop_sig_true[label="sig_kernel_stop_sig_true"];
                 rm_from_queue_sigmask_SIGCONT_p_signal_shared_pending[label="rm_from_queue_sigmask_SIGCONT_p_signal_shared_pending"];
                 set_t_p[label="set_t_p"];
                 rm_from_queue_sigmask_SIGCONT_t_pending[label="rm_from_queue_sigmask_SIGCONT_t_pending"];
@@ -359,7 +393,7 @@ digraph signal_c{
                 sig_eq_SIGCONT[label="sig_eq_SIGCONT"];
                 p_signal_group_stop_count_great_0[label="p_signal_group_stop_count_great_0"];
                 set_p_signal_group_stop_count_0[label="set_p_signal_group_stop_count_0"];
-                set_signal_flags_SIGNAL_STOP_CONTINUED[label="set_signal_flags_SIGNAL_STOP_CONTINUED"];
+                set_p_signal_flags_SIGNAL_STOP_CONTINUED[label="set_p_signal_flags_SIGNAL_STOP_CONTINUED"];
                 unlock_p_sighand_siglock[label="unlock_p_sighand_siglock"];
                 do_notify_parent_cldstop_p_p_parent_CLD_STOPPED[label="do_notify_parent_cldstop_p_p_parent_CLD_STOPPED"];
                 do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLD_STOPPED[label="do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLD_STOPPED"];
@@ -378,13 +412,56 @@ digraph signal_c{
                 set_p_signal_flgas_SIGNAL_STOP_CONTINUED[label="set_p_signal_flgas_SIGNAL_STOP_CONTINUED"];
                 set_p_signal_group_exit_code_0[label="set_p_signal_group_exit_code_0"];
                 unlock_p_sighand_siglock[label="unlock_p_sighand_siglock"];
-                p_ptrace_PT_PTRACED[label="p_ptrace_PT_PTRACED"];
+                p_ptrace_PT_PTRACED_set[label="p_ptrace_PT_PTRACED_set"];
                 do_notify_parent_cldstop_p_p_parent_CLD_CONTINUED[label="do_notify_parent_cldstop_p_p_parent_CLD_CONTINUED"];
                 do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLLD_CONTINUED[label="do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLLD_CONTINUED"];
                 lock_p_sighand_siglock[label="lock_p_sighand_siglock"];
                 set_p_signal_flags_0[label="set_p_signal_flags_0"];
                 sig_eq_SIGKILL[label="sig_eq_SIGKILL"];
                 set_p_signal_flags_0[label="set_p_signal_flags_0"];
+
+				p_flags_SIGNAL_GROUP_EXIT_set -> return;
+				p_flags_SIGNAL_GROUP_EXIT_set -> sig_kernel_stop_sig_true;
+				sig_kernel_stop_sig_true -> rm_from_queue_sigmask_SIGCONT_p_signal_shared_pending
+				rm_from_queue_sigmask_SIGCONT_p_signal_shared_pending -> set_t_p;
+				set_t_p -> rm_from_queue_sigmask_SIGCONT_t_pending;
+				rm_from_queue_sigmask_SIGCONT_t_pending -> set_t_next_thread_t;
+				set_t_next_thread_t -> t_not_eq_p;
+				sig_kernel_stop_sig_true -> sig_eq_SIGCONT;
+				sig_eq_SIGCONT -> p_signal_group_stop_count_great_0;
+				p_signal_group_stop_count_great_0 -> set_p_signal_group_stop_count_0;
+				set_p_signal_group_stop_count_0 -> set_p_signal_flags_SIGNAL_STOP_CONTINUED;
+				set_p_signal_flags_SIGNAL_STOP_CONTINUED -> unlock_p_sighand_siglock;
+				unlock_p_sighand_siglock -> p_ptrace_PT_PTRACED_set;
+				p_ptrace_PT_PTRACED_set -> do_notify_parent_cldstop_p_p_parent_CLD_STOPPED;
+				p_ptrace_PT_PTRACED_set -> do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLD_STOPPED;
+				do_notify_parent_cldstop_p_p_parent_CLD_STOPPED -> lock_p_sighand_siglock;
+				do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLD_STOPPED -> lock_p_sighand_siglock;
+				p_signal_group_stop_count_great_0 -> rm_from_queue_SIG_KERNEL_STOP_MASK_p_signal_shared_pending;
+				lock_p_sighand_siglock -> rm_from_queue_SIG_KERNEL_STOP_MASK_p_signal_shared_pending;
+				rm_from_queue_SIG_KERNEL_STOP_MASK_p_signal_shared_pending -> set_t_p;
+				set_t_p -> rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending;
+				rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending -> set_state_TASK_STOPPED;
+				set_state_TASK_STOPPED -> sig_user_defined_t_SIGCONT_and_sigismember_t_blocked_SIGCONT_false;
+				sig_user_defined_t_SIGCONT_and_sigismember_t_blocked_SIGCONT_false -> set_tsk_thread_flag_t_TIF_SIGPENDING;
+				set_tsk_thread_flag_t_TIF_SIGPENDING -> state_self_set_TASK_INTERRUPTIBLE;
+				state_self_set_TASK_INTERRUPTIBLE -> wake_up_state_t_state;
+				sig_user_defined_t_SIGCONT_and_sigismember_t_blocked_SIGCONT_false -> wake_up_state_t_state;
+				wake_up_state_t_state -> set_t_next_thread_t;
+				set_t_next_thread_t -> t_not_eq_p;
+				t_not_eq_p -> rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending;
+				t_not_eq_p -> p_signal_flags_SIGNAL_STOP_STOPPED_set;
+				p_signal_flags_SIGNAL_STOP_STOPPED_set -> set_p_signal_flags_SIGNAL_STOP_CONTINUED;
+				set_p_signal_flags_SIGNAL_STOP_CONTINUED -> set_p_signal_group_exit_code_0;
+				set_p_signal_group_exit_code_0 -> unlock_p_sighand_siglock;
+				unlock_p_sighand_siglock -> p_ptrace_PT_PTRACED_set;
+				p_ptrace_PT_PTRACED_set -> do_notify_parent_cldstop_p_p_parent_CLD_CONTINUED;
+				p_ptrace_PT_PTRACED_set -> do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLLD_CONTINUED;
+				do_notify_parent_cldstop_p_p_parent_CLD_CONTINUED -> lock_p_sighand_siglock;
+				do_notify_parent_cldstop_p_group_leader_p_group_leader_real_parent_CLLD_CONTINUED -> lock_p_sighand_siglock;
+				p_signal_flags_SIGNAL_STOP_STOPPED_set -> set_p_signal_flags_0;
+				sig_eq_SIGCONT -> sig_eq_SIGKILL;
+				sig_eq_SIGKILL -> set_p_signal_flags_0;
         }
 
         subgraph cluster_specific_send_sig_info{
@@ -397,9 +474,24 @@ digraph signal_c{
                 sig_ignored_t_sig[label="sig_ignored_t_sig"];
                 LEGACY_QUEUE_t_pending_sig[label="LEGACY_QUEUE_t_pending_sig"];
                 set_ret_send_signal_sig_info_t_t_pending[label="set_ret_send_signal_sig_info_t_t_pending"];
-                ret_null_and_sigismember_t-blocked_sig_false[label="ret_null_and_sigismember_t-blocked_sig_false"];
+                ret_null_and_sigismember_t_blocked_sig_false[label="ret_null_and_sigismember_t_blocked_sig_false"];
                 signal_wake_up_t_sig_eq_SIGKILL[label="signal_wake_up_t_sig_eq_SIGKILL"];
                 return_ret[label="return_ret"];
+				
+				irqs_disabled_null -> assert_spin_locked_t_sighand_siglock;
+				irqs_disabled_null -> BUG
+				assert_spin_locked_t_sighand_siglock -> info_great_2_and_info_si_code_eq_SI_TIMER;
+				info_great_2_and_info_si_code_eq_SI_TIMER -> set_ret_info_si_sys_private;
+				info_great_2_and_info_si_code_eq_SI_TIMER -> sig_ignored_t_sig;
+				set_ret_info_si_sys_private -> sig_ignored_t_sig;
+				sig_ignored_t_sig -> return_ret;
+				sig_ignored_t_sig -> LEGACY_QUEUE_p_signal_shared_pending_sig;
+				LEGACY_QUEUE_p_signal_shared_pending_sig -> return_ret;
+				LEGACY_QUEUE_p_signal_shared_pending_sig -> set_ret_send_signal_sig_info_t_t_pending;
+				set_ret_send_signal_sig_info_t_t_pending -> ret_null_and_sigismember_t_blocked_sig_false;
+				ret_null_and_sigismember_t_blocked_sig_false -> signal_wake_up_t_sig_eq_SIGKILL;
+				ret_null_and_sigismember_t_blocked_sig_false -> return_ret;
+				signal_wake_up_t_sig_eq_SIGKILL -> return_ret;
         }
 
         subgraph cluster_sys_tkill{
@@ -423,6 +515,27 @@ digraph signal_c{
                 unlock_p_sighand_siglock[label="unlock_p_sighand_siglock"];
                 unlock_tasklist_lock[label="unlock_tasklist_lock"];
                 return_error[label="return_error"];
+
+				pid_not_great_0 -> return_EINVAL;
+				pid_not_great_0 -> set_info_si_signo_sig;
+				set_info_si_signo_sig -> set_info_si_errno_0;
+				set_info_si_errno_0 -> set_info_si_code_SI_TKILL;
+				set_info_si_code_SI_TKILL -> set_info_si_pid_current_tgid;
+				set_info_si_pid_current_tgid -> set_info_si_uid_current_uid;
+				set_info_si_uid_current_uid -> lock_tasklist_lock;
+				lock_tasklist_lock -> set_p_find_task_by_pid_pid;
+				set_p_find_task_by_pid_pid -> set_error_ESRCH;
+				set_error_ESRCH -> p_not_null;
+				p_not_null -> set_error_check_kill_permission_sig_info_p;
+				p_not_null -> unlock_tasklist_lock;
+				set_error_check_kill_permission_sig_info_p -> error_null_and_sig_not_null_and_p_sighand_not_null;
+				error_null_and_sig_not_null_and_p_sighand_not_null -> unlock_tasklist_lock;
+				error_null_and_sig_not_null_and_p_sighand_not_null -> lock_p_sighand_siglock;
+				lock_p_sighand_siglock -> handle_stop_signal_sig_p;
+				handle_stop_signal_sig_p -> set_error_specific_send_sig_info_sig_info_p;
+				set_error_specific_send_sig_info_sig_info_p -> unlock_p_sighand_siglock;
+				unlock_p_sighand_siglock -> unlock_tasklist_lock;
+				unlock_tasklist_lock -> return_error;
         }
 
         subgraph cluster_send_sig{
@@ -440,6 +553,14 @@ digraph signal_c{
                 unlock_p_sighand_siglock[label="unlock_p_sighand_siglock"];
                 unlock_tasklist_lock[label="unlock_tasklist_lock"];
                 return_ret[label="return_ret"];
+
+				valid_signal_sig_null -> return_EINVAL;
+				valid_signal_sig_null -> lock_tasklist_lock;
+				lock_tasklist_lock -> lock_p_sighand_siglock;
+				lock_p_sighand_siglock -> set_ret_specific_send_sig_info_sig_info_p;
+				set_ret_specific_send_sig_info_sig_info_p -> unlock_p_sighand_siglock;;
+				unlock_p_sighand_siglock -> unlock_tasklist_lock;
+				unlock_tasklist_lock -> return_ret;
         }
 
         subgraph cluster_force_sig{
