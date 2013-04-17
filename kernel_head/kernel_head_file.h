@@ -118,6 +118,8 @@ lib/rwsem-spinlock.c里出现
   拷贝到sigqueue->info里.
   * 有可靠信号和非可靠信口之分，也有实时信号和非实时信号之分，好像这两种分类是有重合或一样的。ulk:real-time signals;
   their signal numbers range from 32 to 64 on Linux. 是一样的:http://kenby.iteye.com/blog/1173862
+
+  * 所有的信号共用一个struct sighand_struct 
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */

@@ -6235,3 +6235,8 @@ Typing certain key combinations at the controlling terminal of a running process
 在终端里用minicom时显示的过长的一行会有问题，输入也有问题，所以我把它拉得很宽，宽过了显示器的宽度。
 
 kill -l可以查看信号
+
+想到了有一个系统为了忽略SIGINT信号而写了一个空函数，现在想起了为什么不用SIG_IGN呢？
+
+发现内核里有很多可以被使用的库函数。
+如has_pending_signals()
