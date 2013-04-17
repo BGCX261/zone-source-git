@@ -1085,4 +1085,135 @@ digraph signal_c{
                 rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending[label="rm_from_queue_SIG_KERNEL_STOP_MASK_t_pending"];
                 signal_wake_up_t_1[label="signal_wake_up_t_1"];
         }
+
+        subgraph cluster_sigqueue_free{
+                label="void sigqueue_free(struct sigqueue *q)";
+
+                list_empty_q_list_null[label="list_empty_q_list_null"];
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                lock_q_lock[label="lock_q_lock"];
+                list_empty_q_list_null[label="list_empty_q_list_null"];
+                list_del_init_q_list[label="list_del_init_q_list"];
+                unlock_q_lock[label="unlock_q_lock"];
+                unlock_tsklist_lock[label="unlock_tsklist_lock"];
+                clear_q_flags_SIGQUEUE_PREALLOC[label="clear_q_flags_SIGQUEUE_PREALLOC"];
+                __sigqueue_free_q[label="__sigqueue_free_q"];
+        }
+
+        subgraph cluster_send_sigqueue{
+                label="int send_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)";
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                lock_p_sighand_siglock[label="lock_p_sighand_siglock"];
+                list_empty_q_list_null[label="list_empty_q_list_null"];
+                q_info_si_code_not_eq_SI_TIMER[label="q_info_si_code_not_eq_SI_TIMER"];
+                BUG[label="BUG"];
+                inc_q_info_si_overrun[label="inc_q_info_si_overrun"];
+                sig_ignored_p_sig[label="sig_ignored_p_sig"];
+                set_ret_1[label="set_ret_1"];
+                set_q_lock_p_sighand_siglock[label="set_q_lock_p_sighand_siglock"];
+                list_add_tail_q_list_p_pending_list[label="list_add_tail_q_list_p_pending_list"];
+                sigaddset_p_pending_signal_sig[label="sigaddset_p_pending_signal_sig"];
+                sigismember_p_blocked_sig_null[label="sigismember_p_blocked_sig_null"];
+                signal_wake_up_p_sig_eq_SIGKILL[label="signal_wake_up_p_sig_eq_SIGKILL"];
+                unlock_p_sighand_siglock[label="unlock_p_sighand_siglock"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_send_group_sigqueue{
+                label="int send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)";
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                lock_p_sighand_siglock[label="lock_p_sighand_siglock"];
+                handle_stop_signal_sig_p[label="handle_stop_signal_sig_p"];
+                sig_ignored_p_sig[label="sig_ignored_p_sig"];
+                set_ret_1[label="set_ret_1"];
+                list_empty_q_list_null[label="list_empty_q_list_null"];
+                q_info_si_code_eq_SI_TIMER[label="q_info_si_code_eq_SI_TIMER"];
+                BUG[label="BUG"];
+                inc_q_info_si_overrun[label="inc_q_info_si_overrun"];
+                set_q_lock_p_sighand_siglock[label="set_q_lock_p_sighand_siglock"];
+                list_add_tail_q_list_p_signal_shared_pending_list[label="list_add_tail_q_list_p_signal_shared_pending_list"];
+                sigaddset_p_signal_shared_pending_signal_sig[label="sigaddset_p_signal_shared_pending_signal_sig"];
+                __group_complete_signal_sig_p[label="__group_complete_signal_sig_p"];
+                unlock_p_sighand_siglock[label="unlock_p_sighand_siglock"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster__wake_up_parent{
+                label="static inline void __wake_up_parent(struct task_struct *p, struct task_struct *parent)";
+                wake_up_interruptible_sync_parent_signal_wait_chldexit[label="wake_up_interruptible_sync_parent_signal_wait_chldexit"];
+        }
+
+        subgraph cluster_do_notify_parent{
+                label="void do_notify_parent(struct task_struct *tsk, int sig)";
+                set_info_si_signo_sig[label="set_info_si_signo_sig"];
+                set_info_si_errno_0[label="set_info_si_errno_0"];
+                set_info_si_pid_tsk_pid[label="set_info_si_pid_tsk_pid"];
+                set_info_si_uid_tsk_uid[label="set_info_si_uid_tsk_uid"];
+                set_info_si_utime_cputime_to_jiffies_cputime_add_tsk__utime_tsk_signal_utime[label="set_info_si_utime_cputime_to_jiffies_cputime_add_tsk__utime_tsk_signal_utime"];
+                set_info_si_stime_cputime_to_jiffies_cputime_add_tsk__stime_tsk_signal_stime[label="set_info_si_stime_cputime_to_jiffies_cputime_add_tsk__stime_tsk_signal_stime"];
+                set_info_si_status_tsk_exit_code_and_0x7f[label="set_info_si_status_tsk_exit_code_and_0x7f"];
+                tsk_exit_code_and_0x80_not_null[label="tsk_exit_code_and_0x80_not_null"];
+                set_info_si_code_CLD_DUMPED[label="set_info_si_code_CLD_DUMPED"];
+                tsk_exit_code_and_0x7f[label="tsk_exit_code_and_0x7f"];
+                set_info_si_code_CLD_KILLED[label="set_info_si_code_CLD_KILLED"];
+                set_info_si_code_CLD_EXITED[label="info_si_code_CLD_EXITED"];
+                set_info_si_status_tsk_exit_code_right_move_8[label="set_info_si_status_tsk_exit_code_right_move_8"];
+                set_psig_tsk_parent_sighand[label="set_psig_tsk_parent_sighand"];
+                lock_psig_siglock[label="lock_psig_siglock"];
+                sig_eq_SIGCHLD_and_psig_action_SIGCHLD_sa_sa_handler_eq_SIG_IGN_or_psig_SIGCHLD_sa_sa_flags_and__SA_NOCLDWAIT[label="sig_eq_SIGCHLD_and_psig_action_SIGCHLD_sa_sa_handler_eq_SIG_IGN_or_psig_SIGCHLD_sa_sa_flags_and__SA_NOCLDWAIT"];
+                set_tsk_exit_signal_neg_1[label="set_tsk_exit_signal_neg_1"];
+                psig_action_SIGCHLD_sa_sa_handler_eq_SIG_IGN[label="psig_action_SIGCHLD_sa_sa_handler_eq_SIG_IGN"];
+                set_sig_0[label="set_sig_0"];
+                valid_signal_sig_and_sig_great_0[label="valid_signal_sig_and_sig_great_0"];
+                __group_send_sig_info_sig_info_tsk_parent[label="__group_send_sig_info_sig_info_tsk_parent"];
+                __wake_up_parent_tsk_tsk_parent[label="__wake_up_parent_tsk_tsk_parent"];
+                unlock_psig_siglock[label="unlock_psig_siglock"];
+        }
+
+        subgraph cluster_do_notify_parent_cldstop{
+                label="static void do_notify_parent_cldstop(struct task_struct *tsk, struct task_struct *parent, int why)";
+                set_info_si_signo_SIGCHLD[label="set_info_si_signo_SIGCHLD"];
+                set_info_si_errno_0[label="set_info_si_errno_0"];
+                set_info_si_pid_tsk_pid[label="set_info_si_pid_tsk_pid"];
+                set_info_si_uid_tsk_uid[label="set_info_si_uid_tsk_uid"];
+                set_info_si_utime_cutime_to_jiffies_tsk_utime[label="set_info_si_utime_cutime_to_jiffies_tsk_utime"];
+                set_inffo_si_stime_cputime_to_jiffies_tsk_stime[label="set_inffo_si_stime_cputime_to_jiffies_tsk_stime"];
+                set_info_si_code_why[label="set_info_si_code_why"];
+                switch_why[label="switch_why"];
+                case_CLD_CONTINUED[label="case_CLD_CONTINUED"];
+                set_info_si_status_SIGCONT[label="set_info_si_status_SIGCONT"];
+                case_CLD_STOPPED[label="case_CLD_STOPPED"];
+                set_info_si_status_tsk_signal_group_exit_code_and_0x7f[label="set_info_si_status_tsk_signal_group_exit_code_and_0x7f"];
+                case_CLD__TRAPPED[label="case_CLD__TRAPPED"];
+                set_info_si_status_tsk_exit_code_and_0x7f[label="set_info_si_status_tsk_exit_code_and_0x7f"];
+                set_sighand_parent_sighand[label="set_sighand_parent_sighand"];
+                lock_sighand_siglock[label="lock_sighand_siglock"];
+                sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set[label="sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set"];
+                __group_send_sig_info_SIGCHLD_info_parent[label="__group_send_sig_info_SIGCHLD_info_parent"];
+                __wake_up_parent_tsk_parent[label="__wake_up_parent_tsk_parent"];
+                unlock_sighand_siglock[label="unlock_sighand_siglock"];
+        }
+
+        subgraph cluster_ptrace_stop{
+                label="static void ptrace_stop(int exit_code, int nostop_code, siginfo_t *info)";
+                current_signal_group_stop_count_great_0[label="current_signal_group_stop_count_great_0"];
+                dec_current_signal_group_stop_count[label="dec_current_signal_group_stop_count"];
+                set_current_last_siginfo_info[label="set_current_last_siginfo_info"];
+                set_current_exit_code_exit_code[label="set_current_exit_code_exit_code"];
+                set_current_state_TASK_TRACED[label="set_current_state_TASK_TRACED"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null[label="current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null"];
+                do__notify_parent_cldstop_current_current_parent_CLD_TRAPPED[label="do__notify_parent_cldstop_current_current_parent_CLD_TRAPPED"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                schedule[label="schedule"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                set_current_state_TASK_RUNNING[label="set_current_state_TASK_RUNNING"];
+                set_current_exit_code_nostop_code[label="set_current_exit_code_nostop_code"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                clear_current_last_siginfo[label="clear_current_last_siginfo"];
+                recalc_sigpending[label="recalc_sigpending"];
+        }
 }
