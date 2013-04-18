@@ -1399,4 +1399,181 @@ digraph signal_c{
                 clear_current_last_siginfo[label="clear_current_last_siginfo"];
                 recalc_sigpending[label="recalc_sigpending"];
         }
+
+        subgraph cluster_ptrace_notify{
+                label="void ptrace_notify(int exit_code)";
+                memset_info_0[label="memset_info_0"];
+                set_info_signo_SIGTRAP[label="set_info_signo_SIGTRAP"];
+                set_info_si_code_exit_code[label="set_info_si_code_exit_code"];
+                set_si_pid_current_pid[label="set_si_pid_current_pid"];
+                set_info_uid_current_uid[label="set_info_uid_current_uid"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                ptrace_stop_exit_code_0_info[label="ptrace_stop_exit_code_0_info"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+        }
+
+        subgraph cluster_finish_stop{
+                label="static void finish_stop(int stop_count)";
+                stop_count_small_0_or_current_ptrace_PT_PTRACED_set[label="stop_count_small_0_or_current_ptrace_PT_PTRACED_set"];
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                do_notify_parent_cldstop_current_current_parent_CLD_STOPPED[label="do_notify_parent_cldstop_current_current_parent_CLD_STOPPED"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                stop_count_eq_0[label="stop_count_eq_0"];
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                do_notify_parent_cldstop_current_group_leader_current_group_leader_real_parent_CLD_STOPPED[label="do_notify_parent_cldstop_current_group_leader_current_group_leader_real_parent_CLD_STOPPED"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                schedule[label="schedule"];
+                set_current_exit_code_0[label="set_current_exit_code_0"];
+        }
+
+        subgraph cluster_sys_restart_syscall{
+                label="asmlinkage long sys_restart_syscall(void)";
+                set_restart_current_thread_info_restart_block[label="set_restart_current_thread_info_restart_block"];
+                return_restart_fn_restart[label="return_restart_fn_restart"];
+        }
+
+        subgraph cluster_do_no_restart_syscall{
+                label="long do_no_restart_syscall(struct restart_block *param)";
+                return_EINTR[label="return_EINTR"];
+        }
+
+        subgraph cluster_sys_rt_sigprocmask{
+                label="asmlinkage long sys_rt_sigprocmask(int how, sigset_t __user *set, sigset_t __user *oset, size_t sigsetsize)";
+                set_error_EINVAL[label="set_error_EINVAL"];
+                sigsetsize_not_eq_sizeof_sigset_t[label="sigsetsize_not_eq_sizeof_sigset_t"];
+                set_not_null[label="set_not_null"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                copy_from_user_new_set_set[label="copy_from_user_new_set_set"];
+                out[label="out"];
+                sigdelsetmask_new_set_sigmask_SIGKILL_or_sigmask_SIGSTOP[label="sigdelsetmask_new_set_sigmask_SIGKILL_or_sigmask_SIGSTOP"];
+                set_error_sigprocmask_how_new_sset_old_set[label="set_error_sigprocmask_how_new_sset_old_set"];
+                error_not_null[label="error_not_null"];
+                oset_not_null[label="oset_not_null"];
+                set_old[label="set_old"];
+                oset_not_null[label="oset_not_null"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_old_set_current_blocked[label="set_old_set_current_blocked"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                copy_to_user_oset_old_set[label="copy_to_user_oset_old_set"];
+                set_error_0[label="set_error_0"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_rt_sigpending{
+                label="asmlinkage long sys_rt_sigpending(sigset_t __user *set, size_t sigsetsize)";
+                return_do_sigpending_set_sigsetsize[label="return_do_sigpending_set_sigsetsize"];
+        }
+
+        subgraph cluster_copy_siginfo_to_user{
+                label="int copy_siginfo_to_user(siginfo_t __user *to, siginfo_t *from)";
+                access_ok_VERIFY_WRITE_to_null[label="access_ok_VERIFY_WRITE_to_null"];
+                return_EFAULT[label="return_EFAULT"];
+                from_si_code_small_0[label="from_si_code_small_0"];
+                return___copy_to_user_to_from[label="return___copy_to_user_to_from"];
+                set_err___put_user_from_si_siggno_to_si_signo[label="set_err___put_user_from_si_siggno_to_si_signo"];
+                err_self_or___put_user_from_si_errno_to_si_errno[label="err_self_or___put_user_from_si_errno_to_si_errno"];
+                err_self_or___put_user_from_si_code_to_si_code[label="err_self_or___put_user_from_si_code_to_si_code"];
+                switch_from_si_code_and___SI_MASK[label="switch_from_si_code_and___SI_MASK"];
+                case___SI_KILL[label="case___SI_KILL"];
+                err_self_or___put_user_from_si_pid_to_si_pid[label="err_self_or___put_user_from_si_pid_to_si_pid"];
+                err_self_or___put_user_from_si_uid_to_si_uid[label="err_self_or___put_user_from_si_uid_to_si_uid"];
+                case___SI_TIMER[label="case___SI_TIMER"];
+                err_self_or___put_user_from_si_tid_to_si_tid[label="err_self_or___put_user_from_si_tid_to_si_tid"];
+                err_self_or___put_user_from_si_overrun_to_si_overrun[label="err_self_or___put_user_from_si_overrun_to_si_overrun"];
+                err_self_or___put_user_form_si_ptr_to_si_ptr[label="err_self_or___put_user_form_si_ptr_to_si_ptr"];
+                case__SI_POLL[label="case__SI_POLL"];
+                err_self_set___put_user_from_si_band_to_si_band[label="err_self_set___put_user_from_si_band_to_si_band"];
+                err_self_or___put_user_from_si_fd_to_si_fd[label="err_self_set___put_user_from_si_fd_to_si_fd"];
+                case___SI_FAULT[label="case___SI_FAULT"];
+                err_self_or___put_user_from_si_addr_to_si_addr[label="err_self_or___put_user_from_si_addr_to_si_addr"];
+                err_self_or___put_user_from_si_trapno_to_si_trapno[label="err_self_or___put_user_from_si_trapno_to_si_trapno"];
+                case___SI_CHLD[label="case___SI_CHLD"];
+                err_self_or___put_user_from_si_pid_to_si_pid[label="err_self_or___put_user_from_si_pid_to_si_pid"];
+                err_self_or___put_user_from_si_uid_to_si_uid[label="err_self_or___put_user_from_si_uid_to_si_uid"];
+                err_self_or___put_user_from_si_status_to_si_status[label="err_self_or___put_user_from_si_status_to_si_status"];
+                err_self_or___put_user_from_si_utime_to_si_utime[label="err_self_or___put_user_from_si_utime_to_si_utime"];
+                err_self_or___put_user_from_si_stime_to_si_stime[label="err_self_or___put_user_from_si_stime_to_si_stime"];
+                case___SI_RT[label="case___SI_RT"];
+                case___SI_MESGQ[label="case___SI_MESGQ"];
+                err_self_or___put_user_from_si_pid_to_si_pid[label="err_self_or___put_user_from_si_pid_to_si_pid"];
+                err_self_or___put_user_from_si_uid_to_si_uid[label="err_self_or___put_user_from_si_uid_to_si_uid"];
+                err_self_or___put_user_form_si_ptr_to_si_ptr[label="err_self_or___put_user_form_si_ptr_to_si_ptr"];
+                err_self_or___put_user_from_si_pid_to_si_pid[label="err_self_or___put_user_from_si_pid_to_si_pid"];
+                err_self_or___put_user_from_si_uid_to_si_uid[label="err_self_or___put_user_from_si_uid_to_si_uid"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_sys_rt_sigtimedwait{
+                label="asmlinkage long sys_rt_sigtimedwait(const sigset_t __user *uthese, siginfo_t __user *uinfo, const struct timespec __user *uts, size_t sigsetsize)";
+                sigsetsize_not_eq_sizeof_sigset_t[label="sigsetsize_not_eq_sizeof_sigset_t"];
+                return_EINVAL[label="return_EINVAL"];
+                copy_from_user_these_uthese[label="copy_from_user_these_uthese"];
+                return_EFAULT[label="return_EFAULT"];
+                sigdelsetmask_thest_sigmask_SIGKILL_or_sigmask_SIGSTOP[label="sigdelsetmask_thest_sigmask_SIGKILL_or_sigmask_SIGSTOP"];
+                signotset_these[label="signotset_these"];
+                uts_not_null[label="uts_not_null"];
+                copy_from_user_ts_uts[label="copy_from_user_ts_uts"];
+                return_EFAULT[label="return_EFAULT"];
+                ts_tv_nsec_not_small_1000000000L_or_ts_tv_nsec_small_or_ts_tv_sec_small_0[label="ts_tv_nsec_not_small_1000000000L_or_ts_tv_nsec_small_or_ts_tv_sec_small_0"];
+                return_EINVAL[label="return_EINVAL"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_sig_dequeue_signal_current_these_info[label="set_sig_dequeue_signal_current_these_info"];
+                sig_null[label="sig_null"];
+                set_timeout_MAX_SCHEDULE_TIMEOUT[label="set_timeout_MAX_SCHEDULE_TIMEOUT"];
+                uts_not_null[label="uts_not_null"];
+                set_timeout_timespec_to_jiffies_ts_add_ts_tv_sec_or_ts_tv_nsec[label="set_timeout_timespec_to_jiffies_ts_add_ts_tv_sec_or_ts_tv_nsec"];
+                timeout_not_null[label="timeout_not_null"];
+                set_current_real_blocked_current_blocked[label="set_current_real_blocked_current_blocked"];
+                sigaddsets_current_blocked_current_blocked_these[label="sigaddsets_current_blocked_current_blocked_these"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                set_timeout_schedule_timeout_timeout[label="set_timeout_schedule_timeout_timeout"];
+                current_flags_PF_FREEZE_set[label="current_flags_PF_FREEZE_set"];
+                refrigerator_PF_FREEZE[label="refrigerator_PF_FREEZE"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_sig_dequeue_signal_current_these_info[label="set_sig_dequeue_signal_current_these_info"];
+                set_current_blocked_current_real_blocked[label="set_current_blocked_current_real_blocked"];
+                siginitset_current_real_blocked_0[label="siginitset_current_real_blocked_0"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                sig_not_null[label="sig_not_null"];
+                set_ret_sig[label="set_ret_sig"];
+                uinfo_not_null[label="uinfo_not_null"];
+                copy_siginfo_to_user_uinfo_info[label="copy_siginfo_to_user_uinfo_info"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                set_ret_EAGIAN[label="set_ret_EAGIAN"];
+                timeout_not_null[label="timeout_not_null"];
+                set_ret_EINTR[label="set_ret_EINTR"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_do_sigaltstack{
+                label="int do_sigaltstack (const stack_t __user *uss, stack_t __user *uoss, unsigned long sp)";
+                uoss_not_null[label="uoss_not_null"];
+                set_oss_ss_sp_current_sas_ss_sp[label="set_oss_ss_sp_current_sas_ss_sp"];
+                set_oss_ss_size_current_sas_ss_size[label="set_oss_ss_size_current_sas_ss_size"];
+                set_oss_ss_flags_sas_ss_flags_sp[label="set_oss_ss_flags_sas_ss_flags_sp"];
+                uss_not_null[label="uss_not_null"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                access_ok_VERIFY_READ_uss_or___get_user_ss_sp_uss_ss_sp_or___get_user_ss_flags_uss_ss_flags_or___get_user_ss_size_uss_ss_size[label="access_ok_VERIFY_READ_uss_or___get_user_ss_sp_uss_ss_sp_or___get_user_ss_flags_uss_ss_flags_or___get_user_ss_size_uss_ss_size"];
+                out[label="out"];
+                set_error_EPERM[label="set_error_EPERM"];
+                on_sig_stack_sp[label="on_sig_stack_sp"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                ss_flags_not_eq_SS_DISABLE_and_ss_flags_not_eq_SS_ONSTACK_and_ss_flags_not_eq_0[label="ss_flags_not_eq_SS_DISABLE_and_ss_flags_not_eq_SS_ONSTACK_and_ss_flags_not_eq_0"];
+                ss_flags_not_eq_SS_DISABLE[label="ss_flags_not_eq_SS_DISABLE"];
+                set_ss_size_0[label="set_ss_size_0"];
+                clear_ss_sp[label="clear_ss_sp"];
+                set_error_ENOMEM[label="set_error_ENOMEM"];
+                ss_size_small_MINSIGSTKSZ[label="ss_size_small_MINSIGSTKSZ"];
+                set_current_sas_ss_sp_ss_sp[label="set_current_sas_ss_sp_ss_sp"];
+                set_current_sas_ss_size_ss_size[label="set_current_sas_ss_size_ss_size"];
+                uoss_not_null[label="uoss_not_null"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                copy_to_user_uoss_oss[label="copy_to_user_uoss_oss"];
+                set_error_0[label="set_error_0"];
+                return_error[label="return_error"];
+        }
 }
