@@ -127,6 +127,11 @@ lib/rwsem-spinlock.c里出现
 
   * 在handle_stop_signal()函数里可以看出一个线程收到一个SIGCONT信号之后会把所有的属于这个线程组的线程都CONTINUE。
   SIGSTOP之类的停止信号也是如此。
+
+  * 用force_sig_info()发送的信号就算被blocked了也要递送，不能被blocked且执行SIG_DFL。被force_sig_info()被送的信号若是被要求执行
+  SIG_IGN则都会修改成执行本身的SIG_DFL函数。
+
+  * force_sig_specific()与force_sig_info()的最大的不用就是前者用info=2来调用specific_send_sig_info()的
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */
