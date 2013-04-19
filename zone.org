@@ -6253,3 +6253,17 @@ kill -l可以查看信号
 	printf("ALL_DI: 1"
 		   "sdfsdf");
 要在编码时换行后也对齐就分开加双引号。
+
+==============================[2013-04-19 五]==============================
+
+scanf这类函数可以用正则表达式的。
+
+printf("str:h = 0x%lx\n", strtol(str, NULL, 16));
+不用%x（unsiged int）用%lx(long int)
+
+把ffffffff传给strtol来转成数字，但转的结果是long int的结果是7fffffff
+但我一直以为打印16进制会有有无符号之分，可能不是。
+
+Ctrl+S will freeze the tty
+To unfreeze the tty, you need to hit Ctrl+Q.
+
