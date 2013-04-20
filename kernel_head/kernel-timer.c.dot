@@ -473,6 +473,261 @@ digraph timer_c{
 
                 subgraph cluster_sys_nanosleep{
                         label="asmlinkage long sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)";
-                        
+                        copy_from_user_t_rqtp[label="copy_from_user_t_rqtp"];
+                        return_EFAULT[label="return_EFAULT"];
+                        t_tv_nsec_not_small_1000000000L_or_t_tv_nsec_small_0_or_t_tv_sec_small_0[label="t_tv_nsec_not_small_1000000000L_or_t_tv_nsec_small_0_or_t_tv_sec_small_0"];
+                        return_EINVAL[label="return_EINVAL"];
+                        set_expire_timespec_to_jiffies_t_add_t_tv_sec_or_t_tv_nsec[label="set_expire_timespec_to_jiffies_t_add_t_tv_sec_or_t_tv_nsec"];
+                        set_current_state_TAASK_INTERRUPTIBLE[label="set_current_state_TAASK_INTERRUPTIBLE"];
+                        set_expire_schedule_timeout_expire[label="set_expire_schedule_timeout_expire"];
+                        set_ret_0[label="set_ret_0"];
+                        expire_not_null[label="expire_not_null"];
+                        jiffies_to_timespec_expire_t[label="jiffies_to_timespec_expire_t"];
+                        rmtp_not_null_and_copy_to_user_rmtp_t[label="rmtp_not_null_and_copy_to_user_rmtp_t"];
+                        return_EFAULT[label="return_EFAULT"];
+                        set_restart_current_thread_info_restart_block[label="set_restart_current_thread_info_restart_block"];
+                        set_restart_fn_nanosleep_restart[label="set_restart_fn_nanosleep_restart"];
+                        set_restart_arg0_jiffies_add_expire[label="set_restart_arg0_jiffies_add_expire"];
+                        set_restart_arg1_rmtp[label="set_restart_arg1_rmtp"];
+                        set_ret_ERESTART_RESTARTBLOCK[label="set_ret_ERESTART_RESTARTBLOCK"];
+                        return_ret[label="return_ret"];
+                }
+
+                subgraph cluster_sys_sysinfo{
+                        label="asmlinkage long sys_sysinfo(struct sysinfo __user *info)";
+                        set_seq_read_seqbegin_xtime_lock[label="set_seq_read_seqbegin_xtime_lock"];
+                        getnstimeofdat_tp[label="getnstimeofdat_tp"];
+                        tp_tv_sec_self_add_wall_to_monotomic_tv_sec[label="tp_tv_sec_self_add_wall_to_monotomic_tv_sec"];
+                        tp_tv_nsec_self_add_wall_to_monotonic_tv_nsec[label="tp_tv_nsec_self_add_wall_to_monotonic_tv_nsec"];
+                        tp_tv_nsec_sub_NSEC_PER_SEC_not_small_0[label="tp_tv_nsec_sub_NSEC_PER_SEC_not_small_0"];
+                        tp_tv_nsec_tp_tv_nsec_sub_NSEC_PER_SEC[label="tp_tv_nsec_tp_tv_nsec_sub_NSEC_PER_SEC"];
+                        inc_tp_tv_sec[label="inc_tp_tv_sec"];
+                        set_val_uptime_tp_tv_sec_add_1_or_0_decided_tp_tv_nsec[label="set_val_uptime_tp_tv_sec_add_1_or_0_decided_tp_tv_nsec"];
+                        set_val_loads_0_avenrun_0_left_move_SI_LOAD_SHIFT_sub_FSHIFT[label="set_val_loads_0_avenrun_0_left_move_SI_LOAD_SHIFT_sub_FSHIFT"];
+                        set_val_loads_1_avenrun_1_left_mmove_SI_LOADSHIFT_sub_FSHIFT[label="set_val_loads_1_avenrun_1_left_move_SI_LOAD_SHIFT_sub_FSHIFT"];
+                        set_val_loads_2_avenrun_2_left_mmove_SI_LOADSHIFT_sub_FSHIFT[label="set_val_loads_2_avenrun_2_left_move_SI_LOAD_SHIFT_sub_FSHIFT"];
+                        set_val_procs_nr_threads[label="set_val_procs_nr_threads"];
+                        read_seqretry_xtime_lock_seq[label="read_seqretry_xtime_lock_seq"];
+                        si_meminfo_val[label="si_meminfo_val"];
+                        si_swapinfo_val[label="si_swapinfo_val"];
+                        set_mem_total_val_totalram_add_val_totalswap[label="set_mem_total_val_totalram_add_val_totalswap"];
+                        mem_total_small_val_ttotalram_or_mem_total_small_val_totalswap[label="mem_total_small_val_ttotalram_or_mem_total_small_val_totalswap"];
+                        goto_out[label="goto_out"];
+                        set_bitcount_0[label="set_bitcount_0"];
+                        set_mem_unit_val_mem_unit[label="set_mem_unit_val_mem_unit"];
+                        mem_unit_great_1[label="mem_unit_great_1"];
+                        inc_bitcount[label="inc_bitcount"];
+                        mem_unit_self_rigth_move_1[label="mem_unit_self_rigth_move_1"];
+                        set_sav_total_mem_total[label="set_sav_total_mem_total"];
+                        mem_total_self_left_move_1[label="mem_total_self_left_move_1"];
+                        mem_total_small_sav_total[label="mem_total_small_sav_total"];
+                        goto_out[label="goto_out"];
+                        set_val_mem_unit_1[label="set_val_mem_unit_1"];
+                        set_val_totalram_self_left_move_bitcount[label="set_val_totalram_self_left_move_bitcount"];
+                        val_freeram_self_left_move_bitcount[label="set_val_freeram_self_left_move_bitcount"];
+                        val_sharedram_self_left_move_bitcount[label="set_val_sharedram_self_left_move_bitcount"];
+                        val_bufferram_self_left_move_bitcount[label="set_val_bufferram_self_left_move_bitcount"];
+                        val_totalswap_self_left_move_bitcount[label="set_val_totalswap_self_left_move_bitcount"];
+                        val_freeswap_self_left_move_bitcount[label="set_val_freeswap_self_left_move_bitcount"];
+                        val_totalhigh_self_left_move_bitcount[label="set_val_totalhigh_self_left_move_bitcount"];
+                        val_freehigh_self_left_move_bitcount[label="set_val_freehigh_self_left_move_bitcount"];
+                        copy_to_user_info_val[label="copy_to_user_info_val"];
+                        return_EFAULT[label="return_EFAULT"];
+                        return_0[label="return_0"];
+                }
+
+                subgraph cluster_init_timers_cpu{
+                        label="static void __devinit init_timers_cpu(int cpu)";
+                        set_base_per_cpu_tvec_bases_cpu[label="set_base_per_cpu_tvec_bases_cpu"];
+                        lock_base_lock[label="lock_base_lock"];
+                        for_j_TVN_SIZE[label="for_j_TVN_SIZE"];
+                        INIT_LIST_HEAD_base_tv5_vec_add_j[label="INIT_LIST_HEAD_base_tv5_vec_add_j"];
+                        INIT_LIST_HEAD_base_tv4_vec_add_j[label="INIT_LIST_HEAD_base_tv4_vec_add_j"];
+                        INIT_LIST_HEAD_base_tv3_vec_add_j[label="INIT_LIST_HEAD_base_tv3_vec_add_j"];
+                        INIT_LIST_HEAD_base_tv2_vec_add_j[label="INIT_LIST_HEAD_base_tv2_vec_add_j"];
+                        for_j_TVR_SIZE[label="for_j_TVR_SIZE"];
+                        INIT_LIST_HEAD_base_tv1_vec_add_j[label="INIT_LIST_HEAD_base_tv1_vec_add_j"];
+                        set_base_timer_jiffies_jiffies[label="set_base_timer_jiffies_jiffies"];
+                }
+
+                subgraph cluster_migrate_timer_list{
+                        label="static int migrate_timer_list(tvec_base_t *new_base, struct list_head *head)";
+                        CONFIG_HOTPLUG_CPU[label="CONFIG_HOTPLUG_CPU"];
+                        list_empty_head_null[label="list_empty_head_null"];
+                        set_time_list_entry_head_next_struct_timer_list[label="set_time_list_entry_head_next_struct_timer_list"];
+                        trylock_timer_lock_null[label="trylock_timer_lock_null"];
+                        return_0[label="return_0"];
+                        list_del_timer_entry[label="list_del_timer_entry"];
+                        internal_add_timer_new_base_timer[label="internal_add_timer_new_base_timer"];
+                        set_timer_base_new_base[label="set_timer_base_new_base"];
+                        unlock_timer_lock[label="unlock_timer_lock"];
+                        return_1[label="return_1"];
+                }
+
+                subgraph cluster_migrate_timers{
+                        label="static void __devinit migrate_timers(int cpu)";
+                        set_old_base_per_cpu_tvec_bases_cpu[label="set_old_base_per_cpu_tvec_bases_cpu"];
+                        set_new_base_get_cpu_var_tvec_bases[label="set_new_base_get_cpu_var_tvec_bases"];
+                        local_irq_disable[label="local_irq_disable"];
+                        old_base_small_new_base[label="old_base_small_new_base"];
+                        lock_new_base_lock[label="lock_new_base_lock"];
+                        lock_old_base_lock[label="lock_old_base_lock"];
+                        lock_old_base_lock[label="lock_old_base_lock"];
+                        lock_new_base_lock[label="lock_new_base_lock"];
+                        old_base_running_timer_not_null[label="old_base_running_timer_not_null"];
+                        for_i_TVR_SIZE[label="for_i_TVR_SIZE"];
+                        migrate_timer_list_new_base_old_base_tv1_vec_add_1_null[label="migrate_timer_list_new_base_old_base_tv1_vec_add_1_null"];
+                        goto_unlock_again[label="goto_unlock_again"];
+                        for_i_TVN_SIZE[label="for_i_TVN_SIZE"];
+                        migrate_timer_list_new_base_old_base_tv2_vec_add_i_null_or_migrate_timer_list_new_base_old_base_tv3_vec_add_i_null_or_migrate_timer_list_new_base_old_base_tv4_vec_add_i_null_or_migrate_timer_list_new_base_old_base_tv5_vec_add_i_null[label="migrate_timer_list_new_base_old_base_tv2_vec_add_i_null_or_migrate_timer_list_new_base_old_base_tv3_vec_add_i_null_or_migrate_timer_list_new_base_old_base_tv4_vec_add_i_null_or_migrate_timer_list_new_base_old_base_tv5_vec_add_i_null"];
+                        goto_unlock_again[label="goto_unlock_again"];
+                        unlock_old_base_lock[label="unlock_old_base_lock"];
+                        unlock_new_base_lock[label="unlock_new_base_lock"];
+                        local_irq_enable[label="local_irq_enable"];
+                        put_cpu_var_tvec_bases[label="put_cpu_var_tvec_bases"];
+                        return[label="return"];
+                        unlock_old_base_lock[label="unlock_old_base_lock"];
+                        unlock_new_base_lock[label="unlock_new_base_lock"];
+                        cpu_relax[label="cpu_relax"];
+                        goto_again[label="goto_again"];
+                }
+
+                subgraph cluster_timer_cpu_notify{
+                        label="static int __devinit timer_cpu_notify(struct notifier_block *self,unsigned long action, void *hcpu)";
+                        set_cpu_hcpu[label="set_cpu_hcpu"];
+                        switch_action[label="switch_action"];
+                        case_CPU_UP_PREPARE[label="case_CPU_UP_PREPARE"];
+                        init_timers_cpu_cpu[label="init_timers_cpu_cpu"];
+                        CONFIG_HOTPLUG_CPU[label="CONFIG_HOTPLUG_CPU"];
+                        case_CPU_DEAD[label="case_CPU_DEAD"];
+                        migrate_timers_cpu[label="migrate_timers_cpu"];
+                        return_NOTIFY_OK[label="return_NOTIFY_OK"];
+                }
+
+                subgraph cluster_init_timers{
+                        label="void __init init_timers(void)";
+                        timer_cpu_notify_timers_nb_CPU_UP_PREPARE_smp_processor_id[label="timer_cpu_notify_timers_nb_CPU_UP_PREPARE_smp_processor_id"];
+                        register_cpu_notifier_timers_nb[label="register_cpu_notifier_timers_nb"];
+                        open_softirq_TIMER_SOFTIRQ_run_timer_softirq_NULL[label="open_softirq_TIMER_SOFTIRQ_run_timer_softirq_NULL"];
+                }
+
+                subgraph cluster_time_interpolator_get_cycles{
+                        label="static inline u64 time_interpolator_get_cycles(unsigned int src)";
+                        switch_src[label="switch_src"];
+                        case_TIME_SOURCE_FUNCTION[label="case_TIME_SOURCE_FUNCTION"];
+                        set_x_time_interpolator_addr[label="set_x_time_interpolator_addr"];
+                        return_x[label="return_x"];
+                        case_TIME_SOURCE_MMIO64[label="case_TIME_SOURCE_MMIO64"];
+                        return_readq_time_interpolator_addr[label="return_readq_time_interpolator_addr"];
+                        case_TIME_SOURCE_MMIO32[label="case_TIME_SOURCE_MMIO32"];
+                        return_readl_time_interpolator_addr[label="return_readl_time_interpolator_addr"];
+                        default_[label="default_"];
+                        return_get_cycles[label="return_get_cycles"];
+                }
+
+                subgraph cluster_time_interpolator_get_counter{
+                        label="static inline u64 time_interpolator_get_counter(void)";
+                        set_src_time_interpolator_source[label="set_src_time_interpolator_source"];
+                        time_interpolator_jitter_not_null[label="time_interpolator_jitter_not_null"];
+                        set_lcycle_time_interpolator_last_cycle[label="set_lcycle_time_interpolator_last_cycle"];
+                        set_now_time_interpolator_get_cycles_src[label="set_now_time_interpolator_get_cycles_src"];
+                        lcycle_not_null_and_time_after_lcycle_now[label="lcycle_not_null_and_time_after_lcycle_now"];
+                        return_lcycle[label="return_lcycle"];
+                        cmpxchg_time_interpolator_last_cycle_lcycle_now_not_eq_lcycle[label="cmpxchg_time_interpolator_last_cycle_lcycle_now_not_eq_lcycle"];
+                        return_now[label="return_now"];
+                        return_time_interpolator_get_cycles_src[label="return_time_interpolator_get_cycles_src"];
+                }
+
+                subgraph cluster_time_interpolator_reset{
+                        label="void time_interpolator_reset(void)";
+                        set_time_interpolator_offset_0[label="set_time_interpolator_offset_0"];
+                        set_time_interpolator_last_counter_time_interpolator_get_counter[label="set_time_interpolator_last_counter_time_interpolator_get_counter"];
+                }
+
+                subgraph cluster_time_interpolator_get_offset{
+                        label="unsigned long time_interpolator_get_offset(void)";
+                        time_interpolator_null[label="time_interpolator_null"];
+                        return_0[label="return_0"];
+                        return_time_interpolator_offset_add_GET_TI_NSECS_tim_interpolator_get_counter_time_interpolator[label="return_time_interpolator_offset_add_GET_TI_NSECS_tim_interpolator_get_counter_time_interpolator"];
+                }
+
+                subgraph cluster_time_interpolator_update{
+                        label="static void time_interpolator_update(long delta_nsec)";
+                        time_interpolator_null[label="time_interpolator_null"];
+                        return[label="return"];
+                        set_counter_time_interpolator_get_counter[label="set_counter_time_interpolator_get_counter"];
+                        set_offset_time_interpolator_offset_add_GET_TI_NSECS_counter_time_interpolator[label="set_offset_time_interpolator_offset_add_GET_TI_NSECS_counter_time_interpolator"];
+                        delta_nsec_small_0_or_delta_nsec_small_offset[label="delta_nsec_small_0_or_delta_nsec_small_offset"];
+                        time_interpolator_offset_offset_sub_delta_nsec[label="time_interpolator_offset_offset_sub_delta_nsec"];
+                        inc_time_interpolator_skips[label="inc_time_interpolator_skips"];
+                        time_interpolator_ns_skipped_self_add_delta_nsec_sub_offset[label="time_interpolator_ns_skipped_self_add_delta_nsec_sub_offset"];
+                        set_time_interpolator_offset_0[label="set_time_interpolator_offset_0"];
+                        set_time_interpolator_last_counter_counter[label="set_time_interpolator_last_counter_counter"];
+                        jiffies_mod_INTERPOLATOR_ADJUST_eq_0[label="jiffies_mod_INTERPOLATOR_ADJUST_eq_0"];
+                        time_interpolator_skips_eq_0_and_tim_interpolator_offset_great_TICK_NSEC[label="time_interpolator_skips_eq_0_and_tim_interpolator_offset_great_TICK_NSEC"];
+                        dec_time_interpolator_nsec_per_cyc[label="dec_time_interpolator_nsec_per_cyc"];
+                        time_interpolator_ns_skipped_great_INTERPOLATOR_MAX_SKIP_and_time_interpolator_offset_eq_0[label="time_interpolator_ns_skipped_great_INTERPOLATOR_MAX_SKIP_and_time_interpolator_offset_eq_0"];
+                        inc_time_interpolator_nsec_per_cyc[label="inc_time_interpolator_nsec_per_cyc"];
+                        set_time_interpolator_skips_0[label="set_time_interpolator_skips_0"];
+                        set_time_interpolator_ns_skipped_0[label="set_time_interpolator_ns_skipped_0"];
+                }
+
+                subgraph cluster_is_beter_time_interpolator{
+                        label="static inline int is_better_time_interpolator(struct time_interpolator *new)";
+                        time_interpolator_null[label="time_interpolator_null"];
+                        return_1[label="return_1"];
+                        return_new_frequency_great_2_multi_time_interpolator_frequency_or_new_drift_small_time_itnerpolator_drift[label="return_new_frequency_great_2_multi_time_interpolator_frequency_or_new_drift_small_time_itnerpolator_drift"];
+                }
+
+                subgraph cluster_register_time_interpolator{
+                        label="void register_time_interpolator(struct time_interpolator *ti)";
+                        ti_frequency_eq_0_or_ti_mask_eq_0[label="ti_frequency_eq_0_or_ti_mask_eq_0"];
+                        BUG[label="BUG"];
+                        set_ti_nsec_per_cyc_NSECPER_SEC_move_left_ti_shift_div_ti_freqquency[label="set_ti_nsec_per_cyc_NSECPER_SEC_move_left_ti_shift_div_ti_freqquency"];
+                        lock_time_interpolator_lock[label="lock_time_interpolator_lock"];
+                        write_seqlock_irqsave_xtime_lock[label="write_seqlock_irqsave_xtime_lock"];
+                        is_beter_time_interpolator_ti[label="is_beter_time_interpolator_ti"];
+                        set_time_interpolator_ti[label="set_time_interpolator_ti"];
+                        set_time_interpolator_reset[label="set_time_interpolator_reset"];
+                        write_sequnlock_irqrestore_xtime_lock[label="write_sequnlock_irqrestore_xtime_lock"];
+                        set_ti_next_time_interpolator_list[label="set_ti_next_time_interpolator_list"];
+                        set_time_interpolator_list_ti[label="set_time_interpolator_list_ti"];
+                        unlock_time_interpolator_lock[label="unlock_time_interpolator_lock"];
+                }
+
+                subgraph cluster_unregister_time_interpolator{
+                        label="void unregister_time_interpolator(struct time_interpolator *ti)";
+                        lock_time_interpolator_lock[label="lock_time_interpolator_lock"];
+                        set_prev_time_interpolator_list[label="set_prev_time_interpolator_list"];
+                        for_curr_curr_next[label="for_curr_curr_next"];
+                        curr_eq_ti[label="curr_eq_ti"];
+                        set_prev_curr_next[label="set_prev_curr_next"];
+                        set_prev_curr_next[label="set_prev_curr_next"];
+                        write_seqlock_irqsave_xtime_lock[label="write_seqlock_irqsave_xtime_lock"];
+                        set_ti_time_interpolator[label="set_ti_time_interpolator"];
+                        clear_time_interpolator[label="clear_time_interpolator"];
+                        set_curr_time_interpolator_list_curr_next[label="set_curr_time_interpolator_list_curr_next"];
+                        is_better_time_interpolator_curr[label="is_better_time_interpolator_curr"];
+                        set_time_interpolator_curr[label="set_time_interpolator_curr"];
+                        time_interpolator_reset[label="time_interpolator_reset"];
+                        write_sequnlock_irqrestroe_xtime_lock[label="write_sequnlock_irqrestroe_xtime_lock"];
+                        unlock_time_interpolator_lock[label="unlock_time_interpolator_lock"];
+                }
+
+                subgraph cluster_msleep{
+                        label="void msleep(unsigned int msecs)";
+                        set_timeout_msecs_to_jiffies_msecs_add_1[label="set_timeout_msecs_to_jiffies_msecs_add_1"];
+                        while_timeout[label="while_timeout"];
+                        set_current_state_TASK_UNINTERRUPTIBLE[label="set_current_state_TASK_UNINTERRUPTIBLE"];
+                        set_timeout_schedule_timeout_timeout[label="set_timeout_schedule_timeout_timeout"];
+                }
+
+                subgraph cluster_msleep_interruptible{
+                        label="unsigned long msleep_interruptible(unsigned int msecs)";
+                        set_timeout_msecs_to_jiffies_msecs_add_1[label="set_timeout_msecs_to_jiffies_msecs_add_1"];
+                        while_timeout_not_null_and_signal_pending_current_null[label="while_timeout_not_null_and_signal_pending_current_null"];
+                        set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                        set_timeout_schedule_timeout_timeout[label="set_timeout_schedule_timeout_timeout"];
+                        return_jiffies_to_msecs_timeout[label="return_jiffies_to_msecs_timeout"];
                 }
 }

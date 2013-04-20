@@ -14,7 +14,7 @@ digraph sched_c{
                 test_thread_flag_TIF_NEED_RESCHED[label="test_thread_flag_TIF_NEED_RESCHED"];
         }
 
-		        subgraph cluster_enqueue_task{
+	subgraph cluster_enqueue_task{
                 label="enqueue_task(struct task_struct *p, prio_array_t *array)";
 
 		sched_info_queued[label="sched_info_queued()"];
@@ -46,421 +46,702 @@ digraph sched_c{
         }
 
         subgraph cluster_default_wake_function{
-				label="int default_wake_function(wait_queue_t *curr, unsigned mode, int sync, void *key)"
+		label="int default_wake_function(wait_queue_t *curr, unsigned mode, int sync, void *key)"
 
-				get_curr_task[label="task_t *p = curr->task;"];
-				try_to_wake_up[label="try_to_wake_up(p, mode, sync);"];
+		get_curr_task[label="task_t *p = curr->task;"];
+		try_to_wake_up[label="try_to_wake_up(p, mode, sync);"];
 
-				get_curr_task -> try_to_wake_up;
-		}
+		get_curr_task -> try_to_wake_up;
+	}
 
-		subgraph cluster_sleep_on{
-				label="sleep_on(wait_queue_head_t *q)";
+	subgraph cluster_sleep_on{
+		label="sleep_on(wait_queue_head_t *q)";
 
-				init_waitqueue_entry[label="init_waitqueue_entry(&wait, current);"];
-				set_UNINTERRUPTIBLE[label="set_UNINTERRUPTIBLE"];
-				spin_lock_irqsave_1[label="spin_lock_irqsave(&q->lock,flags);"];
-				__add_wait_queue[label="__add_wait_queue(q, &wait);"];
-				spin_unlock_1[label="spin_unlock_restore(&q->lock);"];
-				schedule[label="schedule()"];
-				spin_lock_irqsave_2[label="spin_lock_irqsave(&q->lock,flags);"];
-				spin_unlock_2[label="spin_unlock(&q->lock);"];
-				__remove_wait_queue[label="__remove_wait_queue(q, &wait);"];
+		init_waitqueue_entry[label="init_waitqueue_entry(&wait, current);"];
+		set_UNINTERRUPTIBLE[label="set_UNINTERRUPTIBLE"];
+		spin_lock_irqsave_1[label="spin_lock_irqsave(&q->lock,flags);"];
+		__add_wait_queue[label="__add_wait_queue(q, &wait);"];
+		spin_unlock_1[label="spin_unlock_restore(&q->lock);"];
+		schedule[label="schedule()"];
+		spin_lock_irqsave_2[label="spin_lock_irqsave(&q->lock,flags);"];
+		spin_unlock_2[label="spin_unlock(&q->lock);"];
+		__remove_wait_queue[label="__remove_wait_queue(q, &wait);"];
 
-				init_waitqueue_entry -> set_UNINTERRUPTIBLE;
-				set_UNINTERRUPTIBLE -> spin_lock_irqsave_1;
-				spin_lock_irqsave_1 -> __add_wait_queue;
-				__add_wait_queue -> spin_unlock_1;
-				spin_unlock_1 -> schedule;
-				schedule -> spin_lock_irqsave_2;
-				spin_lock_irqsave_2 -> __remove_wait_queue;
-				__remove_wait_queue -> spin_unlock_2;
-		}
+		init_waitqueue_entry -> set_UNINTERRUPTIBLE;
+		set_UNINTERRUPTIBLE -> spin_lock_irqsave_1;
+		spin_lock_irqsave_1 -> __add_wait_queue;
+		__add_wait_queue -> spin_unlock_1;
+		spin_unlock_1 -> schedule;
+		schedule -> spin_lock_irqsave_2;
+		spin_lock_irqsave_2 -> __remove_wait_queue;
+		__remove_wait_queue -> spin_unlock_2;
+	}
 
-		subgraph cluster_sleep_on_timeout{
-				label="sleep_on_timeout(wait_queue_head_t *q, long timeout)";
+	subgraph cluster_sleep_on_timeout{
+		label="sleep_on_timeout(wait_queue_head_t *q, long timeout)";
 
-				init_waitqueue_entry[label="init_waitqueue_entry(&wait, current);"];
-				set_UNINTERRUPTIBLE[label="set_UNINTERRUPTIBLE"];
-				spin_lock_irqsave_1[label="spin_lock_irqsave(&q->lock,flags);"];
-				__add_wait_queue[label="__add_wait_queue(q, &wait);"];
-				spin_unlock_1[label="spin_unlock_restore(&q->lock);"];
-				schedule_timeout[label="schedule_timeout()"];
-				spin_lock_irqsave_2[label="spin_lock_irqsave(&q->lock,flags);"];
-				spin_unlock_2[label="spin_unlock(&q->lock);"];
-				__remove_wait_queue[label="__remove_wait_queue(q, &wait);"];
+		init_waitqueue_entry[label="init_waitqueue_entry(&wait, current);"];
+		set_UNINTERRUPTIBLE[label="set_UNINTERRUPTIBLE"];
+		spin_lock_irqsave_1[label="spin_lock_irqsave(&q->lock,flags);"];
+		__add_wait_queue[label="__add_wait_queue(q, &wait);"];
+		spin_unlock_1[label="spin_unlock_restore(&q->lock);"];
+		schedule_timeout[label="schedule_timeout()"];
+		spin_lock_irqsave_2[label="spin_lock_irqsave(&q->lock,flags);"];
+		spin_unlock_2[label="spin_unlock(&q->lock);"];
+		__remove_wait_queue[label="__remove_wait_queue(q, &wait);"];
 
-				init_waitqueue_entry -> set_UNINTERRUPTIBLE;
-				set_UNINTERRUPTIBLE -> spin_lock_irqsave_1;
-				spin_lock_irqsave_1 -> __add_wait_queue;
-				__add_wait_queue -> spin_unlock_1;
-				spin_unlock_1 -> schedule_timeout;
-				schedule_timeout -> spin_lock_irqsave_2;
-				spin_lock_irqsave_2 -> __remove_wait_queue;
-				__remove_wait_queue -> spin_unlock_2;
-		}
+		init_waitqueue_entry -> set_UNINTERRUPTIBLE;
+		set_UNINTERRUPTIBLE -> spin_lock_irqsave_1;
+		spin_lock_irqsave_1 -> __add_wait_queue;
+		__add_wait_queue -> spin_unlock_1;
+		spin_unlock_1 -> schedule_timeout;
+		schedule_timeout -> spin_lock_irqsave_2;
+		spin_lock_irqsave_2 -> __remove_wait_queue;
+		__remove_wait_queue -> spin_unlock_2;
+	}
 
-		subgraph cluster__wake_up_locked{
-				label="__wake_up_locked(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, void *key)";
+	subgraph cluster__wake_up_locked{
+		label="__wake_up_locked(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, void *key)";
 
-				__wake_up_common[label="__wake_up_common(q, mode, 1, 0, NULL);"];
-		}
+		__wake_up_common[label="__wake_up_common(q, mode, 1, 0, NULL);"];
+	}
 
-		subgraph cluster__wake_up_common{
-				label="void __wake_up_common(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, int sync, void *key)";
+	subgraph cluster__wake_up_common{
+		label="void __wake_up_common(wait_queue_head_t *q, unsigned int mode,int nr_exclusive, int sync, void *key)";
 
-				list_for_each_safe[label="list_for_each_safe(tmp, next, &q->task_list)"];
-				list_entry[label="get wait_queue_t \llist_entry(tmp, wait_queue_t, task_list);"];
-				call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null[label="call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null"];
-				return[label="return"];
+		list_for_each_safe[label="list_for_each_safe(tmp, next, &q->task_list)"];
+		list_entry[label="get wait_queue_t \llist_entry(tmp, wait_queue_t, task_list);"];
+		call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null[label="call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null"];
+		return[label="return"];
 
-				list_for_each_safe -> return;
-				list_for_each_safe -> list_entry;
-				list_entry -> call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null;
-				call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null -> return;
-		}
+		list_for_each_safe -> return;
+		list_for_each_safe -> list_entry;
+		list_entry -> call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null;
+		call_wait_queue_t_func_and_WQ_FLAG_EXCLUSIVE_set_and_dec_nr_exclusive_null -> return;
+	}
 
-		subgraph cluster___wake_up_sync{
-				label="void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr_exclusive)";
+	subgraph cluster___wake_up_sync{
+		label="void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr_exclusive)";
 
-				nr_exclusive[label="nr_exclusive_null"];
-				clean_sync[label="clean_sync"];
+		nr_exclusive[label="nr_exclusive_null"];
+		clean_sync[label="clean_sync"];
 
-				spin_lock_irqsave_q_lock[label="spin_lock_irqsave_q_lock"];
-				__wake_up_common[label="__wake_up_common(q, mode, nr_exclusive, sync, NULL);"];
-				spin_unlock_irqsave_q_lock[label="spin_unlock_irqsave_q_lock"];
+		spin_lock_irqsave_q_lock[label="spin_lock_irqsave_q_lock"];
+		__wake_up_common[label="__wake_up_common(q, mode, nr_exclusive, sync, NULL);"];
+		spin_unlock_irqsave_q_lock[label="spin_unlock_irqsave_q_lock"];
 
-				spin_lock_irqsave_q_lock -> __wake_up_common;
-				__wake_up_common -> spin_unlock_irqsave_q_lock;
-		}
+		spin_lock_irqsave_q_lock -> __wake_up_common;
+		__wake_up_common -> spin_unlock_irqsave_q_lock;
+	}
 
-		subgraph cluster___wake_up_locked{
-				label="void __wake_up_locked(wait_queue_head_t *q, unsigned int mode)";
+	subgraph cluster___wake_up_locked{
+		label="void __wake_up_locked(wait_queue_head_t *q, unsigned int mode)";
 
-				__wake_up_common[label="__wake_up_common(q, mode, 1, 0, NULL);"];
-		}
+		__wake_up_common[label="__wake_up_common(q, mode, 1, 0, NULL);"];
+	}
 
-		subgraph cluster_complete{
-				label="void fastcall complete(struct completion *x)";
-				lock_x_wait_lock[label="lock_x_wait_lock"];
-				inc_x_done[label="inc_x_done"];
-				__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_1_0_NULL[label="__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_1_0_NULL"];
-				unlock_x_wait_lock[label="unlock_x_wait_lock"];
-		}
+	subgraph cluster_complete{
+		label="void fastcall complete(struct completion *x)";
+		lock_x_wait_lock[label="lock_x_wait_lock"];
+		inc_x_done[label="inc_x_done"];
+		__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_1_0_NULL[label="__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_1_0_NULL"];
+		unlock_x_wait_lock[label="unlock_x_wait_lock"];
+	}
 
-		subgraph cluster_complete_all{
-				label="void fastcall complete_all(struct completion *x)";
-				lock_x_wait_lock[label="lock_x_wait_lock"];
-				x_done_self_add_UNIT_MAX_divide_2[label="x_done_self_add_UNIT_MAX_divide_2"];
-				__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_0_0_NULL[label="__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_0_0_NULL"];
-				unlock_x_wait_lock[label="unlock_x_wait_lock"];
-		}
+	subgraph cluster_complete_all{
+		label="void fastcall complete_all(struct completion *x)";
+		lock_x_wait_lock[label="lock_x_wait_lock"];
+		x_done_self_add_UNIT_MAX_divide_2[label="x_done_self_add_UNIT_MAX_divide_2"];
+		__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_0_0_NULL[label="__wake_up_common_x_wait_TASK_UNINTERRUPTIBLE_or_TASK_INTERRUPTIBLE_0_0_NULL"];
+		unlock_x_wait_lock[label="unlock_x_wait_lock"];
+	}
 
-		subgraph cluster_wait_for_completion{
-				label="void fastcall __sched wait_for_completion(struct completion *x)";
-				might_sleep[label="might_sleep ()"];
-				lock_x_wait_lock[label="lock_x_wait_lock"];
-				x_done_null[label="x_done_null"];
-				DECLARE_WAITQUEUE[label="DECLARE_WAITQUEUE (wait,current)"];
-				set_wait_flags_WQ_FLAG_EXCLUSIVE[label="set_wait_flags_WQ_FLAG_EXCLUSIVE"];
-				__add_wait_queue_tail_x_wait_wait[label="__add_wait_queue_tail_x_wait_wait"];
-				__set_current_state_TASK_UNINTERRUPTIBLE[label="__set_current_state_TASK_UNINTERRUPTIBLE"];
-				unlock_x_wait_lock[label="unlock_x_wait_lock"];
-				schedule[label="schedule ()"];
-				lock_x_wait_lock[label="lock_x_wait_lock"];
-				x_done_not_null[label="x_done_not_null"];
-				__remove_wait_queue_x_wait_wait[label="__remove_wait_queue_x_wait_wait"];
-				dec_x_done[label="dec_x_done"];
-				unlock_x_wait_lock[label="unlock_x_wait_lock"];
-		}
+	subgraph cluster_wait_for_completion{
+		label="void fastcall __sched wait_for_completion(struct completion *x)";
+		might_sleep[label="might_sleep ()"];
+		lock_x_wait_lock[label="lock_x_wait_lock"];
+		x_done_null[label="x_done_null"];
+		DECLARE_WAITQUEUE[label="DECLARE_WAITQUEUE (wait,current)"];
+		set_wait_flags_WQ_FLAG_EXCLUSIVE[label="set_wait_flags_WQ_FLAG_EXCLUSIVE"];
+		__add_wait_queue_tail_x_wait_wait[label="__add_wait_queue_tail_x_wait_wait"];
+		__set_current_state_TASK_UNINTERRUPTIBLE[label="__set_current_state_TASK_UNINTERRUPTIBLE"];
+		unlock_x_wait_lock[label="unlock_x_wait_lock"];
+		schedule[label="schedule ()"];
+		lock_x_wait_lock[label="lock_x_wait_lock"];
+		x_done_not_null[label="x_done_not_null"];
+		__remove_wait_queue_x_wait_wait[label="__remove_wait_queue_x_wait_wait"];
+		dec_x_done[label="dec_x_done"];
+		unlock_x_wait_lock[label="unlock_x_wait_lock"];
+	}
 
-		subgraph cluster_preempt_schedule_irq{
-				label="asmlinkage void __sched preempt_schedule_irq(void)";
-				set_ti_current_thread_info[label="set_ti_current_thread_info"];
-				add_preempt_count_PREEMPT_ACTIVE[label="add_preempt_count_PREEMPT_ACTIVE"];
-				CONFIG_PREEMPT_BKL[label="CONFIG_PREEMPT_BKL"];
-				set_saved_lock_depth_current_lock_depth[label="set_saved_lock_depth_current_lock_depth"];
-				set_current_lock_depth_neg_1[label="set_current_lock_depth_neg_1"];
-				local_irq_enalbe[label="local_irq_enalbe ()"];
-				schedule[label="schedule ()"];
-				local_irq_disable[label="local_irq_disable ()"];
-				CONFIG_PREEMPT_BKL_1[label="CONFIG_PREEMPT_BKL"];
-				set_current_lock_depth_saved_lock_depth[label="set_current_lock_depth_saved_lock_depth"];
-				sub_preempt_count_PREEMPT_ACTIVE[label="sub_preempt_count_PREEMPT_ACTIVE"];
-				barrier[label="barrier ()"];
-				test_thread_flag_TIF_NEED_RESCHED[label="test_thread_flag_TIF_NEED_RESCHED"];
-		}
+	subgraph cluster_preempt_schedule_irq{
+		label="asmlinkage void __sched preempt_schedule_irq(void)";
+		set_ti_current_thread_info[label="set_ti_current_thread_info"];
+		add_preempt_count_PREEMPT_ACTIVE[label="add_preempt_count_PREEMPT_ACTIVE"];
+		CONFIG_PREEMPT_BKL[label="CONFIG_PREEMPT_BKL"];
+		set_saved_lock_depth_current_lock_depth[label="set_saved_lock_depth_current_lock_depth"];
+		set_current_lock_depth_neg_1[label="set_current_lock_depth_neg_1"];
+		local_irq_enalbe[label="local_irq_enalbe ()"];
+		schedule[label="schedule ()"];
+		local_irq_disable[label="local_irq_disable ()"];
+		CONFIG_PREEMPT_BKL_1[label="CONFIG_PREEMPT_BKL"];
+		set_current_lock_depth_saved_lock_depth[label="set_current_lock_depth_saved_lock_depth"];
+		sub_preempt_count_PREEMPT_ACTIVE[label="sub_preempt_count_PREEMPT_ACTIVE"];
+		barrier[label="barrier ()"];
+		test_thread_flag_TIF_NEED_RESCHED[label="test_thread_flag_TIF_NEED_RESCHED"];
+	}
 
-		subgraph cluster_account_user_time{
-				label="void account_user_time(struct task_struct *p, cputime_t cputime)";
-				set_cpustat_kstat_this_cpu_cpustat[label="set_cpustat_kstat_this_cpu_cpustat"];
-				set_p_utime_cputime_add_p_utime_cputime[label="set_p_utime_cputime_add_p_utime_cputime"];
-				TASK_NICE_p_great_0[label="TASK_NICE_p_great_0"];
-				set_cpustat_nice_cputime64_add_cpustat_nice_cputime_to_cputime64_cputime[label="set_cpustat_nice_cputime64_add_cpustat_nice_cputime_to_cputime64_cputime"];
-				set_cpustat_user_cputime64_add_cpustat_user_cputime_to_cputime64_cputime[label="set_cpustat_user_cputime64_add_cpustat_user_cputime_to_cputime64_cputime"];
-		}
+	subgraph cluster_account_user_time{
+		label="void account_user_time(struct task_struct *p, cputime_t cputime)";
+		set_cpustat_kstat_this_cpu_cpustat[label="set_cpustat_kstat_this_cpu_cpustat"];
+		set_p_utime_cputime_add_p_utime_cputime[label="set_p_utime_cputime_add_p_utime_cputime"];
+		TASK_NICE_p_great_0[label="TASK_NICE_p_great_0"];
+		set_cpustat_nice_cputime64_add_cpustat_nice_cputime_to_cputime64_cputime[label="set_cpustat_nice_cputime64_add_cpustat_nice_cputime_to_cputime64_cputime"];
+		set_cpustat_user_cputime64_add_cpustat_user_cputime_to_cputime64_cputime[label="set_cpustat_user_cputime64_add_cpustat_user_cputime_to_cputime64_cputime"];
+	}
 
-		subgraph cluster_account_system_time{
-				label="void account_system_time(struct task_struct *p, int hardirq_offset,cputime_t cputime)";
-				set_cpustat_kstat_this_cpu_cpustat_1[label="set_cpustat_kstat_this_cpu_cpustat"];
-				set_rq_this_rq[label="set_rq_this_rq"];
-				set_p_stime_cputime_add_p_stiem_cputime[label="set_p_stime_cputime_add_p_stiem_cputime"];
-				hardirq_count_sub_hardirq_offset_not_0[label="hardirq_count_sub_hardirq_offset_not_0"];
-				set_cpustat_irq_cputime64_add_cpustat_irq_cputime_to_cputime64_cputime[label="set_cpustat_irq_cputime64_add_cpustat_irq_cputime_to_cputime64_cputime"];
-				softirq_count_not_null[label="softirq_count_not_null"];
-				set_cpustat_softirq_cputime64_add_cpustat_softirq_cputime_to_cputime64_cputime[label="set_cpustat_softirq_cputime64_add_cpustat_softirq_cputime_to_cputime64_cputime"];
-				p_not_eq_rq_idle[label="p_not_eq_rq_idle"];
-				set_cpustat_system_cputime64_add_cpustat_system_cputime_to_cputime64_cputime[label="set_cpustat_system_cputime64_add_cpustat_system_cputime_to_cputime64_cputime"];
-				atomic_read_rq_nr_iowait_great_0[label="atomic_read_rq_nr_iowait_great_0"];
-				set_cpustat_iowait_cputime64_add_cpustat_iowait_cputime_to_cputime64_cputime[label="set_cpustat_iowait_cputime64_add_cpustat_iowait_cputime_to_cputime64_cputime"];
-				set_cpustat_idle_cputime64_add_cpustat_idle_cputime_to_cputime64_cputime[label="set_cpustat_idle_cputime64_add_cpustat_idle_cputime_to_cputime64_cputime"];
-				acct_update_integrals_p[label="acct_update_integrals_p"];
-				update_mem_hiwater[label="update_mem_hiwater_p"];
-		}
+	subgraph cluster_account_system_time{
+		label="void account_system_time(struct task_struct *p, int hardirq_offset,cputime_t cputime)";
+		set_cpustat_kstat_this_cpu_cpustat_1[label="set_cpustat_kstat_this_cpu_cpustat"];
+		set_rq_this_rq[label="set_rq_this_rq"];
+		set_p_stime_cputime_add_p_stiem_cputime[label="set_p_stime_cputime_add_p_stiem_cputime"];
+		hardirq_count_sub_hardirq_offset_not_0[label="hardirq_count_sub_hardirq_offset_not_0"];
+		set_cpustat_irq_cputime64_add_cpustat_irq_cputime_to_cputime64_cputime[label="set_cpustat_irq_cputime64_add_cpustat_irq_cputime_to_cputime64_cputime"];
+		softirq_count_not_null[label="softirq_count_not_null"];
+		set_cpustat_softirq_cputime64_add_cpustat_softirq_cputime_to_cputime64_cputime[label="set_cpustat_softirq_cputime64_add_cpustat_softirq_cputime_to_cputime64_cputime"];
+		p_not_eq_rq_idle[label="p_not_eq_rq_idle"];
+		set_cpustat_system_cputime64_add_cpustat_system_cputime_to_cputime64_cputime[label="set_cpustat_system_cputime64_add_cpustat_system_cputime_to_cputime64_cputime"];
+		atomic_read_rq_nr_iowait_great_0[label="atomic_read_rq_nr_iowait_great_0"];
+		set_cpustat_iowait_cputime64_add_cpustat_iowait_cputime_to_cputime64_cputime[label="set_cpustat_iowait_cputime64_add_cpustat_iowait_cputime_to_cputime64_cputime"];
+		set_cpustat_idle_cputime64_add_cpustat_idle_cputime_to_cputime64_cputime[label="set_cpustat_idle_cputime64_add_cpustat_idle_cputime_to_cputime64_cputime"];
+		acct_update_integrals_p[label="acct_update_integrals_p"];
+		update_mem_hiwater[label="update_mem_hiwater_p"];
+	}
 
-		subgraph cluster_scheduler_tick{
-				size="10,12";
-				ratio=filled;
-				bgcolor=darkolivegreen4;
-				node[style=filled,shape=box,fillcolor=gray];
-				timestamp_last_tick;
-				swap_process[label="swap process"];
-				set_TIF_NEED_RESCHED_swap[label="set TIF_NEED_RESCHED"];
-				set_TIF_NEED_RESCHED_normal[label="set TIF_NEED_RESCHED"];
-				hyper_threading;
-				replace[label="haven't replace"];
-				lock_rq[label="lock_rq"];
-				descrease_time[shape=record,label="{{<f0>realtime|<f1>normal}}"];
-				descrease_time_fifo[label="descrease_time"];
-				descrease_time_normal[label="descrease_time"];
-				effective_prio[label="effective_prio()"];
-				
-				fifo_rr[shape=record,label="{{<f0>FIFO|<f1>RR}}"];
-				nothing[label="nothing to do"];
-				move_tail[label="move to tail if 0"];
-				dequeue_task[label="dequeue_task()"];
-				reset_clean_time[label="reset timeslice and clean first_time,"];
-				set_expired_timestamp[label="set expired_timestamp"];
-				insert_active_expired[label="insert active or expired,\lTASK_INTERACTIVE,\lEXPIRED_STARVING"];
-				timesile_granularity[label="TIMESILE_GRANULARITY"];
-				unlock_rq[label="unlock_rq"];
-				reblance_tick[label="reblance_tick()"];
-				
-				timestamp_last_tick -> swap_process;
-				swap_process -> replace;
-				replace -> lock_rq;
-				lock_rq -> descrease_time;
-				
-				descrease_time:f0 -> fifo_rr;
-				fifo_rr:f0:s -> nothing;
-				fifo_rr:f1 -> descrease_time_fifo;
-				descrease_time_fifo -> move_tail;
-				
-				unlock_rq -> reblance_tick;
-				swap_process -> set_TIF_NEED_RESCHED_swap[label="is swap"];
-				set_TIF_NEED_RESCHED_swap -> hyper_threading;
-				hyper_threading -> reblance_tick;
-				nothing -> unlock_rq;
-				move_tail -> unlock_rq;
-				
-				descrease_time:f1 -> descrease_time_normal;
-				descrease_time_normal -> timesile_granularity;
-				descrease_time_normal -> dequeue_task[label="timeout"];
-				dequeue_task -> set_TIF_NEED_RESCHED_normal;
-				set_TIF_NEED_RESCHED_normal -> effective_prio;
-				effective_prio -> reset_clean_time;
-				reset_clean_time -> set_expired_timestamp;
-				set_expired_timestamp -> insert_active_expired;
-				insert_active_expired -> unlock_rq;
-				timesile_granularity -> unlock_rq;
-		}
+	subgraph cluster_scheduler_tick{
+		size="10,12";
+		ratio=filled;
+		bgcolor=darkolivegreen4;
+		node[style=filled,shape=box,fillcolor=gray];
+		timestamp_last_tick;
+		swap_process[label="swap process"];
+		set_TIF_NEED_RESCHED_swap[label="set TIF_NEED_RESCHED"];
+		set_TIF_NEED_RESCHED_normal[label="set TIF_NEED_RESCHED"];
+		hyper_threading;
+		replace[label="haven't replace"];
+		lock_rq[label="lock_rq"];
+		descrease_time[shape=record,label="{{<f0>realtime|<f1>normal}}"];
+		descrease_time_fifo[label="descrease_time"];
+		descrease_time_normal[label="descrease_time"];
+		effective_prio[label="effective_prio()"];
+		
+		fifo_rr[shape=record,label="{{<f0>FIFO|<f1>RR}}"];
+		nothing[label="nothing to do"];
+		move_tail[label="move to tail if 0"];
+		dequeue_task[label="dequeue_task()"];
+		reset_clean_time[label="reset timeslice and clean first_time,"];
+		set_expired_timestamp[label="set expired_timestamp"];
+		insert_active_expired[label="insert active or expired,\lTASK_INTERACTIVE,\lEXPIRED_STARVING"];
+		timesile_granularity[label="TIMESILE_GRANULARITY"];
+		unlock_rq[label="unlock_rq"];
+		reblance_tick[label="reblance_tick()"];
+		
+		timestamp_last_tick -> swap_process;
+		swap_process -> replace;
+		replace -> lock_rq;
+		lock_rq -> descrease_time;
+		
+		descrease_time:f0 -> fifo_rr;
+		fifo_rr:f0:s -> nothing;
+		fifo_rr:f1 -> descrease_time_fifo;
+		descrease_time_fifo -> move_tail;
+		
+		unlock_rq -> reblance_tick;
+		swap_process -> set_TIF_NEED_RESCHED_swap[label="is swap"];
+		set_TIF_NEED_RESCHED_swap -> hyper_threading;
+		hyper_threading -> reblance_tick;
+		nothing -> unlock_rq;
+		move_tail -> unlock_rq;
+		
+		descrease_time:f1 -> descrease_time_normal;
+		descrease_time_normal -> timesile_granularity;
+		descrease_time_normal -> dequeue_task[label="timeout"];
+		dequeue_task -> set_TIF_NEED_RESCHED_normal;
+		set_TIF_NEED_RESCHED_normal -> effective_prio;
+		effective_prio -> reset_clean_time;
+		reset_clean_time -> set_expired_timestamp;
+		set_expired_timestamp -> insert_active_expired;
+		insert_active_expired -> unlock_rq;
+		timesile_granularity -> unlock_rq;
+	}
 
-		subgraph cluster_this_rq{
-				label="#define this_rq()";
-				__get_cpu_var[label="(&__get_cpu_var(runqueues))"];
-		}
+	subgraph cluster_this_rq{
+		label="#define this_rq()";
+		__get_cpu_var[label="(&__get_cpu_var(runqueues))"];
+	}
 
-		subgraph cluster_sched_fork{
-				label="void fastcall sched_fork(task_t *p)";
-				set_p_state_TASK_RUNNING[label="set_p_state_TASK_RUNNING"];
-				INIT_LIST_HEAD_p_run_list[label="INIT_LIST_HEAD_p_run_list"];
-				clear_p_array[label="clear_p_array"];
-				lock_p_switch_lock[label="lock_p_switch_lock"];
-				memset_p_sched_info[label="memset_p_sched_info"];
-				set_p_thread_info_preempt_count_1[label="set_p_thread_info_preempt_count_1"];
-				local_irq_disable[label="local_irq_disable"];
-				set_p_time_slice_current_time_slice_add_1_move_right_1[label="set_p_time_slice_current_time_slice_add_1_move_right_1"];
-				set_p_first_time_slice_1[label="set_p_first_time_slice_1"];
-				current_time_slice_self_move_right_1[label="current_time_slice_self_move_right_1"];
-				set_p_timestamp_sched_clock[label="set_p_timestamp_sched_clock"];
-				current_time_slice_null[label="current_time_slice_null"];
-				set_current_time_slice_1[label="set_current_time_slice_1"];
-				preempt_disable[label="preempt_disable ()"];
-				scheduler_tick[label="scheduler_tick ()"];
-				local_irq_enable[label="local_irq_enable ()"];
-				preempt_enable[label="preempt_enable ()"];
-				local_irq_enable_1[label="local_irq_enable ()"];
-		}
+	subgraph cluster_sched_fork{
+		label="void fastcall sched_fork(task_t *p)";
+		set_p_state_TASK_RUNNING[label="set_p_state_TASK_RUNNING"];
+		INIT_LIST_HEAD_p_run_list[label="INIT_LIST_HEAD_p_run_list"];
+		clear_p_array[label="clear_p_array"];
+		lock_p_switch_lock[label="lock_p_switch_lock"];
+		memset_p_sched_info[label="memset_p_sched_info"];
+		set_p_thread_info_preempt_count_1[label="set_p_thread_info_preempt_count_1"];
+		local_irq_disable[label="local_irq_disable"];
+		set_p_time_slice_current_time_slice_add_1_move_right_1[label="set_p_time_slice_current_time_slice_add_1_move_right_1"];
+		set_p_first_time_slice_1[label="set_p_first_time_slice_1"];
+		current_time_slice_self_move_right_1[label="current_time_slice_self_move_right_1"];
+		set_p_timestamp_sched_clock[label="set_p_timestamp_sched_clock"];
+		current_time_slice_null[label="current_time_slice_null"];
+		set_current_time_slice_1[label="set_current_time_slice_1"];
+		preempt_disable[label="preempt_disable ()"];
+		scheduler_tick[label="scheduler_tick ()"];
+		local_irq_enable[label="local_irq_enable ()"];
+		preempt_enable[label="preempt_enable ()"];
+		local_irq_enable_1[label="local_irq_enable ()"];
+	}
 
-		subgraph cluster_try_to_wake_up{
-				label="try_to_wake_up(p, stat, sync)";
-				bgcolor=gray;
-				size="10,10";
-				ratio=filled;
-				node[style=filled,shape=box,fillcolor=darkorange1];
-				
-				task_rq_lock[label="task_rq_lock()\ldisable irq and lock rq"];
-				mask[label="cmp with mask of process states"];
-				set_TASK_RUNNING[label="set TASK_RUNNING;"];
-				array[label="task-\>array"];
-				task_rq_unlock[label="task_rq_unlock()\lenable irq and unlock rq"];
-				move_to_cpu[label="move to cpu"];
-				uninterruptible[label="nr_uninterruptible--\lp-\>actived=-1"];
-				resched_task[shape=record,label="{resched_task()|{uniprocessor|multiprocessor}}"];
+	subgraph cluster_try_to_wake_up{
+		label="try_to_wake_up(p, stat, sync)";
+		bgcolor=gray;
+		size="10,10";
+		ratio=filled;
+		node[style=filled,shape=box,fillcolor=darkorange1];
+		
+		task_rq_lock[label="task_rq_lock()\ldisable irq and lock rq"];
+		mask[label="cmp with mask of process states"];
+		set_TASK_RUNNING[label="set TASK_RUNNING;"];
+		array[label="task-\>array"];
+		task_rq_unlock[label="task_rq_unlock()\lenable irq and unlock rq"];
+		move_to_cpu[label="move to cpu"];
+		uninterruptible[label="nr_uninterruptible--\lp-\>actived=-1"];
+		resched_task[shape=record,label="{resched_task()|{uniprocessor|multiprocessor}}"];
 
-				subgraph cluster_active_task{
-						label= "active_task()";
-						sched_clock[label="sched_clock()"];
-						recalc_task_prio[label="recalc_task_prio()"];
-						p_actived[label="p-\>actived"];
-						timestamp[label="timestamp"];
-						insert_active_list[label="insert active list"];
+		subgraph cluster_active_task{
+			label= "active_task()";
+			sched_clock[label="sched_clock()"];
+			recalc_task_prio[label="recalc_task_prio()"];
+			p_actived[label="p-\>actived"];
+			timestamp[label="timestamp"];
+			insert_active_list[label="insert active list"];
 
-						sched_clock -> recalc_task_prio;
-						recalc_task_prio -> p_actived;
-						p_actived -> timestamp;
-						timestamp -> insert_active_list;
+			sched_clock -> recalc_task_prio;
+			recalc_task_prio -> p_actived;
+			p_actived -> timestamp;
+			timestamp -> insert_active_list;
                 }
                 
 
-				task_rq_lock -> mask;
-				mask -> task_rq_unlock[label="correspond"];
-				mask -> array;
-				array -> set_TASK_RUNNING;
-				array -> move_to_cpu[label="NULL"];
-				move_to_cpu -> uninterruptible[label="is UNINTRRUPT"];
-				uninterruptible -> sched_clock;
-				move_to_cpu -> sched_clock;
-				insert_active_list -> resched_task[label="is local cpu or sync=1"];
-				insert_active_list -> set_TASK_RUNNING;
-				resched_task -> set_TASK_RUNNING;
-				set_TASK_RUNNING -> task_rq_unlock;
-		}
+		task_rq_lock -> mask;
+		mask -> task_rq_unlock[label="correspond"];
+		mask -> array;
+		array -> set_TASK_RUNNING;
+		array -> move_to_cpu[label="NULL"];
+		move_to_cpu -> uninterruptible[label="is UNINTRRUPT"];
+		uninterruptible -> sched_clock;
+		move_to_cpu -> sched_clock;
+		insert_active_list -> resched_task[label="is local cpu or sync=1"];
+		insert_active_list -> set_TASK_RUNNING;
+		resched_task -> set_TASK_RUNNING;
+		set_TASK_RUNNING -> task_rq_unlock;
+	}
 
-		subgraph cluster_recalc_task_prio{
-				label="recalc_task_prio(p,now)";
-				size="16,10";
-				ratio=filled;
+	subgraph cluster_recalc_task_prio{
+		label="recalc_task_prio(p,now)";
+		size="16,10";
+		ratio=filled;
 
-				node[style=filled,shape=box,fillcolor=gray];
-				sleep_time_min[label="sleep_time = min(now - p->timestamp, 10^9)"];
-				effective_prio[label="effective_prio()"];
-				p_sleep_avg[label="p->sleep_avg = 900"];
-				CURRENT_BONUSE[label="CURRENT_BONUSE for bonuse"];
-				sleep_time_0[label="sleep_time = 0"];
-				sleep_avg_reach_the_limit[label="sleep_avg reach the limit"];
-				
-				uninterruptible_not_thread[shape=hexagon,label="uninterruptible and \lnot kernel thread"];
-				add_sleep_time_avg[label="add sleep_time to sleep_avg"];
-				add_and_greater[shape=diamond,label="sleep_time+sleep_avg"];
-				set_sleep_avg_lmt[label="set sleep_avg limit\land sleep_time 0"];
-				limit_sleep_avg[label="sleep_avg under 1000"];
-				
-				sleep_time_min -> effective_prio[decorate=true,label="smaller than 0"];
-				sleep_time_min -> p_sleep_avg[decorate=true,label="kernel thread, \lTASK_UNINTERRUPTIBLE,\lsleep time limit"];
-				p_sleep_avg -> effective_prio;
-				sleep_time_min -> CURRENT_BONUSE;
-				CURRENT_BONUSE -> uninterruptible_not_thread;
-				uninterruptible_not_thread -> sleep_avg_reach_the_limit[label="true"];
-				sleep_avg_reach_the_limit -> sleep_time_0[label="true"];
-				sleep_avg_reach_the_limit -> add_and_greater[label="false"];
-				add_and_greater -> set_sleep_avg_lmt[label="greater limit"];
-				add_and_greater -> add_sleep_time_avg;
-				uninterruptible_not_thread -> add_sleep_time_avg[label="false"];
-				sleep_time_0 -> add_sleep_time_avg;
-				// sleep_time_0 -> set_sleep_avg_lmt[decorate=true,label="sleep_time+p->slep_avg \lnot smaller than limit"];
-				set_sleep_avg_lmt -> add_sleep_time_avg;
-				add_sleep_time_avg -> limit_sleep_avg;
-				limit_sleep_avg -> effective_prio;
-		}
+		node[style=filled,shape=box,fillcolor=gray];
+		sleep_time_min[label="sleep_time = min(now - p->timestamp, 10^9)"];
+		effective_prio[label="effective_prio()"];
+		p_sleep_avg[label="p->sleep_avg = 900"];
+		CURRENT_BONUSE[label="CURRENT_BONUSE for bonuse"];
+		sleep_time_0[label="sleep_time = 0"];
+		sleep_avg_reach_the_limit[label="sleep_avg reach the limit"];
+		
+		uninterruptible_not_thread[shape=hexagon,label="uninterruptible and \lnot kernel thread"];
+		add_sleep_time_avg[label="add sleep_time to sleep_avg"];
+		add_and_greater[shape=diamond,label="sleep_time+sleep_avg"];
+		set_sleep_avg_lmt[label="set sleep_avg limit\land sleep_time 0"];
+		limit_sleep_avg[label="sleep_avg under 1000"];
+		
+		sleep_time_min -> effective_prio[decorate=true,label="smaller than 0"];
+		sleep_time_min -> p_sleep_avg[decorate=true,label="kernel thread, \lTASK_UNINTERRUPTIBLE,\lsleep time limit"];
+		p_sleep_avg -> effective_prio;
+		sleep_time_min -> CURRENT_BONUSE;
+		CURRENT_BONUSE -> uninterruptible_not_thread;
+		uninterruptible_not_thread -> sleep_avg_reach_the_limit[label="true"];
+		sleep_avg_reach_the_limit -> sleep_time_0[label="true"];
+		sleep_avg_reach_the_limit -> add_and_greater[label="false"];
+		add_and_greater -> set_sleep_avg_lmt[label="greater limit"];
+		add_and_greater -> add_sleep_time_avg;
+		uninterruptible_not_thread -> add_sleep_time_avg[label="false"];
+		sleep_time_0 -> add_sleep_time_avg;
+		// sleep_time_0 -> set_sleep_avg_lmt[decorate=true,label="sleep_time+p->slep_avg \lnot smaller than limit"];
+		set_sleep_avg_lmt -> add_sleep_time_avg;
+		add_sleep_time_avg -> limit_sleep_avg;
+		limit_sleep_avg -> effective_prio;
+	}
 
-		subgraph cluster_schedule{
-				label="schedule()";
-				size="10,18";
-				ratio=filled;
-				
-				node[style=filled, shape = box, margin="0.05,0.005",
-					 height="0.1",width="0.1"];
+	subgraph cluster_schedule{
+		label="schedule()";
+		size="10,18";
+		ratio=filled;
+		
+		node[style=filled, shape = box, margin="0.05,0.005",
+		     height="0.1",width="0.1"];
 
-					 exiting_atomic;
-					 dump_stack[label="dump_stack()"];
-					 dump_stack_1[label="dump_stack()"];
-					 profile_hit[label="profile_hit()"];
-					 preempt_disable[label="preempt_disable()"];
-					 
-					 release_kernel_lock[label="release_kernel_lock()"];
-					 idle_running;
-					 
-					 sched_clock[label="calc cpu time, limit in 1s"];
-					 schedstat_inc_rq_sched_cnt;
-					 
-					 disable_irq_lock[label="disalbe_irq, lock rq"];
-					 PF_DEAD[label="check PF_DEAD, set EXIT_DEAD"];
-					 deactivate_task[label="deactivate_task"];
-					 set_task_running[label="set TASK_RUNNING"];
-					 dependent_sleeper[label="dependent_sleeper()"];
-					 idle_balance[label="idle_balance()"];
-					 exch_active_expired[label="switch active and expired"];
-					 search_process[label="search process by bitmask"];
-					 add_sleeptime[label="add sleeptime"];
-					 add_all_time[label="add all time"];
-					 add_fraction_time[label="add fraction time"];
-					 prefect;
-					 clear_TIF_NEED_RESCHED[label="clear TIF NEED RESCHED"];
-					 rcq_qsctr_inc;
-					 substract_sleeptime[label="substract sleeptime"];
-					 set_timestamps[label="set timestamps"];
-					 same_process[label="same process"];
-					 context_switch[label="context_switch()"];
-					 set_prev_mm[label="set prev_mm field"];
-					 barrier[label="barrier()"];
-					 finish_task_switch[label="finish_task_switch()"];
-					 
-					 exiting_atomic -> dump_stack[color=red];
-					 exiting_atomic -> profile_hit;
-					 profile_hit -> preempt_disable;
-					 preempt_disable -> release_kernel_lock;
-					 release_kernel_lock -> idle_running;
-					 idle_running -> schedstat_inc_rq_sched_cnt;
-					 idle_running -> dump_stack_1[color=red];
-					 schedstat_inc_rq_sched_cnt -> sched_clock;
-					 sched_clock -> disable_irq_lock;
-					 disable_irq_lock -> PF_DEAD;
-					 PF_DEAD -> deactivate_task[label="NOT TASK_RUNNINT\land not preempt in kernel mode"];
-					 deactivate_task -> set_task_running[label="not signal pend \land in TASK_INTERRUPTIBLE"];
-					 set_task_running -> dependent_sleeper[label="have processes in rq"];
-					 dependent_sleeper -> exch_active_expired[label="haven't processes in active"];
-					 dependent_sleeper -> search_process[label="have processes in active"];
-					 set_task_running -> idle_balance[label="haven't processes in rq"];
-					 idle_balance -> exch_active_expired[label="haven't processes in active"];
-					 idle_balance -> search_process[label="have processes in active"];
-					 exch_active_expired -> search_process;
-					 search_process -> add_sleeptime;
-					 add_sleeptime -> add_all_time[label="by intr or defer"];
-					 add_sleeptime -> add_fraction_time[label="by sys call"];
-					 
-					 add_all_time -> prefect;
-					 add_fraction_time -> prefect;
-					 prefect -> clear_TIF_NEED_RESCHED;
-					 clear_TIF_NEED_RESCHED -> rcq_qsctr_inc;
-					 rcq_qsctr_inc -> substract_sleeptime;
-					 substract_sleeptime -> set_timestamps;
-					 set_timestamps -> same_process;
-					 same_process -> context_switch[label="not the same"];
-					 same_process -> barrier;
-					 context_switch -> set_prev_mm;
-					 set_prev_mm -> barrier;
-					 barrier -> finish_task_switch;
-			 }
+		     exiting_atomic;
+		     dump_stack[label="dump_stack()"];
+		     dump_stack_1[label="dump_stack()"];
+		     profile_hit[label="profile_hit()"];
+		     preempt_disable[label="preempt_disable()"];
+		     
+		     release_kernel_lock[label="release_kernel_lock()"];
+		     idle_running;
+		     
+		     sched_clock[label="calc cpu time, limit in 1s"];
+		     schedstat_inc_rq_sched_cnt;
+		     
+		     disable_irq_lock[label="disalbe_irq, lock rq"];
+		     PF_DEAD[label="check PF_DEAD, set EXIT_DEAD"];
+		     deactivate_task[label="deactivate_task"];
+		     set_task_running[label="set TASK_RUNNING"];
+		     dependent_sleeper[label="dependent_sleeper()"];
+		     idle_balance[label="idle_balance()"];
+		     exch_active_expired[label="switch active and expired"];
+		     search_process[label="search process by bitmask"];
+		     add_sleeptime[label="add sleeptime"];
+		     add_all_time[label="add all time"];
+		     add_fraction_time[label="add fraction time"];
+		     prefect;
+		     clear_TIF_NEED_RESCHED[label="clear TIF NEED RESCHED"];
+		     rcq_qsctr_inc;
+		     substract_sleeptime[label="substract sleeptime"];
+		     set_timestamps[label="set timestamps"];
+		     same_process[label="same process"];
+		     context_switch[label="context_switch()"];
+		     set_prev_mm[label="set prev_mm field"];
+		     barrier[label="barrier()"];
+		     finish_task_switch[label="finish_task_switch()"];
+		     
+		     exiting_atomic -> dump_stack[color=red];
+		     exiting_atomic -> profile_hit;
+		     profile_hit -> preempt_disable;
+		     preempt_disable -> release_kernel_lock;
+		     release_kernel_lock -> idle_running;
+		     idle_running -> schedstat_inc_rq_sched_cnt;
+		     idle_running -> dump_stack_1[color=red];
+		     schedstat_inc_rq_sched_cnt -> sched_clock;
+		     sched_clock -> disable_irq_lock;
+		     disable_irq_lock -> PF_DEAD;
+		     PF_DEAD -> deactivate_task[label="NOT TASK_RUNNINT\land not preempt in kernel mode"];
+		     deactivate_task -> set_task_running[label="not signal pend \land in TASK_INTERRUPTIBLE"];
+		     set_task_running -> dependent_sleeper[label="have processes in rq"];
+		     dependent_sleeper -> exch_active_expired[label="haven't processes in active"];
+		     dependent_sleeper -> search_process[label="have processes in active"];
+		     set_task_running -> idle_balance[label="haven't processes in rq"];
+		     idle_balance -> exch_active_expired[label="haven't processes in active"];
+		     idle_balance -> search_process[label="have processes in active"];
+		     exch_active_expired -> search_process;
+		     search_process -> add_sleeptime;
+		     add_sleeptime -> add_all_time[label="by intr or defer"];
+		     add_sleeptime -> add_fraction_time[label="by sys call"];
+		     
+		     add_all_time -> prefect;
+		     add_fraction_time -> prefect;
+		     prefect -> clear_TIF_NEED_RESCHED;
+		     clear_TIF_NEED_RESCHED -> rcq_qsctr_inc;
+		     rcq_qsctr_inc -> substract_sleeptime;
+		     substract_sleeptime -> set_timestamps;
+		     set_timestamps -> same_process;
+		     same_process -> context_switch[label="not the same"];
+		     same_process -> barrier;
+		     context_switch -> set_prev_mm;
+		     set_prev_mm -> barrier;
+		     barrier -> finish_task_switch;
+        }
 
+        subgraph cluster_task_rq_lock{
+                label="static inline runqueue_t *task_rq_lock(task_t *p, unsigned long *flags)";
+                local_irq_save[label="local_irq_save"];
+                set_rq_task_rq_p[label="set_rq_task_rq_p"];
+                lock_rq_lock[label="lock_rq_lock"];
+                rq_not_eq_task_rq_p[label="rq_not_eq_task_rq_p"];
+                unlock_rq_lock[label="unlock_rq_lock"];
+                goto_repeat_lock_task[label="goto_repeat_lock_task"];
+                return_rq[label="return_rq"];
+        }
+
+        subgraph cluster_task_rq_unlock{
+                label="static inline void task_rq_unlock(runqueue_t *rq, unsigned long *flags)";
+                unlock_rq_lock[label="unlock_rq_lock"];
+        }
+
+        subgraph cluster_show_schedstat{
+                label="static int show_schedstat(struct seq_file *seq, void *v)";
+                for_each_onlone_cpu_cpu[label="for_each_onlone_cpu_cpu"];
+                set_rq_cpu_rq_cpu[label="set_rq_cpu_rq_cpu"];
+                seq_printf_seq[label="seq_printf_seq"];
+        }
+
+        subgraph cluster_schedstat_open{
+                label="static int schedstat_open(struct inode *inode, struct file *file)";
+                set_size_PAGE_SIZE_multi_1_add_num_online_cpus_div_32[label="set_size_PAGE_SIZE_multi_1_add_num_online_cpus_div_32"];
+                set_buf_kmalloc_size[label="set_buf_kmalloc_size"];
+                set_res_set_single_open_file_show_schedstat_NULL[label="set_res_set_single_open_file_show_schedstat_NULL"];
+                res_null[label="res_null"];
+                set_m_file_private_data[label="set_m_file_private_data"];
+                set_m_buf_buf[label="set_m_buf_buf"];
+                set_m_size_size[label="set_m_size_size"];
+                kfree_buf[label="kfree_buf"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_this_rq_lock{
+                label="static inline runqueue_t *this_rq_lock(void)";
+                local_irq_disable[label="local_irq_disable"];
+                set_rq_this_rq[label="set_rq_this_rq"];
+                lock_rq_lock[label="lock_rq_lock"];
+                return_rq[label="return_rq"];
+        }
+
+        subgraph cluster_cpu_and_siblings_are_idle{
+                label="static int cpu_and_siblings_are_idle(int cpu)";
+                for_each_cpu_mask_sib_cpu_sibling_map_cpu[label="for_each_cpu_mask_sib_cpu_sibling_map_cpu"];
+                idle_cpu_sib[label="idle_cpu_sib"];
+                return_0[label="return_0"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_sched_info_dequeued{
+                label="static inline void sched_info_arrive(task_t *t)";
+                set_t_sched_info_last_queued_0[label="set_t_sched_info_last_queued_0"];
+        }
+
+        subgraph cluster_sched_info_arrive{
+                label="static inline void sched_info_arrive(task_t *t)";
+                set_now_jiffies[label="set_now_jiffies"];
+                set_diff_0[label="set_diff_0"];
+                set_rq_task_rq_t[label="set_rq_task_rq_t"];
+                t_sched_info_last_queued[label="t_sched_info_last_queued"];
+                set_diff_now_sub_t_sched_info_last_queued[label="set_diff_now_sub_t_sched_info_last_queued"];
+                sched_info_dequeued_t[label="sched_info_dequeued_t"];
+                t_sched_info_run_delay_self_add_diff[label="t_sched_info_run_delay_self_add_diff"];
+                set_t_sched_9nfo_last_arrival_now[label="set_t_sched_9nfo_last_arrival_now"];
+                inc_t_sched_info_pcnt[label="inc_t_sched_info_pcnt"];
+                rq_null[label="rq_null"];
+                return[label="return"];
+                rq_rq_sched_info_run_delay_self_add_diff[label="rq_rq_sched_info_run_delay_self_add_diff"];
+                inc_rq_rq_sched_info_pcnt[label="inc_rq_rq_sched_info_pcnt"];
+        }
+
+        subgraph cluster_sched_info_queued{
+                label="static inline void sched_info_queued(task_t *t)";
+                t_sched_info_last_queued_null[label="t_sched_info_last_queued_null"];
+                set_t_sched_info_last_queued_jiffies[label="set_t_sched_info_last_queued_jiffies"];
+        }
+
+        subgraph cluster_sched_info_depart{
+                label="static inline void sched_info_depart(task_t *t)";
+                rq_task_rq_t[label="rq_task_rq_t"];
+                set_diff_jiffies_sub_t_sched_info_last_arrival[label="set_diff_jiffies_sub_t_sched_info_last_arrival"];
+                t_sched_info_cpu_time_self_add_diff[label="t_sched_info_cpu_time_self_add_diff"];
+                rq_not_null[label="rq_not_null"];
+                rq_rq_sched_info_cpu_time_self_add_diff[label="rq_rq_sched_info_cpu_time_self_add_diff"];
+        }
+
+        subgraph cluster_sched_info_switch{
+                label="static inline void sched_info_switch(task_t *prev, task_t *next)";
+                set_rq_task_rq_prev[label="set_rq_task_rq_prev"];
+                prev_not_eq_rq_idle[label="prev_not_eq_rq_idle"];
+                sched_info_depart_prev[label="sched_info_depart_prev"];
+                next_not_eq_rq_idle[label="next_not_eq_rq_idle"];
+                sched_info_arrive_next[label="sched_info_arrive_next"];
+        }
+
+        subgraph cluster_requeue_task{
+                lable="static void requeue_task(struct task_struct *p, prio_array_t *array)";
+                list_move_tail_p_run_list_array_queue_add_p_prio[label="list_move_tail_p_run_list_array_queue_add_p_prio"];
+        }
+
+        subgraph cluster_enqueue_task_head{
+                label="static inline void enqueue_task_head(struct task_struct *p, prio_array_t *array)";
+                list_add_p_run_list_array_queue_add_p_prio[label="list_add_p_run_list_array_queue_add_p_prio"];
+                __set_bit_p_prio_array_bitmap[label="__set_bit_p_prio_array_bitmap"];
+                inc_array_nr_active[label="inc_array_nr_active"];
+                set_p_array_array[label="set_p_array_array"];
+        }
+
+        subgraph cluster_effective_prio{
+                label="static int effective_prio(task_t *p)";
+                rt_task_p[label="rt_task_p"];
+                return_p_prio[label="return_p_prio"];
+                set_bonusCURRENT_BONUS_p_sub_MAX_BONUS_div_2[label="set_bonusCURRENT_BONUS_p_sub_MAX_BONUS_div_2"];
+                set_prio_p_static_prio_sub_bonus[label="set_prio_p_static_prio_sub_bonus"];
+                prio_small_MAX_RT_PRIO[label="prio_small_MAX_RT_PRIO"];
+                set_prio_MAX_RT_PRIO[label="set_prio_MAX_RT_PRIO"];
+                prio_great_MAX_PRIO_sub_1[label="prio_great_MAX_PRIO_sub_1"];
+                set_prio_MAX_PRIO_sub_1[label="set_prio_MAX_PRIO_sub_1"];
+                return_prio[label="return_prio"];
+        }
+
+        subgraph cluster___activate_task{
+                label="static inline void __activate_task(task_t *p, runqueue_t *rq)";
+                enqueue_task_p_rq_active[label="enqueue_task_p_rq_active"];
+                inc_rq_nr_running[label="inc_rq_nr_running"];
+        }
+
+        subgraph cluster___activate_idle_task{
+                label="static inline void __activate_idle_task(task_t *p, runqueue_t *rq)";
+                enqueue_task_head_p_rq_active[label="enqueue_task_head_p_rq_active"];
+                inc_rq_nr_running[label="inc_rq_nr_running"];
+        }
+
+        subgraph cluster_activate_task{
+                label="static void activate_task(task_t *p, runqueue_t *rq, int local)";
+                set_now_sched_clock[label="set_now_sched_clock"];
+                CONFIG_SMP[label="CONFIG_SMP"];
+                local_null[label="local_null"];
+                set_this_rq_this_rq[label="set_this_rq_this_rq"];
+                set_now_now_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick[label="set_now_now_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick"];
+                recalc_task_prio_p_now[label="recalc_task_prio_p_now"];
+                p_activated_null[label="p_activated_null"];
+                in_interrupt[label="in_interrupt"];
+                set_p_activated_2[label="set_p_activated_2"];
+                set_p_activated_1[label="set_p_activated_1"];
+                set_p_timestamp_now[label="set_p_timestamp_now"];
+                __activate_task_p_rq[label="__activate_task_p_rq"];
+        }
+
+        subgraph cluster_deactivate_task{
+                label="static void deactivate_task(struct task_struct *p, runqueue_t *rq)";
+                dec_rq_nr_running[label="dec_rq_nr_running"];
+                dequeue_task_p_p_array[label="dequeue_task_p_p_array"];
+                clear_p_array[label="clear_p_array"];
+        }
+
+        subgraph cluster_resched_task{
+                label="static void resched_task(task_t *p)";
+                CONFIG_SMP[label="CONFIG_SMP"];
+                set_nrpolling_test_tsk_thread_flag_p_TIF_POLLING_NRFLAG[label="set_nrpolling_test_tsk_thread_flag_p_TIF_POLLING_NRFLAG"];
+                set_need_resched_test_and_set_tsk_thread_flag_p_TIF_NEED_RESCHED[label="set_need_resched_test_and_set_tsk_thread_flag_p_TIF_NEED_RESCHED"];
+                nrpolling_self_or_test_tsk_thread_flag_p_TIF_POLLING_NRFLAG[label="nrpolling_self_or_test_tsk_thread_flag_p_TIF_POLLING_NRFLAG"];
+                need_resched_null_and_nrpolling_null_and_task_cpu_p_not_eq_smp_processor_id[label="need_resched_null_and_nrpolling_null_and_task_cpu_p_not_eq_smp_processor_id"];
+                smp_send_reschedule_task_cpu_p[label="smp_send_reschedule_task_cpu_p"];
+                set_tsk_need_resched_p[label="set_tsk_need_resched_p"];
+        }
+
+        subgraph cluster_task_curr{
+                label="inline int task_curr(const task_t *p)";
+                return_cpu_curr_task_cpu_p_eq_p[label="return_cpu_curr_task_cpu_p_eq_p"];
+        }
+
+        subgraph cluster_migrate_task{
+                label="static int migrate_task(task_t *p, int dest_cpu, migration_req_t *req)";
+                set_rq_task_rq_p[label="set_rq_task_rq_p"];
+                p_array_null_and_task_running_rq_p_null[label="p_array_null_and_task_running_rq_p_null"];
+                set_task_cpu_p_dest_cpu[label="set_task_cpu_p_dest_cpu"];
+                return_0[label="return_0"];
+                init_completion_req_done[label="init_completion_req_done"];
+                req_type_REQ_MOVE_TASK[label="req_type_REQ_MOVE_TASK"];
+                set_req_task_p[label="set_req_task_p"];
+                req_dest_cpu_dest_cpu[label="req_dest_cpu_dest_cpu"];
+                list_add_req_list_rq_migration_queue[label="list_add_req_list_rq_migration_queue"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_wait_task_inactive{
+                label="void wait_task_inactive(task_t * p)";
+                set_rq_task_rq_lock_p[label="set_rq_task_rq_lock_p"];
+                p_array_or_task_running_rq_p[label="p_array_or_task_running_rq_p"];
+                set_preempted_task_running_rq_q[label="set_preempted_task_running_rq_q"];
+                task_rq_unlock_rq[label="task_rq_unlock_rq"];
+                cpu_relax[label="cpu_relax"];
+                preempted_not_Null[label="preempted_not_Null"];
+                yield[label="yield"];
+                goto_repeat[label="goto_repeat"];
+                task_rq_unlock_rq[label="task_rq_unlock_rq"];
+        }
+
+        subgraph cluster_kick_process{
+                label="void kick_process(task_t *p)";
+                preempt_disable[label="preempt_disable"];
+                set_cpu_task_cpu_p[label="set_cpu_task_cpu_p"];
+                cpu_not_eq_smp_processor_id_and_task_curr_p[label="cpu_not_eq_smp_processor_id_and_task_curr_p"];
+                smp_send_reschedule_cpu[label="smp_send_reschedule_cpu"];
+                preempt_enable[label="preempt_enable"];
+        }
+
+        subgraph cluster_source_load{
+                label="static inline unsigned long source_load(int cpu)";
+                set_rq_cpu_rq_cpu[label="set_rq_cpu_rq_cpu"];
+                rq_nr_running_multi_SCHED_LOAD_SCALE[label="rq_nr_running_multi_SCHED_LOAD_SCALE"];
+                return_min_rq_cpu_load_load_now[label="return_min_rq_cpu_load_load_now"];
+        }
+
+        subgraph cluster_target_load{
+                label="static inline unsigned long target_load(int cpu)";
+                rq_cpu_rq_cpu[label="rq_cpu_rq_cpu"];
+                load_now_rq_nr_running_multi_SCHED_LOAD_SCALE[label="load_now_rq_nr_running_multi_SCHED_LOAD_SCALE"];
+                return_max_rq_cpu_load_load_now[label="return_max_rq_cpu_load_load_now"];
+        }
+
+        subgraph cluster_wake_idle{
+                label="static int wake_idle(int cpu, task_t *p)";
+                ARCH_HAS_SCHED_WAKE_IDLE[label="ARCH_HAS_SCHED_WAKE_IDLE"];
+                idle_cpu_cpu[label="idle_cpu_cpu"];
+                return_cpu[label="return_cpu"];
+                for_each_domain_cpu_sd[label="for_each_domain_cpu_sd"];
+                sd_flags_SD_WAKE_IDLE_set[label="sd_flags_SD_WAKE_IDLE_set"];
+                cpus_and_tmp_sd_span_cpu_online_map[label="cpus_and_tmp_sd_span_cpu_online_map"];
+                cpus_and_tmp_tmp_p_cpus_allowed[label="cpus_and_tmp_tmp_p_cpus_allowed"];
+                for_each_cpu_mask_i_tmp[label="for_each_cpu_mask_i_tmp"];
+                idle_cpu_i[label="idle_cpu_i"];
+                return_i[label="return_i"];
+                return_cpu[label="return_cpu"];
+        }
+
+        subgraph cluster_wake_up_process{
+                label="int fastcall wake_up_process(task_t * p)";
+                try_to_wake_up_p_TASK_STOPPED_TASK_TRACED_OR_TASK_INTERRUPTIBLE_TASK_UNINTERRUPTIBLE_0[label="try_to_wake_up_p_TASK_STOPPED_TASK_TRACED_OR_TASK_INTERRUPTIBLE_TASK_UNINTERRUPTIBLE_0"];
+        }
+
+        subgraph cluster_wake_up_state{
+                label="int fastcall wake_up_state(task_t *p, unsigned int state)";
+                return_try_to_wake_up_p_state_0[label="return_try_to_wake_up_p_state_0"];
+        }
+
+        subgraph cluster_wake_up_new_task{
+                label="void fastcall wake_up_new_task(task_t * p, unsigned long clone_flags)";
+                set_rq_task_rq_lock_[label="set_rq_task_rq_lock_"];
+                set_cpu_task_cpu_p[label="set_cpu_task_cpu_p"];
+                set_this_cpu_smp_processor_id[label="set_this_cpu_smp_processor_id"];
+                set_p_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_p_multi_CHILD_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS[label="set_p_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_p_multi_CHILD_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS"];
+                set_p_prio_effective_prio_p[label="set_p_prio_effective_prio_p"];
+                cpu_not_eq_this_cpu[label="cpu_not_eq_this_cpu"];
+                clone_flags_CLONE_VM_set[label="clone_flags_CLONE_VM_set"];
+                current_array_null[label="current_array_null"];
+                __activate_task_p_rq[label="__activate_task_p_rq"];
+                set_p_prio_current_prio[label="set_p_prio_current_prio"];
+                list_add_tail_p_run_list_current_run_list[label="list_add_tail_p_run_list_current_run_list"];
+                set_array_current_array[label="set_array_current_array"];
+                inc_p_array_nr_active[label="inc_p_array_nr_active"];
+                inc_rq_nr_running[label="inc_rq_nr_running"];
+                set_need_resched[label="set_need_resched"];
+                __activate_task_p_rq[label="__activate_task_p_rq"];
+                set_this_rq_rq[label="set_this_rq_rq"];
+                this_rq_cpu_rq_this_cpu[label="this_rq_cpu_rq_this_cpu"];
+                set_p_timestamp_p_timestamp_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick[label="set_p_timestamp_p_timestamp_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick"];
+                __activate_task_p_rq[label="__activate_task_p_rq"];
+                TASK_PREEMPTS_CURR_p_rq[label="TASK_PREEMPTS_CURR_p_rq"];
+                resched_task_rq_curr[label="resched_task_rq_curr"];
+                task_rq_unlock_rq[label="task_rq_unlock_rq"];
+                this_rq_task_rq_lock[label="this_rq_task_rq_lock"];
+                set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS[label="set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS"];
+                task_rq_unlock_this_rq[label="task_rq_unlock_this_rq"];
+        }
+
+        subgraph cluster_
 }
