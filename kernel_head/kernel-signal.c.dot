@@ -1861,4 +1861,101 @@ digraph signal_c{
                 set_error_0[label="set_error_0"];
                 return_error[label="return_error"];
         }
+
+        subgraph cluster_sys_sigpending{
+                label="asmlinkage long sys_sigpending(old_sigset_t __user *set)";
+
+                __ARCH_WANT_SYS_SIGPENDING[label="__ARCH_WANT_SYS_SIGPENDING"];
+
+                do_sigpending_set_sizeof_set[label="do_sigpending_set_sizeof_set"];
+        }
+
+        subgraph cluster_sys_sigprocmask{
+                label="asmlinkage long sys_sigprocmask(int how, old_sigset_t __user *set, old_sigset_t __user *oset)";
+
+                __ARCH_WANT_SYS_SIGPROCMASK[label="__ARCH_WANT_SYS_SIGPROCMASK"];
+
+                set_not_null[label="set_not_null"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                copy_from_user_hew_st_set_sizeof_set[label="copy_from_user_hew_st_set_sizeof_set"];
+                goto_out[label="goto_out"];
+                clear_new_set_sigmask_SIGKILL_sigmask_SIGSTOP[label="clear_new_set_sigmask_SIGKILL_sigmask_SIGSTOP"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_old_set_current_blocked_sig_0[label="set_old_set_current_blocked_sig_0"];
+                set_error_0[label="set_error_0"];
+                switch_0[label="switch_0"];
+                dafualt_[label="dafualt_"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                case_SIG_BLOCK[label="case_SIG_BLOCK"];
+                sigaddsetmask_current_blocked_new_set[label="sigaddsetmask_current_blocked_new_set"];
+                case_SIG_UNBLOCK[label="case_SIG_UNBLOCK"];
+                sigdelsetmask_current_blocked_new_set[label="sigdelsetmask_current_blocked_new_set"];
+                case_SIG_SETMASK[label="case_SIG_SETMASK"];
+                set_current_blocked_sig_0_new_set[label="set_current_blocked_sig_0_new_set"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                error_not_null[label="error_not_null"];
+                oset_not_null[label="oset_not_null"];
+                oset_not_null[label="oset_not_null"];
+                set_old_set_current_blocked_sig_0[label="set_old_set_current_blocked_sig_0"];
+                set_error_EFUALT[label="set_error_EFUALT"];
+                copy_to_user_oset_old_set_sizeof_oset[label="copy_to_user_oset_old_set_sizeof_oset"];
+                set_error_0[label="set_error_0"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_rt_sigaction{
+                label="asmlinkage long sys_rt_sigaction(int sig, const struct sigaction __user *act, struct sigaction __user *oact, size_t sigsetsize)";
+                __ARCH_WANT_SYS_RT_SIGACTION[label="__ARCH_WANT_SYS_RT_SIGACTION"];
+                set_ret_EINVAL[label="set_ret_EINVAL"];
+                sigsetsize_not_eq_sizeof_sigset_t[label="sigsetsize_not_eq_sizeof_sigset_t"];
+                goto_out[label="goto_out"];
+                act_not_null[label="act_not_null"];
+                copy_from_user_new_sa_sa_act[label="copy_from_user_new_sa_sa_act"];
+                return_EFAULT[label="return_EFAULT"];
+                ret_do_sigaction_sig_new_sa_or_null_decided_act_old_sa_or_null_decided_oact[label="ret_do_sigaction_sig_new_sa_or_null_decided_act_old_sa_or_null_decided_oact"];
+                ret_null_and_oact_not_null[label="ret_null_and_oact_not_null"];
+                copy_to_user_oact_old_sa_sa[label="copy_to_user_oact_old_sa_sa"];
+                return_EFAULT[label="return_EFAULT"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_sys_sgetmask{
+                label="asmlinkage long sys_sgetmask(void)";
+                __ARCH_WANT_SYS_SGETMASK[label="__ARCH_WANT_SYS_SGETMASK"];
+                return_current_blocked_sig_0[label="return_current_blocked_sig_0"];
+        }
+
+        subgraph cluster_sys_ssetmask{
+                label="asmlinkage long sys_ssetmask(int newmask)";
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_old_current_blocked_sig_0[label="set_old_current_blocked_sig_0"];
+                siginitset_curret_blocked_newmask_and_rever_sigmask_SIGKILL_sigmask_SIGSTOP[label="siginitset_curret_blocked_newmask_and_rever_sigmask_SIGKILL_sigmask_SIGSTOP"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                return_old[label="return_old"];
+        }
+
+        subgraph cluster_sys_signal{
+                label="asmlinkage unsigned long sys_signal(int sig, __sighandler_t handler)";
+
+                __ARCH_WANT_SYS_SIGNAL[label="__ARCH_WANT_SYS_SIGNAL"];
+                new_sa_sa_sa_handler_handler[label="new_sa_sa_sa_handler_handler"];
+                set_new_sa_sa_sa_flags_SA_ONESHOT_and_SA_NOMASK[label="set_new_sa_sa_sa_flags_SA_ONESHOT_and_SA_NOMASK"];
+                set_ret_do_sigaction_sig_new_sa_old_sa[label="set_ret_do_sigaction_sig_new_sa_old_sa"];
+                return_ret_or_old_sa_sa_sa_handler_decided_ret[label="return_ret_or_old_sa_sa_sa_handler_decided_ret"];
+        }
+
+        subgraph cluster_sys_pause{
+                label="asmlinkage long sys_pause(void)";
+                __ARCH_WANT_SYS_PAUSE[label="__ARCH_WANT_SYS_PAUSE"];
+                set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                schedule[label="schedule"];
+                return_ERESTARTNOHAND[label="return_ERESTARTNOHAND"];
+        }
+
+        subgraph cluster_signals_init{
+                label="void __init signals_init(void)";
+                set_sigqueue_cachep_kmem_cache_create_sigqueue_sizeof_struct_sigqueue_alignof_struct_sigqueue_SLAB_PANIC_NULL_NULL[label="set_sigqueue_cachep_kmem_cache_create_sigqueue_sizeof_struct_sigqueue_alignof_struct_sigqueue_SLAB_PANIC_NULL_NULL"];
+        }
 }

@@ -249,4 +249,230 @@ digraph timer_c{
 				set_tv_tv_sec_sec[label="set_tv_tv_sec_sec"];
 				set_tv_tv_usec_usec[label="set_tv_tv_usec_usec"];
 		}
+
+                subgraph cluster_set_runnig_timer{
+                        label="static inline void set_running_timer(tvec_base_t *base, struct timer_list *timer)";
+
+                        CONFIG_SMP[label="CONFIG_SMP"];
+                        set_base_running_timer_timer[label="set_base_running_timer_timer"];
+                }
+
+                subgraph cluster_check_timer_failed{
+                        label="static void check_timer_failed(struct timer_list *timer)";
+                        whine_count_small_16[label="whine_count_small_16"];
+                        inc_whine_count[label="inc_whine_count"];
+                        dump_stack[label="dump_stack"];
+                        lock_timer_lock[label="lock_timer_lock"];
+                        set_timer_magic_TIMER_MAGIC[label="set_timer_magic_TIMER_MAGIC"];
+                }
+
+                subgraph cluster_check_timer{
+                        label="static inline void check_timer(struct timer_list *timer)";
+                        timer_magic_not_eq_TIMER_MAGIC[label="timer_magic_not_eq_TIMER_MAGIC"];
+                        check_timer_failed_timer[label="check_timer_failed_timer"];
+                }
+
+                subgraph cluster_add_timer_on{
+                        label="void add_timer_on(struct timer_list *timer, int cpu)";
+                        set_base_per_cpu_tvec_bases_cpu[label="set_base_per_cpu_tvec_bases_cpu"];
+                        check_timer_timer[label="check_timer_timer"];
+                        lock_base_lock[label="lock_base_lock"];
+                        internal_add_timer_base_timer[label="internal_add_timer_base_timer"];
+                        set_timer_base_base[label="set_timer_base_base"];
+                        unlock_base_lock[label="unlock_base_lock"];
+                }
+
+                subgraph cluster_mod_timer{
+                        label="int mod_timer(struct timer_list *timer, unsigned long expires)";
+                        check_timer_timer[label="check_timer_timer"];
+                        timer_expires_eq_expires_and_timer_pending_timer[label="timer_expires_eq_expires_and_timer_pending_timer"];
+                        return_1[label="return_1"];
+                        return___mod_timer_timer_expires[label="return___mod_timer_timer_expires"];
+                }
+
+                subgraph cluster_cascade{
+                        label="static int cascade(tvec_base_t *base, tvec_t *tv, int index)";
+                        set_head_tv_vec_index[label="set_head_tv_vec_index"];
+                        set_curr_head_next[label="set_curr_head_next"];
+                        curr_not_eq_head[label="curr_not_eq_head"];
+                        set_tmp_list_entry_curr_struct_timer_list_entry[label="set_tmp_list_entry_curr_struct_timer_list_entry"];
+                        set_curr_curr_next[label="set_curr_curr_next"];
+                        internal_add_timer_base_tmp[label="internal_add_timer_base_tmp"];
+                        INIT_LIST_HEAD_head[label="INIT_LIST_HEAD_head"];
+                        return_index[label="return_index"];
+                }
+
+                subgraph cluster_second_overflow{
+                        label="static void second_overflow(void)";
+                        time_maxerror_self_add_time_tolerance_ritht_move_SHIFT_USEC[label="time_maxerror_self_add_time_tolerance_ritht_move_SHIFT_USEC"];
+                        time_maxerror_great_NTP_PHASE_LIMIT[label="time_maxerror_great_NTP_PHASE_LIMIT"];
+                        set_time_maxerror_NTP_PHASE_LIMIT[label="set_time_maxerror_NTP_PHASE_LIMIT"];
+                        time_status_self_set_STA_UNSYNC[label="time_status_self_set_STA_UNSYNC"];
+                        switch_time_state[label="switch_time_state"];
+                        case_TIME_OK[label="case_TIME_OK"];
+                        time_status_STA_INS_set[label="time_status_STA_INS_set"];
+                        set_time_state_TIME_INS[label="set_time_state_TIME_INS"];
+                        time_status_STA_DEL_set[label="time_status_STA_DEL_set"];
+                        set_time_state_TIME_DEL[label="set_time_state_TIME_DEL"];
+                        case_TIME_INS[label="case_TIME_INS"];
+                        xtime_tv_sec_mod_86400_eq_0[label="xtime_tv_sec_mod_86400_eq_0"];
+                        dec_xtime_tv_sec[label="dec_xtime_tv_sec"];
+                        inc_wall_to_monotomic_tv_sec[label="inc_wall_to_monotomic_tv_sec"];
+                        time_interpolator_update_neg_NSEC_PER_SEC[label="time_interpolator_update_neg_NSEC_PER_SEC"];
+                        set_time_state_TIME_OOP[label="set_time_state_TIME_OOP"];
+                        clock_was_set[label="clock_was_set"];
+                        case_TIME_DEL[label="case_TIME_DEL"];
+                        xtime_tv_sec_add_1_mod_86400_eq_0[label="xtime_tv_sec_add_1_mod_86400_eq_0"];
+                        inc_xtime_tv_sec[label="inc_xtime_tv_sec"];
+                        inc_wall_to_monotonic_tv_sec[label="inc_wall_to_monotonic_tv_sec"];
+                        time_interpolator_update_NSEC_PER_SEC[label="time_interpolator_update_NSEC_PER_SEC"];
+                        set_time_state_TIME_WAIT[label="set_time_state_TIME_WAIT"];
+                        clock_was_set[label="clock_was_set"];
+                        case_TIME_OOP[label="case_TIME_OOP"];
+                        set_time_state_TIME_WAIT[label="set_time_state_TIME_WAIT"];
+                        case_TIME_WAIT[label="case_TIME_WAIT"];
+                        time_status_and_STA_INS_or_STA_DEL_not_null[label="time_status_and_STA_INS_or_STA_DEL_not_null"];
+                        set_time_state_TIME_OK[label="set_time_state_TIME_OK"];
+                        time_offset_small_0[label="time_offset_small_0"];
+                        set_ltemp_neg_time_offset[label="set_ltemp_neg_time_offset"];
+                        time_status_STA_FLL_clear[label="time_status_STA_FLL_clear"];
+                        ltemp_self_right_move_SHIFT_KG_and_time_constant[label="ltemp_self_right_move_SHIFT_KG_and_time_constant"];
+                        ltemp_great_MAXPHASE_dev_MINSEC_left_move_SHIFT_UPDATE[label="ltemp_great_MAXPHASE_dev_MINSEC_left_move_SHIFT_UPDATE"];
+                        set_ltemp_MAXPHASE_dev_MINSEC_left_move_SHIFT_UPDATE[label="set_ltemp_MAXPHASE_dev_MINSEC_left_move_SHIFT_UPDATE"];
+                        time_offset_self_add_ltemp[label="time_offset_self_add_ltemp"];
+                        set_time_adj = neg_ltemp_move_left_SHIFT_SCALE_sub_SHIFT_HZ_sub_SHIFT_UPDATE[label="set_time_adj = neg_ltemp_move_left_SHIFT_SCALE_sub_SHIFT_HZ_sub_SHIFT_UPDATE"];
+                        set_ltemp_time_offset[label="set_ltemp_time_offset"];
+                        time_status_STA_FLL_clear[label="time_status_STA_FLL_clear"];
+                        ltemp_self_right_move_SHIFT_KG_and_time_constant[label="ltemp_self_right_move_SHIFT_KG_and_time_constant"];
+                        set_ltemp_MAXPHASE_dev_MINSEC_left_move_SHIFT_UPDATE[label="set_ltemp_MAXPHASE_dev_MINSEC_left_move_SHIFT_UPDATE"];
+                        time_offset_self_sub_ltemp[label="time_offset_self_sub_ltemp"];
+                        set_time_adj = ltemp_move_left_SHIFT_SCALE_sub_SHIFT_HZ_sub_SHIFT_UPDATE[label="set_time_adj = ltemp_move_left_SHIFT_SCALE_sub_SHIFT_HZ_sub_SHIFT_UPDATE"];
+
+                        inc_pps_valid[label="inc_pps_valid"];
+                        pps_valid_eq_PPS_VALID[label="pps_valid_eq_PPS_VALID"];
+                        set_pps_jitter_MAXTIME[label="set_pps_jitter_MAXTIME"];
+                        set_pps_stabil_MAXFREQ[label="set_pps_stabil_MAXFREQ"];
+                        clear_time_status_STA_PPSSIGNAL_STA_PPSJITTER_STA_PPSWANDER_STA_PPSERROR[label="clear_time_status_STA_PPSSIGNAL_STA_PPSJITTER_STA_PPSWANDER_STA_PPSERROR"];
+                        set_ltmep_time_freq_add_pps_freq[label="set_ltmep_time_freq_add_pps_freq"];
+                        ltemp_small_0[label="ltemp_small_0"];
+                        time_adj_self_sub_neg_ltemp_right_move_SHIFT_USEC_add_SHIFT_HZ_sub_SHIFT_SCALE[label="time_adj_self_sub_neg_ltemp_right_move_SHIFT_USEC_add_SHIFT_HZ_sub_SHIFT_SCALE"];
+                        time_adj_sub_add_ltemp_right_move_SHIFT_USEC_add_SHIFT_HZ_sub_SHIFT_SCALE[label="time_adj_sub_add_ltemp_right_move_SHIFT_USEC_add_SHIFT_HZ_sub_SHIFT_SCALE"];
+                        HZ_eq_100[label="HZ_eq_100"];
+                        time_adj_small[label="time_adj_small"];
+                        set_time_adj_self_sub_neg_time_adj_right_move_2_add_neg_time_adj_right_move_5[label="set_time_adj_self_sub_neg_time_adj_right_move_2_add_neg_time_adj_right_move_5"];
+                        set_time_adj_self_add_time_adj_right_move_2_add_time_adj_right_move_5[label="set_time_adj_self_add_time_adj_right_move_2_add_time_adj_right_move_5"];
+                        HZ_eq_1000[label="HZ_eq_1000"];
+                        time_adj_small_0[label="time_adj_small_0"];
+                        set_time_adj_self_sub_neg_time_adj_right_move_6_add_neg_time_adj_right_move_7[label="set_time_adj_self_sub_neg_time_adj_right_move_6_add_neg_time_adj_right_move_7"];
+                        set_time_adj_self_add_time_adj_right_move_6_add_time_adj_right_move_7[label="set_time_adj_self_add_time_adj_right_move_6_add_time_adj_right_move_7"];
+                }
+
+                subgraph cluster_update_wall_time_one_tick{
+                        label="static void update_wall_time_one_tick(void)";
+                        set_time_adjust_step_time_adjust_not_eq_0[label="set_time_adjust_step_time_adjust_not_eq_0"];
+                        time_adjust_great_tickadj[label="time_adjust_great_tickadj"];
+                        set_time_adjust_step_tickadj[label="set_time_adjust_step_tickadj"];
+                        time_adjust_small_neg_tickadj[label="time_adjust_small_neg_tickadj"];
+                        time_adjust_step_neg_tickadj[label="time_adjust_step_neg_tickadj"];
+                        time_adjust_self_sub_time_adjust_step[label="time_adjust_self_sub_time_adjust_step"];
+                        set_delta_nsec_tick_nsec_add_time_adjust_step_multi_1000[label="set_delta_nsec_tick_nsec_add_time_adjust_step_multi_1000"];
+                        time_phase_self_add_time_adj[label="time_phase_self_add_time_adj"];
+                        time_phase_not_great_FINENSEC[label="time_phase_not_great_FINENSEC"];
+                        set_ltemp_neg_time_phase_right_move_SHIFT_SCALE_sub_10[label="set_ltemp_neg_time_phase_right_move_SHIFT_SCALE_sub_10"];
+                        time_phase_self_add_ltemp_left_move_SHIFT_SCALE_sub_10[label="time_phase_self_add_ltemp_left_move_SHIFT_SCALE_sub_10"];
+                        delta_nsec_self_sub_ltemp[label="delta_nsec_self_sub_ltemp"];
+                        time_phase_not_small_FINENSEC[label="time_phase_not_small_FINENSEC"];
+                        set_ltemp_time_phase_left_move_SHIFT_SCALE_sub_10[label="set_ltemp_time_phase_left_move_SHIFT_SCALE_sub_10"];
+                        time_phase_self_sub_ltemp_right_move_SHIFT_SCALE_sub_10[label="time_phase_self_sub_ltemp_right_move_SHIFT_SCALE_sub_10"];
+                        delta_nsec_self_add_ltemp[label="delta_nsec_self_add_ltemp"];
+                        xtime_tv_nsec_self_add_delta_nsec[label="xtime_tv_nsec_self_add_delta_nsec"];
+                        time_interpolator_update_delta_nsec[label="time_interpolator_update_delta_nsec"];
+                        time_next_adjust_not_eq_0[label="time_next_adjust_not_eq_0"];
+                        set_time_adjust_time_next_adjust[label="set_time_adjust_time_next_adjust"];
+                        set_time_next_adjust_0[label="set_time_next_adjust_0"];
+                }
+
+                subgraph cluster_sys_alarm{
+                        label="asmlinkage unsigned long sys_alarm(unsigned int seconds)";
+                        set_it_new_it_interval_tv_sec_it_new_it_interval_tv_usec_0[label="set_it_new_it_interval_tv_sec_it_new_it_interval_tv_usec_0"];
+                        set_it_new_it_value_tv_sec_seconds[label="set_it_new_it_value_tv_sec_seconds"];
+                        set_it_new_it_value_tv_usec_0[label="set_it_new_it_value_tv_usec_0"];
+                        do_setitimer_ITIMER_REAL_it_new_it_old[label="do_setitimer_ITIMER_REAL_it_new_it_old"];
+                        set_oldalarm_it_old_it_value_tv_sec[label="set_oldalarm_it_old_it_value_tv_sec"];
+                        oldalarm_not_set_and_it_old_it_value_tv_usec_or_it_old_it_value_tv_usec_not_small_500000[label="oldalarm_not_set_and_it_old_it_value_tv_usec_or_it_old_it_value_tv_usec_not_small_500000"];
+                        inc_oldalarm[label="inc_oldalarm"];
+                        return_oldalarm[label="return_oldalarm"];
+                }
+
+                subgraph cluster_sys_getpid{
+                        label="asmlinkage long sys_getpid(void)";
+                        return_current_tgid[label="return_current_tgid"];
+                }
+
+                subgraph cluster_sys_getppid{
+                        label="asmlinkage long sys_getppid(void)";
+                        set_me_current[label="set_me_current"];
+                        set_parent_me_group_leader_real_parent[label="set_parent_me_group_leader_real_parent"];
+                        dead_for[label="dead_for"];
+                        set_pid_parent_tgid[label="set_pid_parent_tgid"];
+                        CONFIG_SMP[label="CONFIG_SMP"];
+                        set_old_parent[label="set_old_parent"];
+                        smp_rmb[label="smp_rmb"];
+                        set_parent_me_group_leader_real_parent[label="set_parent_me_group_leader_real_parent"];
+                        old_not_eq_parent[label="old_not_eq_parent"];
+                        return_pid[label="return_pid"];
+                }
+
+                subgraph cluster_sys_getuid{
+                        label="asmlinkage long sys_getuid(void)";
+
+                        return_current_uid[label="return_current_uid"];
+                }
+
+                subgraph cluster_sys_geteuid{
+                        label="asmlinkage long sys_geteuid(void)";
+
+                        return_current_euid[label="return_current_euid"];
+                }
+
+                subgraph cluster_sys_getgid{
+                        label="asmlinkage long sys_getgid(void)";
+
+                        return_current_gid[label="return_current_gid"];
+                }
+
+                subgraph cluster_sys_getegid{
+                        label="asmlinkage long sys_getegid(void)";
+
+                        return_current_egid[label="return_current_egid"];
+                }
+
+                subgraph cluster_sys_gettid{
+                        label="asmlinkage long sys_gettid(void)";
+
+                        return_current_pid[label="return_current_pid"];
+                }
+
+                subgraph cluster_nanosleep_restart{
+                        label="static long __sched nanosleep_restart(struct restart_block *restart)";
+                        set_expire_restart_arg0[label="set_expire_restart_arg0"];
+                        set_now_jiffies[label="set_now_jiffies"];
+                        set_rmtp_restart_arg1[label="set_rmtp_restart_arg1"];
+                        time_after_expire_now_null[label="time_after_expire_now_null"];
+                        return_0[label="return_0"];
+                        set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                        set_expire_schedule_timeout_expire_sub_now[label="set_expire_schedule_timeout_expire_sub_now"];
+                        set_ret_0[label="set_ret_0"];
+                        expire_not_null[label="expire_not_null"];
+                        jiffies_to_timespec_expire_t[label="jiffies_to_timespec_expire_t"];
+                        set_ret_ERESTART_RESTARTBLOCK[label="set_ret_ERESTART_RESTARTBLOCK"];
+                        rmtp_not_null_and_copy_to_user_rmtp_t[label="rmtp_not_null_and_copy_to_user_rmtp_t"];
+                        set_ret_EFAULT[label="set_ret_EFAULT"];
+                        return_ret[label="return_ret"];
+                }
+
+                subgraph cluster_sys_nanosleep{
+                        label="asmlinkage long sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)";
+                        
+                }
 }
