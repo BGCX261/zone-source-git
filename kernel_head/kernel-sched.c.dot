@@ -743,5 +743,329 @@ digraph sched_c{
                 task_rq_unlock_this_rq[label="task_rq_unlock_this_rq"];
         }
 
-        subgraph cluster_
+        subgraph cluster_sched_exit{
+                label="void fastcall sched_exit(task_t * p)";
+                set_rq_task_rq_lock_p_parent[label="set_rq_task_rq_lock_p_parent"];
+                p_parent_time_slice_self_add_p_time_slice[label="p_parent_time_slice_self_add_p_time_slice"];
+                p_parent_time_slice_great_task_timeslice_p[label="p_parent_time_slice_great_task_timeslice_p"];
+                set_p_parent_time_slic_task_timeslice_p[label="set_p_parent_time_slic_task_timeslice_p"];
+                p_sleep_avg_small_p_parent_sleep_avg[label="p_sleep_avg_small_p_parent_sleep_avg"];
+                set_p_parent_sleep_avg_p_parent_sleep_avg_div_EIXT_WEIGH_add_1_multi_EXIT_WEIGHT_add_p_sleep_avg_div_EXIT_WEIGHT_add_1[label="set_p_parent_sleep_avg_p_parent_sleep_avg_div_EIXT_WEIGH_add_1_multi_EXIT_WEIGHT_add_p_sleep_avg_div_EXIT_WEIGHT_add_1"];
+                task_rq_unlock_rq[label="task_rq_unlock_rq"];
+        }
+
+        subgraph cluster_finish_task_switch{
+                label="static inline void finish_task_switch(task_t *prev)";
+                set_rq_this_rq[label="set_rq_this_rq"];
+                set_mm_rq_prev_mm[label="set_mm_rq_prev_mm"];
+                clear_rq_prev_mm[label="clear_rq_prev_mm"];
+                set_prev_task_flags_prev_flags[label="set_prev_task_flags_prev_flags"];
+                finish_arch_switch_rq_prev[label="finish_arch_switch_rq_prev"];
+                mm_not_null[label="mm_not_null"];
+                mmdropp_mm[label="mmdropp_mm"];
+                prev_task_flags_PF_DEAD_set[label="prev_task_flags_PF_DEAD_set"];
+                put_task_struct_prev[label="put_task_struct_prev"];
+        }
+
+        subgraph cluster_schedule_tail{
+                label="asmlinkage void schedule_tail(task_t *prev)";
+                finish_task_switch_prev[label="finish_task_switch_prev"];
+                current_set_child_tid_true[label="current_set_child_tid_true"];
+                put_user_current_pid_current_set_child_tid[label="put_user_current_pid_current_set_child_tid"];
+        }
+
+        subgraph cluster_context_switch{
+                label="static inline task_t * context_switch(runqueue_t *rq, task_t *prev, task_t *next)";
+                set_mm_next_mm[label="set_mm_next_mm"];
+                set_oldmm_prev_active_mm[label="set_oldmm_prev_active_mm"];
+                mm_null[label="mm_null"];
+                set_next_active_mm_oldmm[label="set_next_active_mm_oldmm"];
+                atomic_inc_oldmm_mm_count[label="atomic_inc_oldmm_mm_count"];
+                enter_lazy_tlb_oldmm_next[label="enter_lazy_tlb_oldmm_next"];
+                switch_mm_oldmm_mm_next[label="switch_mm_oldmm_mm_next"];
+                prev_mm_null[label="prev_mm_null"];
+                clear_prev_active_mm[label="clear_prev_active_mm"];
+                set_rq_prev_mm_oldmm[label="set_rq_prev_mm_oldmm"];
+        }
+
+        subgraph cluster_nr_running{
+                label="unsigned long nr_running(void)";
+                for_each_0nline_cpu_i[label="for_each_0nline_cpu_i"];
+                sum_self_add_cpu_rq_i_nr_running[label="sum_self_add_cpu_rq_i_nr_running"];
+        }
+
+        subgraph cluster_nr_uninterruptible{
+                label="unsigned long nr_uninterruptible(void)";
+                for_each_cpu_i[label="for_each_cpu_i"];
+                sum_self_add_cpu_rq_i_nr_uninterruptible[label="sum_self_add_cpu_rq_i_nr_uninterruptible"];
+                sum_small_0[label="sum_small_0"];
+                set_sum_0[label="set_sum_0"];
+                return_sum[label="return_sum"];
+        }
+
+        subgraph cluster_nr_context_switches{
+                label="unsigned long long nr_context_switches(void)";
+                for_each_cpu_i[label="for_each_cpu_i"];
+                sum_self_add_cpu_rq_i_nr_switches[label="sum_self_add_cpu_rq_i_nr_switches"];
+                return_sum[label="return_sum"];
+        }
+
+        subgraph cluster_nr_iowait{
+                label="unsigned long nr_iowait(void)";
+                for_each_cpu_i[label="for_each_cpu_i"];
+                sum_self_add_atomic_read_cpu_rq_i_nr_iowait[label="sum_self_add_atomic_read_cpu_rq_i_nr_iowait"];
+                return_sum[label="return_sum"];
+        }
+
+        subgraph cluster_double_rq_lock{
+                label="static void double_rq_lock(runqueue_t *rq1, runqueue_t *rq2)";
+                rq1_eq_rq2[label="rq1_eq_rq2"];
+                lock_rq1_lock[label="lock_rq1_lock"];
+                rq1_small_rq2[label="rq1_small_rq2"];
+                lock_rq1_lock[label="lock_rq1_lock"];
+                lock_rq2_lock[label="lock_rq2_lock"];
+                lock_rq2_lock[label="lock_rq2_lock"];
+                lock_rq1_lock[label="lock_rq1_lock"];
+        }
+
+        subgraph cluster_double_lock_balance{
+                label="static void double_lock_balance(runqueue_t *this_rq, runqueue_t *busiest)";
+                spin_trylock_busiest_lock[label="spin_trylock_busiest_lock"];
+                busiest_small_this_rq[label="busiest_small_this_rq"];
+                unlock_this_rq_lock[label="unlock_this_rq_lock"];
+                lock_busiest_lock[label="lock_busiest_lock"];
+                lock_this_rq_lock[label="lock_this_rq_lock"];
+                lock_busiest_lock[label="lock_busiest_lock"];
+        }
+
+        subgraph cluster_find_idlest_cpu{
+                label="static int find_idlest_cpu(struct task_struct *p, int this_cpu, struct sched_domain *sd)";
+                set_min_cpu_UINT_MAX[label="set_min_cpu_UINT_MAX"];
+                set_min_load_ULONG_MAX[label="set_min_load_ULONG_MAX"];
+                cpus_and_mask_sd_span_p_cpus_allowed[label="cpus_and_mask_sd_span_p_cpus_allowed"];
+                for_each_cpu_mask_i_mask[label="for_each_cpu_mask_i_mask"];
+                set_load_target_load_i[label="set_load_target_load_i"];
+                load_small_min_load[label="load_small_min_load"];
+                set_min_cpu_i[label="set_min_cpu_i"];
+                set_min_load_load[label="set_min_load_load"];
+                min_load_null[label="min_load_null"];
+                set_this_load_source_load_this_cpup_add_SCHED_LOAD_SCALE[label="set_this_load_source_load_this_cpup_add_SCHED_LOAD_SCALE"];
+                min_load_multi_100_add_sd_imbalance_pct_sub_100_div_2_small__this_load_multi_100[label="min_load_multi_100_add_sd_imbalance_pct_sub_100_div_2_small__this_load_multi_100"];
+                return_min_cpu[label="return_min_cpu"];
+                return_this_cpu[label="return_this_cpu"];
+        }
+
+        subgraph cluster_sched_migrate_task{
+                label="static void sched_migrate_task(task_t *p, int dest_cpu)";
+                set_rq_task_rq_lock_p[label="set_rq_task_rq_lock_p"];
+                cpu_isset_dest_cpu_p_cpus_allowed_null_or_cpu_is_offline_dest_cpu[label="cpu_isset_dest_cpu_p_cpus_allowed_null_or_cpu_is_offline_dest_cpu"];
+                goto_out[label="goto_out"];
+                migrate_task_p_dest_cpu_req_true[label="migrate_task_p_dest_cpu_req_true"];
+                set_mt_rq_migrateion_thread[label="set_mt_rq_migrateion_thread"];
+                get_task_struct_mt[label="get_task_struct_mt"];
+                task_rq_unlock_rq[label="task_rq_unlock_rq"];
+                wake_up_process_mt[label="wake_up_process_mt"];
+                put_task_struct_mt[label="put_task_struct_mt"];
+                wait_for_completion_req_done[label="wait_for_completion_req_done"];
+                return[label="return"];
+                task_rq_unlock_rq[label="task_rq_unlock_rq"];
+        }
+
+        subgraph cluster_sched_exec{
+                label="void sched_exec(void)";
+                this_cpu_get_cpu[label="this_cpu_get_cpu"];
+                this_rq_nr_running_not_great_1[label="this_rq_nr_running_not_great_1"];
+                goto_out[label="goto_out"];
+                for_each_domain_this_cpu_tmp[label="for_each_domain_this_cpu_tmp"];
+                tmp_flags_SD_BALANCE_EXEC_set[label="tmp_flags_SD_BALANCE_EXEC_set"];
+                set_sd_tmp[label="set_sd_tmp"];
+                sd_not_null[label="sd_not_null"];
+                schedstat_inc_sd_sbe_attempts[label="schedstat_inc_sd_sbe_attempts"];
+                set_new_cpu_find_idlest_cpu_current_this_cpu_sd[label="set_new_cpu_find_idlest_cpu_current_this_cpu_sd"];
+                new_cpu_not_eq_this_cpu[label="new_cpu_not_eq_this_cpu"];
+                schedstat_inc_sd_sbe_pushed[label="schedstat_inc_sd_sbe_pushed"];
+                put_cpu[label="put_cpu"];
+                sched_mingrate_task_current_new_cpu[label="sched_mingrate_task_current_new_cpu"];
+                return[label="return"];
+                put_cpu[label="put_cpu"];
+        }
+
+        subgraph cluster_pull_task{
+                label="static inline void pull_task(runqueue_t *src_rq, prio_array_t *src_array, task_t *p, runqueue_t *this_rq, prio_array_t *this_array, int this_cpu)";
+                dequeue_task_p_src_array[label="dequeue_task_p_src_array"];
+                dec_src_rq_nr_running[label="dec_src_rq_nr_running"];
+                set_task_cpu_p_this_cpu[label="set_task_cpu_p_this_cpu"];
+                inc_this_rq_nr_running[label="inc_this_rq_nr_running"];
+                enqueue_task_p_this_array[label="enqueue_task_p_this_array"];
+                set_p_timestamp_p_timestamp_sub_src_rq_timestamp_last_tick_add_this_rq_timestamp_last_tick[label="set_p_timestamp_p_timestamp_sub_src_rq_timestamp_last_tick_add_this_rq_timestamp_last_tick"];
+                TASK_PREEMPTS_CURR_p_this_rq[label="TASK_PREEMPTS_CURR_p_this_rq"];
+                resched_task_this_rq_curr[label="resched_task_this_rq_curr"];
+        }
+
+        subgraph cluster_can_migrate_task{
+                label="static inline int can_migrate_task(task_t *p, runqueue_t *rq, int this_cpu, struct sched_domain *sd, enum idle_type idle)";
+                task_running_rq_p[label="task_running_rq_p"];
+                return_0[label="return_0"];
+                cpu_isset_this_cpu_p_cpus_allowed_null[label="cpu_isset_this_cpu_p_cpus_allowed_null"];
+                return_0[label="return_0"];
+                cpu_and_siblings_are_idle_this_cpu_true_or_sd_nr_balance_failed_great_sd_cache_nice_tries[label="cpu_and_siblings_are_idle_this_cpu_true_or_sd_nr_balance_failed_great_sd_cache_nice_tries"];
+                return_1[label="return_1"];
+                task_hot_p_rq_timestamp_last_tick_sd[label="task_hot_p_rq_timestamp_last_tick_sd"];
+                return_0[label="return_0"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_move_tasks{
+                label="static int move_tasks(runqueue_t *this_rq, int this_cpu, runqueue_t *busiest, unsigned long max_nr_move, struct sched_domain *sd,enum idle_type idle)";
+                max_nr_move_not_great_0_or_busiest_nr_running_not_great_1[label="max_nr_move_not_great_0_or_busiest_nr_running_not_great_1"];
+                goto_out[label="goto_out"];
+                busiest_expired_nr_active[label="busiest_expired_nr_active"];
+                set_array_busiest_expired[label="set_array_busiest_expired"];
+                set_dst_array_this_rq_expired[label="set_dst_array_this_rq_expired"];
+                set_array_busiest_active[label="set_array_busiest_active"];
+                set_dstt_array_this_rq_active[label="set_dstt_array_this_rq_active"];
+                set_idx_0[label="set_idx_0"];
+                idx_null[label="idx_null"];
+                set_idx_sched_find_first_bit_array_bitmap[label="set_idx_sched_find_first_bit_array_bitmap"];
+                set_idx_find_next_bit_array_bitmap_MAX_PRIO_idx[label="set_idx_find_next_bit_array_bitmap_MAX_PRIO_idx"];
+                idx_not_small_MAX_PRIO[label="idx_not_small_MAX_PRIO"];
+                array_eq_busiest_expired_and_busiest_active_nr_active_not_null[label="array_eq_busiest_expired_and_busiest_active_nr_active_not_null"];
+                set_array_busiest_active[label="set_array_busiest_active"];
+                set_dst_array_this_rq_active[label="set_dst_array_this_rq_active"];
+                goto_new_array[label="goto_new_array"];
+                goto_out[label="goto_out"];
+                set_head_array_queue_idx[label="set_head_array_queue_idx"];
+                set_curr_head_prev[label="set_curr_head_prev"];
+                set_tmp_list_entry_curr_task_t_run_list[label="set_tmp_list_entry_curr_task_t_run_list"];
+                set_curr_curr_prev[label="set_curr_curr_prev"];
+                can_migrate_task_tmp_busiest_this_cpu_sd_idle_null[label="can_migrate_task_tmp_busiest_this_cpu_sd_idle_null"];
+                curr_not_eq_head[label="curr_not_eq_head"];
+                goto_skip_queue[label="goto_skip_queue"];
+                inc_idx[label="inc_idx"];
+                goto_skip_bitmap[label="goto_skip_bitmap"];
+                task_hot_tmp_busiest_timestamp_last_tick_sd_not_null[label="task_hot_tmp_busiest_timestamp_last_tick_sd_not_null"];
+                schedstat_inc_sd_lb_hot_gained_idle[label="schedstat_inc_sd_lb_hot_gained_idle"];
+                pull_task_busiest_array_tmp_this_rq_dst_array_this_cpu[label="pull_task_busiest_array_tmp_this_rq_dst_array_this_cpu"];
+                inc_pulled[label="inc_pulled"];
+                pulled_small_max_nr_move[label="pulled_small_max_nr_move"];
+                curr_not_eq_head[label="curr_not_eq_head"];
+                goto_skip_queue[label="goto_skip_queue"];
+                inc_idx[label="inc_idx"];
+                goto_skip_bitmap[label="goto_skip_bitmap"];
+                schedstat_add_sd_lb_gained_idle_pulled[label="schedstat_add_sd_lb_gained_idle_pulled"];
+                return_pulled[label="return_pulled"];
+        }
+
+        subgraph cluster_find_busiest_group{
+                label="static struct sched_group *find_busiest_group(struct sched_domain *sd, int this_cpu, unsigned long *imbalance, enum idle_type idle)";
+                set_group_sd_groups[label="set_group_sd_groups"];
+                set_max_load_this_load_tatal_load_tatal_pwr_0[label="set_max_load_this_load_tatal_load_tatal_pwr_0"];
+                set_local_group_cpu_isset_this_cpu_group_cpumask[label="set_local_group_cpu_isset_this_cpu_group_cpumask"];
+                set_avg_load_0[label="set_avg_load_0"];
+                for_each_cpu_mask_i_group_cpumask[label="for_each_cpu_mask_i_group_cpumask"];
+                local_group_not_null[label="local_group_not_null"];
+                set_load_target_load_i[label="set_load_target_load_i"];
+                set_load_source_load_i[label="set_load_source_load_i"];
+                set_avg_load_self_add_load[label="set_avg_load_self_add_load"];
+                set_total_self_add_avg_load[label="set_total_self_add_avg_load"];
+                total_pwr_self_add_group_cpu_power[label="total_pwr_self_add_group_cpu_power"];
+                set_avg_load_avg_load_multi_SCHED_LOAD_SCALE_div_group_cpu_power[label="set_avg_load_avg_load_multi_SCHED_LOAD_SCALE_div_group_cpu_power"];
+                local_group_not_null[label="local_group_not_null"];
+                set_this_load_avg_load[label="set_this_load_avg_load"];
+                set_this_group[label="set_this_group"];
+                goto_nextgroup[label="goto_nextgroup"];
+                avg_load_great_max_load[label="avg_load_great_max_load"];
+                set_max_load_avg_load[label="set_max_load_avg_load"];
+                set_busiest_group[label="set_busiest_group"];
+                set_group_group_next[label="set_group_group_next"];
+                group_not_eq_sd_groups[label="group_not_eq_sd_groups"];
+                busiest_null_or_this_load_not_small_max_load[label="busiest_null_or_this_load_not_small_max_load"];
+                goto_out_balanced[label="goto_out_balanced"];
+                set_avg_load_SCHED_LOAD_SCALE_multi_total_load_div_total_pwr[label="set_avg_load_SCHED_LOAD_SCALE_multi_total_load_div_total_pwr"];
+                this_load_not_small_avg_load_or_100_multi_max_load_not_great_sd_imbalance_pct_multi_this_load[label="this_load_not_small_avg_load_or_100_multi_max_load_not_great_sd_imbalance_pct_multi_this_load"];
+                goto_out_balanced[label="goto_out_balanced"];
+                set_imbalance_min_max_load_sub_avg_load_multi_busiest_cpu_power_avg_load_sub_this_load_multi_this_cpu_power_div_SCHED_LOAD_SCALE[label="set_imbalance_min_max_load_sub_avg_load_multi_busiest_cpu_power_avg_load_sub_this_load_multi_this_cpu_power_div_SCHED_LOAD_SCALE"];
+                imbalance_small_SCHED_LOAD_SCALE[label="imbalance_small_SCHED_LOAD_SCALE"];
+                max_load_sub_this_load_not_small_SCHED_LOAD_SCALE_multi_2[label="max_load_sub_this_load_not_small_SCHED_LOAD_SCALE_multi_2"];
+                set_imbalance_1[label="set_imbalance_1"];
+                return_busiest[label="return_busiest"];
+                pwr_now_self_add_busiest_cpu_power_multi_min_SCHED_LOAD_SCALE_max_load[label="pwr_now_self_add_busiest_cpu_power_multi_min_SCHED_LOAD_SCALE_max_load"];
+                pwr_now_self_add_this_cpu_power_multi_min_SCHED_LOAD_SCALE_this_load[label="pwr_now_self_add_this_cpu_power_multi_min_SCHED_LOAD_SCALE_this_load"];
+                pwr_now_self_div_SCHED_LOAD_SCALE[label="pwr_now_self_div_SCHED_LOAD_SCALE"];
+                set_tmp_SCHED_LOAD_SCALE_multi_SCHED_LOAD_SCALE_div_busiest_cpu_power[label="set_tmp_SCHED_LOAD_SCALE_multi_SCHED_LOAD_SCALE_div_busiest_cpu_power"];
+                max_load_great_tmp[label="max_load_great_tmp"];
+                pwr_move_self_add_busiest_cpu_power_min_SCHED_LOAD_SCALE_max_load_sub_tmp[label="pwr_move_self_add_busiest_cpu_power_min_SCHED_LOAD_SCALE_max_load_sub_tmp"];
+                max_load_multi_busiest_cu_power_small_SCHED_LOAD_SCALE_multi_SCHED_LOAD_SCALE[label="max_load_multi_busiest_cu_power_small_SCHED_LOAD_SCALE_multi_SCHED_LOAD_SCALE"];
+                set_tmp_max_load_multi_busiest_cpu_power_div_this_cpu_power[label="set_tmp_max_load_multi_busiest_cpu_power_div_this_cpu_power"];
+                set_tmp_SCHED_LOAD_SCALE_multi_SCHED_LOAD_SCALE_div_this_cpu_power[label="set_tmp_SCHED_LOAD_SCALE_multi_SCHED_LOAD_SCALE_div_this_cpu_power"];
+                pwr_move_self_add_this_cpu_power_min_SCHED_LOAD_SCALE_this_load_add_tmp[label="pwr_move_self_add_this_cpu_power_min_SCHED_LOAD_SCALE_this_load_add_tmp"];
+                pwr_move_self_div_SCHED_LOAD_SCALE[label="pwr_move_self_div_SCHED_LOAD_SCALE"];
+                pwr_move_not_great_pwr_now[label="pwr_move_not_great_pwr_now"];
+                goto_out_balanced[label="goto_out_balanced"];
+                set_imbalance_1[label="set_imbalance_1"];
+                return_busiest[label="return_busiest"];
+                set_imbalance_imbalance_div_SCHED_LOAD_SCALE[label="set_imbalance_imbalance_div_SCHED_LOAD_SCALE"];
+                return_busiest[label="return_busiest"];
+                busiest_not_null_and_idle_eq_NEWLY_IDLE_oridle_eq_SCHED_IDLE_nad_max_load_great_SCHED_LOAD_SCALE[label="busiest_not_null_and_idle_eq_NEWLY_IDLE_oridle_eq_SCHED_IDLE_nad_max_load_great_SCHED_LOAD_SCALE"];
+                set_imbalance_1[label="set_imbalance_1"];
+                return_busiest[label="return_busiest"];
+                set_imbalance_0[label="set_imbalance_0"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_find_busiest_queue{
+                label="static runqueue_t *find_busiest_queue(struct sched_group *group)";
+                for_each_cpu_mask_i_group_cpumask[label="for_each_cpu_mask_i_group_cpumask"];
+                set_load_source_load_i[label="set_load_source_load_i"];
+                load_great_max_load[label="load_great_max_load"];
+                set_max_load_load[label="set_max_load_load"];
+                set_busiest_cpu_rq_i[label="set_busiest_cpu_rq_i"];
+                return_busiest[label="return_busiest"];
+        }
+
+        subgraph cluster_load_balance{
+                label="static int load_balance(int this_cpu, runqueue_t *this_rq,struct sched_domain *sd, enum idle_type idle)";
+                lock_this_rq_lock[label="lock_this_rq_lock"];
+                schedstat_inc_sd_lb_cnt_idle[label="schedstat_inc_sd_lb_cnt_idle"];
+                set_group_find_busiest_group_sd_this_cpu_imbalance_idle[label="set_group_find_busiest_group_sd_this_cpu_imbalance_idle"];
+                group_null[label="group_null"];
+                schedstat_inc_sd_lb_nobusyg_idle[label="schedstat_inc_sd_lb_nobusyg_idle"];
+                goto_out_balanced[label="goto_out_balanced"];
+                set_busiest_find_busiest_queue_group[label="set_busiest_find_busiest_queue_group"];
+                busiest_null[label="busiest_null"];
+                schedstat_inc_sd_lb_nobusyq_idle[label="schedstat_inc_sd_lb_nobusyq_idle"];
+                goto_out_balanced[label="goto_out_balanced"];
+                busiest_eq_this_rq[label="busiest_eq_this_rq"];
+                goto_out_balanced[label="goto_out_balanced"];
+                schedstat_add_sd_lb_imbalance_idle_imbalance[label="schedstat_add_sd_lb_imbalance_idle_imbalance"];
+                set_nr_moved_0[label="set_nr_moved_0"];
+                busiest_nr_running_great_1[label="busiest_nr_running_great_1"];
+                double_lock_balance_this_rq_busiest[label="double_lock_balance_this_rq_busiest"];
+                set_nr_moved_move_tasks_this_rq_this_cpu_busiest_imbalance_sd_idle[label="set_nr_moved_move_tasks_this_rq_this_cpu_busiest_imbalance_sd_idle"];
+                unlock_this_rq_lock[label="unlock_this_rq_lock"];
+                nr_moved_null[label="nr_moved_null"];
+                schedstat_inc_sd_lb_failed_idle[label="schedstat_inc_sd_lb_failed_idle"];
+                inc_sd_nr_balance_failed[label="inc_sd_nr_balance_failed"];
+                sd_nr_balance_failed_great_sd_cache_nice_tries_add_2[label="sd_nr_balance_failed_great_sd_cache_nice_tries_add_2"];
+                set_wake_0[label="set_wake_0"];
+                lock_busiest_lock[label="lock_busiest_lock"];
+                busiest_active_balance_null[label="busiest_active_balance_null"];
+                set_busiest_active_balance_1[label="set_busiest_active_balance_1"];
+                set_busiest_push_cpu_this_cpu[label="set_busiest_push_cpu_this_cpu"];
+                set_wake_1[label="set_wake_1"];
+                unlock_busiest_lock[label="unlock_busiest_lock"];
+                wake_not_null[label="wake_not_null"];
+                wake_up_process_busiest_migration_thread[label="wake_up_process_busiest_migration_thread"];
+                set_sd_nr_balance_failed_sd_cache_nice_tries[label="set_sd_nr_balance_failed_sd_cache_nice_tries"];
+                sd_balance_interval_small_sd_max_interval[label="sd_balance_interval_small_sd_max_interval"];
+                inc_sd_balance_interval[label="inc_sd_balance_interval"];
+                set_sd_nr_balance_failed_0[label="set_sd_nr_balance_failed_0"];
+                set_sd_balance_interval_sd_min_intervla[label="set_sd_balance_interval_sd_min_intervla"];
+                return_nr_moved[label="return_nr_moved"];
+                unlock_this_rq_lock[label="unlock_this_rq_lock"];
+                schedstat_inc_sd_lb_balanced_idle[label="schedstat_inc_sd_lb_balanced_idle"];
+                sd_balance_interval_small_sd_max_interval[label="sd_balance_interval_small_sd_max_interval"];
+                sd_balance_interval_self_multi_2[label="sd_balance_interval_self_multi_2"];
+                return_0[label="return_0"];
+        }
 }
