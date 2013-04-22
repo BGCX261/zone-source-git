@@ -6267,3 +6267,14 @@ printf("str:h = 0x%lx\n", strtol(str, NULL, 16));
 Ctrl+S will freeze the tty
 To unfreeze the tty, you need to hit Ctrl+Q.
 
+==============================[2013-04-22 一]==============================
+
+getc之类的返回值要赋给int的不要赋给char类型，因为EOF是-1
+
+COMMON_CONFIG(fd, ./conf_ao_gain_a_test.txt,
+FPGA_IOCTL_CONF_AO_GAIN_A, ao_gain_a_dat);
+
+printf("Error open "#path" fail!\n");
+因为要这样用，所以./conf_ao_gain_a_test.txt,不能用双引号引起来。
+
+

@@ -1068,4 +1068,821 @@ digraph sched_c{
                 sd_balance_interval_self_multi_2[label="sd_balance_interval_self_multi_2"];
                 return_0[label="return_0"];
         }
+
+		subgraph cluster_load_balance_newidle{
+			label="static int load_balance_newidle(int this_cpu, runqueue_t *this_rq, struct sched_domain *sd)";
+			schedstat_inc_sd_lb_cnt_NEWLY_IDLE[label="schedstat_inc_sd_lb_cnt_NEWLY_IDLE"];
+			set_group_find_busiest_group_sd_this_cpu_imbalance_NEWLY_IDLE[label="set_group_find_busiest_group_sd_this_cpu_imbalance_NEWLY_IDLE"];
+			group_null[label="group_null"];
+			schedstat_inc_sd_lb_balanced_NEWLY_IDLE[label="schedstat_inc_sd_lb_balanced_NEWLY_IDLE"];
+			schedstat_inc_sd_lb_nobusyg_NEWLY_IDLE[label="schedstat_inc_sd_lb_nobusyg_NEWLY_IDLE"];
+			goto_out[label="goto_out"];
+			set_busiest_find_busiest_queue_group[label="set_busiest_find_busiest_queue_group"];
+			busiest_null_or_busiest_not_eq_this_rq[label="busiest_null_or_busiest_not_eq_this_rq"];
+			schedstat_inc_sd_lb_balanced_nEWLY_IDLE[label="schedstat_inc_sd_lb_balanced_nEWLY_IDLE"];
+			schedstat_inc_sd_lb_nobusyq_NEWLY_IDLE[label="schedstat_inc_sd_lb_nobusyq_NEWLY_IDLE"];
+			goto_out[label="goto_out"];
+			double_lock_balance_this_rq_busiest[label="double_lock_balance_this_rq_busiest"];
+			scheddstat_add_sd_lb_imbalance_NEWLY_IDLE_imbalance[label="scheddstat_add_sd_lb_imbalance_NEWLY_IDLE_imbalance"];
+			set_nr_moved_move_tasks_this_rq_this_cpu_busiest_imbalance_sd_NEWLY_IDLE[label="set_nr_moved_move_tasks_this_rq_this_cpu_busiest_imbalance_sd_NEWLY_IDLE"];
+			nr_moved_null[label="nr_moved_null"];
+			schedstat_inc_sd_lb_failed_NEWLY_IDLE[label="schedstat_inc_sd_lb_failed_NEWLY_IDLE"];
+			unlock_busiest_lock[label="unlock_busiest_lock"];
+			return_nr_moved[label="return_nr_moved"];
+		}
+
+		subgraph cluster_idle_balance{
+			label="static inline void idle_balance(int this_cpu, runqueue_t *this_rq)";
+			for_each_domain_this_cpu_sd[label="for_each_domain_this_cpu_sd"];
+			sd_flags_SD_BALANCE_NEWIDLE_set[label="sd_flags_SD_BALANCE_NEWIDLE_set"];
+			load_balance_newidle_this_cpu_this_rq_sd[label="load_balance_newidle_this_cpu_this_rq_sd"];
+		}
+
+		subgraph cluster_active_load_balance{
+			label="static void active_load_balance(runqueue_t *busiest_rq, int busiest_cpu)";
+			set_visited_cpus_CPU_MASK_NONE[label="set_visited_cpus_CPU_MASK_NONE"];
+			for_each_domain_busiest_cpu_sd[label="for_each_domain_busiest_cpu_sd"];
+			sd_flags_SD_LOAD_BALANCE_clear[label="sd_flags_SD_LOAD_BALANCE_clear"];
+			schedstat_inc_sd_alb_cnt[label="schedstat_inc_sd_alb_cnt"];
+			set_cpu_group_sd_groups[label="set_cpu_group_sd_groups"];
+			for_each_cpu_mask_cpu_cpu_group_cpumask[label="for_each_cpu_mask_cpu_cpu_group_cpumask"];
+			busiest_rq_nr_running_not_great_1[label="busiest_rq_nr_running_not_great_1"];
+			return[label="return"];
+			cpu_isset_cpu_visited_cpus[label="cpu_isset_cpu_visited_cpus"];
+			cpu_set_cpu_visited_cpus[label="cpu_set_cpu_visited_cpus"];
+			cpu_and_siblings_are_idle_cpu_or_cpu_eq_busiest_cpu[label="cpu_and_siblings_are_idle_cpu_or_cpu_eq_busiest_cpu"];
+			set_target_rq_cpu_rq_cpu[label="set_target_rq_cpu_rq_cpu"];
+			double_lock_balance_busiest_rq_target_rq[label="double_lock_balance_busiest_rq_target_rq"];
+			move_tasks_target_rq_cpu_busiest_rq_1_sd_SCHED_IDLE_not_null[label="move_tasks_target_rq_cpu_busiest_rq_1_sd_SCHED_IDLE_not_null"];
+			schedstat_inc_sd_alb_pushed[label="schedstat_inc_sd_alb_pushed"];
+			schedstat_inc_sd_alb_failed[label="schedstat_inc_sd_alb_failed"];
+			unlock_target_rq_lock[label="unlock_target_rq_lock"];
+			set_cpu_group_cpu_group_next[label="set_cpu_group_cpu_group_next"];
+			cpu_group_not_eq_sd_groups[label="cpu_group_not_eq_sd_groups"];
+		}
+
+		subgraph cluster_rebalance_tick{
+			label="static void rebalance_tick(int this_cpu, runqueue_t *this_rq, enum idle_type idle)";
+			set_j_jiffies_add_CPU_OFFSET_this_cpu[label="set_j_jiffies_add_CPU_OFFSET_this_cpu"];
+			set_old_load_this_rq_cpu_load[label="set_old_load_this_rq_cpu_load"];
+			set_this_load_this_rq_nr_running_multi_SCHED_LOAD_SCALE[label="set_this_load_this_rq_nr_running_multi_SCHED_LOAD_SCALE"];
+			this_load_great_old_load[label="this_load_great_old_load"];
+			inc_old_load[label="inc_old_load"];
+			set_this_rq_cpu_load_old_load_add_this_load_div_2[label="set_this_rq_cpu_load_old_load_add_this_load_div_2"];
+			for_each_domain_this_cpu_sd[label="for_each_domain_this_cpu_sd"];
+			sd_flags_SD_LOAD_BALANCE_clear[label="sd_flags_SD_LOAD_BALANCE_clear"];
+			set_interval_sd_balance_interval[label="set_interval_sd_balance_interval"];
+			idle_not_eq_SCHED_IDLE[label="idle_not_eq_SCHED_IDLE"];
+			interval_self_multi_sd_busy_factor[label="interval_self_multi_sd_busy_factor"];
+			set_interval_msecs_to_jiffies_interval[label="set_interval_msecs_to_jiffies_interval"];
+			interval_null[label="interval_null"];
+			set_interval_1[label="set_interval_1"];
+			j_sub_sd_last_balance_not_small_interval[label="j_sub_sd_last_balance_not_small_interval"];
+			load_balance_this_cpu_this_rq_sd_idle_not_null[label="load_balance_this_cpu_this_rq_sd_idle_not_null"];
+			set_idle_NOT_IDLE[label="set_idle_NOT_IDLE"];
+			set_sd_last_balance_self_interval[label="set_sd_last_balance_self_interval"];
+		}
+
+		subgraph cluster_wake_priority_sleeper{
+			label="static inline int wake_priority_sleeper(runqueue_t *rq)";
+			CONFIG_SCHED_SMT[label="CONFIG_SCHED_SMT"];
+			lock_rq_lock[label="lock_rq_lock"];
+			rq_nr_running_not_null[label="rq_nr_running_not_null"];
+			resched_task_rq_idle[label="resched_task_rq_idle"];
+			set_ret_1[label="set_ret_1"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+		}
+
+		subgraph cluster_update_cpu_clock{
+			label="static inline void update_cpu_clock(task_t *p, runqueue_t *rq, unsigned long long now)";
+			set_last_max_p_timestamp_rq_timestamp_last_tick[label="set_last_max_p_timestamp_rq_timestamp_last_tick"];
+			p_sched_time_self_add_now_sub_last[label="p_sched_time_self_add_now_sub_last"];
+		}
+
+		subgraph cluster_current_sched_time{
+			label="unsigned long long current_sched_time(const task_t *tsk)";
+			local_irq_save[label="local_irq_save"];
+			set_ns_max_tsk_timestamp_task_rq_tsk_timestamp_last_tick[label="set_ns_max_tsk_timestamp_task_rq_tsk_timestamp_last_tick"];
+			set_ns_tsk_sched_time_add_sched_clock_sub_ns[label="set_ns_tsk_sched_time_add_sched_clock_sub_ns"];
+			local_irq_restore[label="local_irq_restore"];
+			return_ns[label="return_ns"];
+		}
+
+		subgraph cluster_account_steal_time{
+			label="void account_steal_time(struct task_struct *p, cputime_t steal)";
+			set_cpustat_kstat_this_cpu_cpustat[label="set_cpustat_kstat_this_cpu_cpustat"];
+			set_tmp_cputime_to_cputime64_steal[label="set_tmp_cputime_to_cputime64_steal"];
+			set_rq_this_rq[label="set_rq_this_rq"];
+			p_eq_rq_idle[label="p_eq_rq_idle"];
+			set_p_stime_cputime_add_p_stime_steal[label="set_p_stime_cputime_add_p_stime_steal"];
+			atomic_read_rq_nr_iowait_great_0[label="atomic_read_rq_nr_iowait_great_0"];
+			set_cpustat_iowait_cputime64_add_cpustat_iowait_tmp[label="set_cpustat_iowait_cputime64_add_cpustat_iowait_tmp"];
+			cpustat_idle_cputime64_add_cpustat_idle_tmp[label="cpustat_idle_cputime64_add_cpustat_idle_tmp"];
+			cpustat_steal_cputime64_add_cpustat_steal_tmp[label="cpustat_steal_cputime64_add_cpustat_steal_tmp"];
+		}
+
+		subgraph cluster_wake_sleeping_dependent{
+			label="static inline void wake_sleeping_dependent(int this_cpu, runqueue_t *this_rq)";
+			set_sd_this_rq_sd[label="set_sd_this_rq_sd"];
+			sd_flags_SD_SHARE_CPUPOWER_clear[label="sd_flags_SD_SHARE_CPUPOWER_clear"];
+			return[label="return"];
+			unlock_this_rq_lock[label="unlock_this_rq_lock"];
+			set_sibling_map_sd_span[label="set_sibling_map_sd_span"];
+			for_each_cpu_mask_i_sibing_map[label="for_each_cpu_mask_i_sibing_map"];
+			lock_cpu_rq_i_lock[label="lock_cpu_rq_i_lock"];
+			cpu_clear_this_cpu_sibling_map[label="cpu_clear_this_cpu_sibling_map"];
+			for_each_cpu_mask_i_sibling_map[label="for_each_cpu_mask_i_sibling_map"];
+			set_smt_rq_cpu_rq_i[label="set_smt_rq_cpu_rq_i"];
+			smt_rq_curr_eq_smt_rq_idle_and_smt_rq_nr_running_true[label="smt_rq_curr_eq_smt_rq_idle_and_smt_rq_nr_running_true"];
+			resched_task_smt_rq_idle[label="resched_task_smt_rq_idle"];
+			for_each_cpu_mask_i_sibling_map[label="for_each_cpu_mask_i_sibling_map"];
+			unlock_cpu_rq_i_lock[label="unlock_cpu_rq_i_lock"];
+		}
+
+		subgraph cluster_dependent_sleeper{
+			label="static inline int dependent_sleeper(int this_cpu, runqueue_t *this_rq)";
+			set_sd_this_rq_sd[label="set_sd_this_rq_sd"];
+			sd_flags_SD_SHARE_CPUPOWER_null[label="sd_flags_SD_SHARE_CPUPOWER_null"];
+			return_0[label="return_0"];
+			unlock_this_rq_lock[label="unlock_this_rq_lock"];
+			sibling_map_sd_span[label="sibling_map_sd_span"];
+			for_each_cpu_mask_i_sibling_map[label="for_each_cpu_mask_i_sibling_map"];
+			lock_cpu_rq_i_lock[label="lock_cpu_rq_i_lock"];
+			cpu_clear_this_cpu_sibling_map[label="cpu_clear_this_cpu_sibling_map"];
+			this_rq_nr_running_null[label="this_rq_nr_running_null"];
+			goto_out_unlock[label="goto_out_unlock"];
+			set_array_this_rq_active[label="set_array_this_rq_active"];
+			array_nr_active_null[label="array_nr_active_null"];
+			set_array_this_rq_expired[label="set_array_this_rq_expired"];
+			set_p_list_entry_array_queue_sched_find_first_bit_array_bitmap_next_task_t_run_list[label="set_p_list_entry_array_queue_sched_find_first_bit_array_bitmap_next_task_t_run_list"];
+			for_each_cpu_mask_i_sibling_map[label="for_each_cpu_mask_i_sibling_map"];
+			set_smt_rq_cpu_rq_i[label="set_smt_rq_cpu_rq_i"];
+			set_smt_curr_smt_rq_curr[label="set_smt_curr_smt_rq_curr"];
+			smt_curr_time_slice_multi_100_sub_sd_per_cpu_gain_div_100_great_task_timeslice_smt_curr_not_null_or_rt_task_p_not_null_nad_smt_curr_mm_not_null_and_p_mm_not_null_and_rt_task_smt_curr_null_or_smt_curr_eq_smt_rq_idle_and_smt_rq_nr_running[label="smt_curr_time_slice_multi_100_sub_sd_per_cpu_gain_div_100_great_task_timeslice_smt_curr_not_null_or_rt_task_p_not_null_nad_smt_curr_mm_not_null_and_p_mm_not_null_and_rt_task_smt_curr_null_or_smt_curr_eq_smt_rq_idle_and_smt_rq_nr_running"];
+			resched_task_smt_curr[label="resched_task_smt_curr"];
+			for_each_cpu_mask_i_sibling_map[label="for_each_cpu_mask_i_sibling_map"];
+			unlock_cpu_rq_i_lock[label="unlock_cpu_rq_i_lock"];
+		}
+
+		subgraph cluster_add_preempt_count{
+			label="void fastcall add_preempt_count(int val)";
+			preempt_count_self_add_val[label="preempt_count_self_add_val"];
+		}
+
+		subgraph cluster_sub_preempt_count{
+			label="void fastcall sub_preempt_count(int val)";
+			preempt_count_self_sub_val[label="preempt_count_self_sub_val"];
+		}
+
+		subgraph cluster___wake_up{
+			label="void fastcall __wake_up(wait_queue_head_t *q, unsigned int mode, int nr_exclusive, void *key)";
+			lock_q_lock[label="lock_q_lock"];
+			__wake_up_common_q_mode_nr_exclusive_0_key[label="__wake_up_common_q_mode_nr_exclusive_0_key"];
+			unlock_irqrestore_q_lock_flags[label="unlock_irqrestore_q_lock_flags"];
+		}
+
+		subgraph cluster_set_user_nice{
+			label="void set_user_nice(task_t *p, long nice)";
+			TASK_NICE_p_eq_nice_or_nice_small_neg_20_or_nice_great_19[label="TASK_NICE_p_eq_nice_or_nice_small_neg_20_or_nice_great_19"];
+			set_rq_task_rq_lock_p[label="set_rq_task_rq_lock_p"];
+			rt_task_p[label="rt_task_p"];
+			set_p_static_prio_NICE_TO_PRIO_nice[label="set_p_static_prio_NICE_TO_PRIO_nice"];
+			goto_out_unlock[label="goto_out_unlock"];
+			set_array_p_array[label="set_array_p_array"];
+			array_not_null[label="array_not_null"];
+			dequeue_task_p_array[label="dequeue_task_p_array"];
+			set_old_prio_p_prio[label="set_old_prio_p_prio"];
+			set_new_prio_NICE_TO_PRIO_nice[label="set_new_prio_NICE_TO_PRIO_nice"];
+			set_delta_new_prio_sub_old_prio[label="set_delta_new_prio_sub_old_prio"];
+			set_p_static_prio_NICE_TO_PRIO_nice[label="set_p_static_prio_NICE_TO_PRIO_nice"];
+			p_prio_self_add_delta[label="p_prio_self_add_delta"];
+			array_not_null[label="array_not_null"];
+			enqueue_task_p_array[label="enqueue_task_p_array"];
+			delta_small_0_or_delta_great_0_and_task_running_rq_p[label="delta_small_0_or_delta_great_0_and_task_running_rq_p"];
+			resched_task_rq_curr[label="resched_task_rq_curr"];
+			task_rq_unlock_rq[label="task_rq_unlock_rq"];
+		}
+
+		subgraph cluster_can_nice{
+			label="int can_nice(const task_t *p, const int nice)";
+			set_nice_19_sub_nice[label="set_nice_19_sub_nice"];
+			return_nice_rlim_not_great_p_signal_rlim_RLIMIT_NICE_rlim_cur_or_capable_CAP_SYS_NICE[label="return_nice_rlim_not_great_p_signal_rlim_RLIMIT_NICE_rlim_cur_or_capable_CAP_SYS_NICE"];
+		}
+
+		subgraph cluster_sys_nice{
+			label="asmlinkage long sys_nice(int increment)";
+			increment_small_neg40[label="increment_small_neg40"];
+			set_increment_neg40[label="set_increment_neg40"];
+			increment_great_40[label="increment_great_40"];
+			set_increment_40[label="set_increment_40"];
+			set_nice_PRIO_TO_NICE_current_static_prio_add_increment[label="set_nice_PRIO_TO_NICE_current_static_prio_add_increment"];
+			nice_small_neg20[label="nice_small_neg20"];
+			set_nice_neg20[label="set_nice_neg20"];
+			nice_great_19[label="nice_great_19"];
+			set_nice_19[label="set_nice_19"];
+			increment_small_0_and_can_nice_current_nice_false[label="increment_small_0_and_can_nice_current_nice_false"];
+			return_EPERM[label="return_EPERM"];
+			set_retval_security_task_setnice_current_nice[label="set_retval_security_task_setnice_current_nice"];
+			retval_not_null[label="retval_not_null"];
+			return_retval[label="return_retval"];
+			set_user_nice_current_nice[label="set_user_nice_current_nice"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_task_prio{
+			label="int task_prio(const task_t *p)";
+			return_p_prio_sub_MAX_RT_PRIO[label="return_p_prio_sub_MAX_RT_PRIO"];
+		}
+
+		subgraph cluster_task_nice{
+			label="int task_nice(const task_t *p)";
+			return_TASK_NICE_p[label="return_TASK_NICE_p"];
+		}
+
+		subgraph cluster_idle_cpu{
+			label="int idle_cpu(int cpu)";
+			return_cpu_curr_cpu_eq_cpu_rq_cpu_idle[label="return_cpu_curr_cpu_eq_cpu_rq_cpu_idle"];
+		}
+
+		subgraph cluster_idle_task{
+			label="task_t *idle_task(int cpu)";
+			return_cpu_rq_cpu_idle[label="return_cpu_rq_cpu_idle"];
+		}
+
+		subgraph cluster_find_process_by_pid{
+			label="static inline task_t *find_process_by_pid(pid_t pid)";
+			return_find_task_by_pid_pid_or_current_pid[label="return_find_task_by_pid_pid_or_current_pid"];
+		}
+
+		subgraph cluster___setscheduler{
+			label="static void __setscheduler(struct task_struct *p, int policy, int prio)";
+			set_p_policy_policy[label="set_p_policy_policy"];
+			set_p_rt_priority_prio[label="set_p_rt_priority_prio"];
+			policy_not_eq_SCHED_NORMAL[label="policy_not_eq_SCHED_NORMAL"];
+			set_p_prio_MAX_USER_RT_PRIO_sub_1_sub_p_rt_priority[label="set_p_prio_MAX_USER_RT_PRIO_sub_1_sub_p_rt_priority"];
+			set_p_prio_p_static_prio[label="set_p_prio_p_static_prio"];
+		}
+
+		subgraph cluster_sched_setscheduler{
+			label="int sched_setscheduler(struct task_struct *p, int policy, struct sched_param *param)";
+			policy_small_0[label="policy_small_0"];
+			set_policy_oldpolicy_p_policy[label="set_policy_oldpolicy_p_policy"];
+			policy_not_eq_SCHED_FIFO_and_policy_not_eq_SCHED_RR_and_policy_not_eq_SCHED_NORMAL[label="policy_not_eq_SCHED_FIFO_and_policy_not_eq_SCHED_RR_and_policy_not_eq_SCHED_NORMAL"];
+			return_EINVAL[label="return_EINVAL"];
+			param_sched_priority_small_0_or_param_sched_priority_great_MAX_USER_RT_PRIO_sub_1[label="param_sched_priority_small_0_or_param_sched_priority_great_MAX_USER_RT_PRIO_sub_1"];
+			return_EINVAL[label="return_EINVAL"];
+			policy_eq_SCHED_NORMAL_not_eq_param_sched_priority_eq_0[label="policy_eq_SCHED_NORMAL_not_eq_param_sched_priority_eq_0"];
+			return_EINVAL[label="return_EINVAL"];
+			policy_eq_SCHED_FIFO_or_policy_eq_SCHED_RR_and_param_sched_priority_great_p_signal_rlim_RLIMIT_RTPRIO_rlim_cur_and_capable_CAP_SYS_NICE_null[label="policy_eq_SCHED_FIFO_or_policy_eq_SCHED_RR_and_param_sched_priority_great_p_signal_rlim_RLIMIT_RTPRIO_rlim_cur_and_capable_CAP_SYS_NICE_null"];
+			return_EPERM[label="return_EPERM"];
+			current_euid_not_eq_p_euid_and_current_euid_not_eq_p_uid_and_capable_CAP_SYS_NICE_null[label="current_euid_not_eq_p_euid_and_current_euid_not_eq_p_uid_and_capable_CAP_SYS_NICE_null"];
+			return_EPERM[label="return_EPERM"];
+			set_retval_security_task_setscheduler_p_policy_param[label="set_retval_security_task_setscheduler_p_policy_param"];
+			retval_not_null[label="retval_not_null"];
+			return_retval[label="return_retval"];
+			set_rq_task_rq_lock_p[label="set_rq_task_rq_lock_p"];
+			oldpolicy_not_eq_neg1_and_oldpolicy_not_eq_p_policy[label="oldpolicy_not_eq_neg1_and_oldpolicy_not_eq_p_policy"];
+			set_policy_oldpolicy_neg1[label="set_policy_oldpolicy_neg1"];
+			task_rq_unlock_rq[label="task_rq_unlock_rq"];
+			goto_recheck[label="goto_recheck"];
+			set_array_p_array[label="set_array_p_array"];
+			array_not_null[label="array_not_null"];
+			deactivate_task_p_rq[label="deactivate_task_p_rq"];
+			set_old_prio_p_prio[label="set_old_prio_p_prio"];
+			__setscheduler_p_pokicy_param_sched_priority[label="__setscheduler_p_pokicy_param_sched_priority"];
+			array_not_null[label="array_not_null"];
+			__activate_task_p_rq[label="__activate_task_p_rq"];
+			task_running_rq_p[label="task_running_rq_p"];
+			p_prio_great_oldprio[label="p_prio_great_oldprio"];
+			resched_task_rq_curr[label="resched_task_rq_curr"];
+			TASK_PREEMPTS_CURR_p_rq[label="TASK_PREEMPTS_CURR_p_rq"];
+			resched_task_rq_curr[label="resched_task_rq_curr"];
+			task_rq_unlock_rq[label="task_rq_unlock_rq"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_do_sched_setscheduler{
+			label="static int do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)";
+			param_null_or_pid_small_0[label="param_null_or_pid_small_0"];
+			return_EINVAL[label="return_EINVAL"];
+			copy_from_user_lparam_param[label="copy_from_user_lparam_param"];
+			return_EFAULT[label="return_EFAULT"];
+			lock_tasklist_lock[label="lock_tasklist_lock"];
+			set_p_find_process_by_pid_pid[label="set_p_find_process_by_pid_pid"];
+			p_null[label="p_null"];
+			unlock_tasklist_lock[label="unlock_tasklist_lock"];
+			return_ESRCH[label="return_ESRCH"];
+			set_retval_sched_setscheduler_p_policy_lparam[label="set_retval_sched_setscheduler_p_policy_lparam"];
+			unlock_tasklist_lock[label="unlock_tasklist_lock"];
+			return_retval[label="return_retval"];
+		}
+
+		subgraph cluster_sys_sched_setscheduler{
+			label="asmlinkage long sys_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)";
+			return_do_sched_setscheduler_pid_policy_param[label="return_do_sched_setscheduler_pid_policy_param"];
+		}
+
+		subgraph cluster_sys_sched_setparam{
+			label="asmlinkage long sys_sched_setparam(pid_t pid, struct sched_param __user *param)";
+			return_do_sched_setscheduler_pid_neg1_param[label="return_do_sched_setscheduler_pid_neg1_param"];
+		}
+
+		subgraph cluster_sys_sched_getscheduler{
+			label="asmlinkage long sys_sched_getscheduler(pid_t pid)";
+			pid_small_0[label="pid_small_0"];
+			goto_out_nounlock[label="goto_out_nounlock"];
+			set_retval_ESRCH[label="set_retval_ESRCH"];
+			lock_tasklist_lock[label="lock_tasklist_lock"];
+			set_p_find_process_by_pid_pid[label="set_p_find_process_by_pid_pid"];
+			p_not_null[label="p_not_null"];
+			set_retval_security_task_getscheduler_p[label="set_retval_security_task_getscheduler_p"];
+			retval_null[label="retval_null"];
+			set_retval_p_policy[label="set_retval_p_policy"];
+			unlock_tasklist_lock[label="unlock_tasklist_lock"];
+			return_retval[label="return_retval"];
+		}
+
+		subgraph cluster_sys_sched_getparam{
+			label="asmlinkage long sys_sched_getparam(pid_t pid, struct sched_param __user *param)";
+			param_null_or_pid_small_0[label="param_null_or_pid_small_0"];
+			goto_nounlock[label="goto_nounlock"];
+			lock_tasklist_lock[label="lock_tasklist_lock"];
+			set_p_find_process_by_pid_pid[label="set_p_find_process_by_pid_pid"];
+			set_retval_ESRCH[label="set_retval_ESRCH"];
+			p_null[label="p_null"];
+			goto_out_unlock[label="goto_out_unlock"];
+			set_retval_security_task_getscheduler_p[label="set_retval_security_task_getscheduler_p"];
+			retval_not_null[label="retval_not_null"];
+			goto_out_unlock[label="goto_out_unlock"];
+			set_lp_sched_priority_p_rt_priotiry[label="set_lp_sched_priority_p_rt_priotiry"];
+			unlock_tasklist_lock[label="unlock_tasklist_lock"];
+			set_retval_EFAULT_0_decided_copy_to_user_param_lp_param[label="set_retval_EFAULT_0_decided_copy_to_user_param_lp_param"];
+			return_retval[label="return_retval"];
+			unlock_tasklist_lock[label="unlock_tasklist_lock"];
+			return_retval[label="return_retval"];
+		}
+
+		subgraph cluster_sched_setaffinity{
+			label="long sched_setaffinity(pid_t pid, cpumask_t new_mask)";
+			lock_cpu_hotplug[label="lock_cpu_hotplug"];
+			lock_tasklist_lock[label="lock_tasklist_lock"];
+			set_p_find_process_by_pid_pid[label="set_p_find_process_by_pid_pid"];
+			p_null[label="p_null"];
+			unlock_tasklist_lock[label="unlock_tasklist_lock"];
+			unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+			return_ESRCH[label="return_ESRCH"];
+			get_task_struct_p[label="get_task_struct_p"];
+			unlock_tasklist_lock[label="unlock_tasklist_lock"];
+			set_retval_EPERM[label="set_retval_EPERM"];
+			current_euid_not_eq_p_euid_and_current_euid_not_eq_p_uid_and_capable_CAP_SYS_NICE_null[label="current_euid_not_eq_p_euid_and_current_euid_not_eq_p_uid_and_capable_CAP_SYS_NICE_null"];
+			goto_out_unlock[label="goto_out_unlock"];
+			set_cpus_allowed_cpuset_cpus_allowed_p[label="set_cpus_allowed_cpuset_cpus_allowed_p"];
+			cpus_and_new_mask_new_mask_cpus_allowed[label="cpus_and_new_mask_new_mask_cpus_allowed"];
+			set_retval_set_cpus_allowd_p_new_mask[label="set_retval_set_cpus_allowd_p_new_mask"];
+			put_task_struct_p[label="put_task_struct_p"];
+			unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+			return_retval[label="return_retval"];
+		}
+
+		subgraph cluster_get_user_cpu_mask{
+			label="static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len, cpumask_t *new_mask)";
+			len_small_sizeof_cpumask_t[label="len_small_sizeof_cpumask_t"];
+			memset_new_mask_0[label="memset_new_mask_0"];
+			len_great_cpumask_t[label="len_great_cpumask_t"];
+			set_len_sizeof_cpumask_t[label="set_len_sizeof_cpumask_t"];
+			return_EFAULT_or_0_decided_copy_from_user_new_mask_user_mask_ptr_len[label="return_EFAULT_or_0_decided_copy_from_user_new_mask_user_mask_ptr_len"];
+		}
+
+		subgraph cluster_sys_sched_setaffinity{
+			label="asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len, unsigned long __user *user_mask_ptr)";
+			set_retval_get_user_cpu_mask_user_mask_ptr_len_new_mask[label="set_retval_get_user_cpu_mask_user_mask_ptr_len_new_mask"];
+			retval_not_null[label="retval_not_null"];
+			return_retval[label="return_retval"];
+			return_sched_setaffinity_pid_new_mask[label="return_sched_setaffinity_pid_new_mask"];
+		}
+
+		subgraph cluster_sched_getaffinity{
+			label="long sched_getaffinity(pid_t pid, cpumask_t *mask)";
+			lock_cpu_hotplug[label="lock_cpu_hotplug"];
+			read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+			set_retval_ESRCH[label="set_retval_ESRCH"];
+			set_p_find_process_by_pid_pid[label="set_p_find_process_by_pid_pid"];
+			p_null[label="p_null"];
+			goto_out_unlock[label="goto_out_unlock"];
+			set_retval_0[label="set_retval_0"];
+			cpus_and_mask_p_cpus_allowed_cpu_possible_map[label="cpus_and_mask_p_cpus_allowed_cpu_possible_map"];
+			read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+			unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+			retval_not_null[label="retval_not_null"];
+			return_retval[label="return_retval"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_sys_sched_getaffinity{
+			label="asmlinkage long sys_sched_getaffinity(pid_t pid, unsigned int len, unsigned long __user *user_mask_ptr)";
+			len_small_sizeof_cpumask_t[label="len_small_sizeof_cpumask_t"];
+			return_EINVAL[label="return_EINVAL"];
+			set_ret_sched_getaffinity_pid_mask[label="set_ret_sched_getaffinity_pid_mask"];
+			ret_small_0[label="ret_small_0"];
+			return_ret[label="return_ret"];
+			copy_to_user_user_mask_ptr_mask_sizeof_cpumask_t[label="copy_to_user_user_mask_ptr_mask_sizeof_cpumask_t"];
+			return_EFAULT[label="return_EFAULT"];
+			return_sizeof_cpumask_t[label="return_sizeof_cpumask_t"];
+		}
+
+		subgraph cluster_sys_sched_yield{
+			label="asmlinkage long sys_sched_yield(void)";
+			set_rq_this_rq_lock[label="set_rq_this_rq_lock"];
+			set_array_current_array[label="set_array_current_array"];
+			set_target_rq_expired[label="set_target_rq_expired"];
+			schedstat_inc_rq_yld_cnt[label="schedstat_inc_rq_yld_cnt"];
+			rt_task_current_not_null[label="rt_task_current_not_null"];
+			set_target_rq_active[label="set_target_rq_active"];
+			current_array_nr_active_eq_1[label="current_array_nr_active_eq_1"];
+			schedstat_inc_rq_yld_act_empty[label="schedstat_inc_rq_yld_act_empty"];
+			rq_expired_nr_active_null[label="rq_expired_nr_active_null"];
+			schedstat_inc_rq_yld_both_empty[label="schedstat_inc_rq_yld_both_empty"];
+			rq_expired_nr_active_null[label="rq_expired_nr_active_null"];
+			schedstat_inc_rq_yld_exp_empty[label="schedstat_inc_rq_yld_exp_empty"];
+			array_not_eq_target[label="array_not_eq_target"];
+			dequeue_task_current_array[label="dequeue_task_current_array"];
+			enqueue_task_current_target[label="enqueue_task_current_target"];
+			requeue_task_current_array[label="requeue_task_current_array"];
+			__release_rq_lock[label="__release_rq_lock"];
+			_raw_spin_unlock_rq_lock[label="_raw_spin_unlock_rq_lock"];
+			preempt_enable_no_resched[label="preempt_enable_no_resched"];
+		}
+
+		subgraph cluster___cond_resched{
+			label="static inline void __cond_resched(void)";
+			add_preempt_count_PREEMPT_ACTIVE[label="add_preempt_count_PREEMPT_ACTIVE"];
+			schedule[label="schedule"];
+			sub_preempt_count_PREEMPT_ACTIVE[label="sub_preempt_count_PREEMPT_ACTIVE"];
+			need_resched[label="need_resched"];
+		}
+
+		subgraph cluster_cond_resched{
+			label="int __sched cond_resched(void)";
+			need_resched_true[label="need_resched_true"];
+			__cond_resched[label="__cond_resched"];
+			return_1[label="return_1"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_cond_resched_lock{
+			label="int cond_resched_lock(spinlock_t * lock)";
+			need_lockbreak_lock_true[label="need_lockbreak_lock_true"];
+			unlock_lock[label="unlock_lock"];
+			cpu_relax[label="cpu_relax"];
+			set_ret_1[label="set_ret_1"];
+			lock_lock[label="lock_lock"];
+			need_resched[label="need_resched"];
+			_raw_spin_unlock_lock[label="_raw_spin_unlock_lock"];
+			preempt_enable_no_resched[label="preempt_enable_no_resched"];
+			__cond_resched[label="__cond_resched"];
+			set_ret_1[label="set_ret_1"];
+			lock_lock[label="lock_lock"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_cond_resched_softirq{
+			label="int __sched cond_resched_softirq(void)";
+			need_resched_not_null[label="need_resched_not_null"];
+			__local_bh_enable[label="__local_bh_enable"];
+			__cond_resched[label="__cond_resched"];
+			local_bh_disable[label="local_bh_disable"];
+			return_1[label="return_1"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_yield{
+			label="void __sched yield(void)";
+			set_current_state_TASK_RUNNING[label="set_current_state_TASK_RUNNING"];
+			sys_sched_yield[label="sys_sched_yield"];
+		}
+
+		subgraph cluster_io_schedule_timeout{
+			label="long __sched io_schedule_timeout(long timeout)";
+			set_rq_per_cpu_runqueues__smp_processor_id[label="set_rq_per_cpu_runqueues__smp_processor_id"];
+			atomic_inc_rq_nr_iowait[label="atomic_inc_rq_nr_iowait"];
+			set_ret_schedule_timeout_timeout[label="set_ret_schedule_timeout_timeout"];
+			atomic_dec_rq_nr_iowait[label="atomic_dec_rq_nr_iowait"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_sys_sched_get_priority_max{
+			label="asmlinkage long sys_sched_get_priority_max(int policy)";
+			set_ret_EINVAL[label="set_ret_EINVAL"];
+			switch_policy[label="switch_policy"];
+			case_SCHED_FIFO[label="case_SCHED_FIFO"];
+			case_SCHED_RR[label="case_SCHED_RR"];
+			set_ret_MAX_USER_RT_PRIO_sub_1[label="set_ret_MAX_USER_RT_PRIO_sub_1"];
+			case_SCHED_NORMAL[label="case_SCHED_NORMAL"];
+			set_ret_0[label="set_ret_0"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_sys_sched_get_priority_min{
+			label="asmlinkage long sys_sched_get_priority_min(int policy)";
+			set_ret_EINVAL[label="set_ret_EINVAL"];
+			switch_policy[label="switch_policy"];
+			case_SCHED_FIFO[label="case_SCHED_FIFO"];
+			case_SCHED_RR[label="case_SCHED_RR"];
+			set_ret_1[label="set_ret_1"];
+			case_SCHED_NORMAL[label="case_SCHED_NORMAL"];
+			set_ret_0[label="set_ret_0"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_sys_sched_rr_get_interval{
+			label="long sys_sched_rr_get_interval(pid_t pid, struct timespec __user *interval)";
+			pid_small_0[label="pid_small_0"];
+			goto_out_nounlock[label="goto_out_nounlock"];
+			set_retval_ESRCH[label="set_retval_ESRCH"];
+			read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+			set_p_find_process_by_pid_pid[label="set_p_find_process_by_pid_pid"];
+			p_null[label="p_null"];
+			goto_out_unlock[label="goto_out_unlock"];
+			set_retval_security_task_getscheduler_p[label="set_retval_security_task_getscheduler_p"];
+			retval_not_null[label="retval_not_null"];
+			goto_out_unlock[label="goto_out_unlock"];
+			jiffies_to_timespec_0_or_task_timeslice_p_decide_p_policy_SCHED_FIFO_set_t[label="jiffies_to_timespec_0_or_task_timeslice_p_decide_p_policy_SCHED_FIFO_set_t"];
+			read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+			set_retval_EFAULT_0_decide_copy_to_user_interval_t[label="set_retval_EFAULT_0_decide_copy_to_user_interval_t"];
+			return_retval[label="return_retval"];
+			read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+			return_retval[label="return_retval"];
+		}
+
+		subgraph cluster_eldest_child{
+			label="static inline struct task_struct *eldest_child(struct task_struct *p)";
+			list_empty_p_childrent_false[label="list_empty_p_childrent_false"];
+			return_NULL[label="return_NULL"];
+			return_list_entry_p_childrent_next_struct_task_struct_sibling[label="return_list_entry_p_childrent_next_struct_task_struct_sibling"];
+		}
+
+		subgraph cluster_older_sibling{
+			label="static inline struct task_struct *older_sibling(struct task_struct *p)";
+			p_sibling_prev_eq_p_parent_children[label="p_sibling_prev_eq_p_parent_children"];
+			return_NULL[label="return_NULL"];
+			return_list_entry_p_sibling_prev_struct_task_struct_sibling[label="return_list_entry_p_sibling_prev_struct_task_struct_sibling"];
+		}
+
+		subgraph cluster_younger_sibling{
+			label="static inline struct task_struct *younger_sibling(struct task_struct *p)";
+			p_sibling_next_eq_p_parent_children[label="p_sibling_next_eq_p_parent_children"];
+			return_NULL[label="return_NULL"];
+			return_list_entry_p_sibling_next_struct_task_struct_sibling[label="return_list_entry_p_sibling_next_struct_task_struct_sibling"];
+		}
+
+		subgraph cluster_init_idle{
+			label="void __devinit init_idle(task_t *idle, int cpu)";
+			set_rq_cpu_rq_cpu[label="set_rq_cpu_rq_cpu"];
+			set_idle_sleep_avg_0[label="set_idle_sleep_avg_0"];
+			set_idle_array_NULL[label="set_idle_array_NULL"];
+			set_idle_prio_MAX_PRIO[label="set_idle_prio_MAX_PRIO"];
+			set_idle_state_TASK_RUNNING[label="set_idle_state_TASK_RUNNING"];
+			set_idle_cpus_allowed_cpumask_of_cpu_cpu[label="set_idle_cpus_allowed_cpumask_of_cpu_cpu"];
+			set_task_cpu_idle_cpu[label="set_task_cpu_idle_cpu"];
+			lock_rq_lock[label="lock_rq_lock"];
+			set_rq_curr_rq_idle_idle[label="set_rq_curr_rq_idle_idle"];
+			set_tsk_need_resched_idle[label="set_tsk_need_resched_idle"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			CONFIG_PREEMPT_and_not_CONFIG_PREEMPT_BKL[label="CONFIG_PREEMPT_and_not_CONFIG_PREEMPT_BKL"];
+			set_idle_thread_info_preempt_count_idle_lock_depth_not_small_0[label="set_idle_thread_info_preempt_count_idle_lock_depth_not_small_0"];
+			set_idle_thread_info_preempt_count_0[label="set_idle_thread_info_preempt_count_0"];
+		}
+
+		subgraph cluster_set_cpus_allowed{
+			label="int set_cpus_allowed(task_t *p, cpumask_t new_mask)";
+			set_rq_task_rq_lock_p[label="set_rq_task_rq_lock_p"];
+			cpus_intersects_new_mask_cpu_online_map_null[label="cpus_intersects_new_mask_cpu_online_map_null"];
+			set_ret_EINVAL[label="set_ret_EINVAL"];
+			goto_out[label="goto_out"];
+			set_p_cpus_allowed_new_mask[label="set_p_cpus_allowed_new_mask"];
+			cpu_isset_task_cpu_p_new_mask[label="cpu_isset_task_cpu_p_new_mask"];
+			goto_out[label="goto_out"];
+			migrate_task_p_any_online_cpu_new_mask_req[label="migrate_task_p_any_online_cpu_new_mask_req"];
+			task_rq_unlock_rq[label="task_rq_unlock_rq"];
+			wake_up_process_rq_migration_thread[label="wake_up_process_rq_migration_thread"];
+			wait_for_completion_req_done[label="wait_for_completion_req_done"];
+			tlb_migrate_finish_p_mm[label="tlb_migrate_finish_p_mm"];
+			return_0[label="return_0"];
+			task_rq_unlock_rq[label="task_rq_unlock_rq"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster___migrate_task{
+			label="static void __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)";
+			cpu_is_offline_dest_cpu[label="cpu_is_offline_dest_cpu"];
+			return[label="return"];
+			set_rq_src_cpu_rq_src_cpu[label="set_rq_src_cpu_rq_src_cpu"];
+			set_rq_dest_cpu_rq_dest_cpu[label="set_rq_dest_cpu_rq_dest_cpu"];
+			double_rq_lock_rq_src_rq_dest[label="double_rq_lock_rq_src_rq_dest"];
+			task_cpu_p_not_eq_src_dest[label="task_cpu_p_not_eq_src_dest"];
+			task_cpu_p_not_eq_src_cpu[label="task_cpu_p_not_eq_src_cpu"];
+			goto_out[label="goto_out"];
+			cpu_isset_dest_cpu_p_cpus_allowed_null[label="cpu_isset_dest_cpu_p_cpus_allowed_null"];
+			goto_out[label="goto_out"];
+			set_task_cpu_p_dest_cpu[label="set_task_cpu_p_dest_cpu"];
+			p_array_not_null[label="p_array_not_null"];
+			set_p_timestamp_p_timestamp_rq_src_timestamp_last_tick_add_rq_dest_timestamp_last_tick[label="set_p_timestamp_p_timestamp_rq_src_timestamp_last_tick_add_rq_dest_timestamp_last_tick"];
+			deactivate_task_p_rq_src[label="deactivate_task_p_rq_src"];
+			activate_task_p_rq_dest_0[label="activate_task_p_rq_dest_0"];
+			TASK_PREEMPTS_CURR_p_rq_dest[label="TASK_PREEMPTS_CURR_p_rq_dest"];
+			resched_task_rq_dest_curr[label="resched_task_rq_dest_curr"];
+			double_rq_unlock_rq_src_rq_dest[label="double_rq_unlock_rq_src_rq_dest"];
+		}
+
+		subgraph cluster_migration_thread{
+			label="static int migration_thread(void * data)";
+			set_cpu_data[label="set_cpu_data"];
+			set_rq_cpu_rq_cpu[label="set_rq_cpu_rq_cpu"];
+			set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+			kthread_should_stop_null[label="kthread_should_stop_null"];
+			current_flags_PF_FREEZE_set[label="current_flags_PF_FREEZE_set"];
+			refrigerator_PF_FREEZE[label="refrigerator_PF_FREEZE"];
+			lock_rq_lock[label="lock_rq_lock"];
+			cpu_is_offline_cpu_true[label="cpu_is_offline_cpu_true"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			goto_wait_to_die[label="goto_wait_to_die"];
+			rq_active_balance_true[label="rq_active_balance_true"];
+			active_load_balance_rq_cpu[label="active_load_balance_rq_cpu"];
+			set_rq_active_balance_0[label="set_rq_active_balance_0"];
+			set_head_rq_migration_queue[label="set_head_rq_migration_queue"];
+			list_empty_head_true[label="list_empty_head_true"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			schedule[label="schedule"];
+			set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+			set_req_list_entry_head_next_migration_req_t_list[label="set_req_list_entry_head_next_migration_req_t_list"];
+			list_del_init_head_next[label="list_del_init_head_next"];
+			req_type_eq_REQ_MOVE_TASK[label="req_type_eq_REQ_MOVE_TASK"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			__migrate_task_req_task_cpu_req_dest_cpu[label="__migrate_task_req_task_cpu_req_dest_cpu"];
+			local_irq_enable[label="local_irq_enable"];
+			req_type_eq_REQ_SET_DOMAIN[label="req_type_eq_REQ_SET_DOMAIN"];
+			set_rq_sd_req_sd[label="set_rq_sd_req_sd"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			complete_reg_done[label="complete_reg_done"];
+			__set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+			return_0[label="return_0"];
+			set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+			kthread_should_stop_false[label="kthread_should_stop_false"];
+			schedule[label="schedule"];
+			set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+			__set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_move_task_off_dead_cpu{
+			label="static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *tsk)";
+			set_mask_node_to_cpumask_cpu_to_node_dead_cpu[label="set_mask_node_to_cpumask_cpu_to_node_dead_cpu"];
+			cpus_and_mask_mask_tsk_cpus_allowed[label="cpus_and_mask_mask_tsk_cpus_allowed"];
+			set_dest_cpu_any_online_cpu_mask[label="set_dest_cpu_any_online_cpu_mask"];
+			dest_cpu_eq_NR_CPUS[label="dest_cpu_eq_NR_CPUS"];
+			set_dest_cpu_any_online_cpu_tsk_cpus_allowed[label="set_dest_cpu_any_online_cpu_tsk_cpus_allowed"];
+			dest_cpu_eq_NR_CPUS[label="dest_cpu_eq_NR_CPUS"];
+			cpus_setall_tsk_cpus_allowed[label="cpus_setall_tsk_cpus_allowed"];
+			set_dest_cpu_any_online_cpu_tsk_cpus_allowed[label="set_dest_cpu_any_online_cpu_tsk_cpus_allowed"];
+			tsk_mm_true_and_printk_ratelimit[label="tsk_mm_true_and_printk_ratelimit"];
+			__migrate_task_tsk_dead_cpu_dest_cpu[label="__migrate_task_tsk_dead_cpu_dest_cpu"];
+		}
+
+		subgraph cluster_migrate_nr_uninterruptible{
+			label="static void migrate_nr_uninterruptible(runqueue_t *rq_src)";
+			set_rq_dest_cpu_rq_any_online_cpu_CPU_MASK_ALL[label="set_rq_dest_cpu_rq_any_online_cpu_CPU_MASK_ALL"];
+			local_irq_save[label="local_irq_save"];
+			double_rq_lock_rq_src_rq_dest[label="double_rq_lock_rq_src_rq_dest"];
+			rq_dest_nr_uninterruptible_self_add_rq_src_nr_uninterruptible[label="rq_dest_nr_uninterruptible_self_add_rq_src_nr_uninterruptible"];
+			set_rq_src_nr_uninterruptible_0[label="set_rq_src_nr_uninterruptible_0"];
+			double_rq_unlock_rq_src_rq_dest[label="double_rq_unlock_rq_src_rq_dest"];
+			local_irq_restore[label="local_irq_restore"];
+		}
+
+		subgraph cluster_migrate_live_tasks{
+			label="static void migrate_live_tasks(int src_cpu)";
+			write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+			do_each_thread_t_tsk[label="do_each_thread_t_tsk"];
+			tsk_eq_current[label="tsk_eq_current"];
+			task_cpu_tsk_eq_src_cpu[label="task_cpu_tsk_eq_src_cpu"];
+			move_task_off_dead_cpu_src_cpu_tsk[label="move_task_off_dead_cpu_src_cpu_tsk"];
+			write_unlock_irq_tasklist_lock[label="write_unlock_irq_tasklist_lock"];
+		}
+
+		subgraph cluster_sched_idle_next{
+			label="void sched_idle_next(void)";
+			set_cpu_smp_processor_id[label="set_cpu_smp_processor_id"];
+			set_rq_this_rq[label="set_rq_this_rq"];
+			set_p_rq_idle[label="set_p_rq_idle"];
+			lock_rq_lock[label="lock_rq_lock"];
+			__setscheduler_p_SCHED_FIFO_MAX_RT_PRIO_sub_1[label="__setscheduler_p_SCHED_FIFO_MAX_RT_PRIO_sub_1"];
+			__activate_idle_task_p_rq[label="__activate_idle_task_p_rq"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+		}
+
+		subgraph cluster_idle_task_exit{
+			label="void idle_task_exit(void)";
+			set_mm_current_active_mm[label="set_mm_current_active_mm"];
+			mm_not_eq_init_mm[label="mm_not_eq_init_mm"];
+			switch_mm_mm_init_mm_current[label="switch_mm_mm_init_mm_current"];
+			mmdrop_mm[label="mmdrop_mm"];
+		}
+
+		subgraph cluster_migrate_dead{
+			label="static void migrate_dead(unsigned int dead_cpu, task_t *tsk)";
+			set_rq_cpu_rq_dead_cpu[label="set_rq_cpu_rq_dead_cpu"];
+			get_task_struct_tsk[label="get_task_struct_tsk"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			move_task_off_dead_cpu_dead_cpu_tsk[label="move_task_off_dead_cpu_dead_cpu_tsk"];
+			lock_rq_lock[label="lock_rq_lock"];
+			put_task_struct_tsk[label="put_task_struct_tsk"];
+		}
+
+		subgraph cluster_migrate_dead_tasks{
+			label="static void migrate_dead_tasks(unsigned int dead_cpu)";
+			set_rq_cpu_rq_dead_cpu[label="set_rq_cpu_rq_dead_cpu"];
+			for_arr_2[label="for_arr_2"];
+			for_i_MAX_PRIO[label="for_i_MAX_PRIO"];
+			set_list_rq_arrays_arr_queue_i[label="set_list_rq_arrays_arr_queue_i"];
+			list_empty_list_false[label="list_empty_list_false"];
+			migrate_dead_dead_cpu_list_entry_list_next_task_t_run_list[label="migrate_dead_dead_cpu_list_entry_list_next_task_t_run_list"];
+		}
+
+		subgraph cluster_migration_call{
+			label="static int migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)";
+			set_cpu_hcpu[label="set_cpu_hcpu"];
+			switch_action[label="switch_action"];
+			case_CPU_UP_PREPARE[label="case_CPU_UP_PREPARE"];
+			set_p_kthread_create_migration_thread_hcpu_mingration_d_cpu[label="set_p_kthread_create_migration_thread_hcpu_mingration_d_cpu"];
+			IS_ERR_p[label="IS_ERR_p"];
+			return_NOTIFY_BAD[label="return_NOTIFY_BAD"];
+			kthread_bind_p_cpu[label="kthread_bind_p_cpu"];
+			set_rq_task_rq_lock_p[label="set_rq_task_rq_lock_p"];
+			__setscheduler_p_SCHED_FIFO_MAXRT_PRIO_sub_1[label="__setscheduler_p_SCHED_FIFO_MAXRT_PRIO_sub_1"];
+			task_rq_unlock_rq[label="task_rq_unlock_rq"];
+			set_cpu_rq_cpu_migration_thread_p[label="set_cpu_rq_cpu_migration_thread_p"];
+			case_CPU_ONLINE[label="case_CPU_ONLINE"];
+			wake_up_process_cpu_rq_cpu_migration_thread[label="wake_up_process_cpu_rq_cpu_migration_thread"];
+			case_CPU_UP_CANCELED[label="case_CPU_UP_CANCELED"];
+			kthread_bind_cpu_rq_cpu_migration_thread_smp_processor_id[label="kthread_bind_cpu_rq_cpu_migration_thread_smp_processor_id"];
+			kthread_stop_cpu_rq_cpu_migration_thread[label="kthread_stop_cpu_rq_cpu_migration_thread"];
+			clear_cpu_rq_cpu_migration_thread[label="clear_cpu_rq_cpu_migration_thread"];
+			case_CPU_DEAD[label="case_CPU_DEAD"];
+			migrate_live_tasks_cpu[label="migrate_live_tasks_cpu"];
+			set_rq_cpu_rq_cpu[label="set_rq_cpu_rq_cpu"];
+			kthread_stop_rq_migration_thread[label="kthread_stop_rq_migration_thread"];
+			clear_rq_mingration_thread[label="clear_rq_mingration_thread"];
+			set_rq_task_rq_lock_rq_idle[label="set_rq_task_rq_lock_rq_idle"];
+			deactivate_task_rq_idle_rq[label="deactivate_task_rq_idle_rq"];
+			set_rq_idle_static_prio_MAX_PRIO[label="set_rq_idle_static_prio_MAX_PRIO"];
+			__setscheduler_rq_idle_SCHED_NOMAL_0[label="__setscheduler_rq_idle_SCHED_NOMAL_0"];
+			migrate_dead_tasks_cpu[label="migrate_dead_tasks_cpu"];
+			task_rq_unlock_rq[label="task_rq_unlock_rq"];
+			migrate_nr_uninterruptible_rq[label="migrate_nr_uninterruptible_rq"];
+			lock_rq_lock[label="lock_rq_lock"];
+			list_empty_rq_migration_queue_false[label="list_empty_rq_migration_queue_false"];
+			set_req_list_entry_rq_migration_queue_next_migration_req_t_list[label="set_req_list_entry_rq_migration_queue_next_migration_req_t_list"];
+			list_del_init_req_list[label="list_del_init_req_list"];
+			complete_req_done[label="complete_req_done"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			return_NOTIFY_OK[label="return_NOTIFY_OK"];
+		}
+
+		subgraph cluster_migration_init{
+			label="int __init migration_init(void)";
+			set_cpu_smp_processor_id[label="set_cpu_smp_processor_id"];
+			migration_call_migration_notifier_CPU_UP_PREPARE_cpu[label="migration_call_migration_notifier_CPU_UP_PREPARE_cpu"];
+			mingration_call_migration_notifier_CPU_ONLINE_cpu[label="mingration_call_migration_notifier_CPU_ONLINE_cpu"];
+			register_cpu_notifier_migration_notifier[label="register_cpu_notifier_migration_notifier"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_cpu_attach_domain{
+			label="void __devinit cpu_attach_domain(struct sched_domain *sd, int cpu)";
+			set_rq_cpu_rq_cpu[label="set_rq_cpu_rq_cpu"];
+			sched_domain_debug_sd_cpu[label="sched_domain_debug_sd_cpu"];
+			lock_rq_lock[label="lock_rq_lock"];
+			cpu_eq_smp_processor_id_or_cpu_online_cpu[label="cpu_eq_smp_processor_id_or_cpu_online_cpu"];
+			set_rq_sd_sd[label="set_rq_sd_sd"];
+			init_completion_req_done[label="init_completion_req_done"];
+			set_req_type_REQ_SET_DOMAIN[label="set_req_type_REQ_SET_DOMAIN"];
+			set_req_sd_sd[label="set_req_sd_sd"];
+			list_add_req_list_rq_migration_queue[label="list_add_req_list_rq_migration_queue"];
+			set_local_0[label="set_local_0"];
+			unlock_rq_lock[label="unlock_rq_lock"];
+			local_null[label="local_null"];
+			wake_up_process_rq_migration_thread[label="wake_up_process_rq_migration_thread"];
+			wait_for_completion_req_done[label="wait_for_completion_req_done"];
+		}
+
+		subgraph cluster_isolated_cpu_setup{
+			label="static int __init isolated_cpu_setup(char *str)";
+			set_str_get_options_str_ARRAY_SIZE_ints_ints[label="set_str_get_options_str_ARRAY_SIZE_ints_ints"];
+			cpus_clear_cpu_isolated_map[label="cpus_clear_cpu_isolated_map"];
+			for_i_ints_0[label="for_i_ints_0"];
+			ints_i_small_NR_CPUS[label="ints_i_small_NR_CPUS"];
+			cpu_set_ints_i_cpu_isolated_map[label="cpu_set_ints_i_cpu_isolated_map"];
+			return_1[label="return_1"];
+		}
 }
