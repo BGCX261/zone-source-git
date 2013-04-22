@@ -1885,4 +1885,176 @@ digraph sched_c{
 			cpu_set_ints_i_cpu_isolated_map[label="cpu_set_ints_i_cpu_isolated_map"];
 			return_1[label="return_1"];
 		}
+
+                subgraph cluster_init_sched_build_groups{
+                        label="void __devinit init_sched_build_groups(struct sched_group groups[], cpumask_t span, int (*group_fn)(int cpu))";
+                        set_covered_CPU_MASK_NONE[label="set_covered_CPU_MASK_NONE"];
+                        for_each_cpu_mask_i_span[label="for_each_cpu_mask_i_span"];
+                        set_group_group_fn_i[label="set_group_group_fn_i"];
+                        set_sg_groups_group[label="set_sg_groups_group"];
+                        cpu_isset_i_covered_true[label="cpu_isset_i_covered_true"];
+                        set_sg_cpumask_CPU_MASK_NONE[label="set_sg_cpumask_CPU_MASK_NONE"];
+                        set_sg_cpu_power_0[label="set_sg_cpu_power_0"];
+                        for_each_cpu_mask_j_span[label="for_each_cpu_mask_j_span"];
+                        group_fn_j_not_eq_group[label="group_fn_j_not_eq_group"];
+                        cpu_set_j_covered[label="cpu_set_j_covered"];
+                        cpu_set_j_sg_cpumask[label="cpu_set_j_sg_cpumask"];
+                        first_null[label="first_null"];
+                        set_first_sg[label="set_first_sg"];
+                        last_not_null[label="last_not_null"];
+                        set_last_next_sg[label="set_last_next_sg"];
+                        set_last_sg[label="set_last_sg"];
+                        set_last_next_first[label="set_last_next_first"];
+                }
+
+                subgraph cluster_check_sibling_maps{
+                        label="static void check_sibling_maps(void)";
+                        for_each_online_cpu_i[label="for_each_online_cpu_i"];
+                        for_each_cpu_mask_j_cpu_sibling_map_i[label="for_each_cpu_mask_j_cpu_sibling_map_i"];
+                        cpu_to_node_i_not_eq_cpu_to_node_j[label="cpu_to_node_i_not_eq_cpu_to_node_j"];
+                        set_cpu_sibling_map_i_cpumask_of_cpu_i[label="set_cpu_sibling_map_i_cpumask_of_cpu_i"];
+                }
+
+                subgraph cluster_arch_init_sched_domains{
+                        label="static void __devinit arch_init_sched_domains(void)";
+                        CONFIG_SCHED_SMT_and_CONFIG_NUMA[label="CONFIG_SCHED_SMT_and_CONFIG_NUMA"];
+                        check_sibling_maps[label="check_sibling_maps"];
+                        cpus_complement_cpu_default_map_cpu_isolated_map[label="cpus_complement_cpu_default_map_cpu_isolated_map"];
+                        cpus_and_cpu_default_map_cpu_default_map_cpu_online_map[label="cpus_and_cpu_default_map_cpu_default_map_cpu_online_map"];
+                        for_each_cpu_mask_i_cpu_default_map[label="for_each_cpu_mask_i_cpu_default_map"];
+                        set_nodemask_node_to_cpumask_cpu_to_node_i[label="set_nodemask_node_to_cpumask_cpu_to_node_i"];
+                        cpus_and_nodemask_nodemask_cpu_default_map[label="cpus_and_nodemask_nodemask_cpu_default_map"];
+                        CONFIG_NUMA[label="CONFIG_NUMA"];
+                        set_sd_per_cu_node_domains_i[label="set_sd_per_cu_node_domains_i"];
+                        set_group_cpu_to_node_group_i[label="set_group_cpu_to_node_group_i"];
+                        set_sd_SD_NODE_INIT[label="set_sd_SD_NODE_INIT"];
+                        set_sd_span_cpu_default_map[label="set_sd_span_cpu_default_map"];
+                        set_sd_groups_sched_group_nodes_group[label="set_sd_groups_sched_group_nodes_group"];
+                        set_p_sd[label="set_p_sd"];
+                        set_sd_per_cpu_phys_domains_i[label="set_sd_per_cpu_phys_domains_i"];
+                        set_group_cpu_to_physs_group_i[label="set_group_cpu_to_physs_group_i"];
+                        set_sd_SD_CPU_INIT[label="set_sd_SD_CPU_INIT"];
+                        set_sd_span_nodemask[label="set_sd_span_nodemask"];
+                        set_sd_parent_p[label="set_sd_parent_p"];
+                        set_sd_groups_sched_group_phys_group[label="set_sd_groups_sched_group_phys_group"];
+                        CONFIG_SCHED_SMT[label="CONFIG_SCHED_SMT"];
+                        set_p_sd[label="set_p_sd"];
+                        set_sd_per_cpu_cpu_domains_i[label="set_sd_per_cpu_cpu_domains_i"];
+                        set_group_cpu_to_cpu_group_i[label="set_group_cpu_to_cpu_group_i"];
+                        set_sd_SD_SIBLING_INIT[label="set_sd_SD_SIBLING_INIT"];
+                        set_sd_span_cpu_sibling_map_i[label="set_sd_span_cpu_sibling_map_i"];
+                        cpus_and_sd_span_sd_span_cpu_default_map[label="cpus_and_sd_span_sd_span_cpu_default_map"];
+                        set_sd_parent_p[label="set_sd_parent_p"];
+                        set_sd_groups_sched_group_cpus_group[label="set_sd_groups_sched_group_cpus_group"];
+                        CONFIG_SCHED_SMT[label="CONFIG_SCHED_SMT"];
+                        for_each_online_cpu_i[label="for_each_online_cpu_i"];
+                        set_this_sibling_map_cpu_sibling_map_i[label="set_this_sibling_map_cpu_sibling_map_i"];
+                        cpus_and_this_sibling_map_this_sibling_map_cpu_default_map[label="cpus_and_this_sibling_map_this_sibling_map_cpu_default_map"];
+                        i_not_eq_first_cpu_this_sibling_map[label="i_not_eq_first_cpu_this_sibling_map"];
+                        init_sched_build_groups_sched_group_cpus_this_sibling_map_cpu_to_cpu_group[label="init_sched_build_groups_sched_group_cpus_this_sibling_map_cpu_to_cpu_group"];
+                        for_i_MAX_NUMNODES[label="for_i_MAX_NUMNODES"];
+                        set_nodemask_node_to_cpumask_i[label="set_nodemask_node_to_cpumask_i"];
+                        cpus_and_nodemask_nodemask_cu_default_map[label="cpus_and_nodemask_nodemask_cu_default_map"];
+                        cpus_empty_nodemask[label="cpus_empty_nodemask"];
+                        init_sched_build_groups_sched_group_phys_nodemask_cpu_to_phys_group[label="init_sched_build_groups_sched_group_phys_nodemask_cpu_to_phys_group"];
+                        CONFIG_NUMA[label="CONFIG_NUMA"];
+                        init_sched_build_groups_sched_group_nodes_cpu_default_map_cpu_to_node_group[label="init_sched_build_groups_sched_group_nodes_cpu_default_map_cpu_to_node_group"];
+                        for_each_cpu_mask_i_cpu_default_map[label="for_each_cpu_mask_i_cpu_default_map"];
+                        set_sd_per_cpu_cpu_domains_i[label="set_sd_per_cpu_cpu_domains_i"];
+                        set_power_SCHED_LOAD_SCALE[label="set_power_SCHED_LOAD_SCALE"];
+                        set_sd_groups_cpu_power_power[label="set_sd_groups_cpu_power_power"];
+                        set_sd_per_cpu_phys_domains_i[label="set_sd_per_cpu_phys_domains_i"];
+                        set_power_SCHED_LOAD_SCALE_add_SCHED_LOAD_SCALE_multi_cpus_weight_sd_groups_cpumask_sub_1_div_10[label="set_power_SCHED_LOAD_SCALE_add_SCHED_LOAD_SCALE_multi_cpus_weight_sd_groups_cpumask_sub_1_div_10"];
+                        set_sd_groups_cpu_power_power[label="set_sd_groups_cpu_power_power"];
+                        CONFIG_NUMA[label="CONFIG_NUMA"];
+                        i_eq_first_cpu_sd_groups_cpumask[label="i_eq_first_cpu_sd_groups_cpumask"];
+                        set_sd_per_cpu_node_domains_i[label="set_sd_per_cpu_node_domains_i"];
+                        sd_groups_cpu_power_self_add_power[label="sd_groups_cpu_power_self_add_power"];
+                        for_each_online_cpu_i[label="for_each_online_cpu_i"];
+                        CONFIG_SCHED_SMT[label="CONFIG_SCHED_SMT"];
+                        set_sd_per_cpu_cpu_domains_i[label="set_sd_per_cpu_cpu_domains_i"];
+                        set_sd_per_cpu_phys_domains_i[label="set_sd_per_cpu_phys_domains_i"];
+                        cpu_attach_domain_sd_i[label="cpu_attach_domain_sd_i"];
+                }
+
+                subgraph cluster_update_sched_domains{
+                        label="static int update_sched_domains(struct notifier_block *nfb, unsigned long action, void *hcpu)";
+                        switch_action[label="switch_action"];
+                        case_CPU_UP_PREPARE[label="case_CPU_UP_PREPARE"];
+                        case_CPU_DOWN_PREPARE[label="case_CPU_DOWN_PREPARE"];
+                        for_each_online_cpu_i[label="for_each_online_cpu_i"];
+                        cpu_attach_domain_sched_domain_dummy_i[label="cpu_attach_domain_sched_domain_dummy_i"];
+                        arch_destroy_sched_domains[label="arch_destroy_sched_domains"];
+                        return_NOTIFY_OK[label="return_NOTIFY_OK"];
+                        case_CPU_UP_CANCELED[label="case_CPU_UP_CANCELED"];
+                        case_CPU_DONW_FAILED[label="case_CPU_DONW_FAILED"];
+                        case_CPU_ONLINE[label="case_CPU_ONLINE"];
+                        case_CPU_DEAD[label="case_CPU_DEAD"];
+                        default_[label="default_"];
+                        return_NOTIFY_DONE[label="return_NOTIFY_DONE"];
+                        arch_init_sched_domains[label="arch_init_sched_domains"];
+                        return_NOTIFY_OK[label="return_NOTIFY_OK"];
+                }
+
+                subgraph cluster_sched_init_smp{
+                        label="void __init sched_init_smp(void)";
+                        lock_cpu_hotplug[label="lock_cpu_hotplug"];
+                        arch_init_sched_domains[label="arch_init_sched_domains"];
+                        unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+                        hotcpu_notifier_update_sched_domains_0[label="hotcpu_notifier_update_sched_domains_0"];
+                }
+
+                subgraph cluster_sched_init{
+                        label="void __init sched_init(void)";
+                        for_i_NR_CPUS[label="for_i_NR_CPUS"];
+                        set_rq_cpu_rq_i[label="set_rq_cpu_rq_i"];
+                        lock_init_rq_lock[label="lock_init_rq_lock"];
+                        set_rq_active_rq_arrays[label="set_rq_active_rq_arrays"];
+                        set_rq_expired_rq_arrays_add_1[label="set_rq_expired_rq_arrays_add_1"];
+                        set_rq_best_expired_prio_MAX_PRIO[label="set_rq_best_expired_prio_MAX_PRIO"];
+                        CONFIG_SMP[label="CONFIG_SMP"];
+                        set_rq_sd_sched_domain_dummy[label="set_rq_sd_sched_domain_dummy"];
+                        set_rq_cpu_load_0[label="set_rq_cpu_load_0"];
+                        set_rq_active_balance_-[label="set_rq_active_balance_-"];
+                        set_rq_push_cpu_0[label="set_rq_push_cpu_0"];
+                        set_rq_migration_thread_NULL[label="set_rq_migration_thread_NULL"];
+                        INIT_LIST_HEAD_rq_migration_queue[label="INIT_LIST_HEAD_rq_migration_queue"];
+                        atomic_set_rq_nr_iowait_0[label="atomic_set_rq_nr_iowait_0"];
+                        for_j_2[label="for_j_2"];
+                        set_array_rq_arrays_add_j[label="set_array_rq_arrays_add_j"];
+                        for_k_MAX_PRIO[label="for_k_MAX_PRIO"];
+                        INIT_LIST_HEAD_array_queue_add_k[label="INIT_LIST_HEAD_array_queue_add_k"];
+                        __clear_bit_k_array_bitmap[label="__clear_bit_k_array_bitmap"];
+                        __set_bit_MAX_PRIO_array_bitmap[label="__set_bit_MAX_PRIO_array_bitmap"];
+                        atomic_inc_init_mm_mm_count[label="atomic_inc_init_mm_mm_count"];
+                        enter_lazy_tlb_init_mm_current[label="enter_lazy_tlb_init_mm_current"];
+                        init_idle_current_smp_processor_id[label="init_idle_current_smp_processor_id"];
+                }
+
+                subgraph cluster___might_sleep{
+                        label="void __might_sleep(char *file, int line)";
+                        in_atomic_or_irqs_disabled_and_system_state_eq_SYSTEM_RUNNING_and_oops_in_progesss_null[label="in_atomic_or_irqs_disabled_and_system_state_eq_SYSTEM_RUNNING_and_oops_in_progesss_null"];
+                        time_before_jiffies_prev_jiffy_add_HZ_true_and_prev_jiffy[label="time_before_jiffies_prev_jiffy_add_HZ_true_and_prev_jiffy"];
+                        return[label="return"];
+                        set_prev_jiffy_jiffies[label="set_prev_jiffy_jiffies"];
+                        dump_stack[label="dump_stack"];
+                }
+
+                subgraph cluster_normalize_rt_tasks{
+                        label="void normalize_rt_tasks(void)";
+                        CONFIG_MAGIC_SYSRQ[label="CONFIG_MAGIC_SYSRQ"];
+                        read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                        for_each_process_p[label="for_each_process_p"];
+                        rt_task_p_null[label="rt_task_p_null"];
+                        set_rq_task_rq_lock_p[label="set_rq_task_rq_lock_p"];
+                        set_array_p_array[label="set_array_p_array"];
+                        array_true[label="array_true"];
+                        deactivate_task_p_task_rq_p[label="deactivate_task_p_task_rq_p"];
+                        __setscheduler_p_SCHED_NORMAL_0[label="__setscheduler_p_SCHED_NORMAL_0"];
+                        array_true[label="array_true"];
+                        __activate_task_p_task_rq_p[label="__activate_task_p_task_rq_p"];
+                        resched_task_rq_curr[label="resched_task_rq_curr"];
+                        task_rq_unlock_rq[label="task_rq_unlock_rq"];
+                        read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                }
 }

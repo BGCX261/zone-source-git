@@ -286,4 +286,96 @@ digraph exit_c{
                 task_unlock_tsk[label="task_unlock_tsk"];
                 mmput_mm[label="mmput_mm"];
         }
+
+        subgraph cluster___unhash_process{
+                label="static void __unhash_process(struct task_struct *p)";
+                dec_nr_threads[label="dec_nr_threads"];
+                detach_pid_p_PIDTYPE_PID[label="detach_pid_p_PIDTYPE_PID"];
+                setach_oid_p_PIDTYPE_TGID[label="setach_oid_p_PIDTYPE_TGID"];
+                thread_group_leader_p_true[label="thread_group_leader_p_true"];
+                detach_pid_p_PIDTYPE_PGID[label="detach_pid_p_PIDTYPE_PGID"];
+                detach_pid_p_PIDTYPE_SID[label="detach_pid_p_PIDTYPE_SID"];
+                p_pid_not_null[label="p_pid_not_null"];
+                dec___get_cpu_var_process_counts[label="dec___get_cpu_var_process_counts"];
+                REMOVE_LINKS_p[label="REMOVE_LINKS_p"];
+        }
+
+        subgraph cluster_unhash_process{
+                label="void unhash_process(struct task_struct *p)";
+                lock_p_proc_lock[label="lock_p_proc_lock"];
+                set_proc_dentry_proc_pid_unhash_p[label="set_proc_dentry_proc_pid_unhash_p"];
+                write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+                __unhash_process_p[label="__unhash_process_p"];
+                write_unlock_irq_tasklist_lock[label="write_unlock_irq_tasklist_lock"];
+                unlock_p_proc_lock[label="unlock_p_proc_lock"];
+                proc_pid_flush_proc_dentry[label="proc_pid_flush_proc_dentry"];
+        }
+
+        subgraph cluster_session_of_pgrp{
+                label="int session_of_pgrp(int pgrp)";
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                do_each_task_pid_pgrp_PIDTYPE_PGID_p[label="do_each_task_pid_pgrp_PIDTYPE_PGID_p"];
+                p_signal_session_great_0[label="p_signal_session_great_0"];
+                set_sid_p_signal_session[label="set_sid_p_signal_session"];
+                goto_out[label="goto_out"];
+                while_each_task_pid_pgrp_PIDTYPE_PGID_p[label="while_each_task_pid_pgrp_PIDTYPE_PGID_p"];
+                set_p_find_task_by_pid_pgrp[label="set_p_find_task_by_pid_pgrp"];
+                p_not_null[label="p_not_null"];
+                set_sid_p_signal_session[label="set_sid_p_signal_session"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                return_sid[label="return_sid"];
+        }
+
+        subgraph cluster_will_become_orphaned_pgrp{
+                label="static int will_become_orphaned_pgrp(int pgrp, task_t *ignored_task)";
+                do_each_task_pid_pgrp_PIDTYPE_PGID_p[label="do_each_task_pid_pgrp_PIDTYPE_PGID_p"];
+                p_eq_ignored_task_or_p_exit_state_or_p_real_parent_pid_eq_1[label="p_eq_ignored_task_or_p_exit_state_or_p_real_parent_pid_eq_1"];
+                process_group_p_real_parent_not_pgrp_and_p_real_parent_signal_session_eq_p_signal_session[label="process_group_p_real_parent_not_pgrp_and_p_real_parent_signal_session_eq_p_signal_session"];
+                set_ret_0[label="set_ret_0"];
+                while_each_task_pid_pgrp_PIDYTPE_PGID_p[label="while_each_task_pid_pgrp_PIDYTPE_PGID_p"];
+        }
+
+        subgraph cluster_is_orphaned_pgrp{
+                label="int is_orphaned_pgrp(int pgrp)";
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                set_retval_will_becone_orphaned_pgrp_pgrp_NULL[label="set_retval_will_becone_orphaned_pgrp_pgrp_NULL"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_has_stopped_jobs{
+                label="static inline int has_stopped_jobs(int pgrp)";
+                do_each_task_pid_pgrp_PIDTYPE_PGID_p[label="do_each_task_pid_pgrp_PIDTYPE_PGID_p"];
+                p_state_not_eq_TASK_STOPPED[label="p_state_not_eq_TASK_STOPPED"];
+                p_ptrace_true_and_p_exit_code_not_eq_SIGSTOP_and_p_exit_code_not_eq_SIGTSTP_and_p_exit_code_not_eq_SIGTTOU_and_p_exit_code_not_eq_SIGTTIN_and[label="p_ptrace_true_and_p_exit_code_not_eq_SIGSTOP_and_p_exit_code_not_eq_SIGTSTP_and_p_exit_code_not_eq_SIGTTOU_and_p_exit_code_not_eq_SIGTTIN_and"];
+                set_retval_1[label="set_retval_1"];
+                while_each_task_pid_pgrp_PIDTYPE_PGID_p[label="while_each_task_pid_pgrp_PIDTYPE_PGID_p"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_reparent_to_init{
+                label="static inline void reparent_to_init(void)";
+                write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+                ptrace_unlink_current[label="ptrace_unlink_current"];
+                REMOVE_LINKS_current[label="REMOVE_LINKS_current"];
+                set_current_parent_child_reaper[label="set_current_parent_child_reaper"];
+                set_current_real_parent_child_reaper[label="set_current_real_parent_child_reaper"];
+                SET_LINKS_current[label="SET_LINKS_current"];
+                set_current_exit_parent_SIGCHLD[label="set_current_exit_parent_SIGCHLD"];
+                current_policy_eq_SCHED_NORMAL_and_task_nice_current_small_0[label="current_policy_eq_SCHED_NORMAL_and_task_nice_current_small_0"];
+                set_user_nice_current_0[label="set_user_nice_current_0"];
+                security_task_reparent_to_init_current[label="security_task_reparent_to_init_current"];
+                memcpy_current_signal_rlim_init_task_signal_rlim_sizeof_current_signal_rlim[label="memcpy_current_signal_rlim_init_task_signal_rlim_sizeof_current_signal_rlim"];
+                atomic_inc_INIT_USER___count[label="atomic_inc_INIT_USER___count"];
+                write_unlock_irq_tasklist_lock[label="write_unlock_irq_tasklist_lock"];
+                switch_uid_INIT_USER[label="switch_uid_INIT_USER"];
+        }
+
+        subgraph cluster___set_special_pids{
+                label="void __set_special_pids(pid_t session, pid_t pgrp)";
+                set_curr_current[label="set_curr_current"];
+                curr_signal_session_not_eq_session[label="curr_signal_session_not_eq_session"];
+                
+        }
+        
 }
