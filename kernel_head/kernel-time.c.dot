@@ -6,5 +6,268 @@ digraph time_c{
                 set_ret_jiffies_64[label="set_ret_jiffies_64"];
                 read_sqretry_xtime_lock_seq[label="read_sqretry_xtime_lock_seq"];
                 return_ret[label="return_ret"];
-        }        
+        }
+
+        subgraph cluster_sys_time_{
+                label="asmlinkage long sys_time(time_t __user * tloc)";
+                do_gettimeofdat_tv[label="do_gettimeofdat_tv"];
+                set_i_tv_tv_sec[label="set_i_tv_tv_sec"];
+                tloc_not_null[label="tloc_not_null"];
+                put_user_i_tloc_not_null[label="put_user_i_tloc_not_null"];
+                set_i_EFAULT[label="set_i_EFAULT"];
+                return_i[label="return_i"];
+        }
+
+        subgraph cluster_sys_stime{
+                label="asmlinkage long sys_stime(time_t __user *tptr)";
+                get_user_tv_tv_sec_tptr_not_null[label="get_user_tv_tv_sec_tptr_not_null"];
+                return_EFAULT[label="return_EFAULT"];
+                set_tv_tv_nsec_0[label="set_tv_tv_nsec_0"];
+                set_err_security_settime_tv_NULL[label="set_err_security_settime_tv_NULL"];
+                err_not_null[label="err_not_null"];
+                return_err[label="return_err"];
+                do_settimeofdat_tv[label="do_settimeofdat_tv"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sys_gettimeofday{
+                label="asmlinkage long sys_gettimeofday(struct timeval __user *tv, struct timezone __user *tz)";
+                tv_not_neq_NULL[label="tv_not_neq_NULL"];
+                do_gettimeofday_ktv[label="do_gettimeofday_ktv"];
+                copy_to_user_tv_ktv[label="copy_to_user_tv_ktv"];
+                return_EFAULT[label="return_EFAULT"];
+                tz_not_eq_NULL[label="tz_not_eq_NULL"];
+                copy_to_user_tz_sys_tz[label="copy_to_user_tz_sys_tz"];
+                return_EFAULT[label="return_EFAULT"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_warp_clock{
+                label="inline static void warp_clock(void)";
+                write_seqlock_xtime_lock[label="write_seqlock_xtime_lock"];
+                wall_to_monotonic_tv_sec_self_sub_sys_tz_tz_minuteswest_multi_60[label="wall_to_monotonic_tv_sec_self_sub_sys_tz_tz_minuteswest_multi_60"];
+                xtime_tv_sec_self_add_sys_tz_tz_minuteswest_multi_60[label="xtime_tv_sec_self_add_sys_tz_tz_minuteswest_multi_60"];
+                time_interpolator_reset[label="time_interpolator_reset"];
+                write_sequnlock_xtime_lock[label="write_sequnlock_xtime_lock"];
+                clock_was_set[label="clock_was_set"];
+        }
+
+        subgraph cluster_do_sys_settimeofday{
+                label="int do_sys_settimeofday(struct timespec *tv, struct timezone *tz)";
+                set_firsttime_1[label="set_firsttime_1"];
+                set_error_security_settime_tv_tz[label="set_error_security_settime_tv_tz"];
+                error_not_null[label="error_not_null"];
+                return_error[label="return_error"];
+                tz_not_null[label="tz_not_null"];
+                set_sys_tz_tz[label="set_sys_tz_tz"];
+                firsttime_not_null[label="firsttime_not_null"];
+                set_firsttime_0[label="set_firsttime_0"];
+                tv_null[label="tv_null"];
+                warp_clock[label="warp_clock"];
+                tv_not_null[label="tv_not_null"];
+                return_do_settimeofday_tv[label="return_do_settimeofday_tv"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sys_settimeofday{
+                label="asmlinkage long sys_settimeofday(struct timeval __user *tv, struct timezone __user *tz)";
+                tv_not_null[label="tv_not_null"];
+                copy_from_user_user_tv_tv_not_null[label="copy_from_user_user_tv_tv_not_null"];
+                return_EFAULT[label="return_EFAULT"];
+                set_new_ts_tv_sec_user_tv_tv_sec[label="set_new_ts_tv_sec_user_tv_tv_sec"];
+                set_new_ts_tv_nsec_user_tv_tv_usec_multi_NSEC_PER_USEC[label="set_new_ts_tv_nsec_user_tv_tv_usec_multi_NSEC_PER_USEC"];
+                tz_not_null[label="tz_not_null"];
+                copy_from_user_new_tz_tz_not_null[label="copy_from_user_new_tz_tz_not_null"];
+                return_EFAULT[label="return_EFAULT"];
+                return_do_sys_settimeofday_new_ts_or_NULL_decide_tv_new_tz_or_NULL_decide_tz[label="return_do_sys_settimeofday_new_ts_or_NULL_decide_tv_new_tz_or_NULL_decide_tz"];
+        }
+
+        subgraph cluster_do_adjtimex{
+                label="int do_adjtimex(struct timex *txc)";
+                txc_modes_not_null_and_capable_CAP_SYS_TIME[label="txc_modes_not_null_and_capable_CAP_SYS_TIME"];
+                return_EPERM[label="return_EPERM"];
+                txc_modes_ADJ_OFFSET_SINGLESHOT_set[label="txc_modes_ADJ_OFFSET_SINGLESHOT_set"];
+                txc_mode_not_eq_ADJ_OFFSET_SIGLESHOT[label="txc_mode_not_eq_ADJ_OFFSET_SIGLESHOT"];
+                return_EINVAL[label="return_EINVAL"];
+                txc_modes_not_eq_ADJ_OFFSET_SINGLESHOT_and_txc_modes_ADJ_OFFSET_set[label="txc_modes_not_eq_ADJ_OFFSET_SINGLESHOT_and_txc_modes_ADJ_OFFSET_set"];
+                txc_offset_not_great_MAX_HASE_or_txc_offset_not_small_MAXPHASE[label="txc_offset_not_great_MAX_HASE_or_txc_offset_not_small_MAXPHASE"];
+                return_EINVAL[label="return_EINVAL"];
+                txc_modes_ADJ_TICK_set[label="txc_modes_ADJ_TICK_set"];
+                txc_tick_small_900000_div_USER_HZ_or_txc_tick_great_1100000_div_USER_HZ[label="txc_tick_small_900000_div_USER_HZ_or_txc_tick_great_1100000_div_USER_HZ"];
+                return_EINVAL[label="return_EINVAL"];
+                write_seqlock_xtime_lock[label="write_seqlock_xtime_lock"];
+                set_result_time_state[label="set_result_time_state"];
+                set_save_adjust_time_next_adjust_or_time_adjust_decide_time_next_adjust[label="set_save_adjust_time_next_adjust_or_time_adjust_decide_time_next_adjust"];
+                txc_modes_not_null[label="txc_modes_not_null"];
+                set_time_status_txc_status_set_ignore_STA_RONLY_or_time_status_STA_RONLY_set[label="set_time_status_txc_status_set_ignore_STA_RONLY_or_time_status_STA_RONLY_set"];
+                txc_modes_ADJ_FREQUENCY_set[label="txc_modes_ADJ_FREQUENCY_set"];
+                txc_frep_great_MAXFREQ_or_txc_freq_small_negMAXFREQ[label="txc_frep_great_MAXFREQ_or_txc_freq_small_negMAXFREQ"];
+                set_result_EINVAL[label="set_result_EINVAL"];
+                goto_leave[label="goto_leave"];
+                set_time_freq_txc_freq_sub_pps_freq[label="set_time_freq_txc_freq_sub_pps_freq"];
+                txc_modes_ADJ_MAXXERROR_set[label="txc_modes_ADJ_MAXXERROR_set"];
+                txc_maxerror_small_0_or_txc_maxerror_not_small_NTP_PHASE_LIMIT[label="txc_maxerror_small_0_or_txc_maxerror_not_small_NTP_PHASE_LIMIT"];
+                set_EINVAL[label="set_EINVAL"];
+                goto_leave[label="goto_leave"];
+                set_time_maxerror_txc_maxerror[label="set_time_maxerror_txc_maxerror"];
+                txc_modes_ADJ_ESTERRROR_set[label="txc_modes_ADJ_ESTERRROR_set"];
+                txc_esterror_small_0_or_txc_esterror_not_small_NTP_PHASE_LIMIT[label="txc_esterror_small_0_or_txc_esterror_not_small_NTP_PHASE_LIMIT"];
+                set_result_EINVAL[label="set_result_EINVAL"];
+                goto_leave[label="goto_leave"];
+                set_time_esterror_txc_esterror[label="set_time_esterror_txc_esterror"];
+                txc_modes_ADJ_TIMECONST_set[label="txc_modes_ADJ_TIMECONST_set"];
+                txc_constant_small_0[label="txc_constant_small_0"];
+                set_result_EINVAL[label="set_result_EINVAL"];
+                goto_leave[label="goto_leave"];
+                set_time_constant_txc_constant[label="set_time_constant_txc_constant"];
+                txc_modes_ADJ_OFFSET_set[label="txc_modes_ADJ_OFFSET_set"];
+                txc_modes_eq_ADJ_OFFSET_SINGLESHOT[label="txc_modes_eq_ADJ_OFFSET_SINGLESHOT"];
+                set_time_next_adjust_txc_offset_eq_0[label="set_time_next_adjust_txc_offset_eq_0"];
+                set_time_adjust_0[label="set_time_adjust_0"];
+                time_status_STA_PLL_STA_PPSTIME_set[label="time_status_STA_PLL_STA_PPSTIME_set"];
+                set_ltemp_pps_offset_or_txc_offset_decide_time_status_STA_PPSTIME_STA_PPSSIGNAL_set[label="set_ltemp_pps_offset_or_txc_offset_decide_time_status_STA_PPSTIME_STA_PPSSIGNAL_set"];
+                ltemp_great_MAXPHASE[label="ltemp_great_MAXPHASE"];
+                set_time_offset_MAXPHASE_left_move_SHIFT_UPDATE[label="set_time_offset_MAXPHASE_left_move_SHIFT_UPDATE"];
+                ltemp_small_negMAXPHASE[label="ltemp_small_negMAXPHASE"];
+                set_time_offset_neg_MAXPHASE_left_move_SHIFT_UPDATE[label="set_time_offset_neg_MAXPHASE_left_move_SHIFT_UPDATE"];
+                set_time_offset_ltemp_left_SHIFT_UPDATE[label="set_time_offset_ltemp_left_SHIFT_UPDATE"];
+                time_status_STA_FREQHOLD_set_or_time_reftime_eq_0[label="time_status_STA_FREQHOLD_set_or_time_reftime_eq_0"];
+                set_time_reftime_xtime_tv_sec[label="set_time_reftime_xtime_tv_sec"];
+                set_mtemp_xtime_tv_sec_sub_time_reftime[label="set_mtemp_xtime_tv_sec_sub_time_reftime"];
+                set_time_reftime_xtime_tv_sec[label="set_time_reftime_xtime_tv_sec"];
+                time_status_STA_FLL[label="time_status_STA_FLL"];
+                mtemp_not_small_MINSEC[label="mtemp_not_small_MINSEC"];
+                set_ltemp_time_offset_div_mtemp_left_move_SHIFT_USEC_sub_SHIFT_UPDATE[label="set_ltemp_time_offset_div_mtemp_left_move_SHIFT_USEC_sub_SHIFT_UPDATE"];
+                ltemp_small_0[label="ltemp_small_0"];
+                time_freq_self_sub_negltemp_right_move_SHIFT_KH[label="time_freq_self_sub_negltemp_right_move_SHIFT_KH"];
+                time_freq_self_add_ltemp_right_move_SHIFT_KH[label="time_freq_self_add_ltemp_right_move_SHIFT_KH"];
+                set_result_TIME_ERROR[label="set_result_TIME_ERROR"];
+                mtemp_small_MAXSEC[label="mtemp_small_MAXSEC"];
+                ltemp_self_multi_mtemp[label="ltemp_self_multi_mtemp"];
+                ltemp_small_0[label="ltemp_small_0"];
+                time_freq_self_sub_negltemp_right_move_time_constant_add_time_constant_add_SHIFT_KF_sub_SHIFT_USEC[label="time_freq_self_sub_negltemp_right_move_time_constant_add_time_constant_add_SHIFT_KF_sub_SHIFT_USEC"];
+                time_freq_self_add_ltemp_right_move_time_constant_add_time_constant_add_SHIFT_KF_sub_SHIFT_USEC[label="time_freq_self_add_ltemp_right_move_time_constant_add_time_constant_add_SHIFT_KF_sub_SHIFT_USEC"];
+                set_result_TIME_ERROR[label="set_result_TIME_ERROR"];
+                time_freq_great_time_tolerance[label="time_freq_great_time_tolerance"];
+                set_time_freq_time_tolerance[label="set_time_freq_time_tolerance"];
+                time_freq_small_negtime_tolerance[label="time_freq_small_negtime_tolerance"];
+                set_time_freq_negtime_tolerance[label="set_time_freq_negtime_tolerance"];
+                txc-modes_ADJ_TICK_set[label="txc-modes_ADJ_TICK_set"];
+                set_tick_usec_txc_tick[label="set_tick_usec_txc_tick"];
+                set_tick_nsec_TICK_USEC_TO_NSEC_tick_usec[label="set_tick_nsec_TICK_USEC_TO_NSEC_tick_usec"];
+                time_status_STA_UNSYNC_or_STA_CLOCKERR_set_ortime_status_STA_PPSFREQ_or_STA_PPSTIME_set_and_time_status_STA_PPSSIGNAL_clear_or_time_status_STA_PPSTIME_STA_PPSJITTER_set_or_time_status_STA_PPSFREQ_set_and_time_status_STA_PPSWANDER_or_STA_PPSERROR_set[label="time_status_STA_UNSYNC_or_STA_CLOCKERR_set_ortime_status_STA_PPSFREQ_or_STA_PPSTIME_set_and_time_status_STA_PPSSIGNAL_clear_or_time_status_STA_PPSTIME_STA_PPSJITTER_set_or_time_status_STA_PPSFREQ_set_and_time_status_STA_PPSWANDER_or_STA_PPSERROR_set"];
+                return_TIME_ERROR[label="return_TIME_ERROR"];
+                txc_modes_ADJ_OFFSET_SINGLESHOT_set[label="txc_modes_ADJ_OFFSET_SINGLESHOT_set"];
+                set_txc_offset_save_adjust[label="set_txc_offset_save_adjust"];
+                time_offset_small_0[label="time_offset_small_0"];
+                set_txc_offset_neg_negtime_offset_right_move_SHIFT_UPDATE[label="set_txc_offset_neg_negtime_offset_right_move_SHIFT_UPDATE"];
+                set_txc_offset_time_offset_right_move_SHIFT_UPDATE[label="set_txc_offset_time_offset_right_move_SHIFT_UPDATE"];
+                set_txc_freq_time_freq_add_pps_freq[label="set_txc_freq_time_freq_add_pps_freq"];
+                set_txc_maxerror_time_maxerror[label="set_txc_maxerror_time_maxerror"];
+                set_txc_esterror_time_esterror[label="set_txc_esterror_time_esterror"];
+                set_txc_status_time_status[label="set_txc_status_time_status"];
+                set_txc_constant_time_constant[label="set_txc_constant_time_constant"];
+                set_txc_precision_time_precision[label="set_txc_precision_time_precision"];
+                set_txc_tolerance_time_tolerance[label="set_txc_tolerance_time_tolerance"];
+                set_txc_tick_tick_usec[label="set_txc_tick_tick_usec"];
+                set_txc_ppsfreq_pps_freq[label="set_txc_ppsfreq_pps_freq"];
+                set_txc_jitter_pps_jitter_right_move_PPS_AVG[label="set_txc_jitter_time_pps_jitter_right_move_PPS_AVG"];
+                set_txc_shift_pps_shift[label="set_txc_shift_pps_shift"];
+                set_txc_stabil_pps_stabil[label="set_txc_stabil_pps_stabil"];
+                set_txc_jitcnt_pps_jitcnt[label="set_txc_jitcnt_pps_jitcnt"];
+                set_txc_calcnt_pps_calcnt[label="set_txc_calcnt_pps_calcnt"];
+                set_txc_errcnt_pps_errcnt[label="set_txc_errcnt_pps_errcnt"];
+                set_txc_stbcnt_pps_stbcnt[label="set_txc_stbcnt_pps_stbcnt"];
+                write_sequnlock_xtime_lock[label="write_sequnlock_xtime_lock"];
+                do_gettimeofday_txc_time[label="do_gettimeofday_txc_time"];
+                notify_arch_cmos_timer[label="notify_arch_cmos_timer"];
+                return_result[label="return_result"];
+        }
+
+        subgraph cluster_sys_adjtimex{
+                label="asmlinkage long sys_adjtimex(struct timex __user *txc_p)";
+                copy_from_user_txc_txc_p_not_null[label="copy_from_user_txc_txc_p_not_null"];
+                return_EFAULT[label="return_EFAULT"];
+                set_ret_do_adjtimex_txc[label="set_ret_do_adjtimex_txc"];
+                return_EFAULT_or_ret_decide_copy_to_user_txc_p_txc[label="return_EFAULT_or_ret_decide_copy_to_user_txc_p_txc"];
+        }
+
+        subgraph cluster_current_kernel_time{
+                label="inline struct timespec current_kernel_time(void)";
+                set_seq_read_seqbegin_xtime_lock[label="set_seq_read_seqbegin_xtime_lock"];
+                set_now_xtime[label="set_now_xtime"];
+                read_seqretry_xtime_lock_seq[label="read_seqretry_xtime_lock_seq"];
+                return_now[label="return_now"];
+        }
+
+        subgraph cluster_current_fs_time{
+                label="struct timespec current_fs_time(struct super_block *sb)";
+                set_now_current_kernel_time[label="set_now_current_kernel_time"];
+                return_timespec_trunc_now_sb_s_time_gran[label="return_timespec_trunc_now_sb_s_time_gran"];
+        }
+
+        subgraph cluster_timespec_trunc{
+                label="struct timespec timespec_trunc(struct timespec t, unsigned gran)";
+                gran_not_great_jiffies_to_usecs_1_multi_1000[label="gran_not_great_jiffies_to_usecs_1_multi_1000"];
+                gran_eq_1000000000[label="gran_eq_1000000000"];
+                set_t_tv_nsec_0[label="set_t_tv_nsec_0"];
+                t_tv_nsec_self_sub_t_tv_nsec_mod_gran[label="t_tv_nsec_self_sub_t_tv_nsec_mod_gran"];
+                return_t[label="return_t"];
+        }
+
+        subgraph cluster_getnstimmeofday{
+                label="void getnstimeofday (struct timespec *tv)";
+                set_seq_read_seqbegin_xtime_lock[label="set_seq_read_seqbegin_xtime_lock"];
+                set_sec_xtime_tv_sec[label="set_sec_xtime_tv_sec"];
+                set_nsec_xtime_tv_nsec_add_time_interpolator_get_offset[label="set_nsec_xtime_tv_nsec_add_time_interpolator_get_offset"];
+                read_seqretry_xtime_lock_seq[label="read_seqretry_xtime_lock_seq"];
+                nsec_not_small_NSEC_PER_SEC[label="nsec_not_small_NSEC_PER_SEC"];
+                nsec_self_sub_NSEC_PER_SEC[label="nsec_self_sub_NSEC_PER_SEC"];
+                inc_sec[label="inc_sec"];
+                set_tv_tv_sec_sec[label="set_tv_tv_sec_sec"];
+                set_tv_tv_nsec_nsec[label="set_tv_tv_nsec_nsec"];
+        }
+
+        subgraph cluster_do_settimeofday{
+                label="int do_settimeofday (struct timespec *tv)";
+                set_sec_tv_tv_sec[label="set_sec_tv_tv_sec"];
+                set_nsec_tv_tv_nsec[label="set_nsec_tv_tv_nsec"];
+                tv_tv_nsec_not_small_NSEC_PER_SEC[label="tv_tv_nsec_not_small_NSEC_PER_SEC"];
+                return_EINVAL[label="return_EINVAL"];
+                write_seqlock_xtime_lock[label="write_seqlock_xtime_lock"];
+                set_wtm_sec_wall_to_monotonic_tv_sec_add_xtime_tv_sec_sub_sec[label="set_wtm_sec_wall_to_monotonic_tv_sec_add_xtime_tv_sec_sub_sec"];
+                set_wtm_nsec_wall_to_monotonic_tv_nsec_add_xtime_tv_nsec_sub_nsec[label="set_wtm_nsec_wall_to_monotonic_tv_nsec_add_xtime_tv_nsec_sub_nsec"];
+                set_normalized_timespec_xtime_sec_nsec[label="set_normalized_timespec_xtime_sec_nsec"];
+                set_normalized_timespec_wall_to_monotonic_wtm_sec_wtm_nsec[label="set_normalized_timespec_wall_to_monotonic_wtm_sec_wtm_nsec"];
+                set_time_adjust_0[label="set_time_adjust_0"];
+                time_status_self_or_STA_UNSYNC[label="time_status_self_or_STA_UNSYNC"];
+                set_time_maxerror_NTP_PHASE_LIMIT[label="set_time_maxerror_NTP_PHASE_LIMIT"];
+                set_time_esterror_NTP_PHASE_LIMIT[label="set_time_esterror_NTP_PHASE_LIMIT"];
+                time_interpolator_reset[label="time_interpolator_reset"];
+                write_sequnlock_xtime_lock[label="write_sequnlock_xtime_lock"];
+                clock_was_set[label="clock_was_set"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_do_gettimeofday{
+                label="void do_gettimeofday (struct timeval *tv)";
+                set_seq_read_seqbegin_xtime_lock[label="set_seq_read_seqbegin_xtime_lock"];
+                set_offset_time_interpolator_get_offset[label="set_offset_time_interpolator_get_offset"];
+                set_sec_xtime_tv_sec[label="set_sec_xtime_tv_sec"];
+                set__nsec_xtime_tv_nsec[label="set__nsec_xtime_tv_nsec"];
+                read_seqretry_xtime_lock_seq[label="read_seqretry_xtime_lock_seq"];
+                set_usec_nsec_add_offset_div_1000[label="set_usec_nsec_add_offset_div_1000"];
+                usec_not_small_USEC_PER_SEC[label="usec_not_small_USEC_PER_SEC"];
+                usec_self_sub_USEC_PER_SEC[label="usec_self_sub_USEC_PER_SEC"];
+                inc_sec[label="inc_sec"];
+                set_tv_tv_sec_sec[label="set_tv_tv_sec_sec"];
+                set_tv_tv_usec_usec[label="set_tv_tv_usec_usec"];
+        }
+
+        subgraph cluster_getnstimeofday{
+                label="void getnstimeofday(struct timespec *tv)";
+                do_gettimeofday_x[label="do_gettimeofday_x"];
+                set_tv_tv_sec_x_tv_sec[label="set_tv_tv_sec_x_tv_sec"];
+                set_tv_tv_nsec_x_tv_usec_multi_NSEC_PER_USEC[label="set_tv_tv_nsec_x_tv_usec_multi_NSEC_PER_USEC"];
+        }
 }
