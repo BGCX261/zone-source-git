@@ -6285,4 +6285,8 @@ unregister_chrdev_region(fpga_dev, 1);
 今天发现unregister_chrdev_region的第一个参数是dev_t类型的，而这之前我仅仅把主设备号做
 为参数。不然unregister_chrdev_region会删不掉。
 
+要先make modules才可以把obj-m的东西编译。
+哦，现在终于明白自已新建的驱动Makefile的那个make modules什么意思了。
 
+现在又更加明白为什么EOF为整型的-1了，因为-1这个值不可能在文件内容里出现，-1不是0xff读文件
+一个字节不可能是整型的-1

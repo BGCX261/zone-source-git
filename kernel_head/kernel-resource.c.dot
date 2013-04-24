@@ -1,0 +1,284 @@
+digraph resource_c{
+	subgraph cluster_r_next{
+		label="static void *r_next(struct seq_file *m, void *v, loff_t *pos)";
+		set_p_v[label="set_p_v"];
+		pos_inc[label="pos_inc"];
+		p_child_not_null[label="p_child_not_null"];
+		return_p_child[label="return_p_child"];
+		p_silbing_null_and_p_parent[label="p_silbing_null_and_p_parent"];
+		set_p_parent[label="set_p_parent"];
+		return_p_silbing[label="return_p_silbing"];
+	}
+
+	subgraph cluster_r_start{
+		label="static void *r_start(struct seq_file *m, loff_t *pos)";
+		set_p_m_private[label="set_p_m_private"];
+		set_l_0[label="set_l_0"];
+		read_lock_resource_lock[label="read_lock_resource_lock"];
+		for_p_p_child[label="for_p_p_child"];
+		return_p[label="return_p"];
+	}
+
+	subgraph cluster_r_stop{
+		label="static void r_stop(struct seq_file *m, void *v)";
+		read_unlock_resource_lock[label="read_unlock_resource_lock"];
+	}
+
+	subgraph cluster_r_show{
+		label="static int r_show(struct seq_file *m, void *v)";
+		set_root_m_private[label="set_root_m_private"];
+		set_r_v[label="set_r_v"];
+		set_width_4_or_8_decide_root_end_small_0x10000[label="set_width_4_or_8_decide_root_end_small_0x10000"];
+		for_depth_MAX_IORES_LEVEL[label="for_depth_MAX_IORES_LEVEL"];
+		p_parent_eq_root[label="p_parent_eq_root"];
+		seq_printf[label="seq_printf"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_ioports_open{
+		label="static int ioports_open(struct inode *inode, struct file *file)";
+		set_res_seq_open_file_resource_op[label="set_res_seq_open_file_resource_op"];
+		res_null[label="res_null"];
+		set_m_file_private_data[label="set_m_file_private_data"];
+		set_m_private_ioport_resource[label="set_m_private_ioport_resource"];
+		return_res[label="return_res"];
+	}
+
+	subgraph cluster_iomem_open{
+		label="static int iomem_open(struct inode *inode, struct file *file)";
+		set_res_seq_open_file_resource_op[label="set_res_seq_open_file_resource_op"];
+		res_null[label="res_null"];
+		set_m_file_private_data_m_private_iomem_resource[label="set_m_file_private_data_m_private_iomem_resource"];
+		return_res[label="return_res"];
+	}
+
+	subgraph cluster_ioresources_init{
+		label="static int __init ioresources_init(void)";
+		set_entry_create_proc_entry_ioports_0_NULL[label="set_entry_create_proc_entry_ioports_0_NULL"];
+		entry_not_null[label="entry_not_null"];
+		set_entry_proc_fops_proc_ioports_operations[label="set_entry_proc_fops_proc_ioports_operations"];
+		set_entry_create_proc_entry_iomem_0_NULL[label="set_entry_create_proc_entry_iomem_0_NULL"];
+		entry_not_null[label="entry_not_null"];
+		set_entry_proc_fops_proc_iomem_operations[label="set_entry_proc_fops_proc_iomem_operations"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster___request_resource{
+		label="static struct resource * __request_resource(struct resource *root, struct resource *new)";
+		set_start_new_start[label="set_start_new_start"];
+		set_end_new_end[label="set_end_new_end"];
+		end_small_start[label="end_small_start"];
+		return_root[label="return_root"];
+		start_small_root_start[label="start_small_root_start"];
+		return_root[label="return_root"];
+		end_great_root_end[label="end_great_root_end"];
+		return_root[label="return_root"];
+		set_p_root_child[label="set_p_root_child"];
+		dead_for[label="dead_for"];
+		set_tmp_p[label="set_tmp_p"];
+		tmp_null_or_tmp_start_great_end[label="tmp_null_or_tmp_start_great_end"];
+		set_new_sibling_tmp[label="set_new_sibling_tmp"];
+		set_p_new[label="set_p_new"];
+		set_new_parent_root[label="set_new_parent_root"];
+		return_NULL[label="return_NULL"];
+		set_p_tmp_sibling[label="set_p_tmp_sibling"];
+		tmp_end_small_start[label="tmp_end_small_start"];
+		return_tmp[label="return_tmp"];
+	}
+
+	subgraph cluster___release_resource{
+		label="static int __release_resource(struct resource *old)";
+		set_p_old_parent_child[label="set_p_old_parent_child"];
+		dead_for[label="dead_for"];
+		set_tmp_p[label="set_tmp_p"];
+		tmp_null[label="tmp_null"];
+		tmp_eq_old[label="tmp_eq_old"];
+		set_p_tmp_sibling[label="set_p_tmp_sibling"];
+		set_old_parent_NULL[label="set_old_parent_NULL"];
+		return_0[label="return_0"];
+		set_p_tmp_sibling[label="set_p_tmp_sibling"];
+		return_EINVAL[label="return_EINVAL"];
+	}
+
+	subgraph cluster_request_resource{
+		label="int request_resource(struct resource *root, struct resource *new)";
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		set_conflict___request_resource_root_new[label="set_conflict___request_resource_root_new"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+		return_EBUSY_or_0_decide_conflict[label="return_EBUSY_or_0_decide_conflict"];
+	}
+
+	subgraph cluster_____request_resource{
+		label="struct resource *____request_resource(struct resource *root, struct resource *new)";
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		set_conflict___request_resource_root_new[label="set_conflict___request_resource_root_new"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+		return_conflict[label="return_conflict"];
+	}
+
+	subgraph cluster_release_resource{
+		label="int release_resource(struct resource *old)";
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		set_retval___release_resource_old[label="set_retval___release_resource_old"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+		return_retval[label="return_retval"];
+	}
+
+	subgraph cluster_find_resource{
+		label="static int find_resource(struct resource *root, struct resource *new, unsigned long size, unsigned long min, unsigned long max, unsigned long align, void (*alignf)(void *, struct resource *, unsigned long, unsigned long), void *alignf_data)";
+		set_this_root_child[label="set_this_root_child"];
+		set_new_start_root_start[label="set_new_start_root_start"];
+		this_not_null_and_this_start_not_eq[label="this_not_null_and_this_start_not_eq"];
+		set_new_start_this_end_add_1[label="set_new_start_this_end_add_1"];
+		set_this_this_sibling[label="set_this_this_sibling"];
+		for_dead[label="for_dead"];
+		this_not_null[label="this_not_null"];
+		set_new_end_this_start_sub_1[label="set_new_end_this_start_sub_1"];
+		set_new_end_root_end[label="set_new_end_root_end"];
+		new_start_small_min[label="new_start_small_min"];
+		set_new_start_min[label="set_new_start_min"];
+		new_end_great_max[label="new_end_great_max"];
+		set_new_end_max[label="set_new_end_max"];
+		set_new_start_new_start_add_align_sub_1_and_rever_align_sub_1[label="set_new_start_new_start_add_align_sub_1_and_rever_align_sub_1"];
+		alignf_not_null[label="alignf_not_null"];
+		alignf_alignf_data_new_size_align[label="alignf_alignf_data_new_size_align"];
+		new_start_small_new_end_and_new_end_sub_new_start_not_small_size_sub_1[label="new_start_small_new_end_and_new_end_sub_new_start_not_small_size_sub_1"];
+		set_new_end_new_start_add_size_sub_1[label="set_new_end_new_start_add_size_sub_1"];
+		return_0[label="return_0"];
+		this_null[label="this_null"];
+		set_new_start_this_end_add_1[label="set_new_start_this_end_add_1"];
+		set_this_this_sibling[label="set_this_this_sibling"];
+		return_EBUSY[label="return_EBUSY"];
+	}
+
+	subgraph cluster_allocate_resource{
+		label="int allocate_resource(struct resource *root, struct resource *new, unsigned long size, unsigned long min, unsigned long max, unsigned long align, void (*alignf)(void *, struct resource *, unsigned long, unsigned long), void *alignf_data)";
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		set_err_find_resource_root_new_size_min_max_align_alignf_alignf_data[label="set_err_find_resource_root_new_size_min_max_align_alignf_alignf_data"];
+		err_not_small_0_and___request_resource_root_new[label="err_not_small_0_and___request_resource_root_new"];
+		set_err_EBUSY[label="set_err_EBUSY"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_insert_resource{
+		label="int insert_resource(struct resource *parent, struct resource *new)";
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		set_result_0[label="set_result_0"];
+		set_first___request_resource_parent_new[label="set_first___request_resource_parent_new"];
+		first_null[label="first_null"];
+		goto_out[label="goto_out"];
+		set_result_EBUSY[label="set_result_EBUSY"];
+		first_eq_parent[label="first_eq_parent"];
+		goto_out[label="goto_out"];
+		first_start_not_great_new_start_and_first_end_not_small_new_end[label="first_start_not_great_new_start_and_first_end_not_small_new_end"];
+		set_parent_first[label="set_parent_first"];
+		goto_begin[label="goto_begin"];
+		for_next_first[label="for_next_first"];
+		next_start_small_new_start_or_next_end_great_new_end[label="next_start_small_new_start_or_next_end_great_new_end"];
+		goto_out[label="goto_out"];
+		next_sibling_not_null[label="next_sibling_not_null"];
+		next_sibling_start_great_new_end[label="next_sibling_start_great_new_end"];
+		set_result_0[label="set_result_0"];
+		set_next_parent_parent[label="set_next_parent_parent"];
+		set_new_sibling_next_sibling[label="set_new_sibling_next_sibling"];
+		set_new_child_first[label="set_new_child_first"];
+		clear_next_sibling[label="clear_next_sibling"];
+	}
+
+	subgraph cluster_adjust_resource{
+		label="int adjust_resource(struct resource *res, unsigned long start, unsigned long size)";
+		set_parent_res_parent[label="set_parent_res_parent"];
+		set_end_start_add_size_sub_1[label="set_end_start_add_size_sub_1"];
+		set_result_EBUSY[label="set_result_EBUSY"];
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		start_small_parent_start_or_end_great_parent_end[label="start_small_parent_start_or_end_great_parent_end"];
+		goto_out[label="goto_out"];
+		for_tmp_res_child[label="for_tmp_res_child"];
+		tmp_start_small_start_or_tmp_end_great_end[label="tmp_start_small_start_or_tmp_end_great_end"];
+		goto_out[label="goto_out"];
+		res_sibling_true_and_res_sibling_start_not_great_end[label="res_sibling_true_and_res_sibling_start_not_great_end"];
+		goto_out[label="goto_out"];
+		set_tmp_parent_child[label="set_tmp_parent_child"];
+		tmp_not_eq_res[label="tmp_not_eq_res"];
+		tmp_sibling_not_eq_res[label="tmp_sibling_not_eq_res"];
+		set_tmp_tmp_sibling[label="set_tmp_tmp_sibling"];
+		start_not_great_tmp_end[label="start_not_great_tmp_end"];
+		goto_out[label="goto_out"];
+		set_res_start_start[label="set_res_start_start"];
+		set_res_end_end[label="set_res_end_end"];
+		set_result_0[label="set_result_0"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+		return_result[label="return_result"];
+	}
+
+	subgraph cluster___request_region{
+		label="struct resource * __request_region(struct resource *parent, unsigned long start, unsigned long n, const char *name)";
+		set_res_kmalloc_sizeof_res[label="set_res_kmalloc_sizeof_res"];
+		res_not_null[label="res_not_null"];
+		memset_res_0[label="memset_res_0"];
+		set_res_name_name[label="set_res_name_name"];
+		set_res_start_start[label="set_res_start_start"];
+		set_res_end_start_n_sub_1[label="set_res_end_start_n_sub_1"];
+		set_res_flags_IORESOURCE_BUSY[label="set_res_flags_IORESOURCE_BUSY"];
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		dead_for[label="dead_for"];
+		set_confilct___request_resoure_parent_res[label="set_confilct___request_resoure_parent_res"];
+		conflict_null[label="conflict_null"];
+		conflict_not_eq_parent[label="conflict_not_eq_parent"];
+		set_parent_conflict[label="set_parent_conflict"];
+		conflict_flags_IORESOURCE_BUSY_set[label="conflict_flags_IORESOURCE_BUSY_set"];
+		kfree_res[label="kfree_res"];
+		clear_res[label="clear_res"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+		return_res[label="return_res"];
+	}
+
+	subgraph cluster___check_region{
+		label="int __deprecated __check_region(struct resource *parent, unsigned long start, unsigned long n)";
+		set_res___request_region_parent_start_n_check_region[label="set_res___request_region_parent_start_n_check_region"];
+		res_null[label="res_null"];
+		return_EBUSY[label="return_EBUSY"];
+		release_resource_res[label="release_resource_res"];
+		kfree_res[label="kfree_res"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster___release_region{
+		label="void __release_region(struct resource *parent, unsigned long start, unsigned long n)";
+		set_p_parent_child[label="set_p_parent_child"];
+		set_end_start_add_n_sub_1[label="set_end_start_add_n_sub_1"];
+		write_lock_resource_lock[label="write_lock_resource_lock"];
+		dead_for[label="dead_for"];
+		set_res_p[label="set_res_p"];
+		res_null[label="res_null"];
+		res_start_not_great_start_and_res_end_not_small_end[label="res_start_not_great_start_and_res_end_not_small_end"];
+		res_flags_IORESOURCE_BUSY_clear[label="res_flags_IORESOURCE_BUSY_clear"];
+		set_p_res_child[label="set_p_res_child"];
+		res_start_eq_start_or_res_end_not_eq_end[label="res_start_eq_start_or_res_end_not_eq_end"];
+		set_p_res_sibling[label="set_p_res_sibling"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+		kfree_res[label="kfree_res"];
+		return[label="return"];
+		set_p_res_sibling[label="set_p_res_sibling"];
+		write_unlock_resource_lock[label="write_unlock_resource_lock"];
+	}
+
+	subgraph cluster_reserve_setup{
+		label="static int __init reserve_setup(char *str)";
+		dead_for[label="dead_for"];
+		set_x_reserved[label="set_x_reserved"];
+		get_option_str_io_start_not_eq_2[label="get_option_str_io_start_not_eq_2"];
+		get_option_str_io_num_eq_0[label="get_option_str_io_num_eq_0"];
+		x_small_MAXRESERVE[label="x_small_MAXRESERVE"];
+		set_res_reserve_add_x[label="set_res_reserve_add_x"];
+		set_res_name_reserved[label="set_res_name_reserved"];
+		set_res_start_io_start[label="set_res_start_io_start"];
+		set_res_end_io_start_add_io_num_sub_1[label="set_res_end_io_start_add_io_num_sub_1"];
+		set_res_flags_IORESOURCE_BUSY[label="set_res_flags_IORESOURCE_BUSY"];
+		clear_res_child[label="clear_res_child"];
+		request_resource_iomem_resource_or_ioport_resource_decide_res_start_not_small_0x10000_res_eq_0[label="request_resource_iomem_resource_or_ioport_resource_decide_res_start_not_small_0x10000_res_eq_0"];
+		set_reserved_x_add_1[label="set_reserved_x_add_1"];
+		return_1[label="return_1"];
+	}
+}

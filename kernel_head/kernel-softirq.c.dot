@@ -180,4 +180,20 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 				dec_preempt_count[label="dec_preempt_count ()"];
 				preempt_check_resched[label="preempt_check_resched ()"];
 		}
+
+		subgraph cluster_wakeup_softirqd{
+			label="static inline void wakeup_softirqd(void)";
+			set_tsk___get_cpu_var_ksoftirqd[label="set_tsk___get_cpu_var_ksoftirqd"];
+			tsk_not_null_and_tsk_state_not_eq_TASK_RUNNING[label="tsk_not_null_and_tsk_state_not_eq_TASK_RUNNING"];
+			wake_up_process_tsk[label="wake_up_process_tsk"];
+		}
+
+		subgraph cluster___do_softirq{
+			label="asmlinkage void __do_softirq(void)";
+			set_max_restart_MAX_SOFTIRQ_RESTART[label="set_max_restart_MAX_SOFTIRQ_RESTART"];
+			set_pending_local_softirq_pending[label="set_pending_local_softirq_pending"];
+			local_bh_disable[label="local_bh_disable"];
+			set_cpu_smp_processor_id[label="set_cpu_smp_processor_id"];
+			local_softirq_pending_0
+		}
 }
