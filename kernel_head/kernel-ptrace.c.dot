@@ -1,0 +1,233 @@
+digraph ptrace_c{
+        subgraph cluster___ptrace_link{
+                label="void __ptrace_link(task_t *child, task_t *new_parent)";
+                list_empty_child_ptrace_list_false[label="list_empty_child_ptrace_list_false"];
+                child_parent_eq_new_parent[label="child_parent_eq_new_parent"];
+                return[label="return"];
+                list_add_child_ptrace_list_child_parent_ptrace_children[label="list_add_child_ptrace_list_child_parent_ptrace_children"];
+                REMOVE_LINKS_child[label="REMOVE_LINKS_child"];
+                set_child_parent_new_parent[label="set_child_parent_new_parent"];
+                SET_LINKS_child[label="SET_LINKS_child"];
+        }
+
+        subgraph cluster_ptrace_untrace{
+                label="void ptrace_untrace(task_t *child)";
+                spin_lock_child_sighand_siglock[label="spin_lock_child_sighand_siglock"];
+                child_state_TASK_TRACED[label="child_state_TASK_TRACED"];
+                child_signal_flags_SIGNAL_STOP_STOPPED_set[label="child_signal_flags_SIGNAL_STOP_STOPPED_set"];
+                set_child_state_TASK_STOPPED[label="set_child_state_TASK_STOPPED"];
+                signal_wake_up_child_1[label="signal_wake_up_child_1"];
+                spin_unlock_child_sighand_siglock[label="spin_unlock_child_sighand_siglock"];
+        }
+
+        subgraph cluster___ptrace_unlink{
+                label="void __ptrace_unlink(task_t *child)";
+                child_ptrace_null[label="child_ptrace_null"];
+                set_child_ptrace_0[label="set_child_ptrace_0"];
+                list_empty_child_ptrace_list_null[label="list_empty_child_ptrace_list_null"];
+                list_del_init_child_ptrace_list[label="list_del_init_child_ptrace_list"];
+                REMOVE_LINKS_child[label="REMOVE_LINKS_child"];
+                set_child_parent_child_real_parent[label="set_child_parent_child_real_parent"];
+                SET_LINKS_child[label="SET_LINKS_child"];
+                child_state_eq_TASK_TRACED[label="child_state_eq_TASK_TRACED"];
+                ptrace_untrace_child[label="ptrace_untrace_child"];
+        }
+
+        subgraph cluster_ptrace_check_attach{
+                label="int ptrace_check_attach(struct task_struct *child, int kill)";
+                set_ret_ESRCH[label="set_ret_ESRCH"];
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                child_ptrace_PT_PTRACED_set_and_child_parent_eq_current_and_child_ptrace_PT_ATTACHED_clear_or_child_real_parent_not_eq_current_and_child_signal_not_null[label="child_ptrace_PT_PTRACED_set_and_child_parent_eq_current_and_child_ptrace_PT_ATTACHED_clear_or_child_real_parent_not_eq_current_and_child_signal_not_null"];
+                set_ret_0[label="set_ret_0"];
+                lock_child_sighand_siglock[label="lock_child_sighand_siglock"];
+                set_child_state_eq_TASK_STOPPED[label="set_child_state_eq_TASK_STOPPED"];
+                set_child_state_TASK_TRACED[label="set_child_state_TASK_TRACED"];
+                child_state_not_eq_TASK_TRACED_and_kill_null[label="child_state_not_eq_TASK_TRACED_and_kill_null"];
+                set_ret_ESRCH[label="set_ret_ESRCH"];
+                unlock_child_sighand_siglock[label="unlock_child_sighand_siglock"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                ret_null_and_kill_null[label="ret_null_and_kill_null"];
+                wait_task_inactive_child[label="wait_task_inactive_child"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_ptrace_attach{
+                label="int ptrace_attach(struct task_struct *task)";
+                task_lock_task[label="task_lock_task"];
+                set_retval_EPERM[label="set_retval_EPERM"];
+                task_pid_not_great_1[label="task_pid_not_great_1"];
+                goto_bad[label="goto_bad"];
+                task_eq_current[label="task_eq_current"];
+                goto_bad[label="goto_bad"];
+                task_mm_null[label="task_mm_null"];
+                goto_bad[label="goto_bad"];
+                current_uid_not_eq_task_euid_or_current_uid_not_eq_task_suid_or_current_uid_not_eq_task_uid_or_current_gid_not_eq_task_egid_or_current_gid_not_eq_task_sgid_or_current_gid_not_eq_task_id_and_capale_CAP_SYS_PTRACE_false[label="current_uid_not_eq_task_euid_or_current_uid_not_eq_task_suid_or_current_uid_not_eq_task_uid_or_current_gid_not_eq_task_egid_or_current_gid_not_eq_task_sgid_or_current_gid_not_eq_task_id_and_capale_CAP_SYS_PTRACE_false"];
+                goto_bad[label="goto_bad"];
+                smp_rmb[label="smp_rmb"];
+                task_mm_dumpable_null_and_capable_CAP_SYS_PTRACE_false[label="task_mm_dumpable_null_and_capable_CAP_SYS_PTRACE_false"];
+                goto_bad[label="goto_bad"];
+                task_ptrace_PT_PTRACED_set[label="task_ptrace_PT_PTRACED_set"];
+                goto_bad[label="goto_bad"];
+                set_retval_security_ptrace_current_task[label="set_retval_security_ptrace_current_task"];
+                retval_not_null[label="retval_not_null"];
+                goto_bad[label="goto_bad"];
+                task_ptrace_self_set_PT_PTRACED_or_PT_ATTACHED_or_0_decide_task_real_parent_not_current[label="task_ptrace_self_set_PT_PTRACED_or_PT_ATTACHED_or_0_decide_task_real_parent_not_current"];
+                capable_CAP_SYS_PTRACE_true[label="capable_CAP_SYS_PTRACE_true"];
+                task_ptrace_self_set_PT_PTRACE_CAP[label="task_ptrace_self_set_PT_PTRACE_CAP"];
+                task_unlock_task[label="task_unlock_task"];
+                write_lock_irq_tasklist_lock[label="write_lock_irq_tasklist_lock"];
+                __ptrace_link_task_current[label="__ptrace_link_task_current"];
+                write_unlock_tasklist_lock[label="write_unlock_tasklist_lock"];
+                force_sig_specific_SIGSTOP_task[label="force_sig_specific_SIGSTOP_task"];
+                return_0[label="return_0"];
+                task_unlock_task[label="task_unlock_task"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_ptrace_detach{
+                lable="int ptrace_detach(struct task_struct *child, unsigned int data)";
+                valid_signal_data[label="valid_signal_data"];
+                return_EIO[label="return_EIO"];
+                ptrace_disable_child[label="ptrace_disable_child"];
+                child_exit_code_data[label="child_exit_code_data"];
+                write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+                __ptrace_unlink_child[label="__trace_unlink_child"];
+                child_exit_state_not_eq_EXIT_ZOMBIE[label="child_exit_state_not_eq_EXIT_ZOMBIE"];
+                wake_up_process_child[label="wake_up_process_child"];
+                write_unlock_tasklist_lock[label="write_unlock_tasklist_lock"];
+        }
+
+        subgraph cluster_access_process_vm{
+                label="int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, int len, int write)";
+                set_old_buf_buf[label="set_old_buf_buf"];
+                set_mm_get_task_mm_tsk[label="set_mm_get_task_mm_tsk"];
+                mm_null[label="mm_null"];
+                return_0[label="return_0"];
+                down_read_mm_mmap_sem[label="down_read_mm_mmap_sem"];
+                len_not_null[label="len_not_null"];
+                set_ret_get_user_pages_tsk_mm_addr_1_write_1_page_vma[label="set_ret_get_user_pages_tsk_mm_addr_1_write_1_page_vma"];
+                ret_not_great_0[label="ret_not_great_0"];
+                set_bytes_len[label="set_bytes_len"];
+                set_offset_addr_and_PAGE_SIZE_sub_1[label="set_offset_and_addr_PAGE_SIZE_sub_1"];
+                bytes_great_PAGE_SIZE_sub_offset[label="bytes_great_PAGE_SIZE_sub_offset"];
+                set_bytes_PAGE_SIZE_sub_offset[label="set_bytes_PAGE_SIZE_sub_offset"];
+                set_maddr_kmap_page[label="set_maddr_kmap_page"];
+                write_not_null[label="write_not_null"];
+                copy_to_user_page_vma_page_addr_maddr_add_offset_buf_bytes[label="copy_to_user_page_vma_page_addr_maddr_add_offset_buf_bytes"];
+                set_page_dirty_lock_page[label="set_page_dirty_lock_page"];
+                copy_from_user_page_vma_page_addr_buf_maddr_add_offset_bytes[label="copy_from_user_page_vma_page_addr_buf_maddr_add_offset_bytes"];
+                kunmap_page[label="kunmap_page"];
+                page_cache_release_page[label="page_cache_release_page"];
+                len_self_sub_bytes[label="len_self_sub_bytes"];
+                buf_self_add_bytes[label="buf_self_add_bytes"];
+                addr_self_add_bytes[label="addr_self_add_bytes"];
+                up_read_mm_mmap_sem[label="up_read_mm_mmap_sem"];
+                mmput_mm[label="mmput_mm"];
+                return_buf_sub_old_buf[label="return_buf_sub_old_buf"];
+        }
+
+        subgraph cluster_ptrace_readdata{
+                label="int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)";
+                len_great_0[label="len_great_0"];
+                set_this_len_sizeof_buf_or_len_decide_len_great_sizeof_buf[label="set_this_len_sizeof_buf_or_len_decide_len_great_sizeof_buf"];
+                set_retval_access_process_vm_tsk_src_buf_this_len_0[label="set_retval_access_process_vm_tsk_src_buf_this_len_0"];
+                retval_null[label="retval_null"];
+                copied_not_null[label="copied_not_null"];
+                return_EIO[label="return_EIO"];
+                copy_to_user_dst_buf_retval[label="copy_to_user_dst_buf_retval"];
+                return_EFAULT[label="return_EFAULT"];
+                copied_self_retval[label="copied_self_retval"];
+                src_self_add_retval[label="src_self_add_retval"];
+                dst_self_add_retval[label="dst_self_add_retval"];
+                len_self_add_retval[label="len_self_add_retval"];
+                return_copied[label="return_copied"];
+        }
+
+        subgraph cluster_ptrace_writedata{
+                label="int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len)";
+                set_copied_0[label="set_copied_0"];
+                len_great_0[label="len_great_0"];
+                set_this_len_sizeof_buf_len_decide_len_great_sizeof_buf[label="set_this_len_sizeof_buf_len_decide_len_great_sizeof_buf"];
+                copy_from_user_buf_src_this_len[label="copy_from_user_buf_src_this_len"];
+                return_EFAULT[label="return_EFAULT"];
+                set_retval_access_process_vm_tsk_dst_buf_this_len_1[label="set_retval_access_process_vm_tsk_dst_buf_this_len_1"];
+                retval_null[label="retval_null"];
+                copied_not_null[label="copied_not_null"];
+                return_EIO[label="return_EIO"];
+                copied_self_retval[label="copied_self_retval"];
+                src_self_add_retval[label="src_self_add_retval"];
+                dst_self_add_retval[label="dst_self_add_retval"];
+                len_self_sub_retval[label="len_self_sub_retval"];
+                return_copied[label="return_copied"];
+        }
+
+        subgraph cluster_ptrace_setoptions{
+                label="static int ptrace_setoptions(struct task_struct *child, long data)";
+                child_ptrace_clear_PT_TRACE_MASK[label="child_ptrace_clear_PT_TRACE_MASK"];
+                data_PTRACE_O_TRACESYSGOOD_set[label="data_PTRACE_O_TRACESYSGOOD_set"];
+                child_ptrace_self_set_PT_TRACESYSGOOD[label="child_ptrace_self_set_PT_TRACESYSGOOD"];
+                data_PTRACE_O_TRACEFORK_set[label="data_PTRACE_O_TRACEFORK_set"];
+                child_ptrace_self_set_PT_TRACE_FORK[label="child_ptrace_self_set_PT_TRACE_FORK"];
+                data_PTRACE_O_TRACEVFORK_set[label="data_PTRACE_O_TRACEVFORK_set"];
+                child_ptrace_self_set_PT_TRACE_VFORK[label="child_ptrace_self_set_PT_TRACE_VFORK"];
+                data_PTRACE_O_TRACECLONE_set[label="data_PTRACE_O_TRACECLONE_set"];
+                child_ptrace_self_set_PT_TRACE_CLONE[label="child_ptrace_self_set_PT_TRACE_CLONE"];
+                data_PTRACE_O_TRACEEXEC_set[label="data_PTRACE_O_TRACEEXEC_set"];
+                child_ptrace_self_set_PT_TRACE_EXEC[label="child_ptrace_self_set_PT_TRACE_EXEC"];
+                data_PTRACE_O_TRACEVFORKDONE_set[label="data_PTRACE_O_TRACEVFORKDONE_set"];
+                child_ptrace_self_set_PT_TRACE_VFORK_DONE[label="child_ptrace_self_set_PT_TRACE_VFORK_DONE"];
+                data_PTRACE_O_TRACEEXIT_set[label="data_PTRACE_O_TRACEEXIT_set"];
+                child_ptrace_self_set_PT_TRACE_EXIT[label="child_ptrace_self_set_PT_TRACE_EXIT"];
+                return_EINVAL_or_0_decide_data_set_ignore_PTRACE_O_MASK[label="return_EINVAL_or_0_decide_data_set_ignore_PTRACE_O_MASK"];
+        }
+
+        subgraph cluster_ptrace_getsiginfo{
+                label="static int ptrace_getsiginfo(struct task_struct *child, siginfo_t __user * data)";
+                set_error_ESRCH[label="set_error_ESRCH"];
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                child_sighand_not_eq_NULL[label="child_sighand_not_eq_NULL"];
+                set_erro_EINVAL[label="set_erro_EINVAL"];
+                lock_child_sighand_siglock[label="lock_child_sighand_siglock"];
+                child_last_siginfo_not_eq_NULL[label="child_last_siginfo_not_eq_NULL"];
+                set_lastinfo_child_last_siginfo[label="set_lastinfo_child_last_siginfo"];
+                set_error_0[label="set_error_0"];
+                unlock_child_sighand_siginfo[label="unlock_child_sighand_siginfo"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];[label="unlock_tasklist_lock[label="unlock_tasklist_lock"];"];
+                error_null[label="error_null"];
+                return_copy_siginfo_to_user_data_lastinfo[label="return_copy_siginfo_to_user_data_lastinfo"];
+                return_error[label="return_error"];
+        }
+
+        subgrap cluster_ptrace_setsiginfo{
+                label="static int ptrace_setsiginfo(struct task_struct *child, siginfo_t __user * data)";
+                set_error_ESRCH[label="set_error_ESRCH"];
+                copy_from_user_newinfo_data[label="copy_from_user_newinfo_data"];
+                return_EFAULT[label="return_EFAULT"];
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                child_sighand_not_eq_NULL[label="child_sighand_not_eq_NULL"];
+                set_erro_EINVAL[label="set_erro_EINVAL"];
+                lock_child_sighand_siglock[label="lock_child_sighand_siglock"];
+                child_last_siginfo_not_eq_NULL[label="child_last_siginfo_not_eq_NULL"];
+                set_child_last_siginfo_newinfo[label="set_child_last_siginfo_newinfo"];
+                set_error_0[label="set_error_0"];
+                unlock_child_sighand_siginfo[label="unlock_child_sighand_siginfo"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];[label="unlock_tasklist_lock[label="unlock_tasklist_lock"];"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_ptrace_request{
+                label="int ptrace_request(struct task_struct *child, long request, long addr, long data)";
+                set_ret_EIO[label="set_ret_EIO"];
+                switch_request[label="switch_request"];
+                case_PTRACE_SETOPTIONS[label="case_PTRACE_SETOPTIONS"];
+                set_ret_ptrace_setoptions_child_data[label="set_ret_ptrace_setoptions_child_data"];
+                case_PTRACE_GETEVENTMSG[label="case_PTRACE_GETEVENTMSG"];
+                set_ret_put_user_child_ptrace_message_data[label="set_ret_put_user_child_ptrace_message_data"];
+                case_PTRACE_GETSIGINFO[label="case_PTRACE_GETSIGINFO"];
+                set_ret_ptrace_getsiginfo_child_data[label="set_ret_ptrace_getsiginfo_child_data"];
+                case_PTRACE_GETSIGINFO[label="case_PTRACE_GETSIGINFO"];
+                set_ret_ptrace_setsiginfo_child_data[label="set_ret_ptrace_setsiginfo_child_data"];
+                default_[label="default_"];
+                return_ret[label="return_ret"];
+        }
+}
