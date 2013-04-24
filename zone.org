@@ -6277,4 +6277,12 @@ FPGA_IOCTL_CONF_AO_GAIN_A, ao_gain_a_dat);
 printf("Error open "#path" fail!\n");
 因为要这样用，所以./conf_ao_gain_a_test.txt,不能用双引号引起来。
 
+==============================[2013-04-24 三]==============================
+
+手放在键盘上要尽量竖起来。
+
+unregister_chrdev_region(fpga_dev, 1);
+今天发现unregister_chrdev_region的第一个参数是dev_t类型的，而这之前我仅仅把主设备号做
+为参数。不然unregister_chrdev_region会删不掉。
+
 

@@ -11,5 +11,192 @@ digraph rcupdate_c{
                 local_irq_restore[label="local_irq_restore (flags)"];
         }
 
-        
+        subgraph cluster_call_rcu_hb{
+			label="void fastcall call_rcu_bh(struct rcu_head *head, void (*func)(struct rcu_head *rcu))";
+			set_head_func_func[label="set_head_func_func"];
+			clear_head_next[label="clear_head_next"];
+			local_irq_save[label="local_irq_save"];
+			set_rdp___get_cpu_var_rcu_hb_data[label="set_rdp___get_cpu_var_rcu_hb_data"];
+			set_rdp_nxttail_head[label="set_rdp_nxttail_head"];
+			set_rdp_nxttail_head_next[label="set_rdp_nxttail_head_next"];
+			local_irq_restore[label="local_irq_restore"];
+		}
+
+		subgraph cluster_rcu_do_batch{
+			label="static void rcu_do_batch(struct rcu_data *rdp)";
+			set_list_rdp_donelist[label="set_list_rdp_donelist"];
+			list_not_null[label="list_not_null"];
+			set_next_rdp_donelist_set_list_next[label="set_next_rdp_donelist_set_list_next"];
+			list_func_list[label="list_func_list"];
+			set_list_next[label="set_list_next"];
+			inc_count_not_small_maxbatch[label="inc_count_not_small_maxbatch"];
+			rdp_donelist_null[label="rdp_donelist_null"];
+			set_rdp_donetail_rdp_donelist[label="set_rdp_donetail_rdp_donelist"];
+			tasklet_schedule_per_cpu_rcu_tasklet_rdp_cpu[label="tasklet_schedule_per_cpu_rcu_tasklet_rdp_cpu"];
+		}
+
+		subgraph cluster_rcu_start_batch{
+			label="static void rcu_start_batch(struct rcu_ctrlblk *rcp, struct rcu_state *rsp,int next_pending)";
+			next_pending_not_null[label="next_pending_not_null"];
+			set_rcp_next_pending_1[label="set_rcp_next_pending_1"];
+			rcp_next_pending_true_and_rcp_completed_eq_rcp_cur[label="rcp_next_pending_true_and_rcp_completed_eq_rcp_cur"];
+			cpus_andnot_rsp_cpumask_cpu_online_map_nohz_cpu_mask[label="cpus_andnot_rsp_cpumask_cpu_online_map_nohz_cpu_mask"];
+			set_rcp_next_pending_0[label="set_rcp_next_pending_0"];
+			smp_wmb[label="smp_wmb"];
+			inc_rcp_cur[label="inc_rcp_cur"];
+		}
+
+		subgraph cluster_cpu_quiet{
+			label="static void cpu_quiet(int cpu, struct rcu_ctrlblk *rcp, struct rcu_state *rsp)";
+			cpu_clear_cpu_rsp_cpumask[label="cpu_clear_cpu_rsp_cpumask"];
+			cpus_empty_rsp_cpumask_true[label="cpus_empty_rsp_cpumask_true"];
+			set_rcp_completed_rcp_cur[label="set_rcp_completed_rcp_cur"];
+			rcu_start_batch_rcp_rsp_0[label="rcu_start_batch_rcp_rsp_0"];
+		}
+
+		subgraph cluster_rcu_check_quiescent_state{
+			label="static void rcu_check_quiescent_state(struct rcu_ctrlblk *rcp, struct rcu_state *rsp, struct rcu_data *rdp)";
+			rdp_quiescbatch_not_eq_rcp_cur[label="rdp_quiescbatch_not_eq_rcp_cur"];
+			set_rdp_qs_pending_1[label="set_rdp_qs_pending_1"];
+			set_rdp_passed_quiesc_0[label="set_rdp_passed_quiesc_0"];
+			set_rdp_quiescbatch_rcp_cur[label="set_rdp_quiescbatch_rcp_cur"];
+			return[label="return"];
+			rdp_qs_pending_not_null[label="rdp_qs_pending_not_null"];
+			return[label="return"];
+			rdp_passed_quiesc_null[label="rdp_passed_quiesc_null"];
+			return[label="return"];
+			set_rdp_qs_pending[label="set_rdp_qs_pending"];
+			spin_lock_rsp_lock[label="spin_lock_rsp_lock"];
+			rdp_quiescbatch_eq_rcp_cur[label="rdp_quiescbatch_eq_rcp_cur"];
+			cpu_quiet_rdp_cpu_rcp_rsp[label="cpu_quiet_rdp_cpu_rcp_rsp"];
+			unlock_rsp_lock[label="unlock_rsp_lock"];
+		}
+
+		subgraph cluster_rcu_move_batch{
+			label="static void rcu_move_batch(struct rcu_data *this_rdp, struct rcu_head *list, struct rcu_head **tail)";
+			local_irq_disable[label="local_irq_disable"];
+			set_this_rdp_nxttail_list[label="set_this_rdp_nxttail_list"];
+			list_not_null[label="list_not_null"];
+			this_rdp_nxttail_tail[label="this_rdp_nxttail_tail"];
+			local_irq_enable[label="local_irq_enable"];
+		}
+
+		subgraph cluster___rcu_offline_cpu{
+			label="static void __rcu_offline_cpu(struct rcu_data *this_rdp,	struct rcu_ctrlblk *rcp, struct rcu_state *rsp, struct rcu_data *rdp)";
+			spin_lock_bh_rsp_lock[label="spin_lock_bh_rsp_lock"];
+			rcp_cur_not_eq_rcp_completed[label="rcp_cur_not_eq_rcp_completed"];
+			cpu_quiet_rdp_cpu_rcp_rsp[label="cpu_quiet_rdp_cpu_rcp_rsp"];
+			spin_unlock_bh_rsp_lock[label="spin_unlock_bh_rsp_lock"];
+			rcu_move_batch_this_rdp_rdp_curlist_rdp_curtail[label="rcu_move_batch_this_rdp_rdp_curlist_rdp_curtail"];
+			rcu_move_batch_this_rdp_rdp_nxtlist_rdp_nxttail[label="rcu_move_batch_this_rdp_rdp_nxtlist_rdp_nxttail"];
+		}
+
+		subgraph cluster_rcu_offline_cpu{
+			label="static void rcu_offline_cpu(int cpu)";
+			set_this_rdp_get_cpu_var_rcu_data[label="set_this_rdp_get_cpu_var_rcu_data"];
+			set_this_bh_rdp_get_cpu_var_rcu_bh_data[label="set_this_bh_rdp_get_cpu_var_rcu_bh_data"];
+			__rcu_offline_cpu_this_rdp_rcu_ctrlblk_rcu_state_per_cpu_rcu_data_cpu[label="__rcu_offline_cpu_this_rdp_rcu_ctrlblk_rcu_state_per_cpu_rcu_data_cpu"];
+			__rcu_offline_cpu_this_bh_rdp_rcu_bh_ctrlblk_rcu_bh_state_per_cpu_rcu_bh_data_cpu[label="__rcu_offline_cpu_this_bh_rdp_rcu_bh_ctrlblk_rcu_bh_state_per_cpu_rcu_bh_data_cpu"];
+			put_cpu_var_rcu_data[label="put_cpu_var_rcu_data"];
+			put_cpu_var_rcu_hb_data[label="put_cpu_var_rcu_hb_data"];
+			tasklet_kill_immediate_per_cpu_rcu_tasklet_cpu_cpu[label="tasklet_kill_immediate_per_cpu_rcu_tasklet_cpu_cpu"];
+		}
+
+		subgraph cluster___rcu_process_callbacks{
+			label="static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp, struct rcu_state *rsp, struct rcu_data *rdp)";
+			rdp_curlist_not_null_and_rcu_batch_before_crp_completed_rdp_batch_null[label="rdp_curlist_not_null_and_rcu_batch_before_crp_completed_rdp_batch_null"];
+			set_rdp_donetail_rdp_curlist[label="set_rdp_donetail_rdp_curlist"];
+			set_rdp_donetail_rdp_curtail[label="set_rdp_donetail_rdp_curtail"];
+			clear_rdp_curlist_NULL[label="clear_rdp_curlist_NULL"];
+			set_rdp_curtail_rdp_curlist[label="set_rdp_curtail_rdp_curlist"];
+			local_irq_disable[label="local_irq_disable"];
+			rdp_nxtlist_true_and_rdp_curlist_null[label="rdp_nxtlist_true_and_rdp_curlist_null"];
+			set_rdp_curlist_rdp_nxtlist[label="set_rdp_curlist_rdp_nxtlist"];
+			set_rdp_curtail_rdp_nxttail[label="set_rdp_curtail_rdp_nxttail"];
+			clear_rdp_nxtlist[label="clear_rdp_nxtlist"];
+			set_rdp_nxttail_rdp_nxtlist[label="set_rdp_nxttail_rdp_nxtlist"];
+			local_irq_enable[label="local_irq_enable"];
+			set_rdp_batch_rcp_cur_add_1[label="set_rdp_batch_rcp_cur_add_1"];
+			smp_rmb[label="smp_rmb"];
+			rcp_next_pending_null[label="rcp_next_pending_null"];
+			lock_rsp_lock[label="lock_rsp_lock"];
+			rcu_start_batch_rcp_rsp_1[label="rcu_start_batch_rcp_rsp_1"];
+			unlock_rsp_lock[label="unlock_rsp_lock"];
+			local_irq_enable[label="local_irq_enable"];
+			rcu_check_quiescent_state_rcp_rsp_rdp[label="rcu_check_quiescent_state_rcp_rsp_rdp"];
+			rdp_donelist_not_null[label="rdp_donelist_not_null"];
+			rcu_do_batch_rdp[label="rcu_do_batch_rdp"];
+		}
+
+		subgraph cluster_rcu_process_callbacks{
+			label="static void rcu_process_callbacks(unsigned long unused)";
+			__rcu_process_callbacks_rcu_ctrlblk_rcu_state___get_cpu_var_rcu_data[label="__rcu_process_callbacks_rcu_ctrlblk_rcu_state___get_cpu_var_rcu_data"];
+			__rcu_process_callbacks_rcu_bh_ctrlblk_rcu_bh_state___get_cpu_var_rcu_bh_data[label="__rcu_process_callbacks_rcu_bh_ctrlblk_rcu_bh_state___get_cpu_var_rcu_bh_data"];
+		}
+
+		subgraph cluster_rcu_check_callbacks{
+			label="void rcu_check_callbacks(int cpu, int user)";
+			user_not_null_or_idle_cpu_and_in_softirq_false_and_hardirq_count_not_great_1_left_move_HARDIRQ_SHIFT[label="user_not_null_or_idle_cpu_and_in_softirq_false_and_hardirq_count_not_great_1_left_move_HARDIRQ_SHIFT"];
+			rcu_qsctr_inc_cpu[label="rcu_qsctr_inc_cpu"];
+			rcu_bh_qsctr_inc_cpu[label="rcu_bh_qsctr_inc_cpu"];
+			in_softirq_false[label="in_softirq_false"];
+			rcu_bh_qsctr_inc_cpu[label="rcu_bh_qsctr_inc_cpu"];
+			tasklet_schedule_per_cpu_rcu_tasklet_cpu[label="tasklet_schedule_per_cpu_rcu_tasklet_cpu"];
+		}
+
+		subgraph cluster_rcu_init_percpu_data{
+			label="static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp, struct rcu_data *rdp)";
+			memset_rdp_0[label="memset_rdp_0"];
+			set_rdp_curtail_rdp_curlist[label="set_rdp_curtail_rdp_curlist"];
+			set_rdp_nxttail_rdp_nxtlist[label="set_rdp_nxttail_rdp_nxtlist"];
+			set_rdp_donetail_rdp_donelist[label="set_rdp_donetail_rdp_donelist"];
+			set_rdp_quiescbatch_rcp_completed[label="set_rdp_quiescbatch_rcp_completed"];
+			set_rdp_qs_pending_0[label="set_rdp_qs_pending_0"];
+			set_rdp_cpu_cpu[label="set_rdp_cpu_cpu"];
+		}
+
+		subgraph cluster_rcu_online_cpu{
+			label="static void __devinit rcu_online_cpu(int cpu)";
+			set_rdp_per_cpu_rcu_data_cpu[label="set_rdp_per_cpu_rcu_data_cpu"];
+			set_bh_rdp_per_cpu_rcu_bh_data_cpu[label="set_bh_rdp_per_cpu_rcu_bh_data_cpu"];
+			rcu_init_percpu_data_cpu_rcu_ctrlblk_rdp[label="rcu_init_percpu_data_cpu_rcu_ctrlblk_rdp"];
+			rcu_init_percpu_data_cpu_rcu_bh_ctrlblk_bh_rdp[label="rcu_init_percpu_data_cpu_rcu_bh_ctrlblk_bh_rdp"];
+			tasklet_init_per_cpu_rcu_tasklet_cpu_rcu_process_callbacks_0[label="tasklet_init_per_cpu_rcu_tasklet_cpu_rcu_process_callbacks_0"];
+		}
+
+		subgraph cluster_rcu_cpu_notify{
+			label="static int __devinit rcu_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)";
+			set_cpu_hcpu[label="set_cpu_hcpu"];
+			switch_action[label="switch_action"];
+			case_CPU_UP_PREPARE[label="case_CPU_UP_PREPARE"];
+			rcu_online_cpu_cpu[label="rcu_online_cpu_cpu"];
+			case_CPU_DEAD[label="case_CPU_DEAD"];
+			rcu_offline_cpu_cpu[label="rcu_offline_cpu_cpu"];
+			default_[label="default"];
+			return_NOTIFY_OK[label="return_NOTIFY_OK"];
+		}
+
+		subgraph cluster_rcu_init{
+			label="void __init rcu_init(void)";
+			rcu_cpu_notify_rcu_nb_CPU_UP_PREPARE_smp_processor_id[label="rcu_cpu_notify_rcu_nb_CPU_UP_PREPARE_smp_processor_id"];
+			register_cpu_notifier_rcu_nb[label="register_cpu_notifier_rcu_nb"];
+		}
+
+		subgraph cluster_wakeme_after_rcu{
+			label="static void wakeme_after_rcu(struct rcu_head  *head)";
+			set_rcu_container_of_head_struct_rcu_synchronize_head[label="set_rcu_container_of_head_struct_rcu_synchronize_head"];
+			complete_rcu_completion[label="complete_rcu_completion"];
+		}
+
+		subgraph cluster_synchronize_rcu{
+			label="void synchronize_rcu(void)";
+			init_completion_rcu_completion[label="init_completion_rcu_completion"];
+			call_rcu_rcu_head_wakeme_after_rcu[label="call_rcu_rcu_head_wakeme_after_rcu"];
+			wait_for_completion_rcu_completion[label="wait_for_completion_rcu_completion"];
+		}
+
+		subgraph cluster_synchronize_kernel{
+			label="void synchronize_kernel(void)";
+			synchronize_rcu[label="synchronize_rcu"];
+		}
 }

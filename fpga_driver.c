@@ -493,13 +493,13 @@ static int put_do(fpga_do_t __user *const source)
 static int put_do_conf(fpga_do_cnf_t __user *const source)
 {
 	int i;
-	fpga_do_cnf_t dest;
+	fpga_do_cnf_t dest[DO_CONF_WORDS];
 
 	if (copy_from_user(&dest, source, sizeof(fpga_do_cnf_t)*DO_CONF_WORDS))
 		return -EFAULT;
 
 	for (i = 0; i < DO_CONF_WORDS; i++)
-		fpga_write32(fpga_add_do_conf[i], dest);
+		fpga_write32(fpga_add_do_conf[i], dest[i]);
 
 	return 0;
 }
@@ -771,16 +771,17 @@ static const struct file_operations fpga_file_operation = {
 };
 
 struct cdev *fpga_cdev;
+dev_t fpga_dev;
 
 static int __init fpga_init(void)
 {
-	dev_t fpga_dev;
-
  	if (fpga_major){
  		fpga_dev = MKDEV(fpga_major, fpga_minor);
  		if(register_chrdev_region(fpga_dev, 1, "fpga"))
  			goto register_dev_err;
  	}else {
+		/* int alloc_chrdev_region(dev_t *dev, unsigned int firstminor, 
+                        unsigned int count, char *name); */
  		if(!alloc_chrdev_region(&fpga_dev, 0, 1, "fpga"))
  			fpga_major = MAJOR(fpga_dev);
  		else
@@ -822,7 +823,8 @@ static void __exit fpga_exit(void)
 {
 	printk(KERN_NOTICE "fpga_exit\n");
 	cdev_del(fpga_cdev);
-	unregister_chrdev_region(fpga_major, 1);
+	/* void unregister_chrdev_region(dev_t first, unsigned int count); */
+	unregister_chrdev_region(fpga_dev, 1);
 }
 
 module_init(fpga_init);
