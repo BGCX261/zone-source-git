@@ -405,6 +405,189 @@ digraph sysctl_c{
 		set_len_left[label="set_len_left"];
 		len_great_TMPBUFLEN_sub_1[label="len_great_TMPBUFLEN_sub_1"];
 		set_len_TMPBUFLEN_sub_1[label="set_len_TMPBUFLEN_sub_1"];
-		
+                copy_from_user_buf_s[label="copy_from_user_buf_s"];
+                set_buf_len_0[label="set_buf_len_0"];
+                set_p_buf[label="set_p_buf"];
+                p_eq_minus_and_left_great_1[label="p_eq_minus_and_left_great_1"];
+                set_neg_1[label="set_neg_1"];
+                dec_left[label="dec_left"];
+                inc_p[label="inc_p"];
+                p_small_char0_or_p_great_char9[label="p_small_char0_or_p_great_char9"];
+                set_val_simple_strtoul_p_p_0_multi_convmul_div_convdiv[label="set_val_simple_strtoul_p_p_0_multi_convmul_div_convdiv"];
+                set_len_p_sub_buf[label="set_len_p_sub_buf"];
+                len_small_left_and_p_not_null_isspace_p_false[label="len_small_left_and_p_not_null_isspace_p_false"];
+                neg_not_null[label="neg_not_null"];
+                set_val_neg_val[label="set_val_neg_val"];
+                s_self_add_len[label="s_self_add_len"];
+                left_self_sub_len[label="left_self_sub_len"];
+                neg_not_null[label="neg_not_null"];
+                min_not_null_and_val_great_min_or_max_not_null_val_great_max[label="min_not_null_and_val_great_min_or_max_not_null_val_great_max"];
+                set_i_val[label="set_i_val"];
+                set_p_buf[label="set_p_buf"];
+                first_null[label="first_null"];
+                set_p_inc_tab[label="set_p_inc_tab"];
+                sprintf_p_convdiv_multi_i_div_convmul[label="sprintf_p_convdiv_multi_i_div_convmul"];
+                set_len_strlen_buf[label="set_len_strlen_buf"];
+                len_great_left[label="len_great_left"];
+                set_len_left[label="set_len_left"];
+                copy_to_user_s_buf[label="copy_to_user_s_buf"];
+                left_self_sub_len[label="left_self_sub_len"];
+                s_self_add_len[label="s_self_add_len"];
+                write_null_and_first_null_and_left_not_null[label="write_null_and_first_null_and_left_not_null"];
+                put_user_enter_s[label="put_user_enter_s"];
+                dec_left[label="dec_left"];
+                inc_s[label="inc_s"];
+                write_not_null[label="write_not_null"];
+                left_not_null[label="left_not_null"];
+                get_user_c_s_inc[label="get_user_c_s_inc"];
+                isspace_c_fasle[label="isspace_c_fasle"];
+                dec_left[label="dec_left"];
+                write_not_null_and_first_not_null[label="write_not_null_and_first_not_null"];
+                lenp_self_sub_left[label="lenp_self_sub_left"];
+                ppos_self_add_lenp[label="ppos_self_add_lenp"];
 	}
+
+        subgraph cluster_proc_doulongvec_minmax{
+                label="int proc_doulongvec_minmax(ctl_table *table, int write, struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)";
+                return_do_proc_doulongvec_minmax_table_write_filp_buffer_lenp_ppos_1_1[label="return_do_proc_doulongvec_minmax_table_write_filp_buffer_lenp_ppos_1_1"];
+        }
+
+        subgraph cluster_proc_doulongvec_ms_jiffies_minmax{
+                label="int proc_doulongvec_ms_jiffies_minmax(ctl_table *table, int write, struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)";
+                return_do_proc_doulongvec_minmax_talbe_write_filep_buffer_lenp_ppos_HZ_1000[label="return_do_proc_doulongvec_minmax_talbe_write_filep_buffer_lenp_ppos_HZ_1000"];
+        }
+
+        subgraph cluster_do_proc_dointvec_jiffies_conv{
+                label="static int do_proc_dointvec_jiffies_conv(int *negp, unsigned long *lvalp, int *valp, int write, void *data)";
+                write_not_null[label="write_not_null"];
+                set_valp_neg_lvalp_multi_HZ_or_lvalp_multi_HZ_decide_negp[label="set_valp_neg_lvalp_multi_HZ_or_lvalp_multi_HZ_decide_negp"];
+                set_val_valp[label="set_val_valp"];
+                val_small_0[label="val_small_0"];
+                set_negp_neg1[label="set_negp_neg1"];
+                set_lval_neg_val[label="set_lval_neg_val"];
+                set_negp_0[label="set_negp_0"];
+                set_lval_val[label="set_lval_val"];
+                set_lvalp_lval_div_HZ[label="set_lvalp_lval_div_HZ"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_do_proc_dointvec_userhz_jiffies_conv{
+                label="static int do_proc_dointvec_userhz_jiffies_conv(int *negp, unsigned long *lvalp, int *valp, int write, void *data)";
+                write_not_null[label="write_not_null"];
+                set_valp_clock_t_to_jiffies_neg_lvalp_or_lvalp_decide_negp[label="set_valp_clock_t_to_jiffies_neg_lvalp_or_lvalp_decide_negp"];
+                set_val_valp[label="set_val_valp"];
+                val_small_0[label="val_small_0"];
+                set_negp_neg1[label="set_negp_neg1"];
+                set_lval_neg_val[label="set_lval_neg_val"];
+                set_negp_0[label="set_negp_0"];
+                set_lval_val[label="set_lval_val"];
+                set_lvalp_jiffies_to_clock_t_val[label="set_lvalp_jiffies_to_clock_t_val"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_do_proc_dointvec_ms_jiffies_conv{
+                label="static int do_proc_dointvec_ms_jiffies_conv(int *negp, unsigned long *lvalp, int *valp, int write, void *data)";
+                write_not_null[label="write_not_null"];
+                set_valp_msecs_to_jiffies_neg_lvalp_or_lvalp_decide_negp[label="set_valp_msecs_to_jiffies_neg_lvalp_or_lvalp_decide_negp"];
+                set_val_valp[label="set_val_valp"];
+                val_small_0[label="val_small_0"];
+                set_negp_neg1[label="set_negp_neg1"];
+                set_lval_neg_val[label="set_lval_neg_val"];
+                set_negp_0[label="set_negp_0"];
+                set_lval_val[label="set_lval_val"];
+                set_lvalp_jiffies_to_msecs_lval[label="set_lvalp_jiffies_to_msecs_lval"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_proc_dointvec_jiffies{
+                label="int proc_dointvec_jiffies(ctl_table *table, int write, struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)";
+                return_do_proc_dointvec_table_write_filp_buffer_lenp_ppos_do_proc_dointvec_jiffies_conv_NULL[label="return_do_proc_dointvec_table_write_filp_buffer_lenp_ppos_do_proc_dointvec_jiffies_conv_NULL"];
+        }
+
+        subgraph cluster_proc_dointvec_userhz_jiffies{
+                label="int proc_dointvec_userhz_jiffies(ctl_table *table, int write, struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)";
+                return_do_proc_dointvec_table_write_filp_buffer_lenp_ppos_do_proc_dointvec_userhz_jiffies_conv_NULL[label="return_do_proc_dointvec_table_write_filp_buffer_lenp_ppos_do_proc_dointvec_userhz_jiffies_conv_NULL"];
+        }
+
+        subgraph cluster_proc_dointvec_ms_jiffies{
+                label="int proc_dointvec_ms_jiffies(ctl_table *table, int write, struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)";
+                return_do_proc_dointvec_table_write_filp_buffer_lenp_ppos_do_proc_dointvec_ms_jiffies_conv_NULL[label="return_do_proc_dointvec_table_write_filp_buffer_lenp_ppos_do_proc_dointvec_ms_jiffies_conv_NULL"];
+        }
+
+        subgraph cluster_sysctl_string{
+                label="int sysctl_string(ctl_table *table, int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp, void __user *newval, size_t newlen, void **context)";
+                table_data_null_or_table_maxlen_null[label="table_data_null_or_table_maxlen_null"];
+                return_ENOTDIR[label="return_ENOTDIR"];
+                oldval_not_null_and_oldlenp[label="oldval_not_null_and_oldlenp"];
+                get_user_len_oldlenp[label="get_user_len_oldlenp"];
+                len_not_null[label="len_not_null"];
+                set_l_strlen_table_data[label="set_l_strlen_table_data"];
+                len_great_l[label="len_great_l"];
+                set_len_l[label="set_len_l"];
+                len_not_small_table_maxlen[label="len_not_small_table_maxlen"];
+                copy_to_user_oldval_table_data_len[label="copy_to_user_oldval_table_data_len"];
+                put_user_0_oldval_add_len[label="put_user_0_oldval_add_len"];
+                put_user_len_oldlenp[label="put_user_len_oldlenp"];
+                newval_not_null_and_newlen_not_null[label="newval_not_null_and_newlen_not_null"];
+                set_len_newlen[label="set_len_newlen"];
+                len_great_table_maxlen[label="len_great_table_maxlen"];
+                set_len_table_maxlen[label="set_len_table_maxlen"];
+                copy_from_user_table_data_newval_len[label="copy_from_user_table_data_newval_len"];
+                len_eq_table_maxlen[label="len_eq_table_maxlen"];
+                dec_len[label="dec_len"];
+                set_table_data_len_0[label="set_table_data_len_0"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sysctl_intvec{
+                label="int sysctl_intvec(ctl_table *table, int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp, void __user *newval, size_t newlen, void **context)";
+                newval_not_null_and_newlen_not_null[label="newval_not_null_and_newlen_not_null"];
+                set_vec_newval[label="set_vec_newval"];
+                set_min_table_extra1[label="set_min_table_extra1"];
+                set_max_table_extra2[label="set_max_table_extra2"];
+                newlen_mod_sizeof_int_not_eq_0[label="newlen_mod_sizeof_int_not_eq_0"];
+                return_EINVAL[label="return_EINVAL"];
+                table_extra1_null_and_table_extra2_null[label="table_extra1_null_and_table_extra2_null"];
+                return_0[label="return_0"];
+                newlen_great_table_maxlen[label="newlen_great_table_maxlen"];
+                set_newlen_table_maxlen[label="set_newlen_table_maxlen"];
+                set_length_newlen_div_sizeof_int[label="set_length_newlen_div_sizeof_int"];
+                for_i_length[label="for_i_length"];
+                get_user_value_vec_add_i[label="get_user_value_vec_add_i"];
+                min_not_null_and_value_small_min_i[label="min_not_null_and_value_small_min_i"];
+                max_not_null_and_value_great_max_i[label="max_not_null_and_value_great_max_i"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sysctl_jiffies{
+                label="int sysctl_jiffies(ctl_table *table, int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp, void __user *newval, size_t newlen, void **context)";
+                oldval_not_null[label="oldval_not_null"];
+                oldlenp_not_null[label="oldlenp_not_null"];
+                get_user_olen_oldlenp[label="get_user_olen_oldlenp"];
+                olen_not_eq_sizeof_int[label="olen_not_eq_sizeof_int"];
+                return_EINVAL[label="return_EINVAL"];
+                put_user_table_data_div_HZ_oldval_or_oldlenp_and_put_user_sizeof_int_oldlenp[label="put_user_table_data_div_HZ_oldval_or_oldlenp_and_put_user_sizeof_int_oldlenp"];
+                newval_not_null_and_newlen_not_nullnewlen_not_eq_sizeof_int[label="newval_not_null_and_newlen_not_nullnewlen_not_eq_sizeof_int"];
+                return_EINVAL[label="return_EINVAL"];
+                get_user_new_newval[label="get_user_new_newval"];
+                set_table_data_new_multi_HZ[label="set_table_data_new_multi_HZ"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_sysctl_ms_jiffies{
+                label="int sysctl_ms_jiffies(ctl_table *table, int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp, void __user *newval, size_t newlen, void **context)";
+                oldval_not_null[label="oldval_not_null"];
+                oldlenp_not_null[label="oldlenp_not_null"];
+                get_user_olen_oldlenp[label="get_user_olen_oldlenp"];
+                olen_not_eq_sizeof_int[label="olen_not_eq_sizeof_int"];
+                return_EINVAL[label="return_EINVAL"];
+                put_user_jiffies_to_msecs_table_data_oldval_or_oldlenp_not_null_and_put_user_sizeof_int_oldlenp[label="put_user_jiffies_to_msecs_table_data_oldval_or_oldlenp_not_null_and_put_user_sizeof_int_oldlenp"];
+                returN_EFAULT[label="returN_EFAULT"];
+                newval_not_null_and_newlen_not_null[label="newval_not_null_and_newlen_not_null"];
+                newlen_not_eq_sizeof_int[label="newlen_not_eq_sizeof_int"];
+                return_EINVAL[label="return_EINVAL"];
+                get_user_new_newval[label="get_user_new_newval"];
+                set_table_data_msecs_to_jiffies_new[label="set_table_data_msecs_to_jiffies_new"];
+                return_1[label="return_1"];
+        }
 }
