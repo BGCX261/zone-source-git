@@ -1,0 +1,83 @@
+digraph user_c{
+	subgraph cluster_uid_hash_insert{
+		label="static inline void uid_hash_insert(struct user_struct *up, struct list_head *hashent)";
+		list_add_up_uidhash_list_hashent[label="list_add_up_uidhash_list_hashent"];
+	}
+
+	subgraph cluster_uid_hash_remove{
+		label="static inline void uid_hash_remove(struct user_struct *up)";
+		list_del_up_uidhash_list[label="list_del_up_uidhash_list"];
+		
+	}
+
+	subgraph cluster_uid_hash_find{
+		label="static inline struct user_struct *uid_hash_find(uid_t uid, struct list_head *hashent)";
+		list_for_each_up_hashent[label="list_for_each_up_hashent"];
+		set_user_list_entry_up_struct_user_struct_uidhash_list[label="set_user_list_entry_up_struct_user_struct_uidhash_list"];
+		user_uid_eq_uid[label="user_uid_eq_uid"];
+		atomic_inc_user___count[label="atomic_inc_user___count"];
+		return_user[label="return_user"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_find_user{
+		label="struct user_struct *find_user(uid_t uid)";
+		lock_uidhash_lock[label="lock_uidhash_lock"];
+		set_ret_uid_hash_find_uid_uidhashentry_uid[label="set_ret_uid_hash_find_uid_uidhashentry_uid"];
+		unlock_uidhash_lock[label="unlock_uidhash_lock"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_alloc_uid{
+		label="struct user_struct * alloc_uid(uid_t uid)";
+		set_hashent_uidhashentry_uid[label="set_hashent_uidhashentry_uid"];
+		lock_uidhash_lock[label="lock_uidhash_lock"];
+		set_up_uid_hash_find_uid_hashent[label="set_up_uid_hash_find_uid_hashent"];
+		unlock_uidhash_lock[label="unlock_uidhash_lock"];
+		up_null[label="up_null"];
+		set_new_kmem_cache_alloc_uid_cachep_SLAB_KERNEL[label="set_new_kmem_cache_alloc_uid_cachep_SLAB_KERNEL"];
+		new_null[label="new_null"];
+		return_NULL[label="return_NULL"];
+		set_new_uid_uid[label="set_new_uid_uid"];
+		atomic_set_new___count_1[label="atomic_set_new___count_1"];
+		atomic_set_new_processes_0[label="atomic_set_new_processes_0"];
+		atomic_set_new_files_0[label="atomic_set_new_files_0"];
+		atomic_set_new_sigpending_0[label="atomic_set_new_sigpending_0"];
+		set_new_mq_bytes_0[label="set_new_mq_bytes_0"];
+		set_new_locked_shm_0[label="set_new_locked_shm_0"];
+		alloc_uid_keyring_new_small_0[label="alloc_uid_keyring_new_small_0"];
+		kmem_cache_free_uid_cachep_new[label="kmem_cache_free_uid_cachep_new"];
+		return_NULL[label="return_NULL"];
+		lock_uidhash_lock[label="lock_uidhash_lock"];
+		set_up_uid_hash_find_uid_hashent[label="set_up_uid_hash_find_uid_hashent"];
+		up_not_null[label="up_not_null"];
+		key_put_new_uid_keyring[label="key_put_new_uid_keyring"];
+		key_put_new_session_keyring[label="key_put_new_session_keyring"];
+		kmem_cache_free_uid_cachep_new[label="kmem_cache_free_uid_cachep_new"];
+		uid_hash_insert_new_hashent[label="uid_hash_insert_new_hashent"];
+		set_up_new[label="set_up_new"];
+		unlock_uidhash_lock[label="unlock_uidhash_lock"];
+		return_up[label="return_up"];
+	}
+
+	subgraph cluster_switch_uid{
+		label="void switch_uid(struct user_struct *new_user)";
+		set_old_user_current_user[label="set_old_user_current_user"];
+		atomic_inc_new_user_processes[label="atomic_inc_new_user_processes"];
+		atomic_dec_old_user_processes[label="atomic_dec_old_user_processes"];
+		set_switch_uid_keyring_new_user[label="set_switch_uid_keyring_new_user"];
+		free_uid_old_user[label="free_uid_old_user"];
+		suid_keys_current[label="suid_keys_current"];
+	}
+
+	subgraph cluster_uid_cache_init{
+		label="static int __init uid_cache_init(void)";
+		set_uid_cachep_kmem_cache_create_uid_cache_sizeof_struct_user_struct_0_SLAB_HWCACHE_ALIGN_SLAB_PANIC_NULL_NULL[label="set_uid_cachep_kmem_cache_create_uid_cache_sizeof_struct_user_struct_0_SLAB_HWCACHE_ALIGN_SLAB_PANIC_NULL_NULL"];
+		for_n_UIDHASH_SZ[label="for_n_UIDHASH_SZ"];
+		INIT_LIST_HEAD_uidhash_table_add_n[label="INIT_LIST_HEAD_uidhash_table_add_n"];
+		lock_uidhash_lock[label="lock_uidhash_lock"];
+		uid_hash_insert_root_user_uidhashentry_0[label="uid_hash_insert_root_user_uidhashentry_0"];
+		unlock_uidhash_lock[label="unlock_uidhash_lock"];
+		return_0[label="return_0"];
+	}
+}

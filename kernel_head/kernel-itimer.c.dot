@@ -105,4 +105,42 @@ digraph itimer_c{
 				ovalue_null[label="ovalue_null"];
 				copy_to_user[label="copy_to_user_ovalue_get_buffer"];
 		}
+
+		subgraph cluster_it_real_value{
+			label="static unsigned long it_real_value(struct signal_struct *sig)";
+			timer_pending_sig_real_timer_not_null[label="timer_pending_sig_real_timer_not_null"];
+			set_val_sig_real_timer_expires_sub_jiffies[label="set_val_sig_real_timer_expires_sub_jiffies"];
+			val_not_great_0[label="val_not_great_0"];
+			set_val_1[label="set_val_1"];
+			return_val[label="return_val"];
+		}
+
+		subgraph cluster_sys_getitimer{
+			label="asmlinkage long sys_getitimer(int which, struct itimerval __user *value)";
+			set_error_EFAULT[label="set_error_EFAULT"];
+			value_not_null[label="value_not_null"];
+			set_error_do_getitimer_which_get_buffer[label="set_error_do_getitimer_which_get_buffer"];
+			error_null_and_copy_to_user_value_get_buffer_sizeof_get_buffer[label="error_null_and_copy_to_user_value_get_buffer_sizeof_get_buffer"];
+			set_error_EFUALT[label="set_error_EFUALT"];
+			return_error[label="return_error"];
+		}
+
+		subgraph cluster_it_real_arm{
+			label="static inline void it_real_arm(struct task_struct *p, unsigned long interval)";
+			set_p_signal_it_real_value_interval[label="set_p_signal_it_real_value_interval"];
+			interval_eq_0[label="interval_eq_0"];
+			return[label="return"];
+			interval_great_LONG_MAX[label="interval_great_LONG_MAX"];
+			set_interval_LONG_MAX[label="set_interval_LONG_MAX"];
+			set_p_signal_real_timer_expires_jiffies_add_interval_add_1[label="set_p_signal_real_timer_expires_jiffies_add_interval_add_1"];
+			add_timer_p_signal_real_timer[label="add_timer_p_signal_real_timer"];
+		}
+
+		subgraph cluster_it_real_fn{
+			label="void it_real_fn(unsigned long __data)";
+			set_p___data[label="set_p___data"];
+			send_group_sig_info_SIGALRM_SEND_SIG_PRIV_p[label="send_group_sig_info_SIGALRM_SEND_SIG_PRIV_p"];
+			it_real_arm_p_signal_it_real_incr[label="it_real_arm_p_signal_it_real_incr"];
+		}
+
 }

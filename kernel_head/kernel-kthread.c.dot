@@ -1,0 +1,97 @@
+digraph kthread_c{
+	subgraph cluster_kthread_should_stop{
+		label="int kthread_should_stop(void)";
+		return_kthread_stop_info_k_eq_current[label="return_kthread_stop_info_k_eq_current"];
+	}
+
+	subgraph cluster_kthread_exit_files{
+		label="static void kthread_exit_files(void)";
+		set_tsk_current[label="set_tsk_current"];
+		exit_fs_tsk[label="exit_fs_tsk"];
+		set_fs_init_task_fs[label="set_fs_init_task_fs"];
+		set_tsk_fs_fs[label="set_tsk_fs_fs"];
+		atomic_inc_fs_count[label="atomic_inc_fs_count"];
+		exit_files_tsk[label="exit_files_tsk"];
+		set_current_files_init_task_files[label="set_current_files_init_task_files"];
+		atomic_inc_tsk_files_count[label="atomic_inc_tsk_files_count"];
+	}
+
+	subgraph cluster_kthread{
+		label="static int kthread(void *_create)";
+		set_create__create[label="set_create__create"];
+		set_ret_EINTR[label="set_ret_EINTR"];
+		kthread_exit_files[label="kthread_exit_files"];
+		set_threadfn_create_threadfn[label="set_threadfn_create_threadfn"];
+		set_data_create_data[label="set_data_create_data"];
+		sigfillset_blocked[label="sigfillset_blocked"];
+		sigprocmask_SIG_BLOCK_blocked_NULL[label="sigprocmask_SIG_BLOCK_blocked_NULL"];
+		flush_signals_current[label="flush_signals_current"];
+		set_cpus_allowed_current_CPU_MASK_ALL[label="set_cpus_allowed_current_CPU_MASK_ALL"];
+		__set_current_state_TASK_INTERRUPTIBLE[label="__set_current_state_TASK_INTERRUPTIBLE"];
+		complete_create_started[label="complete_create_started"];
+		schedule[label="schedule"];
+		kthread_should_stop_null[label="kthread_should_stop_null"];
+		set_ret_threadfn_data[label="set_ret_threadfn_data"];
+		kthread_should_stop_not_null[label="kthread_should_stop_not_null"];
+		set_kthread_stop_info_err_ret[label="set_kthread_stop_info_err_ret"];
+		complete_kthread_stop_info_done[label="complete_kthread_stop_info_done"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_keventd_create_kthread{
+		label="static void keventd_create_kthread(void *_create)";
+		set_create__create[label="set_create__create"];
+		set_pid_kernel_thread_kthread_create_CLONE_FS_CLONE_FILES_SIGCHLD[label="set_pid_kernel_thread_kthread_create_CLONE_FS_CLONE_FILES_SIGCHLD"];
+		pid_small_0[label="pid_small_0"];
+		set_create_result_ERR_PTR_pid[label="set_create_result_ERR_PTR_pid"];
+		wait_for_completion_create_started[label="wait_for_completion_create_started"];
+		create_result_find_task_by_pid_pid[label="create_result_find_task_by_pid_pid"];
+		complete_create_done[label="complete_create_done"];
+	}
+
+	subgraph cluster_kthread_create{
+		label="struct task_struct *kthread_create(int (*threadfn)(void *data), void *data, const char namefmt[], ...)";
+		DECLARE_WORK_work_keventd_create_kthread_create[label="DECLARE_WORK_work_keventd_create_kthread_create"];
+		create_threadfn_threadfn[label="create_threadfn_threadfn"];
+		set_create_data_data[label="set_create_data_data"];
+		init_completion_create_started[label="init_completion_create_started"];
+		init_completion_create_done[label="init_completion_create_done"];
+		helper_wq_null[label="helper_wq_null"];
+		work_func_work_data[label="work_func_work_data"];
+		queue_work_helper_wq_work[label="queue_work_helper_wq_work"];
+		wait_for_completion_create_done[label="wait_for_completion_create_done"];
+		IS_ERR_create_result_null[label="IS_ERR_create_result_null"];
+		va_start_args_namefmt[label="va_start_args_namefmt"];
+		va_end_args[label="va_end_args"];
+		return_args[label="return_args"];
+	}
+
+	subgraph cluster_kthread_bind{
+		label="void kthread_bind(struct task_struct *k, unsigned int cpu)";
+		wait_task_inactive_k[label="wait_task_inactive_k"];
+		set_task_cpu_k_cpu[label="set_task_cpu_k_cpu"];
+		set_k_cpus_allowed_cpumask_of_cpu_cpu[label="set_k_cpus_allowed_cpumask_of_cpu_cpu"];
+	}
+
+	subgraph cluster_kthread_stop{
+		label="int kthread_stop(struct task_struct *k)";
+		down_kthread_stop_lock[label="down_kthread_stop_lock"];
+		get_task_struct_k[label="get_task_struct_k"];
+		init_completion_kthread_stop_info_done[label="init_completion_kthread_stop_info_done"];
+		smp_wmb[label="smp_wmb"];
+		set_kthread_stop_info_k_k[label="set_kthread_stop_info_k_k"];
+		wake_up_process_k[label="wake_up_process_k"];
+		put_task_struct_k[label="put_task_struct_k"];
+		wait_for_completion_kthread_stop_info_done[label="wait_for_completion_kthread_stop_info_done"];
+		clear_kthread_stop_info_k[label="clear_kthread_stop_info_k"];
+		set_ret_kthread_stop_info_err[label="set_ret_kthread_stop_info_err"];
+		up_kthread_stop_lock[label="up_kthread_stop_lock"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_helper_init{
+		label="static __init int helper_init(void)";
+		helper_wq_create_singlethread_workqueue_kthread[label="helper_wq_create_singlethread_workqueue_kthread"];
+		return_0[label="return_0"];
+	}
+}

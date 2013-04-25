@@ -83,4 +83,79 @@ digraph wait_c{
 				list_del_init -> spin_unlock_irqrestore;
 		}
 
+		subgraph cluster_prepare_to_wait_exclusive{
+			label="void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)";
+			wait_flags_self_set_WQ_FLAG_EXCLUSIVE[label="wait_flags_self_set_WQ_FLAG_EXCLUSIVE"];
+			spin_lock_q_lock[label="spin_lock_q_lock"];
+			list_empty_wait_task_list_true[label="list_empty_wait_task_list_true"];
+			__add_wait_queue_tail_q_wait[label="__add_wait_queue_tail_q_wait"];
+			is_sync_wait_wait_true[label="is_sync_wait_wait_true"];
+			set_current_state_state[label="set_current_state_state"];
+			unlock_q_lock[label="unlock_q_lock"];
+		}
+
+		subgraph cluster_wake_bit_function{
+			label="int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *arg)";
+			set_key_arg[label="set_key_arg"];
+			set_wait_bit_container_of_wait_struct_wait_bit_queue_wait[label="set_wait_bit_container_of_wait_struct_wait_bit_queue_wait"];
+			wait_bit_key_flags_not_eq_key_flags_or_wait_bit_key_bit_nr_not_eq_key_bit_nr_or_test_bit_key_bit_nr_key_flags[label="wait_bit_key_flags_not_eq_key_flags_or_wait_bit_key_bit_nr_not_eq_key_bit_nr_or_test_bit_key_bit_nr_key_flags"];
+			return_0[label="return_0"];
+			return_autoremove_wake_function_wait_mode_sync_key[label="return_autoremove_wake_function_wait_mode_sync_key"];
+		}
+
+		subgraph cluster___wait_on_bit{
+			label="int __sched fastcall __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode)";
+			set_ret_0[label="set_ret_0"];
+			prepare_to_wait_wq_q_wait_mode[label="prepare_to_wait_wq_q_wait_mode"];
+			test_bit_q_key_bit_nr_q_key_flags_not_null[label="test_bit_q_key_bit_nr_q_key_flags_not_null"];
+			set_ret_action_q_key_flags[label="set_ret_action_q_key_flags"];
+			test_bit_q_key_bit_nr_q_key_flags_not_null_and_ret_null[label="test_bit_q_key_bit_nr_q_key_flags_not_null_and_ret_null"];
+			finish_wait_wq_q_wait[label="finish_wait_wq_q_wait"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_out_of_line_wait_on_bit{
+			label="int __sched fastcall out_of_line_wait_on_bit(void *word, int bit, int (*action)(void *), unsigned mode)";
+			set_wq_bit_waitqueue_word_bit[label="set_wq_bit_waitqueue_word_bit"];
+			DEFINE_WAIT_BIT_wait_word_bit[label="DEFINE_WAIT_BIT_wait_word_bit"];
+			return__wait_on_bit_wq_wait_action_mode[label="return__wait_on_bit_wq_wait_action_mode"];
+		}
+
+		subgraph cluster___wait_on_bit_lock{
+			label="int __sched fastcall __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode)";
+			set_ret_0[label="set_ret_0"];
+			prepare_to_wait_exclusive_wq_q_wait_mode[label="prepare_to_wait_exclusive_wq_q_wait_mode"];
+			test_bit_q_key_bit_nr_q_key_flags[label="test_bit_q_key_bit_nr_q_key_flags"];
+			set_ret_action_q_key_flags[label="set_ret_action_q_key_flags"];
+			test_and_set_bit_q_key_bit_nr_q_key_flags[label="test_and_set_bit_q_key_bit_nr_q_key_flags"];
+			finish_wait_wq_q_wait[label="finish_wait_wq_q_wait"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_out_of_line_wait_on_bit_lock{
+			label="int __sched fastcall out_of_line_wait_on_bit_lock(void *word, int bit, int (*action)(void *), unsigned mode)";
+			set_wq_bit_waitqueue_word_bit[label="set_wq_bit_waitqueue_word_bit"];
+			DEFINE_WAIT_BIT_wait_word_bit[label="DEFINE_WAIT_BIT_wait_word_bit"];
+			return___wait_on_bit_lock_wq_wait_action_mode[label="return___wait_on_bit_lock_wq_wait_action_mode"];
+		}
+
+		subgraph cluster___wake_up_bit{
+			label="void fastcall __wake_up_bit(wait_queue_head_t *wq, void *word, int bit)";
+			set_key___WAIT_BIT_KEY_INITIALIZER_word_bit[label="set_key___WAIT_BIT_KEY_INITIALIZER_word_bit"];
+			waitqueue_active_wq[label="waitqueue_active_wq"];
+			__wake_up_wq_TASK_INTERRUPTIBLE_or_TASK_UNINTRUPTIBLE_1_key[label="__wake_up_wq_TASK_INTERRUPTIBLE_or_TASK_UNINTRUPTIBLE_1_key"];
+		}
+
+		subgraph cluster_wakeup_bit{
+			label="void fastcall wake_up_bit(void *word, int bit)";
+			__wake_up_bit_bit_waitqueue_word_bit_word_bit[label="__wake_up_bit_bit_waitqueue_word_bit_word_bit"];
+		}
+
+		subgraph cluster_bit_waitqueue{
+			label="fastcall wait_queue_head_t *bit_waitqueue(void *word, int bit)";
+			set_shift_5_or_6_decide_BITS_PER_LONG_eq_32[label="set_shift_5_or_6_decide_BITS_PER_LONG_eq_32"];
+			set_zone_page_zone_virt_to_page_word[label="set_zone_page_zone_virt_to_page_word"];
+			set_val_word_left_move_shift_or_bit[label="set_val_word_left_move_shift_or_bit"];
+			return_zone_wait_table_hash_long_val_zone_wait_table_bits[label="return_zone_wait_table_hash_long_val_zone_wait_table_bits"];
+		}
 }

@@ -1,0 +1,271 @@
+digraph pid_c{
+        subgraph cluster_pid_hashfn{
+                label="pid_hashfn(nr)";
+                
+                hash_long[label="hash_long((unsigned long)nr, pidhash_shift)"];
+        }
+
+        subgraph cluster_do_while_each_task_pid{
+                label="do_each_task_pid(who, type, task),\l
+		while_each_task_pid(who, type, task)";
+
+		do[label="]find_task_by_pid_type(type, who)"];
+		while[label="pid_task((task)->pids[type].pid_list.next, type)\l
+		hlist_unhashed(&(task)->pids[type].pid_chain)"];
+
+		do -> while;
+        }
+
+        subgraph cluster_find_task_by_pid_type{
+                label="find_task_by_pid_type(int type, int nr)";
+
+		find_pid[label="find_pid(type, nr)"];
+		pid_null;
+		pid_task[label="pid_task(&pid->pid_list, type)"];
+        }
+        
+        subgraph cluster_find_task_by_pid_type{
+                label="attach_pid(task_t *task, enum pid_type type, int nr)";
+
+		find_pid[label="find_pid(type, nr);"];
+		pid_null;
+		hlist_add_heade[label="hlist_add_head(&task_pid->pid_chain,\l&pid_hash[type][pid_hashfn(nr)]);"];
+		INIT_LIST_HEAD[label="NIT_LIST_HEAD(&task_pid->pid_list);"];
+		INIT_HLIST_NODE[label="INIT_HLIST_NODE(&task_pid->pid_chain);"];
+		list_add_tail[label="list_add_tail(&task_pid->pid_list, &pid->pid_list);"];
+		update_pid_nr;
+
+		find_pid -> pid_null;
+		pid_null -> hlist_add_heade[label="null"];
+		hlist_add_heade -> INIT_LIST_HEAD;
+		pid_null -> INIT_HLIST_NODE;
+		INIT_HLIST_NODE -> list_add_tail;
+
+		INIT_LIST_HEAD -> update_pid_nr;
+		list_add_tail -> update_pid_nr;
+        }
+
+        subgraph cluster__detach_pid{
+                label="__detach_pid(task_t *task, enum pid_type type)";
+
+		hlist_unhashed[label="hlist_unhashed(&pid->pid_chain)"];
+		hlist_del[label="hlist_del(&pid->pid_chain);"];
+		list_empty[label="list_empty(&pid->pid_list)"];
+		get_pid_nr;
+		list_entry[label="list_entry(pid->pid_list.next,struct pid, pid_list);"];
+		hlist_add_head[label="hlist_add_head(&pid_next->pid_chain,&pid_hash[type][pid_hashfn(pid_next->nr)]);"];
+		list_del[label="list_del(&pid->pid_list);"];
+		set_pid_nr;
+		
+		return_nr;
+
+		hlist_unhashed -> hlist_del[label="hash"];
+		hlist_del -> list_empty;
+		list_empty -> get_pid_nr[label="empty"];
+		get_pid_nr -> list_del;
+		list_del -> set_pid_nr;
+		set_pid_nr -> return_nr;
+		list_empty -> list_entry;
+		list_entry -> hlist_add_head[label="insert next pid from pid_list to hash"];
+		hlist_add_head -> list_del;
+
+		hlist_unhashed -> list_del;
+        }
+
+        subgraph cluster_detach_pid{
+                label="detach_pid(task_t *task, enum pid_type type)";
+		node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+		__detach_pid[label="__detach_pid(task, type);"];
+		// per_PID_list_null;
+		task_not_in_other_hash_list[label="task_not_in_other_hash_list"];
+		free_pidmap[label="free_pidmap(nr)"];
+		return;
+
+		__detach_pid -> task_not_in_other_hash_list[label="per-PID list is empty return nr"];
+		__detach_pid -> return;
+		task_not_in_other_hash_list -> return[label="true"];
+		task_not_in_other_hash_list -> free_pidmap;
+		free_pidmap -> return;
+	}
+
+		subgraph cluster_free_pidmap{
+			label="fastcall void free_pidmap(int pid)";
+			set_map_pidmap_array_add_pid_div_BITSPER_PAGE[label="set_map_pidmap_array_add_pid_div_BITSPER_PAGE"];
+			set_offset_pid_BITS_PER_PAGE_MASK_set[label="set_offset_pid_BITS_PER_PAGE_MASK_set"];
+			clear_bit_offset_map_page[label="clear_bit_offset_map_page"];
+			atomic_inc_map_nr_free[label="atomic_inc_map_nr_free"];
+		}
+
+		subgrap cluster_alloc_pidmap{
+			label="int alloc_pidmap(void)";
+			set_last_last_pid[label="set_last_last_pid"];
+			set_pid_last_add_1[label="set_pid_last_add_1"];
+			pid_not_small_pid_max[label="pid_not_small_pid_max"];
+			set_pid_RESERVED_PIDS[label="set_pid_RESERVED_PIDS"];
+			set_offset_pid_BITS_PER_PAGE_MASK_set[label="set_offset_pid_BITS_PER_PAGE_MASK_set"];
+			set_map_pidmap_array_pid_div_BITS_PER_PAGE[label="set_map_pidmap_array_pid_div_BITS_PER_PAGE"];
+			set_max_scan_pid_max_add_BITS_PER_PAGE_sub_1_div_BITS_PER_PAGE_sub_rever_offset[label="set_max_scan_pid_max_add_BITS_PER_PAGE_sub_1_div_BITS_PER_PAGE_sub_rever_offset"];
+			for_i_max_scan[label="for_i_max_scan"];
+			map_page_null[label="map_page_null"];
+			set_page_get_zeroed_page_GFP_KERNEL[label="set_page_get_zeroed_page_GFP_KERNEL"];
+			spin_lock_pidmap_lock[label="spin_lock_pidmap_lock"];
+			map_page_not_null[label="map_page_not_null"];
+			free_page_page[label="free_page_page"];
+			set_map_page_page[label="set_map_page_page"];
+			spin_unlock_pidmap_lock[label="spin_unlock_pidmap_lock"];
+			map_page_null[label="map_page_null"];
+			atomic_read_map_nr_free_not_null[label="atomic_read_map_nr_free_not_null"];
+			test_and_set_bit_offset_map_page_null[label="test_and_set_bit_offset_map_page_null"];
+			atomic_dec_map_nr_free[label="atomic_dec_map_nr_free"];
+			set_last_pid_pid[label="set_last_pid_pid"];
+			return_pid[label="return_pid"];
+			set_offset_find_next_offset_map_offset[label="set_offset_find_next_offset_map_offset"];
+			set_pid_mk_pid_map_offset[label="set_pid_mk_pid_map_offset"];
+			offset_small_BITS_PER_PAGE_and_pid_small_pid_max_and_i_not_eq_max_scan_or_pid_small_last_or_last_add_1_BITS_PER_PAGE_MASK_set_rever[label="offset_small_BITS_PER_PAGE_and_pid_small_pid_max_and_i_not_eq_max_scan_or_pid_small_last_or_last_add_1_BITS_PER_PAGE_MASK_set_rever"];
+			map_small_pidmap_array_pid_max_sub_1_div_BITS_PER_PAGE[label="map_small_pidmap_array_pid_max_sub_1_div_BITS_PER_PAGE"];
+			inc_map[label="inc_map"];
+			set_offset_0[label="set_offset_0"];
+			set_map_pidmap_array_0[label="set_map_pidmap_array_0"];
+			set_offset_RESERVED_PIDS[label="set_offset_RESERVED_PIDS"];
+			last_eq_offset[label="last_eq_offset"];
+			set_pid_mk_pid_map_offset[label="set_pid_mk_pid_map_offset"];
+			return_neg_1[label="return_neg_1"];
+		}
+
+		subgraph cluster_find_pid{
+			label="struct pid * fastcall find_pid(enum pid_type type, int nr)";
+			hlist_for_each_entry_pid_elem_pid_hash_type_pid_hashfn_nr_pid_chain[label="hlist_for_each_entry_pid_elem_pid_hash_type_pid_hashfn_nr_pid_chain"];
+			pid_nr_eq_nr[label="pid_nr_eq_nr"];
+			return_pid[label="return_pid"];
+			return_NULL[label="return_NULL"];
+		}
+
+		subgraph cluster_find_task_by_pid_type{
+			label="attach_pid(task_t *task, enum pid_type type, int nr)";
+			size="10,18";
+			ratio=filled;
+        
+			node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+			find_pid[label="find_pid(type, nr);"];
+			pid_null;
+			hlist_add_heade[label="hlist_add_head(&task_pid->pid_chain,\l&pid_hash[type][pid_hashfn(nr)]);"];
+			INIT_LIST_HEAD[label="NIT_LIST_HEAD(&task_pid->pid_list);"];
+			INIT_HLIST_NODE[label="INIT_HLIST_NODE(&task_pid->pid_chain);"];
+			list_add_tail[label="list_add_tail(&task_pid->pid_list, &pid->pid_list);"];
+			update_pid_nr;
+
+			find_pid -> pid_null;
+			pid_null -> hlist_add_heade[label="null"];
+			hlist_add_heade -> INIT_LIST_HEAD;
+			pid_null -> INIT_HLIST_NODE;
+			INIT_HLIST_NODE -> list_add_tail;
+
+			INIT_LIST_HEAD -> update_pid_nr;
+			list_add_tail -> update_pid_nr;
+		}
+
+		subgraph cluster__detach_pid{
+			label="__detach_pid(task_t *task, enum pid_type type)";
+			ratio=filled;
+        
+			node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+			hlist_unhashed[label="hlist_unhashed(&pid->pid_chain)"];
+			hlist_del[label="hlist_del(&pid->pid_chain);"];
+			list_empty[label="list_empty(&pid->pid_list)"];
+			get_pid_nr;
+			list_entry[label="list_entry(pid->pid_list.next,struct pid, pid_list);"];
+			hlist_add_head[label="hlist_add_head(&pid_next->pid_chain,&pid_hash[type][pid_hashfn(pid_next->nr)]);"];
+			list_del[label="list_del(&pid->pid_list);"];
+			set_pid_nr;
+		
+			return_nr;
+
+			hlist_unhashed -> hlist_del[label="hash"];
+			hlist_del -> list_empty;
+			list_empty -> get_pid_nr[label="empty"];
+			get_pid_nr -> list_del;
+			list_del -> set_pid_nr;
+			set_pid_nr -> return_nr;
+			list_empty -> list_entry;
+			list_entry -> hlist_add_head[label="insert next pid from pid_list to hash"];
+			hlist_add_head -> list_del;
+
+			hlist_unhashed -> list_del;
+		
+		}
+
+		digraph detach_pid{
+			label="detach_pid(task_t *task, enum pid_type type)";
+			ratio=filled;
+        
+			node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+			__detach_pid[label="__detach_pid(task, type);"];
+			// per_PID_list_null;
+			task_not_in_other_hash_list[label="task_not_in_other_hash_list"];
+			free_pidmap[label="free_pidmap(nr)"];
+			return;
+
+			__detach_pid -> task_not_in_other_hash_list[label="per-PID list is empty return nr"];
+			__detach_pid -> return;
+			task_not_in_other_hash_list -> return[label="true"];
+			task_not_in_other_hash_list -> free_pidmap;
+			free_pidmap -> return;
+		}
+
+		subgraph cluster_switch_exec_pids{
+			label="void switch_exec_pids(task_t *leader, task_t *thread)";
+			__detach_pid_leader_PIDTYPE_PID[label="__detach_pid_leader_PIDTYPE_PID"];
+			__detach_pid_leader_PIDTYPE_TGID[label="__detach_pid_leader_PIDTYPE_TGID"];
+			__detach_pid_leader_PIDTYPE_PGID[label="__detach_pid_leader_PIDTYPE_PGID"];
+			__detach_pid_leader_PIDTYPE_SID[label="__detach_pid_leader_PIDTYPE_SID"];
+			__detach_pid_thread_PIDTYPE_PID[label="__detach_pid_thread_PIDTYPE_PID"];
+			__detach_pid_thread_PIDTYPE_TGID[label="__detach_pid_thread_PIDTYPE_TGID"];
+			set_leader_pid_leader_tgid_thread_pid[label="set_leader_pid_leader_tgid_thread_pid"];
+			set_thread_pid_thread_tgid[label="set_thread_pid_thread_tgid"];
+			attach_pid_thread_PIDTYPE_PID_thread_pid[label="attach_pid_thread_PIDTYPE_PID_thread_pid"];
+			attach_pid_thread_PIDTYPE_TGID_thread_tgid[label="attach_pid_thread_PIDTYPE_TGID_thread_tgid"];
+			attach_pid_thread_PIDTYPE_PGID_thread_signal_pgrp[label="attach_pid_thread_PIDTYPE_PGID_thread_signal_pgrp"];
+			attach_pid_thread_PIDTYPE_SID_thread_signal_session[label="attach_pid_thread_PIDTYPE_SID_thread_signal_session"];
+			list_add_tail_thread_tasks_init_task_tasks[label="list_add_tail_thread_tasks_init_task_tasks"];
+			attach_pid_leader_PIDTYPE_PID_leader_pid[label="attach_pid_leader_PIDTYPE_PID_leader_pid"];
+			attach_pid_leader_PIDTYPE_TGID_leader_tgid[label="attach_pid_leader_PIDTYPE_TGID_leader_tgid"];
+			attach_pid_leader_PIDTYPE_PGID_leader_signal_pgrp[label="attach_pid_leader_PIDTYPE_PGID_leader_signal_pgrp"];
+			attach_pid_leader_PIDTYPE_SID_leaser_signal_session[label="attach_pid_leader_PIDTYPE_SID_leaser_signal_session"];
+		}
+
+		subgraph cluster_pidhash_init{
+			label="void __init pidhash_init(void)";
+	
+			size="10,18";
+			ratio=filled;
+        
+			node[style=filled, shape = box, margin="0.05,0.005",height="0.1",width="0.1"];
+
+			get_pidhash_shift_4_12[label="get_pidhash_shift_4_12"];
+			for_each_PIDTYPE[label="for_each_PIDTYPE"];
+			alloc_bootmem[label="alloc_bootmem"];
+			for_each_hash_entry[label="for_each_hash_entry"];
+			INIT_HLIST_HEAD[label="INIT_HLIST_HEAD"];
+
+			get_pidhash_shift_4_12 -> for_each_PIDTYPE;
+			for_each_PIDTYPE -> alloc_bootmem;
+			alloc_bootmem -> for_each_hash_entry;
+			for_each_hash_entry -> INIT_HLIST_HEAD;
+        INIT_HLIST_HEAD:s -> for_each_hash_entry:w;
+        INIT_HLIST_HEAD:s -> for_each_PIDTYPE:w;
+		}
+
+		subgraph cluster_pidmap_init{
+			label="void __init pidmap_init(void)";
+			pidmap_array_page_get_zeroed_page_GFP_KERNEL[label="pidmap_array_page_get_zeroed_page_GFP_KERNEL"];
+			set_bit_0_pidmap_array_page[label="set_bit_0_pidmap_array_page"];
+			atomic_dec_pidmap_array_nr_free[label="atomic_dec_pidmap_array_nr_free"];
+			for_i_PIDTYPE_MAX[label="for_i_PIDTYPE_MAX"];
+			attach_pid_current_i_0[label="attach_pid_current_i_0"];
+		}
+
+}
