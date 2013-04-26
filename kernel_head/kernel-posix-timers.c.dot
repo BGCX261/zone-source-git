@@ -1,0 +1,78 @@
+digraph posix_timers_c{
+	subgraph cluster_common_clock_getres{
+		label="static inline int common_clock_getres(clockid_t which_clock, struct timespec *tp)";
+		set_tp_tv_sec_0[label="set_tp_tv_sec_0"];
+		set_tp_tv_nsec_posix_clocks_which_clock_res[label="set_tp_tv_nsec_posix_clocks_which_clock_res"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_common_clock_get{
+		label="static inline int common_clock_get(clockid_t which_clock, struct timespec *tp)";
+		getnstimeofday_tp[label="getnstimeofday_tp"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_common_clock_set{
+		label="static inline int common_clock_set(clockid_t which_clock, struct timespec *tp)";
+		return_do_sys_settimeofday_tp_NULL[label="return_do_sys_settimeofday_tp_NULL"];
+	}
+
+	subgraph cluster_common_timer_create{
+		label="static inline int common_timer_create(struct k_itimer *new_timer)";
+		INIT_LIST_HEAD_new_timer_it_real_abs_timer_entry[label="INIT_LIST_HEAD_new_timer_it_real_abs_timer_entry"];
+		init_timer_new_timer_it_real_timer[label="init_timer_new_timer_it_real_timer"];
+		set_new_timer_it_real_timer_data_new_timer[label="set_new_timer_it_real_timer_data_new_timer"];
+		set_new_timer_it_real_timer_function_posix_timer_fn[label="set_new_timer_it_real_timer_function_posix_timer_fn"];
+		set_timer_inactive_new_timer[label="set_timer_inactive_new_timer"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_invalid_clockid{
+		label="static inline int invalid_clockid(clockid_t which_clock)";
+		which_clock_small_0[label="which_clock_small_0"];
+		return_0[label="return_0"];
+		which_clock_not_small_MAX_CLOCKS[label="which_clock_not_small_MAX_CLOCKS"];
+		return_1[label="return_1"];
+		posix_clocks_whick_clock_clock_getres_not_eq_NULL[label="posix_clocks_whick_clock_clock_getres_not_eq_NULL"];
+		return_0[label="return_0"];
+		posix_clocks_whick_clock_res_not_eq_0[label="posix_clocks_whick_clock_res_not_eq_0"];
+		return_0[label="return_0"];
+		return_1[label="return_1"];
+	}
+
+	subgraph cluster_init_posix_timers{
+		label="static __init int init_posix_timers(void)";
+		set_clock_realtime_res_CLOCK_REALTIME_RES_abs_struct_abs_list[label="set_clock_realtime_res_CLOCK_REALTIME_RES_abs_struct_abs_list"];
+		set_clock_monotonic_res_CLOCK_REALTIME_RES_abs_struct_NULL_clock_get_do_posix_clock_monotonic_get[label="set_clock_monotonic_res_CLOCK_REALTIME_RES_abs_struct_NULL_clock_get_do_posix_clock_monotonic_get"];
+		clock_set_do_posix_clock_nosettime[label="clock_set_do_posix_clock_nosettime"];
+		register_posix_clock_CLOCK_REALTIME_clock_realtime[label="register_posix_clock_CLOCK_REALTIME_clock_realtime"];
+		register_posix_clock_CLOCK_MONOTONIC_clock_monotonic[label="register_posix_clock_CLOCK_MONOTONIC_clock_monotonic"];
+		set_posix_timers_cache_kmem_cache_create_posix_timers_cache[label="set_posix_timers_cache_kmem_cache_create_posix_timers_cache"];
+		idr_init_posix_timers_id[label="idr_init_posix_timers_id"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_tstojiffie{
+		label="static void tstojiffie(struct timespec *tp, int res, u64 *jiff)";
+		set_sec_tp_tv_sec[label="set_sec_tp_tv_sec"];
+		set_nsec_tp_tv_nsec_add_res_sub_1[label="set_nsec_tp_tv_nsec_add_res_sub_1"];
+		nsec_great_NSEC_PER_SEC[label="nsec_great_NSEC_PER_SEC"];
+		inc_sec[label="inc_sec"];
+		nsec_self_sub_NSEC_PER_SEC[label="nsec_self_sub_NSEC_PER_SEC"];
+		set_jiff_mpy_l_X_l_ll_sec_SEC_CONVERSION_add_mpy_l_X_l_ll_nsec_NSEC_CONVERSION_right_move_NSEC_JIFFIE_SC_sub_SEC_JIFFIE_SC_right_move_SEC_JIFFIE_SC[label="set_jiff_mpy_l_X_l_ll_sec_SEC_CONVERSION_add_mpy_l_X_l_ll_nsec_NSEC_CONVERSION_right_move_NSEC_JIFFIE_SC_sub_SEC_JIFFIE_SC_right_move_SEC_JIFFIE_SC"];
+	}
+
+	subgraph cluster_add_clockset_delta{
+		label="static long add_clockset_delta(struct k_itimer *timr, struct timespec *new_wall_to)";
+		set_normalized_timespec_delta_new_wall_to_tv_sec_sub_timr_it_real_wall_to_prev_tv_sec_new_wall_to_tv_nsec_sub_timr_it_real_wall_to_prev_tv_nsec[label="set_normalized_timespec_delta_new_wall_to_tv_sec_sub_timr_it_real_wall_to_prev_tv_sec_new_wall_to_tv_nsec_sub_timr_it_real_wall_to_prev_tv_nsec"];
+		delta_tv_sec_or_delta_tv_nsec_not_null[label="delta_tv_sec_or_delta_tv_nsec_not_null"];
+		return_0[label="return_0"];
+		delata_tv_sec_small_0[label="delata_tv_sec_small_0"];
+		set_normalized_timespec_delta_neg_delta_tv_sec_1_sub_delta_tv_nsec_sub_posix_clocks_timr_it_clock_res[label="set_normalized_timespec_delta_neg_delta_tv_sec_1_sub_delta_tv_nsec_sub_posix_clocks_timr_it_clock_res"];
+		inc_sign[label="inc_sign"];
+		tstojiffie_delta_posix_clocks_timr_it_clock_res_exp[label="tstojiffie_delta_posix_clocks_timr_it_clock_res_exp"];
+		set_timr_it_real_wall_to_prev_new_wall_to[label="set_timr_it_real_wall_to_prev_new_wall_to"];
+		timr_it_real_timer_expires_self_add_neg_exp_or_exp_decide_sign[label="timr_it_real_timer_expires_self_add_neg_exp_or_exp_decide_sign"];
+		return_1[label="return_1"];
+	}
+}
