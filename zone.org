@@ -6314,3 +6314,5 @@ unregister_chrdev_region(fpga_dev, 1);
 以后按TAB要习惯用无名指，多使用右Ctrl
 
 为了减少小指的按键次为，我把按TAB和CAP的键都用无名指了。把按'_'改成按'-'.
+
+找到了另一种按SHIFT的方法，就的把整个小拇指按下去。
