@@ -720,5 +720,4 @@ digraph posix_cpu_timers_c{
                         register_posix_clock_CLOCK_THREAD_CPUTIME_ID_thread[label="register_posix_clock_CLOCK_THREAD_CPUTIME_ID_thread"];
                         return_0[label="return_0"];
                 }
-
 }
