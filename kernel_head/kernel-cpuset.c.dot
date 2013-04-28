@@ -449,4 +449,239 @@ digraph cpuset_c{
 		read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
 		return_n[label="return_n"];
 	}
+
+	subgraph cluster_pid_array_to_buf{
+		label="static int pid_array_to_buf(char *buf, int sz, pid_t *a, int npids)";
+		for_i_npids[label="for_i_npids"];
+		cnt_self_add_snprintf_buf_add_cnt_max_sz_sub_cnt_0[label="cnt_self_add_snprintf_buf_add_cnt_max_sz_sub_cnt_0"];
+		return_cnt[label="return_cnt"];
+	}
+
+	subgraph cluster_cpuset_tasks_open{
+		label="static int cpuset_tasks_open(struct inode *unused, struct file *file)";
+		set_cs___d_cs_file_f_dentry_d_parent[label="set_cs___d_cs_file_f_dentry_d_parent"];
+		file_f_mode_FMODE_READ_clear[label="file_f_mode_FMODE_READ_clear"];
+		return_0[label="return_0"];
+		set_ctr_kmalloc_ctr[label="set_ctr_kmalloc_ctr"];
+		set_npids_atomic_read_cs_count[label="set_npids_atomic_read_cs_count"];
+		set_pidarray_kmalloc_npids_multi_sizeof_pid_t[label="set_pidarray_kmalloc_npids_multi_sizeof_pid_t"];
+		set_npids_pid_array_load_pidarray_npids_cs[label="set_npids_pid_array_load_pidarray_npids_cs"];
+		sort_pidarray_npids_sizeof_pid_t_cmppid_NULL[label="sort_pidarray_npids_sizeof_pid_t_cmppid_NULL"];
+		set_ctr_bufsz_pid_array_to_buf_c_sizeof_c_pidarray_npids_sub_1[label="set_ctr_bufsz_pid_array_to_buf_c_sizeof_c_pidarray_npids_sub_1"];
+		set_buf_kmalloc_ctr_bufsz[label="set_buf_kmalloc_ctr_bufsz"];
+		set_ctr_bufsz_pid_array_to_buf_ctr_buf_ctr_bufsz_pidarray_npids[label="set_ctr_bufsz_pid_array_to_buf_ctr_buf_ctr_bufsz_pidarray_npids"];
+		kfree_pidarray[label="kfree_pidarray"];
+		set_file_private_data_ctr[label="set_file_private_data_ctr"];
+		return_0[label="return_0"];
+		kfree_pidarray[label="kfree_pidarray"];
+		kfree_ctr[label="kfree_ctr"];
+		return_ENOMEM[label="return_ENOMEM"];
+	}
+
+	subgraph cluster_cpuset_tasks_read{
+		label="static ssize_t cpuset_tasks_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)";
+		set_ctr_file_private_data[label="set_ctr_file_private_data"];
+		ppos_add_nbytes_great_ctr_bufsz[label="ppos_add_nbytes_great_ctr_bufsz"];
+		set_nbytes_ctr_bufsz_sub_ppos[label="set_nbytes_ctr_bufsz_sub_ppos"];
+		copy_to_user_buf_ctr_buf_ppos_nbytes[label="copy_to_user_buf_ctr_buf_ppos_nbytes"];
+		ppos_self_add_nbytes[label="ppos_self_add_nbytes"];
+		return_nbytes[label="return_nbytes"];
+	}
+
+	subgraph cluster_cpuset_tasks_release{
+		label="static int cpuset_tasks_release(struct inode *unused_inode, struct file *file)";
+		file_f_mode_FMODE_READ_set[label="file_f_mode_FMODE_READ_set"];
+		set_ctr_file_private_data[label="set_ctr_file_private_data"];
+		kfree_ctr_buf[label="kfree_ctr_buf"];
+		kfree_ctr[label="kfree_ctr"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_cpuset_populate_dir{
+		label="static int cpuset_populate_dir(struct dentry *cs_dentry)";
+		set_err_cpuset_add_file_cs_dentry_cft_cpus_small_0[label="set_err_cpuset_add_file_cs_dentry_cft_cpus_small_0"];
+		return_err[label="return_err"];
+		set_err_cpuset_add_file_cs_dentry_cft_mems_small_0[label="set_err_cpuset_add_file_cs_dentry_cft_mems_small_0"];
+		return_err[label="return_err"];
+		set_err_cpuset_add_file_cs_dentry_cft_cpu_exclusive_small_0[label="set_err_cpuset_add_file_cs_dentry_cft_cpu_exclusive_small_0"];
+		return_err[label="return_err"];
+		cpuset_add_file_cs_dentry_cft_mem_ecclusive[label="cpuset_add_file_cs_dentry_cft_mem_ecclusive"];
+		cpuset_add_file_cs_dentry_cft_notify_on_release[label="cpuset_add_file_cs_dentry_cft_notify_on_release"];
+		cpuset_add_file_cs_dentry_cft_tasks[label="cpuset_add_file_cs_dentry_cft_tasks"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_cpuset_create{
+		label="static long cpuset_create(struct cpuset *parent, const char *name, int mode)";
+		set_cs_kmalloc[label="set_cs_kmalloc"];
+		down_cpuset_sem[label="down_cpuset_sem"];
+		refresh_mems[label="refresh_mems"];
+		set_cs_flags_0[label="set_cs_flags_0"];
+		notify_on_release_parent[label="notify_on_release_parent"];
+		set_bit_CS_NOTIFY_ON_RELEASE_cs_flags[label="set_bit_CS_NOTIFY_ON_RELEASE_cs_flags"];
+		set_cs_cpus_allowed_CPU_MASK_NONE[label="set_cs_cpus_allowed_CPU_MASK_NONE"];
+		set_cs_mems_allowed_NODE_MASK_NONE[label="set_cs_mems_allowed_NODE_MASK_NONE"];
+		atomic_set_cs_count_0[label="atomic_set_cs_count_0"];
+		INIT_LIST_HEAD_cs_sibling[label="INIT_LIST_HEAD_cs_sibling"];
+		INIT_LIST_HEAD_cs_childrent[label="INIT_LIST_HEAD_cs_childrent"];
+		atomic_inc_cpuset_mems_generation[label="atomic_inc_cpuset_mems_generation"];
+		set_cs_mems_generation_atomic_readd_cpuset_mems_generation[label="set_cs_mems_generation_atomic_readd_cpuset_mems_generation"];
+		set_cs_parent_parent[label="set_cs_parent_parent"];
+		list_add_cs_sibling_cs_parent_children[label="list_add_cs_sibling_cs_parent_children"];
+		cpuset_create_dir_cs_name_mode[label="cpuset_create_dir_cs_name_mode"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+		cpuset_populate_dir_cs_dentry[label="cpuset_populate_dir_cs_dentry"];
+		return_0[label="return_0"];
+		list_del_cs_sibling[label="list_del_cs_sibling"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+		kfree_cs[label="kfree_cs"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_cpuset_mkdir{
+		label="static int cpuset_mkdir(struct inode *dir, struct dentry *dentry, int mode)";
+		set_c_parent_dentry_d_parent_d_fsdata[label="set_c_parent_dentry_d_parent_d_fsdata"];
+		return_cpuset_create_c_parent_dentry_d_name_name_mode_or_S_IFDIR[label="return_cpuset_create_c_parent_dentry_d_name_name_mode_or_S_IFDIR"];
+	}
+
+	subgraph cluster_cpuset_rmdir{
+		label="static int cpuset_rmdir(struct inode *unused_dir, struct dentry *dentry)";
+		set_cs_dentry_d_fsdata[label="set_cs_dentry_d_fsdata"];
+		down_cpuset_sem[label="down_cpuset_sem"];
+		refresh_mems[label="refresh_mems"];
+		atomic_read_cs_count_great_0[label="atomic_read_cs_count_great_0"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+		return_EBUSY[label="return_EBUSY"];
+		list_empty_cs_children_false[label="list_empty_cs_children_false"];
+		up_cpu_setsem[label="up_cpu_setsem"];
+		return_EBUSY[label="return_EBUSY"];
+		lock_cs_dentry_d_lock[label="lock_cs_dentry_d_lock"];
+		set_parent_cs_parent[label="set_parent_cs_parent"];
+		set_bit_CS_RMMOVED_cs_flags[label="set_bit_CS_RMMOVED_cs_flags"];
+		list_del_cs_sibling[label="list_del_cs_sibling"];
+		list_empty_parent_children_true[label="list_empty_parent_children_true"];
+		check_for_release_parent[label="check_for_release_parent"];
+		set_d_dget_cs_dentry[label="set_d_dget_cs_dentry"];
+		clear_cs_dentry[label="clear_cs_dentry"];
+		unlock_d_d_lock[label="unlock_d_d_lock"];
+		cpuset_d_remove_dir_d[label="cpuset_d_remove_dir_d"];
+		dput_d[label="dput_d"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_cpuset_init{
+		label="int __init cpuset_init(void)";
+		set_top_cpuset_cpus_allowed_CPU_MASK_ALL[label="set_top_cpuset_cpus_allowed_CPU_MASK_ALL"];
+		set_top_cpuset_mems_allowed_NODE_MASK_ALL[label="set_top_cpuset_mems_allowed_NODE_MASK_ALL"];
+		atomic_inc_cpuset_mems_generation[label="atomic_inc_cpuset_mems_generation"];
+		top_cpuset_mems_generation_atomic_read_cpuset_mems_generation[label="top_cpuset_mems_generation_atomic_read_cpuset_mems_generation"];
+		set_init_task_cpuset_top_cpuset[label="set_init_task_cpuset_top_cpuset"];
+		register_iflesystem_cpuset_fs_type[label="register_iflesystem_cpuset_fs_type"];
+		cpuset_mount_kern_mount_cpuset_fs_type[label="cpuset_mount_kern_mount_cpuset_fs_type"];
+		IS_ERR_cpuset_mount[label="IS_ERR_cpuset_mount"];
+		set_PTR_ERR_cpuset_mount[label="set_PTR_ERR_cpuset_mount"];
+		clear_cpuset_mount[label="clear_cpuset_mount"];
+		set_root_cpuset_mount_mnt_sb_s_root[label="set_root_cpuset_mount_mnt_sb_s_root"];
+		set_root_d_fsdata_top_cpuset[label="set_root_d_fsdata_top_cpuset"];
+		inc_root_d_inode_i_nlink[label="inc_root_d_inode_i_nlink"];
+		set_top_cpuset_dentry_root[label="set_top_cpuset_dentry_root"];
+		set_root_d_inode_i_op_cpuset_dir_inode_operations[label="set_root_d_inode_i_op_cpuset_dir_inode_operations"];
+		set_err_cpuset_populate_dir_root[label="set_err_cpuset_populate_dir_root"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_cpuset_init_smp{
+		label="void __init cpuset_init_smp(void)";
+		set_top_cpuset_cpus_allowed_cpu_online_map[label="set_top_cpuset_cpus_allowed_cpu_online_map"];
+		set_top_cpuset_mems_allowed_node_noline_map[label="set_top_cpuset_mems_allowed_node_noline_map"];
+	}
+
+	subgraph cluster_cpuset_fork{
+		label="void cpuset_fork(struct task_struct *tsk)";
+		atomic_inc_tsk_cpuset_count[label="atomic_inc_tsk_cpuset_count"];
+	}
+
+	subgraph cluster_cpuset_exit{
+		label="void cpuset_exit(struct task_struct *tsk)";
+		task_lock_tsk[label="task_lock_tsk"];
+		set_cs_tsk_cpuset[label="set_cs_tsk_cpuset"];
+		clear_tsk_cpuset[label="clear_tsk_cpuset"];
+		task_unlock_tsk[label="task_unlock_tsk"];
+		notify_on_release_cs_true[label="notify_on_release_cs_true"];
+		down_cpuset_sem[label="down_cpuset_sem"];
+		atomic_dec_and_test_cs_count[label="atomic_dec_and_test_cs_count"];
+		chech_for_release_cs[label="chech_for_release_cs"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+		atomic_dec_cs_count[label="atomic_dec_cs_count"];
+	}
+
+	subgraph cluster_pcuset_cpus_allowed{
+		label="cpumask_t cpuset_cpus_allowed(const struct task_struct *tsk)";
+		down_cpuset_sem[label="down_cpuset_sem"];
+		task_lock_tsk[label="task_lock_tsk"];
+		guarantee_online_cpus_tsk_cpuset_mask[label="guarantee_online_cpus_tsk_cpuset_mask"];
+		task_unlock_tsk[label="task_unlock_tsk"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+		return_mask[label="return_mask"];
+	}
+
+	subgraph cluster_cpuset_init_current_mems_allowed{
+		label="void cpuset_init_current_mems_allowed(void)";
+		set_current_mems_allowed_NODE_MASK_ALL[label="set_current_mems_allowed_NODE_MASK_ALL"];
+	}
+
+	subgraph cluster_cpuset_update_current_mems_allowed{
+		label="void cpuset_update_current_mems_allowed(void)";
+		set_cs_current_cpuset[label="set_cs_current_cpuset"];
+		current_cpouset_mems_genertion_not_eq_cs_mems_generation[label="current_cpouset_mems_genertion_not_eq_cs_mems_generation"];
+		down_cpuset_sem[label="down_cpuset_sem"];
+		refresh_mems[label="refresh_mems"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+	}
+
+	subgraph cluster_cpuset_restrict_to_mems_allowed{
+		label="void cpuset_restrict_to_mems_allowed(unsigned long *nodes)";
+		bitmap_and_nodes_nodes_nodes_addr_current_mems_allowed_MAX_NUMNODES[label="bitmap_and_nodes_nodes_nodes_addr_current_mems_allowed_MAX_NUMNODES"];
+	}
+
+	subgraph cluster_cpuset_zonelist_valid_mems_allowed{
+		label="int cpuset_zonelist_valid_mems_allowed(struct zonelist *zl)";
+		for_i_zl_zones_i[label="for_i_zl_zones_i"];
+		set_nid_zl_zones_i_zone_pgdat_node_id[label="set_nid_zl_zones_i_zone_pgdat_node_id"];
+		node_isset_nid_current_mems_allowed[label="node_isset_nid_current_mems_allowed"];
+		return_1[label="return_1"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_cpuset_zone_allowed{
+		label="int cpuset_zone_allowed(struct zone *z)";
+		return_in_interrupt_or_node_isset_z_zone_pgdat_node_id_current_mems_allowed[label="return_in_interrupt_or_node_isset_z_zone_pgdat_node_id_current_mems_allowed"];
+	}
+
+	subgraph cluster_proc_cpuset_show{
+		label="static int proc_cpuset_show(struct seq_file *m, void *v)";
+		set_buf_kmalloc_PAGE_SIZE[label="set_buf_kmalloc_PAGE_SIZE"];
+		set_tsk_m_private[label="set_tsk_m_private"];
+		down_cpuset_sem[label="down_cpuset_sem"];
+		task_lock_tsk[label="task_lock_tsk"];
+		set_cs_tsk_cpuset[label="set_cs_tsk_cpuset"];
+		task_unlock_tsk[label="task_unlock_tsk"];
+		cpuset_path_cs_buf_PAGE_SIZE[label="cpuset_path_cs_buf_PAGE_SIZE"];
+		seq_puts_m_buf[label="seq_puts_m_buf"];
+		seq_putc_m_enter[label="seq_putc_m_enter"];
+		up_cpuset_sem[label="up_cpuset_sem"];
+		kfree_buf[label="kfree_buf"];
+		return_retval[label="return_retval"];
+	}
+
+	subgraph cluster_cpuset_open{
+		label="static int cpuset_open(struct inode *inode, struct file *file)";
+		set_tsk_PROC_I_inode_task[label="set_tsk_PROC_I_inode_task"];
+		return_single_open_file_proc_cpuset_show_tsk[label="return_single_open_file_proc_cpuset_show_tsk"];
+	}
+
+	subgraph cluster_cpuset_task_status_allowed{
+		label="char *cpuset_task_status_allowed(struct task_struct *task, char *buffer)";
+	}
 }
