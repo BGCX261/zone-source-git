@@ -1,0 +1,396 @@
+digraph sys_c{
+	subgraph cluster_notifier_chain_register{
+		label="int notifier_chain_register(struct notifier_block **list, struct notifier_block *n)";
+		write_lock_notifier_lock[label="write_lock_notifier_lock"];
+		while_list_not_null[label="while_list_not_null"];
+		n_priority_great_list_priority[label="n_priority_great_list_priority"];
+		set_list_list_next[label="set_list_list_next"];
+		set_n_next_list[label="set_n_next_list"];
+		set_list_n[label="set_list_n"];
+		write_unlock_notifier_lock[label="write_unlock_notifier_lock"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_notifier_chain_unregister{
+		label="int notifier_chain_unregister(struct notifier_block **nl, struct notifier_block *n)";
+		write_lock_notifier_lock[label="write_lock_notifier_lock"];
+		write_ns_eq_NULL[label="write_ns_eq_NULL"];
+		nl_eq_n[label="nl_eq_n"];
+		set_nl_n_next[label="set_nl_n_next"];
+		write_unlock_notifier_lock[label="write_unlock_notifier_lock"];
+		return_0[label="return_0"];
+		set_nl_nl_next[label="set_nl_nl_next"];
+		write_unlock_notifier_lock[label="write_unlock_notifier_lock"];
+		return_ENOENT[label="return_ENOENT"];
+	}
+
+	subgraph cluster_notifier_call_chain{
+		label="int notifier_call_chain(struct notifier_block **n, unsigned long val, void *v)";
+		set_nb_n[label="set_nb_n"];
+		nb_not_null[label="nb_not_null"];
+		set_ret_nb_notifier_call_nb_val_v[label="set_ret_nb_notifier_call_nb_val_v"];
+		ret_NOTIFY_STOP_MASK_set[label="ret_NOTIFY_STOP_MASK_set"];
+		return_ret[label="return_ret"];
+		set_nb_nb_next[label="set_nb_nb_next"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_register_reboot_notifier{
+		label="int register_reboot_notifier(struct notifier_block * nb)";
+		return_notifier_chain_register_reboot_notifier_list_nb[label="return_notifier_chain_register_reboot_notifier_list_nb"];
+	}
+
+	subgraph cluster_unregister_reboot_notifier{
+		label="int unregister_reboot_notifier(struct notifier_block * nb)";
+		return_notifier_chain_unregister_reboot_notifier_list_nb[label="return_notifier_chain_unregister_reboot_notifier_list_nb"];
+	}
+
+	subgraph cluster_set_one_prio{
+		label="static int set_one_prio(struct task_struct *p, int niceval, int error)";
+		p_uid_not_eq_current_euid_and_p_euid_not_eq_current_euid_and_capable_CAP_SYS_NICE_false[label="p_uid_not_eq_current_euid_and_p_euid_not_eq_current_euid_and_capable_CAP_SYS_NICE_false"];
+		set_error_EPERM[label="set_error_EPERM"];
+		goto_out[label="goto_out"];
+		niceval_small_task_nice_p_and_can_nice_p_niceval_false[label="niceval_small_task_nice_p_and_can_nice_p_niceval_false"];
+		set_error_EACCES[label="set_error_EACCES"];
+		goto_out[label="goto_out"];
+		set_no_nice_security_task_setnice_p_niceval[label="set_no_nice_security_task_setnice_p_niceval"];
+		no_nice_not_null[label="no_nice_not_null"];
+		set_error_no_nice[label="set_error_no_nice"];
+		goto_out[label="goto_out"];
+		err_or_eq_ESRCH[label="err_or_eq_ESRCH"];
+		set_error_0[label="set_error_0"];
+		set_user_nice_p_niceval[label="set_user_nice_p_niceval"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_sys_setpriority{
+		label="asmlinkage long sys_setpriority(int which, int who, int niceval)";
+		set_error_ESRCH[label="set_error_ESRCH"];
+		niceval_small_neg20[label="niceval_small_neg20"];
+		set_niceval_neg20[label="set_niceval_neg20"];
+		niceval_small_19[label="niceval_small_19"];
+		set_niceval_19[label="set_niceval_19"];
+		read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+		switch_which[label="switch_which"];
+		case_PRIO_PROCESS[label="case_PRIO_PROCESS"];
+		who_null[label="who_null"];
+		set_who_current_pid[label="set_who_current_pid"];
+		set_p_find_task_by_pid_who[label="set_p_find_task_by_pid_who"];
+		p_not_null[label="p_not_null"];
+		set_error_set_one_prio_p_niceval_error[label="set_error_set_one_prio_p_niceval_error"];
+		case_PRIO_PGRP[label="case_PRIO_PGRP"];
+		who_null[label="who_null"];
+		set_who_process_group_current[label="set_who_process_group_current"];
+		do_each_task_pid_who_PIDTYPE_PGID_p[label="do_each_task_pid_who_PIDTYPE_PGID_p"];
+		set_error_set_one_prio_p_niceval_error[label="set_error_set_one_prio_p_niceval_error"];
+		while_each_task_pid_who_PIDTYPE_PGID_p[label="while_each_task_pid_who_PIDTYPE_PGID_p"];
+		case_PRIO_USER[label="case_PRIO_USER"];
+		set_user_current_user[label="set_user_current_user"];
+		who_null[label="who_null"];
+		set_who_current_uid[label="set_who_current_uid"];
+		who_not_eq_current_uid_and_set_user_find_user_who_null[label="who_not_eq_current_uid_and_set_user_find_user_who_null"];
+		goto_out_unlock[label="goto_out_unlock"];
+		de_each_thread_g_p[label="de_each_thread_g_p"];
+		p_uid_not_eq_who[label="p_uid_not_eq_who"];
+		set_error_set_one_prio_p_niceval_error[label="set_error_set_one_prio_p_niceval_error"];
+		while_each_thread_g_p[label="while_each_thread_g_p"];
+		who_not_eq_current_uid[label="who_not_eq_current_uid"];
+		free_uid_user[label="free_uid_user"];
+		read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_sys_getpriotity{
+		label="asmlinkage long sys_getpriority(int which, int who)";
+		set_retval_ESRCH[label="set_retval_ESRCH"];
+		read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+		switch_which[label="switch_which"];
+		case_PRIO_PROCESS[label="case_PRIO_PROCESS"];
+		who_null[label="who_null"];
+		set_who_current_pid[label="set_who_current_pid"];
+		set_p_find_task_by_pid_who[label="set_p_find_task_by_pid_who"];
+		p_not_null[label="p_not_null"];
+		niceval_20_sub_task_nice_p[label="niceval_20_sub_task_nice_p"];
+		niceval_great_retval[label="niceval_great_retval"];
+		set_retval_niceval[label="set_retval_niceval"];
+		case_PRIO_PGRP[label="case_PRIO_PGRP"];
+		who_null[label="who_null"];
+		set_who_process_group_current[label="set_who_process_group_current"];
+		do_each_task_pid_who_PIDTYPE_PGID_p[label="do_each_task_pid_who_PIDTYPE_PGID_p"];
+		set_niceval_20_sub_task_nice_p[label="set_niceval_20_sub_task_nice_p"];
+		niceval_great_niceval[label="niceval_great_niceval"];
+		case_PRIO_USER_set_user_current_user[label="case_PRIO_USER_set_user_current_user"];
+		who_null[label="who_null"];
+		set_who_current_uid[label="set_who_current_uid"];
+		who_not_eq_current_uid_and_set_user_find_user_who_null[label="who_not_eq_current_uid_and_set_user_find_user_who_null"];
+		goto_out_unlock[label="goto_out_unlock"];
+		do_each_thread_g_p[label="do_each_thread_g_p"];
+		p_uid_eq_who[label="p_uid_eq_who"];
+		set_niceval_20_sub_task_nice_p[label="set_niceval_20_sub_task_nice_p"];
+		niceval_great_retval[label="niceval_great_retval"];
+		set_retval_niceval[label="set_retval_niceval"];
+		while_each_thread_g_p[label="while_each_thread_g_p"];
+		who_not_eq_current_uid[label="who_not_eq_current_uid"];
+		free_uid_user[label="free_uid_user"];
+		read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+		return_retval[label="return_retval"];
+	}
+
+	subgraph cluster_sys_reboot{
+		label="asmlinkage long sys_reboot(int magic1, int magic2, unsigned int cmd, void __user * arg)";
+		capable_CAP_SYS_BOOT_false[label="capable_CAP_SYS_BOOT_false"];
+		return_EPERM[label="return_EPERM"];
+		magic1_not_eq_LINUX_REBOOT_MAGIC1_or_magic2_not_eq_LINUX_REBOOT_MAGIC2_and_magic2_not_eq_LINUX_REBOOT_MAGIC2A_and_magic2_not_eq_LINUX_REBOOT_MAGIC2B_and_magic2_not_eq_LINUX_REBOOT_MAGIC2C[label="magic1_not_eq_LINUX_REBOOT_MAGIC1_or_magic2_not_eq_LINUX_REBOOT_MAGIC2_and_magic2_not_eq_LINUX_REBOOT_MAGIC2A_and_magic2_not_eq_LINUX_REBOOT_MAGIC2B_and_magic2_not_eq_LINUX_REBOOT_MAGIC2C"];
+		return_EINVAL[label="return_EINVAL"];
+		lock_kernel[label="lock_kernel"];
+		switch_cmd[label="switch_cmd"];
+		case_LINUX_REBOOT_CMD_RESTART[label="case_LINUX_REBOOT_CMD_RESTART"];
+		notifier_call_chain_reboot_notifier_list_SYS_RESTART_NULL[label="notifier_call_chain_reboot_notifier_list_SYS_RESTART_NULL"];
+		set_system_state_SYSTEM_RESTART[label="set_system_state_SYSTEM_RESTART"];
+		device_shutdown[label="device_shutdown"];
+		machine_restart_NULL[label="machine_restart_NULL"];
+		case_LINUX_REBOOT_CMD_CAD_ON[label="case_LINUX_REBOOT_CMD_CAD_ON"];
+		set_C_A_D_1[label="set_C_A_D_1"];
+		case_LINUX_REBOOT_CMD_CAD_OFF[label="case_LINUX_REBOOT_CMD_CAD_OFF"];
+		set_C_A_D_0[label="set_C_A_D_0"];
+		case_LINUX_REBOOT_CMD_HALT[label="case_LINUX_REBOOT_CMD_HALT"];
+		notifier_call_chain_reboot_notifer_list_SYS_HALT_NULL[label="notifier_call_chain_reboot_notifer_list_SYS_HALT_NULL"];
+		set_system_state_SYSTEM_HALT[label="set_system_state_SYSTEM_HALT"];
+		device_shutdown[label="device_shutdown"];
+		machine_halt[label="machine_halt"];
+		unlock_kernel[label="unlock_kernel"];
+		do_exit_0[label="do_exit_0"];
+		case_LINUX_REBOOT_CMD_POWER_OFF[label="case_LINUX_REBOOT_CMD_POWER_OFF"];
+		notifier_call_chain_reboot_notifier_list_SYS_POWER_OFF_NULL[label="notifier_call_chain_reboot_notifier_list_SYS_POWER_OFF_NULL"];
+		set_system_state_SYSTEM_POWER_OFF[label="set_system_state_SYSTEM_POWER_OFF"];
+		device_shutdown[label="device_shutdown"];
+		machine_power_off[label="machine_power_off"];
+		unlock_kernel[label="unlock_kernel"];
+		do_exit_0[label="do_exit_0"];
+		case_LINUX_REBOOT_CMD_RESTART2[label="case_LINUX_REBOOT_CMD_RESTART2"];
+		strncpy_from_user_buffer_0_arg[label="strncpy_from_user_buffer_0_arg"];
+		unlock_kernel[label="unlock_kernel"];
+		return_EFAULT[label="return_EFAULT"];
+		notifier_call_chain_reboot_notifier_list_SYS_RESTART_buffer[label="notifier_call_chain_reboot_notifier_list_SYS_RESTART_buffer"];
+		set_system_state_SYSTEM_RESTART[label="set_system_state_SYSTEM_RESTART"];
+		device_shutdown[label="device_shutdown"];
+		machine_restart_buffer[label="machine_restart_buffer"];
+		CONFIG_SOFTWARE_SUSPEND[label="CONFIG_SOFTWARE_SUSPEND"];
+		case_LINUX_REBOOT_CMD_SW_SUSPEND[label="case_LINUX_REBOOT_CMD_SW_SUSPEND"];
+		set_ret_software_suspend[label="set_ret_software_suspend"];
+		unlock_kernel[label="unlock_kernel"];
+		return_ret[label="return_ret"];
+		default_[label="default_"];
+		unlock_kernel[label="unlock_kernel"];
+		return_EINVAL[label="return_EINVAL"];
+		unlock_kernel[label="unlock_kernel"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_deferred_cad{
+		label="static void deferred_cad(void *dummy)";
+		notifier_call_chain_reboot_notifier_list_SYS_RESTART_NULL[label="notifier_call_chain_reboot_notifier_list_SYS_RESTART_NULL"];
+		machine_restart_NULL[label="machine_restart_NULL"];
+	}
+
+	subgraph cluster_ctrl_alt_del{
+		label="void ctrl_alt_del(void)";
+		DECLARE_WORK_cad_work_deferred_cad_NULL[label="DECLARE_WORK_cad_work_deferred_cad_NULL"];
+		C_A_D_not_null[label="C_A_D_not_null"];
+		schedule_work_cad_work[label="schedule_work_cad_work"];
+		kill_proc_cad_pid_SIGINT_1[label="kill_proc_cad_pid_SIGINT_1"];
+	}
+
+	subgraph cluster_sys_setregid{
+		label="asmlinkage long sys_setregid(gid_t rgid, gid_t egid)";
+		set_old_rgid_current_gid[label="set_old_rgid_current_gid"];
+		set_old_egid_current_egid[label="set_old_egid_current_egid"];
+		set_new_rgid_old_rgid[label="set_new_rgid_old_rgid"];
+		set_new_egid_old_egid[label="set_new_egid_old_egid"];
+		set_retval_security_task_setgid_rgid_egid_gid_t_sub_1_LSM_SETID_RE[label="set_retval_security_task_setgid_rgid_egid_gid_t_sub_1_LSM_SETID_RE"];
+		retval_not_null[label="retval_not_null"];
+		return_retval[label="return_retval"];
+		rgid_not_eq_gid_t_sub_1[label="rgid_not_eq_gid_t_sub_1"];
+		old_rgid_eq_rgid_or_current_egid_eq_rgid_or_capable_CAP_SETGID[label="old_rgid_eq_rgid_or_current_egid_eq_rgid_or_capable_CAP_SETGID"];
+		set_new_rgid_rgid[label="set_new_rgid_rgid"];
+		return_EPERM[label="return_EPERM"];
+		egid_not_eq_gid_t_sub_1[label="egid_not_eq_gid_t_sub_1"];
+		old_rgid_eq_egid_or_current_egid_eq_egid_or_current_sgid_eq_egid_or_capable_CAP_SETGID[label="old_rgid_eq_egid_or_current_egid_eq_egid_or_current_sgid_eq_egid_or_capable_CAP_SETGID"];
+		set_new_egid_egid[label="set_new_egid_egid"];
+		return_EPERM[label="return_EPERM"];
+		new_egid_not_eq_old_egid[label="new_egid_not_eq_old_egid"];
+		set_current_mm_dumpable_0[label="set_current_mm_dumpable_0"];
+		smp_wmb[label="smp_wmb"];
+		rgid_not_eq_gid_t_sub_1_or_egid_not_eq_gid_t_sub_1_and_egid_not_eq_old_rgid[label="rgid_not_eq_gid_t_sub_1_or_egid_not_eq_gid_t_sub_1_and_egid_not_eq_old_rgid"];
+		set_current_sgid_new_egid[label="set_current_sgid_new_egid"];
+		set_current_fsgid_new_egid[label="set_current_fsgid_new_egid"];
+		set_current_egid_new_egid[label="set_current_egid_new_egid"];
+		set_current_gid_new_rgid[label="set_current_gid_new_rgid"];
+		key_fsgid_changed_current[label="key_fsgid_changed_current"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_sys_setgid{
+		label="asmlinkage long sys_setgid(gid_t gid)";
+		set_old_egid_current_egid[label="set_old_egid_current_egid"];
+		securith_task_setgid_gid_git_t_sub_1_gid_t_sub_1_LSM_SETID_ID[label="securith_task_setgid_gid_git_t_sub_1_gid_t_sub_1_LSM_SETID_ID"];
+		capable_CAP_SETGID_true[label="capable_CAP_SETGID_true"];
+		old_egid_not_eq_gid[label="old_egid_not_eq_gid"];
+		set_current_mm_dumpable_0[label="set_current_mm_dumpable_0"];
+		smp_wmb[label="smp_wmb"];
+		set_current_gid_current_egid_current_sgid_current_fsgid_gid[label="set_current_gid_current_egid_current_sgid_current_fsgid_gid"];
+		gid_eq_current_gid_or_gid_current_sgid[label="gid_eq_current_gid_or_gid_current_sgid"];
+		old_egid_not_eq_gid[label="old_egid_not_eq_gid"];
+		set_current_mm_dumpable_0[label="set_current_mm_dumpable_0"];
+		smp_wmb[label="smp_wmb"];
+		set_current_egid_current_fsgid_gid[label="set_current_egid_current_fsgid_gid"];
+		return_EPERM[label="return_EPERM"];
+		key_fsgid_changed_current[label="key_fsgid_changed_current"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_set_user{
+		label="static int set_user(uid_t new_ruid, int dumpclear)";
+		set_new_user_alloc_uid_new_ruid[label="set_new_user_alloc_uid_new_ruid"];
+		new_user_null[label="new_user_null"];
+		return_EAGAIN[label="return_EAGAIN"];
+		atomic_read_new_user_processes_not_small_current_signal_rlim_RLIMIT_NPROC_rlim_cur_and_new_user_not_eq_root_user[label="atomic_read_new_user_processes_not_small_current_signal_rlim_RLIMIT_NPROC_rlim_cur_and_new_user_not_eq_root_user"];
+		free_uid_new_user[label="free_uid_new_user"];
+		return_EAGAIN[label="return_EAGAIN"];
+		switch_uid_new_user[label="switch_uid_new_user"];
+		dumpclear_not_null[label="dumpclear_not_null"];
+		current_mm_dumpable_0[label="current_mm_dumpable_0"];
+		smp_wmb[label="smp_wmb"];
+		set_current_uid_new_ruid[label="set_current_uid_new_ruid"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_sys_setreuid{
+		label="asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)";
+		security_task_setuid_ruid_euid_uid_t_sub_1_LSM_SETID_RE[label="security_task_setuid_ruid_euid_uid_t_sub_1_LSM_SETID_RE"];
+		set_new_ruid_old_ruid_current_uid[label="set_new_ruid_old_ruid_current_uid"];
+		set_new_euid_old_euid_current_euid[label="set_new_euid_old_euid_current_euid"];
+		set_old_suid_current_suid[label="set_old_suid_current_suid"];
+		ruid_not_eq_uid_t_sub_1[label="ruid_not_eq_uid_t_sub_1"];
+		set_new_ruid_ruid[label="set_new_ruid_ruid"];
+		old_ruid_not_eq_ruid_and_current_euid_not_eq_ruid_and_capable_CAP_SETUID[label="old_ruid_not_eq_ruid_and_current_euid_not_eq_ruid_and_capable_CAP_SETUID"];
+		return_EPERM[label="return_EPERM"];
+		euid_not_eq_uid_t_sub_1[label="euid_not_eq_uid_t_sub_1"];
+		set_new_euid_euid[label="set_new_euid_euid"];
+		old_ruid_not_eq_euid_and_current_euid_not_eq_euid_and_current_suid_not_eq_euid_and_capable_CAP_SETUID[label="old_ruid_not_eq_euid_and_current_euid_not_eq_euid_and_current_suid_not_eq_euid_and_capable_CAP_SETUID"];
+		return_EPERM[label="return_EPERM"];
+		new_ruid_not_eq_old_ruid_and_set_user_new_ruid_new_euid_not_eq_old_euid_small_0[label="new_ruid_not_eq_old_ruid_and_set_user_new_ruid_new_euid_not_eq_old_euid_small_0"];
+		return_EAGAIN[label="return_EAGAIN"];
+		new_euid_not_eq_old_euid[label="new_euid_not_eq_old_euid"];
+		set_current_mm_dumpable_0[label="set_current_mm_dumpable_0"];
+		smp_wmb[label="smp_wmb"];
+		set_current_fsuid_current_euid_new_euid[label="set_current_fsuid_current_euid_new_euid"];
+		ruid_not_eq_uid_t_sub_1_or_euid_not_eq_uid_t_sub_1_and_euid_not_eq_old_ruid[label="ruid_not_eq_uid_t_sub_1_or_euid_not_eq_uid_t_sub_1_and_euid_not_eq_old_ruid"];
+		set_current_suid_current_euid[label="set_current_suid_current_euid"];
+		set_current_fsuid_current_euid[label="set_current_fsuid_current_euid"];
+		key_fsuid_changed_current[label="key_fsuid_changed_current"];
+		return_security_task_post_setuid_old_ruid_old_euid_old_suid_LSM_SETID_RE[label="return_security_task_post_setuid_old_ruid_old_euid_old_suid_LSM_SETID_RE"];
+	}
+
+	subgraph cluster_sys_setuid{
+		label="asmlinkage long sys_setuid(uid_t uid)";
+		set_old_euid_current_euid[label="set_old_euid_current_euid"];
+	    security_task_setuid_uid_uid_t_sub_1_uid_t_sub_1_LSM_SETID_ID[label="security_task_setuid_uid_uid_t_sub_1_uid_t_sub_1_LSM_SETID_ID"];
+		set_old_ruid_new_ruid_current_uid[label="set_old_ruid_new_ruid_current_uid"];
+		set_old_suid_current_suid[label="set_old_suid_current_suid"];
+		set_new_suid_old_suid[label="set_new_suid_old_suid"];
+		capable_CAP_SETUID_true[label="capable_CAP_SETUID_true"];
+		uid_not_eq_old_ruid_and_set_user_uid_old_euid_not_eq_uid_small_0[label="uid_not_eq_old_ruid_and_set_user_uid_old_euid_not_eq_uid_small_0"];
+		return_EAGAIN[label="return_EAGAIN"];
+		set_new_suid_uid[label="set_new_suid_uid"];
+		uid_not_eq_current_uid_and_uid_not_eq_new_suid[label="uid_not_eq_current_uid_and_uid_not_eq_new_suid"];
+		return_EPERM[label="return_EPERM"];
+		old_euid_eq_uid[label="old_euid_eq_uid"];
+		set_current_mm_dumpable_0[label="set_current_mm_dumpable_0"];
+		smp_wmb[label="smp_wmb"];
+		set_current_fsuid_current_euid_uid[label="set_current_fsuid_current_euid_uid"];
+		set_current_suid_new_suid[label="set_current_suid_new_suid"];
+		key_fsuid_changed_current[label="key_fsuid_changed_current"];
+		return_security_task_post_setuid_old_ruid_old_euid_old_suid_LSM_SETID_ID[label="return_security_task_post_setuid_old_ruid_old_euid_old_suid_LSM_SETID_ID"];
+	}
+
+	subgraph cluster_sys_setresuid{
+		label="asmlinkage long sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)";
+		set_old_ruid_current_uid[label="set_old_ruid_current_uid"];
+		set_old_euid_current_euid[label="set_old_euid_current_euid"];
+		set_old_suid_current_suid[label="set_old_suid_current_suid"];
+		security_task_setuid_ruid_euid_suid_LSM_SETID_RES[label="security_task_setuid_ruid_euid_suid_LSM_SETID_RES"];
+		capable_CAP_SETUID_false[label="capable_CAP_SETUID_false"];
+		ruid_not_eq_uid_t_sub_1_and_ruid_not_eq_current_uid_and_ruid_not_eq_current_euid_and_ruid_current_suid[label="ruid_not_eq_uid_t_sub_1_and_ruid_not_eq_current_uid_and_ruid_not_eq_current_euid_and_ruid_current_suid"];
+		return_EPERM[label="return_EPERM"];
+		euid_not_eq_uid_t_sub_1_and_euid_not_eq_current_uid_and_euid_not_eq_current_euid_and_euid_not_eq_current_suid[label="euid_not_eq_uid_t_sub_1_and_euid_not_eq_current_uid_and_euid_not_eq_current_euid_and_euid_not_eq_current_suid"];
+		return_EPERM[label="return_EPERM"];
+		suid_not_eq_uid_t_sub_1_and_suid_not_eq_current_uid_and_suid_current_euid_and_suid_not_eq_current_suid[label="suid_not_eq_uid_t_sub_1_and_suid_not_eq_current_uid_and_suid_current_euid_and_suid_not_eq_current_suid"];
+		return_EPERM[label="return_EPERM"];
+		ruid_not_sq_uid_t_sub_1[label="ruid_not_sq_uid_t_sub_1"];
+		ruid_not_eq_current_uid_and_set_user_ruid_euid_not_eq_current_euid_small_0[label="ruid_not_eq_current_uid_and_set_user_ruid_euid_not_eq_current_euid_small_0"];
+		return_EAGAIN[label="return_EAGAIN"];
+	}
+
+	subgraph cluster_sys_times{
+		label="asmlinkage long sys_times(struct tms __user * tbuf)";
+		tbuf_not_null[label="tbuf_not_null"];
+		set_tsk_current[label="set_tsk_current"];
+		read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+		set_utime_tsk_signal_utime[label="set_utime_tsk_signal_utime"];
+		set_stime_tsk_signal_stime[label="set_stime_tsk_signal_stime"];
+		set_t_tsk[label="set_t_tsk"];
+		set_utime_cputime_add_utime_t_utime[label="set_utime_cputime_add_utime_t_utime"];
+		set_stime_cputime_add_stime_t_stime[label="set_stime_cputime_add_stime_t_stime"];
+		set_t_next_thread_t[label="set_t_next_thread_t"];
+		t_not_eq_tsk[label="t_not_eq_tsk"];
+		lock_tsk_sighand_siglock[label="lock_tsk_sighand_siglock"];
+		set_cutime_tsk_signal_cutime[label="set_cutime_tsk_signal_cutime"];
+		set_cstime_tsk_signal_cstime[label="set_cstime_tsk_signal_cstime"];
+		unlock_tsk_sighand_siglock[label="unlock_tsk_sighand_siglock"];
+		unlock_tasklist_lock[label="unlock_tasklist_lock"];
+		set_tmp_tms_utime_cputime_to_clock_t_utime[label="set_tmp_tms_utime_cputime_to_clock_t_utime"];
+		set_tmp_tms_stime_cputime_to_clock_t_stime[label="set_tmp_tms_stime_cputime_to_clock_t_stime"];
+		set_tmp_tms_cutime_cputime_to_clock_t_cutime[label="set_tmp_tms_cutime_cputime_to_clock_t_cutime"];
+		set_tmp_tms_cstime_cputime_to_clock_t_cstime[label="set_tmp_tms_cstime_cputime_to_clock_t_cstime"];
+		copy_to_user_tbuf_tmp[label="copy_to_user_tbuf_tmp"];
+		return_EFAULT[label="return_EFAULT"];
+		return_jiffies_64_to_clock_t_get_jiffies_64[label="return_jiffies_64_to_clock_t_get_jiffies_64"];
+	}
+
+	subgraph cluster_sys_setpgid{
+		label="asmlinkage long sys_setpgid(pid_t pid, pid_t pgid)";
+		pid_null[label="pid_null"];
+		set_pid_current_pid[label="set_pid_current_pid"];
+		pgid_null[label="pgid_null"];
+		set_pgid_pid[label="set_pgid_pid"];
+		pgid_small_0[label="pgid_small_0"];
+		return_EINVAL[label="return_EINVAL"];
+		write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+		set_p_find_task_by_pid_pid[label="set_p_find_task_by_pid_pid"];
+		p_null[label="p_null"];
+		goto_out[label="goto_out"];
+		thread_group_leader_p_false[label="thread_group_leader_p_false"];
+		goto_out[label="goto_out"];
+		p_parent_eq_current_or_p_real_parent_eq_current[label="p_parent_eq_current_or_p_real_parent_eq_current"];
+		p_signal_session_not_eq_current_signal_session[label="p_signal_session_not_eq_current_signal_session"];
+		p_did_exec_not_null[label="p_did_exec_not_null"];
+		p_not_eq_current[label="p_not_eq_current"];
+		p_signal_leader_not_null[label="p_signal_leader_not_null"];
+		goto_out[label="goto_out"];
+		pgid_not_eq_pid[label="pgid_not_eq_pid"];
+		do_each_task_pid_pgid_PIDTYPE_PGID_p[label="do_each_task_pid_pgid_PIDTYPE_PGID_p"];
+		p_signal_session_eq_current_signal_session[label="p_signal_session_eq_current_signal_session"];
+		goto_ok_pgid[label="goto_ok_pgid"];
+		while_each_task_pid_pgid_PIDTYPE_PGID_p[label="while_each_task_pid_pgid_PIDTYPE_PGID_p"];
+		goto_out[label="goto_out"];
+		security_task_setpgid_p_pgid[label="security_task_setpgid_p_pgid"];
+		process_group_p_not_eq_pgid[label="process_group_p_not_eq_pgid"];
+		detach_pid_p_PIDTYPE_PGID[label="detach_pid_p_PIDTYPE_PGID"];
+		set_p_signal_pgrp_pgid[label="set_p_signal_pgrp_pgid"];
+		attach_pid_p_PIDTYPE_PGID_pgid[label="attach_pid_p_PIDTYPE_PGID_pgid"];
+		write_unlock_tasklist_lock[label="write_unlock_tasklist_lock"];
+		return_err[label="return_err"];
+	}
+	
+}
