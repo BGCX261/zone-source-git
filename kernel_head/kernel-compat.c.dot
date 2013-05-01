@@ -1,0 +1,447 @@
+digraph compat{
+        subgraph cluster_get_compat_timespec{
+                label="int get_compat_timespec(struct timespec *ts, const struct compat_timespec __user *cts)";
+                return_EFUALT_or_0_decide_access_ok_VERIFY_READ_cts_sizeof_cts_or___get_user_ts_tv_sec_cts_tv_sec_or___get_user_ts_tv_nsec_cts_tv_nsec[label="return_EFUALT_or_0_decide_access_ok_VERIFY_READ_cts_sizeof_cts_or___get_user_ts_tv_sec_cts_tv_sec_or___get_user_ts_tv_nsec_cts_tv_nsec"];
+        }
+
+        subgraph cluster_put_compat_timespec{
+                label="int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user *cts)";
+                return_EFUALT_or_0_decide_access_ok_VERIFY_WRITE_cts_sizeof_cts_or___put_user_ts_tv_sec_cts_tv_sec_or___put_user_ts_tv_nsec_cts_tv_nsec[label="return_EFUALT_or_0_decide_access_ok_VERIFY_WRITE_cts_sizeof_cts_or___put_user_ts_tv_sec_cts_tv_sec_or___put_user_ts_tv_nsec_cts_tv_nsec"];
+        }
+
+        subgraph cluster_compat_nanosleep_restart{
+                label="static long compat_nanosleep_restart(struct restart_block *restart)";
+                set_expire_restart_arg0[label="set_expire_restart_arg0"];
+                set_now_jiffies[label="set_now_jiffies"];
+                time_after_expire_now_false[label="time_after_expire_now_false"];
+                return_0[label="return_0"];
+                set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                set_expire_schedule_timeout_expire_sub_now[label="set_expire_schedule_timeout_expire_sub_now"];
+                expire_eq_0[label="expire_eq_0"];
+                return_0[label="return_0"];
+                set_rmtp_restart_arg1[label="set_rmtp_restart_arg1"];
+                rmtp_not_null[label="rmtp_not_null"];
+                jiffies_to_timespec_expire_t[label="jiffies_to_timespec_expire_t"];
+                set_ct_tv_sec_t_tv_sec[label="set_ct_tv_sec_t_tv_sec"];
+                set_ct_tv_nsec_t_tv_nsec[label="set_ct_tv_nsec_t_tv_nsec"];
+                copy_to_user_rmtp_t[label="copy_to_user_rmtp_t"];
+                return_ERESTART_RESTARTBLOCK[label="return_ERESTART_RESTARTBLOCK"];
+        }
+
+        subgraph cluster_compat_sys_nanosleep{
+                label="asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp, struct compat_timespec __user *rmtp)";
+                get_compat_timespec_t_rqtp_not_null[label="get_compat_timespec_t_rqtp_not_null"];
+                return_EFAULT[label="return_EFAULT"];
+                t_tv_nsec_great_1000000000L_or_t_tv_nsec_small_0_or_t_tv_sec_small_0[label="t_tv_nsec_great_1000000000L_or_t_tv_nsec_small_0_or_t_tv_sec_small_0"];
+                return_EFAULT[label="return_EFAULT"];
+                set_expire_timespec_to_jiffies_t_add_t_tv_sec_or_t_tv_nsec[label="set_expire_timespec_to_jiffies_t_add_t_tv_sec_or_t_tv_nsec"];
+                set_current_state_TASK_INTERUPTIBLE[label="set_current_state_TASK_INTERUPTIBLE"];
+                set_expire_schedule_timeout_expire[label="set_expire_schedule_timeout_expire"];
+                expire_eq_0[label="expire_eq_0"];
+                return_0[label="return_0"];
+                tmtp_not_null[label="tmtp_not_null"];
+                jiffies_to_timespec_expire_t[label="jiffies_to_timespec_expire_t"];
+                put_compat_timespec_t_rmtp[label="put_compat_timespec_t_rmtp"];
+                set_restart_current_thread_info_restart_block[label="set_restart_current_thread_info_restart_block"];
+                set_restart_fn_compat_nonosleep_restart[label="set_restart_fn_compat_nonosleep_restart"];
+                set_restart_arg0_jiffies_add_expire[label="set_restart_arg0_jiffies_add_expire"];
+                set_restart_arg1_rmtp[label="set_restart_arg1_rmtp"];
+                return_EREATART_RESTARTBLOCK[label="return_EREATART_RESTARTBLOCK"];
+        }
+
+        subgraph cluster_get_compat_itimerval{
+                label="static inline long get_compat_itimerval(struct itimerval *o, struct compat_itimerval __user *i)";
+                return_access_ok_VERIFY_READ_i_or___get_user_o_it_interval_tv_sec_i_it_interval_tv_sec_or___get_user_o_it_interval_tv_usec_i_it_interval_tv_usec_or___get_user_o_it_value_tv_sec_i_it_value_tv_sec_or___get_user_o_it_value_tv_usec_i_it_value_tv_usec[label="return_access_ok_VERIFY_READ_i_or___get_user_o_it_interval_tv_sec_i_it_interval_tv_sec_or___get_user_o_it_interval_tv_usec_i_it_interval_tv_usec_or___get_user_o_it_value_tv_sec_i_it_value_tv_sec_or___get_user_o_it_value_tv_usec_i_it_value_tv_usec"];
+        }
+
+        subgraph cluster_put_compat_interval{
+                label="static inline long put_compat_itimerval(struct compat_itimerval __user *o,struct itimerval *i)";
+                return_access_ok_VERIFY_WRITE_o_or___put_user_i_it_interval_tv_sec_o_it_interval_tv_sec_or___put_user_i_it_interval_tv_usec_o_it_interval_tv_usec_or___put_user_i_it_value_tv_sec_o_it_value_tv_sec_or___put_user_i_it_value_tv_usec_o_it_value_tv_usec[label="return_access_ok_VERIFY_WRITE_o_or___put_user_i_it_interval_tv_sec_o_it_interval_tv_sec_or___put_user_i_it_interval_tv_usec_o_it_interval_tv_usec_or___put_user_i_it_value_tv_sec_o_it_value_tv_sec_or___put_user_i_it_value_tv_usec_o_it_value_tv_usec"];
+        }
+
+        subgraph cluster_compat_sys_getitimer{
+                labe="long compat_sys_getitimer(int which,struct compat_itimerval __user *it)";
+                set_error_do_getitimer_which_kit[label="set_error_do_getitimer_which_kit"];
+                error_null_or_put_compat_interval_it_kit[label="error_null_or_put_compat_interval_it_kit"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_compat_sys_setitimer{
+                label="asmlinkage long compat_sys_setitimer(int which, struct compat_itimerval __user *in, struct compat_itimerval __user *out)";
+                in_not_null[label="in_not_null"];
+                get_compat_intimerval_kin_in_not_null[label="get_compat_intimerval_kin_in_not_null"];
+                memset_kin_0[label="memset_kin_0"];
+                set_error_do_setitimer_which_kin_kout_or_NULL_decide_out[label="set_error_do_setitimer_which_kin_kout_or_NULL_decide_out"];
+                error_not_null_or_out_null[label="error_not_null_or_out_null"];
+                return_error[label="return_error"];
+                put_compat_inimerval_out_kout[label="put_compat_inimerval_out_kout"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_compat_sys_timers{
+                label="asmlinkage long compat_sys_times(struct compat_tms __user *tbuf)";
+                tbuf_not_null[label="tbuf_not_null"];
+                set_tsk_current[label="set_tsk_current"];
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                set_utime_tsk_signal_utime[label="set_utime_tsk_signal_utime"];
+                set_stime_tsk_signal_stime[label="set_stime_tsk_signal_stime"];
+                set_t_tsk[label="set_t_tsk"];
+                set_utime_cputime_add_utime_t_utime[label="set_utime_cputime_add_utime_t_utime"];
+                set_stime_cputime_add_stime_t_stime[label="set_stime_cputime_add_stime_t_stime"];
+                set_t_next_thread_t[label="set_t_next_thread_t"];
+                lock_tsk_sighand_siglock[label="lock_tsk_sighand_siglock"];
+                set_cutime_tsk_signal_cutime[label="set_cutime_tsk_signal_cutime"];
+                set_cstime_tsk_signal_cstime[label="set_cstime_tsk_signal_cstime"];
+                unlock_tsk_sighand_siglock[label="unlock_tsk_sighand_siglock"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                set_tmp_tms_utime_compat_jiffies_to_clock_t_cputime_to_jiffies_utime[label="set_tmp_tms_utime_compat_jiffies_to_clock_t_cputime_to_jiffies_utime"];
+                set_tmp_tms_stime_compat_jiffies_to_clock_t_cputime_to_jiffies_stime[label="set_tmp_tms_stime_compat_jiffies_to_clock_t_cputime_to_jiffies_stime"];
+                set_tmp_tms_cutime_compat_jiffies_to_clock_t_cputime_to_jiffies_cutime[label="set_tmp_tms_cutime_compat_jiffies_to_clock_t_cputime_to_jiffies_cutime"];
+                set_tmp_tms_cstime_compat_jiffies_to_clock_t_cputime_to_jiffies_cstime[label="set_tmp_tms_cstime_compat_jiffies_to_clock_t_cputime_to_jiffies_cstime"];
+                copy_to_user_tbuf_tmp[label="copy_to_user_tbuf_tmp"];
+                return_compat_jiffies_to_clock_t_jiffies[label="return_compat_jiffies_to_clock_t_jiffies"];
+        }
+
+        subgraph cluster_compat_sys_sigpending{
+                label="asmlinkage long compat_sys_sigpending(compat_old_sigset_t __user *set)";
+                set_old_fs_fet_fs[label="set_old_fs_fet_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_sigpending_old_sigset_t_s[label="set_ret_sys_sigpending_old_sigset_t_s"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                ret_eq_0[label="ret_eq_0"];
+                set_ret_put_user_s_set[label="set_ret_put_user_s_set"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_compat_sys_sigprocmask{
+                label="asmlinkage long compat_sys_sigprocmask(int how, compat_old_sigset_t __user *set, compat_old_sigset_t __user *oset)";
+                set_not_null_and_get_user_s_set[label="set_not_null_and_get_user_s_set"];
+                return_EFAULT[label="return_EFAULT"];
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_sigprocmask_how_s_or_NULL_decide_set_s_or_NULL_decide_oset[label="set_ret_sys_sigprocmask_how_s_or_NULL_decide_set_s_or_NULL_decide_oset"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                ret_eq_0[label="ret_eq_0"];
+                oset_not_null[label="oset_not_null"];
+                set_ret_put_user_s_oset[label="set_ret_put_user_s_oset"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_compat_sys_futex{
+                label="asmlinkage long compat_sys_futex(u32 __user *uaddr, int op, int val,struct compat_timespec __user *utime, u32 __user *uaddr2,int val3)";
+                set_timeout_MAX_SCHEDULE_TIMEOUT[label="set_timeout_MAX_SCHEDULE_TIMEOUT"];
+                op_eq_FUTEX_WAIT_and_utime_not_null[label="op_eq_FUTEX_WAIT_and_utime_not_null"];
+                get_compat_timespec_t_utime[label="get_compat_timespec_t_utime"];
+                set_timeout_timespec_to_jiffies_t_add_1[label="set_timeout_timespec_to_jiffies_t_add_1"];
+                op_not_small_FUTEX_REQUEUE[label="op_not_small_FUTEX_REQUEUE"];
+                set_val2_utime[label="set_val2_utime"];
+                return_do_futex_uaddr_op_val_timeout_uaddr2_val2_val3[label="return_do_futex_uaddr_op_val_timeout_uaddr2_val2_val3"];
+        }
+
+        subgraph cluster_compat_sys_setrlimit{
+                label="asmlinkage long compat_sys_setrlimit(unsigned int resource, struct compat_rlimit __user *rlim)";
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                access_ok_VERIFY_READ_rlim_or___get_user_r_rlim_cur_rlim_rlim_cur_or___get_user_r_rlim_max_rlim_rlim_max[label="access_ok_VERIFY_READ_rlim_or___get_user_r_rlim_cur_rlim_rlim_cur_or___get_user_r_rlim_max_rlim_rlim_max"];
+                return_EFAULT[label="return_EFAULT"];
+                r_rlim_cur_eq_COMPAT_RLIM_INFINITY[label="r_rlim_cur_eq_COMPAT_RLIM_INFINITY"];
+                set_r_rlim_cur_RLIM_INFINITY[label="set_r_rlim_cur_RLIM_INFINITY"];
+                r_rlim_max_eq_COMPAT_RLIM_INFINITY[label="r_rlim_max_eq_COMPAT_RLIM_INFINITY"];
+                set_r_rlim_max_RLIM_INFINITY[label="set_r_rlim_max_RLIM_INFINITY"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_setrlimit_resource_r[label="set_ret_sys_setrlimit_resource_r"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_compat_sys_old_getrlimit{
+                label="asmlinkage long compat_sys_old_getrlimit(unsigned int resource, struct compat_rlimit __user *rlim)";
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_old_getrlimit_resource_r[label="set_ret_sys_old_getrlimit_resource_r"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                ret_null[label="ret_null"];
+                r_rlim_cur_great_COMPAT_RLIM_OLD_INFINITY[label="r_rlim_cur_great_COMPAT_RLIM_OLD_INFINITY"];
+                set_r_rlim_cur_COMPAT_RLIM_INFINITY[label="set_r_rlim_cur_COMPAT_RLIM_INFINITY"];
+                r_rlim_max_great_COMPAT_RLIM_OLD_INFINITY[label="r_rlim_max_great_COMPAT_RLIM_OLD_INFINITY"];
+                set_r_rlim_max_COMPAT_RLIM_INFINITY[label="set_r_rlim_max_COMPAT_RLIM_INFINITY"];
+                access_ok_VERFIY_WRITE_rlim_or___put_user_r_rlim_cur_rlim_rlim_cur_or___put_user_r_rlim_max_rlim_rlim_max[label="access_ok_VERFIY_WRITE_rlim_or___put_user_r_rlim_cur_rlim_rlim_cur_or___put_user_r_rlim_max_rlim_rlim_max"];
+                return_EFAULT[label="return_EFAULT"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_compat_sys_getrlimit{
+                label="asmlinkage long compat_sys_getrlimit (unsigned int resource, struct compat_rlimit __user *rlim)";
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_getrlimit_resource_r[label="set_ret_sys_getrlimit_resource_r"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                ret_null[label="ret_null"];
+                r_rlim_cur_great_COMPAT_RLIM_INFINITY[label="r_rlim_cur_great_COMPAT_RLIM_INFINITY"];
+                set_r_rlim_cur_COMPAT_RLIM_INFINITY[label="set_r_rlim_cur_COMPAT_RLIM_INFINITY"];
+                r_rlim_max_great_COMPAT_RLIM_INFINITY[label="r_rlim_max_great_COMPAT_RLIM_INFINITY"];
+                set_r_rlim_max_COMPAT_RLIM_INFINITY[label="set_r_rlim_max_COMPAT_RLIM_INFINITY"];
+                access_ok_VERFIY_WRITE_rlim_or___put_user_r_rlim_cur_rlim_rlim_cur_or___put_user_r_rlim_max_rlim_rlim_max[label="access_ok_VERFIY_WRITE_rlim_or___put_user_r_rlim_cur_rlim_rlim_cur_or___put_user_r_rlim_max_rlim_rlim_max"];
+                return_EFAULT[label="return_EFAULT"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_put_compat_rusage{
+                label="int put_compat_rusage(const struct rusage *r, struct compat_rusage __user *ru)";
+                access_ok_VERIRY_WRITE_ru_or___put_user_r_ru_utime_tv_sec_ru_utime_tv_sec_or___put_user_r_ru_utime_tv_usec_ru_utime_tv_usec_or___put_user_r_ru_stime_tv_sec_ru_stime_tv_sec_or___put_user_r_ru_stime_tv_usec_ru_stime_tv_usec_or___put_user_r_ru_maxrss_ru_ru_maxrss_or___put_user_r_ru_ixrss_ru_ru_ixrss_or___put_user_r_ru_idrss_ru_ru_idrss_or___put_user_r_ru_isrss_ru_ru_isrss_or___put_user_r_ru_minflt_ru_ru_minflt_or___put_user_r_ru_majflt_ru_ru_majflt_or___put_user_r_ru_nswap_ru_ru_nswap_or___put_user_r_ru_inblock_ru_ru_inblock_or___put_user_r_ru_oublock_ru_ru_oublock_or___put_user_r_ru_msgsnd_ru_ru_msgsnd_or___put_user_r_ru_msgrcv_ru_ru_msgrcv_or___put_user_r_ru_nsignals_ru_ru_nsignals_or___put_user_r_ru_nvcsw_ru_ru_nvcsw_or___put_user_r_ru_nivcsw_ru_ru_nivcsw[label="access_ok_VERIRY_WRITE_ru_or___put_user_r_ru_utime_tv_sec_ru_utime_tv_sec_or___put_user_r_ru_utime_tv_usec_ru_utime_tv_usec_or___put_user_r_ru_stime_tv_sec_ru_stime_tv_sec_or___put_user_r_ru_stime_tv_usec_ru_stime_tv_usec_or___put_user_r_ru_maxrss_ru_ru_maxrss_or___put_user_r_ru_ixrss_ru_ru_ixrss_or___put_user_r_ru_idrss_ru_ru_idrss_or___put_user_r_ru_isrss_ru_ru_isrss_or___put_user_r_ru_minflt_ru_ru_minflt_or___put_user_r_ru_majflt_ru_ru_majflt_or___put_user_r_ru_nswap_ru_ru_nswap_or___put_user_r_ru_inblock_ru_ru_inblock_or___put_user_r_ru_oublock_ru_ru_oublock_or___put_user_r_ru_msgsnd_ru_ru_msgsnd_or___put_user_r_ru_msgrcv_ru_ru_msgrcv_or___put_user_r_ru_nsignals_ru_ru_nsignals_or___put_user_r_ru_nvcsw_ru_ru_nvcsw_or___put_user_r_ru_nivcsw_ru_ru_nivcsw"];
+                return_EFAULT[label="return_EFAULT"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_compat_sys_getrusage{
+                label="asmlinkage long compat_sys_getrusage(int who, struct compat_rusage __user *ru)";
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_getrusage_who_r[label="set_ret_sys_getrusage_who_r"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                ret_not_null[label="ret_not_null"];
+                return_ret[label="return_ret"];
+                put_compat_rusage_r_ru[label="put_compat_rusage_r_ru"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_compat_sys_wait4{
+                label="asmlinkage long compat_sys_wait4(compat_pid_t pid, compat_uint_t __user *stat_addr, int options,struct compat_rusage __user *ru)";
+                ru_null[label="ru_null"];
+                return_sys_wait4_pid_stat_addr_options_NULL[label="return_sys_wait4_pid_stat_addr_options_NULL"];
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_wait4_status_or_NULL_decide_stat_addr_options_r[label="set_ret_sys_wait4_status_or_NULL_decide_stat_addr_options_r"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                ret_great_0[label="ret_great_0"];
+                put_compat_rusage_r_ru[label="put_compat_rusage_r_ru"];
+                stat_addr_not_null_and_put_user_status_stat_addr[label="stat_addr_not_null_and_put_user_status_stat_addr"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_compat_sys_waitid{
+                label="asmlinkage long compat_sys_waitid(int which, compat_pid_t pid, struct compat_siginfo __user *uinfo, int options, struct compat_rusage __user *uru)";
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                memset_info_0[label="memset_info_0"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_ret_sys_waitid_which_pid_info_options_ru_or_NULL_decide_uru[label="set_ret_sys_waitid_which_pid_info_options_ru_or_NULL_decide_uru"];
+                ret_small_0_or_info_si_signo_eq_0[label="ret_small_0_or_info_si_signo_eq_0"];
+                return_ret[label="return_ret"];
+                uru_not_null[label="uru_not_null"];
+                set_ret_put_compat_rusage_ru_uru[label="set_ret_put_compat_rusage_ru_uru"];
+                ret_not_null[label="ret_not_null"];
+                return_ret[label="return_ret"];
+                info_si_code_self_or___SI_CHLD[label="info_si_code_self_or___SI_CHLD"];
+                return_copy_siginfo_to_user32_uinfo_info[label="return_copy_siginfo_to_user32_uinfo_info"];
+        }
+
+        subgraph cluster_compat_get_user_cpu_mask{
+                label="static int compat_get_user_cpu_mask(compat_ulong_t __user *user_mask_ptr, unsigned len, cpumask_t *new_mask)";
+                set_k_cpu_addr_new_mask[label="set_k_cpu_addr_new_mask"];
+                return_compat_get_bitmap_k_user_mask_ptr_len_multi_8[label="return_compat_get_bitmap_k_user_mask_ptr_len_multi_8"];
+        }
+
+        subgraph cluster_compat_sys_sched_setaffinity{
+                label="asmlinkage long compat_sys_sched_setaffinity(compat_pid_t pid,unsigned int len,compat_ulong_t __user *user_mask_ptr)";
+                compat_get_user_cpu_mask_user_mask_ptr_len_new_mask[label="compat_get_user_cpu_mask_user_mask_ptr_len_new_mask"];
+                return_sched_setaffinity_pid_new_mask[label="return_sched_setaffinity_pid_new_mask"];
+        }
+
+        subgraph cluster_compat_sys_sched_getaffinity{
+                label="asmlinkage long compat_sys_sched_getaffinity(compat_pid_t pid, unsigned int len,compat_ulong_t __user *user_mask_ptr)";;
+                set_min_length_sizeof_cpumask_t[label="set_min_length_sizeof_cpumask_t"];
+                NR_CPUS_not_great_BITS_PER_COMPAT_LONG[label="NR_CPUS_not_great_BITS_PER_COMPAT_LONG"];
+                set_min_length_sizeof_compat_ulong_t[label="set_min_length_sizeof_compat_ulong_t"];
+                len_small_min_length[label="len_small_min_length"];
+                return_EINVAL[label="return_EINVAL"];
+                sched_getaffinity_pid_mask[label="sched_getaffinity_pid_mask"];
+                set_k_cpus_addr_mask[label="set_k_cpus_addr_mask"];
+                compat_put_bitmap_user_mask_ptr_k_min_length_multi_8[label="compat_put_bitmap_user_mask_ptr_k_min_length_multi_8"];
+                return_min_length[label="return_min_length"];
+        }
+
+        subgraph cluster_get_compat_itimerspec{
+                label="static int get_compat_itimerspec(struct itimerspec *dst, struct compat_itimerspec __user *src)";
+                get_compat_timespec_dst_it_interval_src_it_interval_or_get_compat_timespec_dst_it_value_src_it_value[label="get_compat_timespec_dst_it_interval_src_it_interval_or_get_compat_timespec_dst_it_value_src_it_value"];
+                return_EFAULT[label="return_EFAULT"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_put_compat_itimerspec{
+                label="static int put_compat_itimerspec(struct itimerspec *dst, struct compat_itimerspec __user *src)";
+                put_compat_timespec_src_it_interval_dst_it_interval_or_put_compat_timespec_src_it_value_dst_it_value[label="put_compat_timespec_src_it_interval_dst_it_interval_or_put_compat_timespec_src_it_value_dst_it_value"];
+                return_EFAULT[label="return_EFAULT"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sys_timer_settime{
+                label="long compat_sys_timer_settime(timer_t timer_id, int flags, struct compat_itimerspec __user *new,struct compat_itimerspec __user *old)";
+                get_compat_interspec_newts_new[label="get_compat_interspec_newts_new"];
+                set_oldfs_get_fs[label="set_oldfs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_err_timer_settime_timer_id_flags_newts_oldts[label="set_err_timer_settime_timer_id_flags_newts_oldts"];
+                set_fs_oldfs[label="set_fs_oldfs"];
+                err_null_and_old_and_put_compat_itimerspec_old_oldts[label="err_null_and_old_and_put_compat_itimerspec_old_oldts"];
+                return_EFAULT[label="return_EFAULT"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_compat_sys_timer_gettime{
+                label="long compat_sys_timer_gettime(timer_t timer_id, struct compat_itimerspec __user *setting)";
+                set_oldfs_get_fs[label="set_oldfs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_err_sys_timer_gettime_timer_id_ts[label="set_err_sys_timer_gettime_timer_id_ts"];
+                set_fs_oldfs[label="set_fs_oldfs"];
+                err_null_and_put_compat_itimerspec_setting_ts[label="err_null_and_put_compat_itimerspec_setting_ts"];
+                return_EFUALT[label="return_EFUALT"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_compat_sys_clock_settime{
+                label="long compat_sys_clock_settime(clockid_t which_clock,struct compat_timespec __user *tp)";
+                get_compat_timespec_ts_tp[label="get_compat_timespec_ts_tp"];
+                set_oldfs_get_fs[label="set_oldfs_get_fs"];
+                set_fs_KKERNEL_DS[label="set_fs_KKERNEL_DS"];
+                set_err_sys_clock_settime_which_clock_ts[label="set_err_sys_clock_settime_which_clock_ts"];
+                set_fs_oldfs[label="set_fs_oldfs"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_compat_clock_gettime{
+                label="long compat_sys_clock_gettime(clockid_t which_clock,struct compat_timespec __user *tp)";
+                set_oldfs_get_fs[label="set_oldfs_get_fs"];
+                set_fs_KERNLE_DS[label="set_fs_KERNLE_DS"];
+                set_err_sys_clock_gettime_which_clock_ts[label="set_err_sys_clock_gettime_which_clock_ts"];
+                set_fs_oldfs[label="set_fs_oldfs"];
+                err_null_and_put_compat_timespec_ts_tp[label="err_null_and_put_compat_timespec_ts_tp"];
+                return_EFAULT[label="return_EFAULT"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_compat_sys_clock_getres{
+                label="long compat_sys_clock_getres(clockid_t which_clock, struct compat_timespec __user *tp)";
+                set_oldfs_get_fs[label="set_oldfs_get_fs"];
+                set_fs_KERNLE_DS[label="set_fs_KERNLE_DS"];
+                set_err_sys_clock_getres_which_clock_ts[label="set_err_sys_clock_getres_which_clock_ts"];
+                set_fs_oldfs[label="set_fs_oldfs"];
+                err_null_and_tp_and_put_compat_timespec_ts_tp[label="err_null_and_put_compat_timespec_ts_tp"];
+                return_EFAULT[label="return_EFAULT"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_compat_sys_clock_nanosleep{
+                label="long compat_sys_clock_nanosleep(clockid_t which_clock, int flags, struct compat_timespec __user *rqtp, struct compat_timespec __user *rmtp)";
+                get_compat_timespec_in_rqtp[label="get_compat_timespec_in_rqtp"];
+                set_oldfs_get_fs[label="set_oldfs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_err_sys_clock_nanosleep_which_clock_flags_in_out[label="set_err_sys_clock_nanosleep_which_clock_flags_in_out"];
+                set_fs_oldfs[label="set_fs_oldfs"];
+                err_eq_ERESTART_RESTARTBLOCK_and_rmtp_and_put_compat_timespec_out_rmtp[label="err_eq_ERESTART_RESTARTBLOCK_and_rmtp_and_put_compat_timespec_out_rmtp"];
+                return_EFAULT[label="return_EFAULT"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_get_compat_sigevent{
+                label="int get_compat_sigevent(struct sigevent *event, const struct compat_sigevent __user *u_event)";
+                memset_event_0[label="memset_event_0"];
+                return_EFAULT_or_0_decide_access_ok_VERIFY_READ_u_event_or___get_user_event_sigev_value_sival_int_u_event_sigev_value_sival_int_or___get_user_event_sigev_signo_u_event_sigev_signo_or___get_user_event_sigev_notify_u_event_sigev_notify_or___get_user_event_sigev_notify_thread_id_u_evnet_sigev_notify_thread_id[label="return_EFAULT_or_0_decide_access_ok_VERIFY_READ_u_event_or___get_user_event_sigev_value_sival_int_u_event_sigev_value_sival_int_or___get_user_event_sigev_signo_u_event_sigev_signo_or___get_user_event_sigev_notify_u_event_sigev_notify_or___get_user_event_sigev_notify_thread_id_u_evnet_sigev_notify_thread_id"];
+        }
+
+        subgraph cluster_compat_get_bitmap{
+                label="long compat_get_bitmap(unsigned long *mask, compat_ulong_t __user *umask,unsigned long bitmap_size)";
+                set_bitmap_size_ALIGN_bitmap_size_BITS_PER_COMPAT_LONG[label="set_bitmap_size_ALIGN_bitmap_size_BITS_PER_COMPAT_LONG"];
+                access_ok_VERIFY_READ_umask_bitmap_size_div_8[label="access_ok_VERIFY_READ_umask_bitmap_size_div_8"];
+                set_nr_compat_longs_BITS_TO_COMPAT_LONGS_bitmap_size[label="set_nr_compat_longs_BITS_TO_COMPAT_LONGS_bitmap_size"];
+                for_i_BITS_TO_LONGS_bitmap_size[label="for_i_BITS_TO_LONGS_bitmap_size"];
+                set_m_0[label="set_m_0"];
+                for_j_sizeof_m_div_sizeof_um[label="for_j_sizeof_m_div_sizeof_um"];
+                nr_compat_longs_dec_great_0[label="nr_compat_longs_dec_great_0"];
+                __get_user_um_umask[label="__get_user_um_umask"];
+                set_um_0[label="set_um_0"];
+                inc_umask[label="inc_umask"];
+                m_self_or_um_left_move_j_multi_BITS_PER_COMPAT_LONG[label="m_self_or_um_left_move_j_multi_BITS_PER_COMPAT_LONG"];
+                mask_inc_set_m[label="mask_inc_set_m"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_compat_put_bitmap{
+                label="long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,unsigned long bitmap_size)";
+                bitmap_size_ALIGN_bitmap_size_BITS_PER_COMPAT_LONG[label="bitmap_size_ALIGN_bitmap_size_BITS_PER_COMPAT_LONG"];
+                access_ok_VERIFY_WRITE_umask_bitmap_size_div_8[label="access_ok_VERIFY_WRITE_umask_bitmap_size_div_8"];
+                set_nr_compat_longs_BITS_TO_COMPAT_LONGS_bitmap_size[label="set_nr_compat_longs_BITS_TO_COMPAT_LONGS_bitmap_size"];
+                for_i_BITS_TO_COMPAT_LONGS_bitmap_size[label="for_i_BITS_TO_COMPAT_LONGS_bitmap_size"];
+                for_i_BITS_TO_LONGS_bitmap_size[label="for_i_BITS_TO_LONGS_bitmap_size"];
+                set_m_mask_inc[label="set_m_mask_inc"];
+                for_j_sizeof_m_sizeof_um[label="for_j_sizeof_m_sizeof_um"];
+                set_um_m[label="set_um_m"];
+                nr_compat_longs_dec_great_0[label="nr_compat_longs_dec_great_0"];
+                __put_user_um_umask[label="__put_user_um_umask"];
+                umask_inc[label="umask_inc"];
+                m_self_right_move_4_multi_sizeof_um[label="m_self_right_move_4_multi_sizeof_um"];
+                m_self_right_move_4_multi_sizeof_um[label="m_self_right_move_4_multi_sizeof_um"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sigset_from_compat{
+                label="void sigset_from_compat (sigset_t *set, compat_sigset_t *compat)";
+                switch__NSIG_WORDS[label="switch__NSIG_WORDS"];
+                case_4[label="case_4"];
+        }
+
+        subgraph cluster_compat_sys_rt_sigtimedwait{
+                label="asmlinkage long compat_sys_rt_sigtimedwait (compat_sigset_t __user *uthese, struct compat_siginfo __user *uinfo, struct compat_timespec __user *uts, compat_size_t sigsetsize)";
+                copy_from_user_s32_uthese[label="copy_from_user_s32_uthese"];
+                sigset_from_compat_s_s32[label="sigset_from_compat_s_s32"];
+                sigdelsetmask_s_sigmask_SIGKILL_or_sigmask_SIGSTOP[label="sigdelsetmask_s_sigmask_SIGKILL_or_sigmask_SIGSTOP"];
+                signotset_s[label="signotset_s"];
+                uts_not_null[label="uts_not_null"];
+                get_compat_timespec_t_uts[label="get_compat_timespec_t_uts"];
+                t_tv_nsec_not_small_1000000000L_or_t_tv_nsec_small_0_or_t_tv_sec_small_0[label="t_tv_nsec_not_small_1000000000L_or_t_tv_nsec_small_0_or_t_tv_sec_small_0"];
+                return_EINVAL[label="return_EINVAL"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_sig_dequeue_signal_current_s_info[label="set_sig_dequeue_signal_current_s_info"];
+                sig_null[label="sig_null"];
+                set_timeout_timespec_to_jiffies_t_add_t_tv_sec_or_t_tv_nsec[label="set_timeout_timespec_to_jiffies_t_add_t_tv_sec_or_t_tv_nsec"];
+                timeout_not_null[label="timeout_not_null"];
+                set_current_real_blocked_current_blocked[label="set_current_real_blocked_current_blocked"];
+                sigandsets_current_blocked_current_blocked_s[label="sigandsets_current_blocked_current_blocked_s"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                set_current_state_TASK_INTERRUPIBLE[label="set_current_state_TASK_INTERRUPIBLE"];
+                set_timeout_schedule_timeout_timeout[label="set_timeout_schedule_timeout_timeout"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_sig_dequeue_signal_current_s_info[label="set_sig_dequeue_signal_current_s_info"];[label="set_sig_dequeue_signal_current_s_info[label="set_sig_dequeue_signal_current_s_info"];"];
+                set_current_blocked_current_real_blocked[label="set_current_blocked_current_real_blocked"];
+                siginitset_current_real_blocked_0[label="siginitset_current_real_blocked_0"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                sig_not_null[label="sig_not_null"];
+                set_ret_sig[label="set_ret_sig"];
+                unifo_not_null[label="unifo_not_null"];
+                copy_siginfo_to_user32_uinfo_info[label="copy_siginfo_to_user32_uinfo_info"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                set_ret_EINTR_or_EAGAIN_decide_timeout[label="set_ret_EINTR_or_EAGAIN_decide_timeout"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_copat_sys_time{
+                label="asmlinkage long compat_sys_time(compat_time_t __user * tloc)";
+                do_gettimeofday_tv[label="do_gettimeofday_tv"];
+                set_i_tv_tv_sec[label="set_i_tv_tv_sec"];
+                tloc_not_null[label="tloc_not_null"];
+                put_user_i_tloc[label="put_user_i_tloc"];
+                set_i_EFAULT[label="set_i_EFAULT"];
+                return_i[label="return_i"];
+        }
+
+        subgraph cluster_compat_sys_stime{
+                label="asmlinkage long compat_sys_stime(compat_time_t __user *tptr)";
+                get_user_tv_tv_sec_tptr[label="get_user_tv_tv_sec_tptr"];
+                set_tv_tv_nsec_0[label="set_tv_tv_nsec_0"];
+                set_err_security_settime_tv_NULL[label="set_err_security_settime_tv_NULL"];
+                err_not_null[label="err_not_null"];
+                return_err[label="return_err"];
+                do_settimeofday_tv[label="do_settimeofday_tv"];
+                return_0[label="return_0"];
+        }
+}

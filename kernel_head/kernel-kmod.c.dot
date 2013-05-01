@@ -1,0 +1,84 @@
+digraph kmod_c{
+        subgraph cluster_request_module{
+                label="int request_module(const char *fmt, ...)";
+                set_argv_modprobe_path_q_module_name_NULL[label="set_argv_modprobe_path_q_module_name_NULL"];
+                set_envp_HOME_TERM_liux_PATH_sbin_user_sbin_bin_user_bin[label="set_envp_HOME_TERM_liux_PATH_sbin_user_sbin_bin_user_bin"];
+                set_kmod_concurrent_ATOMIC_INIT_0[label="set_kmod_concurrent_ATOMIC_INIT_0"];
+                set_va_start_args_fmt[label="set_va_start_args_fmt"];
+                vsnpritf_module_name_MODULE_NAME_LEN_fmt_args[label="vsnpritf_module_name_MODULE_NAME_LEN_fmt_args"];
+                va_end_args[label="va_end_args"];
+                set_max_modprobes_min_max_threads_div_2_MAX_KMOD_CONCURRENT[label="set_max_modprobes_min_max_threads_div_2_MAX_KMOD_CONCURRENT"];
+                atomic_inc_kmod_concurrent[label="atomic_inc_kmod_concurrent"];
+                atomic_read_kmod_concurrent_great_max_modprobes[label="atomic_read_kmod_concurrent_great_max_modprobes"];
+                inc_kmod_loop_msg_small_5[label="inc_kmod_loop_msg_small_5"];
+                printk_KERN_ERR_module_name[label="printk_KERN_ERR_module_name"];
+                atomic_dec_kmod_concurrent[label="atomic_dec_kmod_concurrent"];
+                return_ENOMEM[label="return_ENOMEM"];
+                set_call_usermodehelper_modprobe_path_argv_envp_1[label="set_call_usermodehelper_modprobe_path_argv_envp_1"];
+                atomic_dec_kmod_concurrent[label="atomic_dec_kmod_concurrent"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_____call_usermodehelper{
+                label="static int ____call_usermodehelper(void *data)";
+                set_sub_info_data[label="set_sub_info_data"];
+                flush_signals_current[label="flush_signals_current"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                flush_signal_handlers_current_1[label="flush_signal_handlers_current_1"];
+                sigemptyset_current_blocked[label="sigemptyset_current_blocked"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                set_cpus_allowed_current_CPU_MASK_ALL[label="set_cpus_allowed_current_CPU_MASK_ALL"];
+                set_retval_EPERM[label="set_retval_EPERM"];
+                current_fs_root_not_null[label="current_fs_root_not_null"];
+                set_retval_execve_sub_info_path_sub_info_argv_sub_info_envp[label="set_retval_execve_sub_info_path_sub_info_argv_sub_info_envp"];
+                set_sub_info_retval_retval[label="set_sub_info_retval_retval"];
+                do_exit_0[label="do_exit_0"];
+        }
+
+        subgraph cluster_wait_for_helper{
+                label="static int wait_for_helper(void *data)";
+                set_sub_info_data[label="set_sub_info_data"];
+                set_sa_sa_sa_handler_SIG_IGN[label="set_sa_sa_sa_handler_SIG_IGN"];
+                set_sa_sa_sa_flags_0[label="set_sa_sa_sa_flags_0"];
+                siginitset_sa_sa_sa_mask_sigmask_SIGCHLD[label="siginitset_sa_sa_sa_mask_sigmask_SIGCHLD"];
+                do_sigaction_SIGCHLD_sa_0[label="do_sigaction_SIGCHLD_sa_0"];
+                allow_signal_SIGCHLD[label="allow_signal_SIGCHLD"];
+                set_pid_kernel_thread_____call_usermodehelper_sub_info_SIGCHLD[label="set_pid_kernel_thread_____call_usermodehelper_sub_info_SIGCHLD"];
+                pid_small_0[label="pid_small_0"];
+                set_sub_info_retval_pid[label="set_sub_info_retval_pid"];
+                sys_wait4_pid_sub_info_retval_0_NULL[label="sys_wait4_pid_sub_info_retval_0_NULL"];
+                complete_sub_info_complete[label="complete_sub_info_complete"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster___call_usermodehelper{
+                label="static void __call_usermodehelper(void *data)";
+                set_sub_info_data[label="set_sub_info_data"];
+                sub_info_wait_not_null[label="sub_info_wait_not_null"];
+                set_pid_kernel_thread_wait_for_helper_sub_info_CLONE_FS_or_CLONE_FILES_or_SIGCHLD[label="set_pid_kernel_thread_wait_for_helper_sub_info_CLONE_FS_or_CLONE_FILES_or_SIGCHLD"];
+                set_pid_kernel_thread_____call_usermodehelper_sub_info_CLONE_VFORK_or_SIGCHLD[label="set_pid_kernel_thread_____call_usermodehelper_sub_info_CLONE_VFORK_or_SIGCHLD"];
+                pid_small_0[label="pid_small_0"];
+                set_sub_info_retval_pid[label="set_sub_info_retval_pid"];
+                complete_sub_info_complete[label="complete_sub_info_complete"];
+                sub_info_wait_null[label="sub_info_wait_null"];
+                complete_sub_info_complete[label="complete_sub_info_complete"];
+        }
+
+        subgraph cluster_call_user_modehelper{
+                label="int call_usermodehelper(char *path, char **argv, char **envp, int wait)";
+                DECLARE_COMPLETION_done[label="DECLARE_COMPLETION_done"];
+                set_sub_info_complete_done_path_path_argv_argv_envp_envp_wait_wait_retval_0[label="set_sub_info_complete_done_path_path_argv_argv_envp_envp_wait_wait_retval_0"];
+                DECLARE_WORK_work___call_usermodehelper_sub_info[label="DECLARE_WORK_work___call_usermodehelper_sub_info"];
+                khelper_wq_null[label="khelper_wq_null"];
+                return_EBUSY[label="return_EBUSY"];
+                queue_work_khelper_wq_work[label="queue_work_khelper_wq_work"];
+                wait_for_completion_done[label="wait_for_completion_done"];
+                return_sub_info_retval[label="return_sub_info_retval"];
+        }
+
+        subgraph cluster_usermodehelper_init{
+                label="void __init usermodehelper_init(void)";
+                set_khelper_wq_create_singlethread_workqueue_khelper[label="set_khelper_wq_create_singlethread_workqueue_khelper"];
+        }
+}

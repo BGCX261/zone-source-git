@@ -1,0 +1,47 @@
+digraph kfifo_c{
+        subgraph cluster_kfifo_init{
+                label="struct kfifo *kfifo_init(unsigned char *buffer, unsigned int size, unsigned int __nocast gfp_mask, spinlock_t *lock)";
+                set_fifo_kmalloc[label="set_fifo_kmalloc"];
+                set_fifo_buffer_buffer[label="set_fifo_buffer_buffer"];
+                set_fifo_size_size[label="set_fifo_size_size"];
+                set_fifo_in_fifo_out_0[label="set_fifo_in_fifo_out_0"];
+                set_fifo_lock_lock[label="set_fifo_lock_lock"];
+                return_fifo[label="return_fifo"];
+        }
+
+        subgraph cluster_kfifo_alloc{
+                label="struct kfifo *kfifo_alloc(unsigned int size, unsigned int __nocast gfp_mask, spinlock_t *lock)";
+                size_and_size_sub_1_not_null[label="size_and_size_sub_1_not_null"];
+                set_size_roundup_pow_of_two_size[label="set_size_roundup_pow_of_two_size"];
+                set_buffer_kmalloc[label="set_buffer_kmalloc"];
+                set_ret_kfifo_init_buffer_size_gfp_mask_lock[label="set_ret_kfifo_init_buffer_size_gfp_mask_lock"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_kfifo_free{
+                label="void kfifo_free(struct kfifo *fifo)";
+                kfree_fifo_buffer[label="kfree_fifo_buffer"];
+                kfree_fifo[label="kfree_fifo"];
+        }
+
+        subgraph cluster___kfifo_put{
+                label="unsigned int __kfifo_put(struct kfifo *fifo, unsigned char *buffer, unsigned int len)";
+                set_len_min_len_fifo_size_sub_fifo_in_add_fifo_out[label="set_len_min_len_fifo_size_sub_fifo_in_add_fifo_out"];
+                set_l_min_len_fifo_size_sub_fifo_in_and_fifo_size_sub_1[label="set_l_min_len_fifo_size_sub_fifo_in_and_fifo_size_sub_1"];
+                memcpy_fifo_buffer_add_fifo_in_and_fifo_size_sub_1_buffer[label="memcpy_fifo_buffer_add_fifo_in_and_fifo_size_sub_1_buffer"];
+                memcpy_fifo_buffer_buffer_add_l[label="memcpy_fifo_buffer_buffer_add_l"];
+                fifo_in_self_add_len[label="fifo_in_self_add_len"];
+                return_len[label="return_len"];
+        }
+
+        subgraph cluster___kfifo_get{
+                label="unsigned int __kfifo_get(struct kfifo *fifo, unsigned char *buffer, unsigned int len)";
+                set_len_min_len_fifo_in_sub_fifo_out[label="set_len_min_len_fifo_in_sub_fifo_out"];
+                set_l_min_len_fifo_size_sub_fifo_out_and_fifo_size_sub_1[label="set_l_min_len_fifo_size_sub_fifo_out_and_fifo_size_sub_1"];
+                memcpy_buffer_fifo_buffer_add_fifo_out_and_fifo_size_sub_1[label="memcpy_buffer_fifo_buffer_add_fifo_out_and_fifo_size_sub_1"];
+                memcpy_buffer_add_l_fifo_buffer[label="memcpy_buffer_add_l_fifo_buffer"];
+                fifo_out_self_add_len[label="fifo_out_self_add_len"];
+                return_len[label="return_len"];
+        }
+
+}

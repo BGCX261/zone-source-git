@@ -1,0 +1,216 @@
+digraph profile_c{
+        subgraph cluster_profile_setup{
+                label="static int __init profile_setup(char * str)";
+                set_schedstr_schedule[label="set_schedstr_schedule"];
+                strncmp_str_schedstr_strlen_schedstr_false[label="strncmp_str_schedstr_strlen_schedstr_false"];
+                set_prof_on_SCHED_PROFILING[label="set_prof_on_SCHED_PROFILING"];
+                str_strlen_schedstr_eq_char_comma[label="str_strlen_schedstr_eq_char_comma"];
+                str_self_add_strlen_schedstr_add_1[label="str_self_add_strlen_schedstr_add_1"];
+                get_option_str_par_true[label="get_option_str_par_true"];
+                set_prof_shift_par[label="set_prof_shift_par"];
+                get_option_str_par_true[label="get_option_str_par_true"];
+                set_prof_shift_par[label="set_prof_shift_par"];
+                set_prof_on_CPU_PROFILING[label="set_prof_on_CPU_PROFILING"];
+                return_1[label="return_1"];
+       }
+
+        subgraph cluster_profile_init{
+                label="void __init profile_init(void)";
+                set_prof_len__etext_sub_stext_right_move_prof_shift[label="set_prof_len__etext_sub_stext_right_move_prof_shift"];
+                set_prof_buffer_alloc_bootmem_prof_len_multi_sizeof_atomic_t[label="set_prof_buffer_alloc_bootmem_prof_len_multi_sizeof_atomic_t"];
+        }
+
+        subgraph cluster_profile_task_exit{
+                label="void profile_task_exit(struct task_struct * task)";
+                down_read_profile_rwsem[label="down_read_profile_rwsem"];
+                notifier_call_chain_task_exit_notifier_0_task[label="notifier_call_chain_task_exit_notifier_0_task"];
+                up_read_profile_rwsem[label="up_read_profile_rwsem"];
+        }
+
+        subgraph cluster_profile_handoff_task{
+                label="int profile_handoff_task(struct task_struct * task)";
+                read_lock_handoff_lock[label="read_lock_handoff_lock"];
+                set_ret_notifier_call_chain_task_free_notifier_0_task[label="set_ret_notifier_call_chain_task_free_notifier_0_task"];
+                read_unlock_handoff_lock[label="read_unlock_handoff_lock"];
+                return_1_or_0_decide_ret_eq_NOTIFY_OK[label="return_1_or_0_decide_ret_eq_NOTIFY_OK"];
+        }
+
+        subgraph cluster_profile_munmap{
+                label="void profile_munmap(unsigned long addr)";
+                down_read_profile_rwsem[label="down_read_profile_rwsem"];
+                notifier_call_chain_munmap_notifier_0_addr[label="notifier_call_chain_munmap_notifier_0_addr"];
+                up_read_profile_rwsem[label="up_read_profile_rwsem"];
+        }
+
+        subgraph cluster_task_handoff_register{
+                label="int task_handoff_register(struct notifier_block * n)";
+                set_err_EINVAL[label="set_err_EINVAL"];
+                write_lock_handoff_lock[label="write_lock_handoff_lock"];
+                set_err_notifier_chain_register_task_free_notifier_n[label="set_err_notifier_chain_register_task_free_notifier_n"];
+                write_unlock_handoff_lock[label="write_unlock_handoff_lock"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_task_handoff_unregister{
+                label="int task_handoff_unregister(struct notifier_block * n)";
+                set_err_EINVAL[label="set_err_EINVAL"];
+                write_lock_handoff_lock[label="write_lock_handoff_lock"];
+                set_err_notifier_chain_unregister_task_free_notifier_n[label="set_err_notifier_chain_unregister_task_free_notifier_n"];
+                write_unlock_handoff_lock[label="write_unlock_handoff_lock"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_profile_event_register{
+                label="int profile_event_register(enum profile_type type, struct notifier_block * n)";
+                set_err_EINVAL[label="set_err_EINVAL"];
+                down_write_profile_rwsem[label="down_write_profile_rwsem"];
+                switch_type[label="switch_type"];
+                case_PROFILE_TASK_EXIT[label="case_PROFILE_TASK_EXIT"];
+                set_err_notifier_chain_register_task_exit_notifier_n[label="set_err_notifier_chain_register_task_exit_notifier_n"];
+                case_PROFILE_MUNMAP[label="case_PROFILE_MUNMAP"];
+                set_err_notifier_chain_register_munmap_notifier_n[label="set_err_notifier_chain_register_munmap_notifier_n"];
+                up_write_profile_rwsem[label="up_write_profile_rwsem"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_profile_event_unregister{
+                label="int profile_event_unregister(enum profile_type type, struct notifier_block * n)";
+                set_err_EINVAL[label="set_err_EINVAL"];
+                down_write_profile_rwsem[label="down_write_profile_rwsem"];
+                switch_type[label="switch_type"];
+                case_PROFILE_TASK_EXIT[label="case_PROFILE_TASK_EXIT"];
+                set_err_notifier_chain_unregister_task_exit_notifier_n[label="set_err_notifier_chain_unregister_task_exit_notifier_n"];
+                case_PROFILE_MUNMAP[label="case_PROFILE_MUNMAP"];
+                set_err_notifier_chain_unregister_munmap_notifier_n[label="set_err_notifier_chain_unregister_munmap_notifier_n"];
+                up_write_profile_rwsem[label="up_write_profile_rwsem"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_regitser_timer_hook{
+                label="int register_timer_hook(int (*hook)(struct pt_regs *))";
+                timer_hook_not_null[label="timer_hook_not_null"];
+                return_EBUSY[label="return_EBUSY"];
+                set_timer_hook[label="set_timer_hook"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_unregister_timer_hook{
+                label="void unregister_timer_hook(int (*hook)(struct pt_regs *))";
+                clear_timer_hook[label="clear_timer_hook"];
+                synchronize_sched[label="synchronize_sched"];
+        }
+
+        subgraph cluster_profile_hit{
+                label="void profile_hit(int type, void *__pc)";
+                prof_not_eq_type_or_prof_buffer_null[label="prof_not_eq_type_or_prof_buffer_null"];
+                set_pc___pc_sub__stext_right_move_prof_shift[label="set_pc___pc_sub__stext_right_move_prof_shift"];
+                atomic_inc_prof_buffer_min_pc_prof_len_sub_1[label="atomic_inc_prof_buffer_min_pc_prof_len_sub_1"];
+        }
+
+        subgraph cluster_profile_tick{
+                label="void profile_tick(int type, struct pt_regs *regs)";
+                type_eq_CPU_PROFILING_and_timer_hook[label="type_eq_CPU_PROFILING_and_timer_hook"];
+                time_hook_regs[label="time_hook_regs"];
+                user_mode_regs_false_and_cpu_isset_smp_processor_id_prof_cpu_mask[label="user_mode_regs_false_and_cpu_isset_smp_processor_id_prof_cpu_mask"];
+                profile_hit_type_profile_profile_pc_regs[label="profile_hit_type_profile_profile_pc_regs"];
+        }
+
+        subgraph cluster_prof_cpu_mask_read_proc{
+                label="static int prof_cpu_mask_read_proc (char *page, char **start, off_t off, int count, int *eof, void *data)";
+                set_len_cpumask_scnprintf_page_count_data[label="set_len_cpumask_scnprintf_page_count_data"];
+                count_sub_len_small_2[label="count_sub_len_small_2"];
+                return_EINVAL[label="return_EINVAL"];
+                len_self_add_sprintf_page_add_len[label="len_self_add_sprintf_page_add_len"];
+                return_len[label="return_len"];
+        }
+
+        subgraph cluster_prof_cpu_mask_write_proc{
+                label="static int prof_cpu_mask_write_proc (struct file *file, const char __user *buffer, unsigned long count, void *data)";
+                set_mask_data[label="set_mask_data"];
+                set_full_count_count[label="set_full_count_count"];
+                cpumask_pars_buffer_count_new_value[label="cpumask_pars_buffer_count_new_value"];
+                set_mask_new_value[label="set_mask_new_value"];
+                return_full_count[label="return_full_count"];
+        }
+
+        subgraph cluster_create_prof_cpu_mask{
+                label="void create_prof_cpu_mask(struct proc_dir_entry *root_irq_dir)";
+                set_entry_create_proc_entry_prof_cpu_mask_0600_root_irq_dir_false[label="set_entry_create_proc_entry_prof_cpu_mask_0600_root_irq_dir_false"];
+                return[label="return"];
+                set_entry_nlink_1[label="set_entry_nlink_1"];
+                set_entry_data_prof_cpu_mask[label="set_entry_data_prof_cpu_mask"];
+                set_entry_read_proc_prof_cpu_mask_read_proc[label="set_entry_read_proc_prof_cpu_mask_read_proc"];
+                set_entry_write_proc_prof_cpu_mask_write_proc[label="set_entry_write_proc_prof_cpu_mask_write_proc"];
+        }
+
+        subgraph cluster_read_profile{
+                label="static ssize_t read_profile(struct file *file, char __user *buf, size_t count, loff_t *ppos)";
+                set_p_ppos[label="set_p_ppos"];
+                set_sample_step_1_left_move_prof_shift[label="set_sample_step_1_left_move_prof_shift"];
+                profile_flip_buffers[label="profile_flip_buffers"];
+                p_not_small_prof_len_add_1_multi_sizeof_unsigned_int[label="p_not_small_prof_len_add_1_multi_sizeof_unsigned_int"];
+                return_0[label="return_0"];
+                count_great_prof_len_add_1_sizeof_unsigned_int_sub_p[label="count_great_prof_len_add_1_sizeof_unsigned_int_sub_p"];
+                set_count_prof_len_add_1_sizeof_unsigned_int_sub_p[label="set_count_prof_len_add_1_sizeof_unsigned_int_sub_p"];
+                set_read_0[label="set_read_0"];
+                while_p_small_sizeof_unsigned_int_and_count_great_0[label="while_p_small_sizeof_unsigned_int_and_count_great_0"];
+                put_user_sample_step_add_p_buf[label="put_user_sample_step_add_p_buf"];
+                inc_buf[label="inc_buf"];
+                inc_p[label="inc_p"];
+                dec_count[label="dec_count"];
+                inc_read[label="inc_read"];
+                set_pnt_prof_buffer_add_p_sub_sizeof_atomic_t[label="set_pnt_prof_buffer_add_p_sub_sizeof_atomic_t"];
+                copy_to_user_buf_pnt[label="copy_to_user_buf_pnt"];
+                read_self_add_count[label="read_self_add_count"];
+                ppos_self_add_read[label="ppos_self_add_read"];
+                return_read[label="return_read"];
+        }
+
+        subgraph cluster_write_profile{
+                label="static ssize_t write_profile(struct file *file, const char __user *buf, size_t count, loff_t *ppos)";
+                count_eq_sizeof_int[label="count_eq_sizeof_int"];
+                copy_from_user_multiplier_buf[label="copy_from_user_multiplier_buf"];
+                setup_pprofiling_timer_multiplier[label="setup_pprofiling_timer_multiplier"];
+                profile_discard_flip_buffers[label="profile_discard_flip_buffers"];
+                memset_prof_buffer_0[label="memset_prof_buffer_0"];
+                return_count[label="return_count"];
+        }
+
+        subgraph cluster_create_hash_tables{
+                label="static int __init create_hash_tables(void)";
+                for_each_online_cpu_cpu[label="for_each_online_cpu_cpu"];
+                set_node_cpu_to_node_cpu[label="set_node_cpu_to_node_cpu"];
+                set_page_alloc_pages_node_node_GFP_KERNEL_or__GFP_ZERO_0[label="set_page_alloc_pages_node_node_GFP_KERNEL_or__GFP_ZERO_0"];
+                per_cpu_cpu_profile_hits_cpu_1_page_address_page[label="per_cpu_cpu_profile_hits_cpu_1_page_address_page"];
+                set_page_alloc_pagges_node_node_GFP_KERNLE_or__GFP_ZERO_0[label="set_page_alloc_pagges_node_node_GFP_KERNLE_or__GFP_ZERO_0"];
+                per_cpu_cpu_profile_hits_cpu_0[label="per_cpu_cpu_profile_hits_cpu_0"];
+                page_address_page[label="page_address_page"];
+                set_prof_on_0[label="set_prof_on_0"];
+                smp_mb[label="smp_mb"];
+                on_each_cpu_profile_nop_NULL_0_1[label="on_each_cpu_profile_nop_NULL_0_1"];
+                for_each_online_cpu_cpu[label="for_each_online_cpu_cpu"];
+                per_cpu_cpu_profile_hits_cpu_0_not_null[label="per_cpu_cpu_profile_hits_cpu_0_not_null"];
+                set_page_virt_to_page_per_cpu_cpu_profile_hits_cpu_0[label="set_page_virt_to_page_per_cpu_cpu_profile_hits_cpu_0"];
+                clear_per_cpu_cpu_profile_hits_cpu_0[label="clear_per_cpu_cpu_profile_hits_cpu_0"];
+                __free_page_page[label="__free_page_page"];
+                per_cpu_cpu_profile_hits_cpu_1_not_null[label="per_cpu_cpu_profile_hits_cpu_1_not_null"];
+                set_page_virt_to_page_per_cpu_cpu_profile_hits_cpu_1[label="set_page_virt_to_page_per_cpu_cpu_profile_hits_cpu_1"];
+                clear_per_cpu_cpu_profile_hits_cpu_1[label="clear_per_cpu_cpu_profile_hits_cpu_1"];
+                __free_page_page[label="__free_page_page"];
+                return_neg1[label="return_neg1"];
+        }
+
+        subgraph cluster_create_proc_profile{
+                label="static int __init create_proc_profile(void)";
+                prof_on_null[label="prof_on_null"];
+                return_0[label="return_0"];
+                creat_hash_tables_true[label="creat_hash_tables_true"];
+                return_neg1[label="return_neg1"];
+                set_entry_create_proc_entry_profile_S_IWUSR_or_S_IRUGO_NULL_false[label="set_entry_create_proc_entry_profile_S_IWUSR_or_S_IRUGO_NULL_false"];
+                return_0[label="return_0"];
+                set_entry_proc_fops_proc_profile_operations[label="set_entry_proc_fops_proc_profile_operations"];
+                set_entry_size_1_add_prof_len_multi_sizeof_atomic_t[label="set_entry_size_1_add_prof_len_multi_sizeof_atomic_t"];
+                hotcpu_notifier_profile_cpu_callback_0[label="hotcpu_notifier_profile_cpu_callback_0"];
+                return_0[label="return_0"];
+        }
+}

@@ -1,0 +1,321 @@
+digraph futex_c{
+        subgraph cluster_hash_futex{
+                label="static struct futex_hash_bucket *hash_futex(union futex_key *key)";
+                set_hash_jhash2_key_both_word_key_both_word_add_sizeof_key_both_ptr_div_4_key_both_offset[label="set_hash_jhash2_key_both_word_key_both_word_add_sizeof_key_both_ptr_div_4_key_both_offset"];
+                return_futex_queues_hash_and_1_left_move_FUTEX_HASHBITES_sub_1[label="return_futex_queues_hash_and_1_left_move_FUTEX_HASHBITES_sub_1"];
+        }
+
+        subgraph cluster_match_futex{
+                label="static inline int match_futex(union futex_key *key1, union futex_key *key2)";
+                return_key1_both_word_eq_key2_both_word_and_key1_both_ptr_eq_keys_both_ptr_and_key1_both_offset_key2_both_offset[label="return_key1_both_word_eq_key2_both_word_and_key1_both_ptr_eq_keys_both_ptr_and_key1_both_offset_key2_both_offset"];
+        }
+
+        subgraph cluster_fet_futex_key{
+                label="static int get_futex_key(unsigned long uaddr, union futex_key *key)";
+                set_mm_current_mm[label="set_mm_current_mm"];
+                set_key_both_offset_uaddr_mode_PAGE_SIZE[label="set_key_both_offset_uaddr_mode_PAGE_SIZE"];
+                key_both_offset_mode_sizeof_u32_not_eq_0[label="key_both_offset_mode_sizeof_u32_not_eq_0"];
+                return_EINVAL[label="return_EINVAL"];
+                uaddr_self_sub_key_both_offset[label="uaddr_self_sub_key_both_offset"];
+                set_vma_find_extend_vma_mm_uaddr[label="set_vma_find_extend_vma_mm_uaddr"];
+                vma_vm_flags_VM_IO_VM_READ_set_not_eq_VM_READ[label="vma_vm_flags_VM_IO_VM_READ_set_not_eq_VM_READ"];
+                return_EPERM_or_EACCSE_decide_vma_vm_flags_and_VM_IO[label="return_EPERM_or_EACCSE_decide_vma_vm_flags_and_VM_IO"];
+                vma_vm_flags_VM_MAYSHARE_clear[label="vma_vm_flags_VM_MAYSHARE_clear"];
+                set_key_private_mm_mm[label="set_key_private_mm_mm"];
+                set_key_private_uaddr_uaddr[label="set_key_private_uaddr_uaddr"];
+                return_0[label="return_0"];
+                set_key_share_inode_vma_vm_file_f_dentry_d_inode[label="set_key_share_inode_vma_vm_file_f_dentry_d_inode"];
+                inc_both_offset[label="inc_both_offset"];
+                vma_vm_flags_VM_NONLINEAR_clear[label="vma_vm_flags_VM_NONLINEAR_clear"];
+                set_key_shared_pgoff_uaddr_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff[label="set_key_shared_pgoff_uaddr_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff"];
+                return_0[label="return_0"];
+                lock_current_mm_page_table_lock[label="lock_current_mm_page_table_lock"];
+                set_page_follow_page_mm_uaddr_0[label="set_page_follow_page_mm_uaddr_0"];
+                page_not_NULL[label="page_not_NULL"];
+                set_key_shared_pagoff_page_index_left_move_PAGE_CACHE_SHIFT_sub_PAGE_SHIFT[label="set_key_shared_pagoff_page_index_left_move_PAGE_CACHE_SHIFT_sub_PAGE_SHIFT"];
+                unlock_current_mm_page_table_lock[label="unlock_current_mm_page_table_lock"];
+                return_0[label="return_0"];
+                unlock_current_mm_page_table_lock[label="unlock_current_mm_page_table_lock"];
+                set_err_get_user_pages_current_mm_uaddr_1_0_0_page_NULL[label="set_err_get_user_pages_current_mm_uaddr_1_0_0_page_NULL"];
+                err_not_small_0[label="err_not_small_0"];
+                set_key_shared_pgoff_page_index_left_move_PAGE_CACHE_SHIFT_sub_PAGE_SHIFT[label="set_key_shared_pgoff_page_index_left_move_PAGE_CACHE_SHIFT_sub_PAGE_SHIFT"];
+                put_page_page[label="put_page_page"];
+                return_0[label="return_0"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_get_key_refs{
+                label="static inline void get_key_refs(union futex_key *key)";
+                key_both_ptr_not_eq_0[label="key_both_ptr_not_eq_0"];
+                key_both_offset_and_1[label="key_both_offset_and_1"];
+                atomic_inc_key_shared_inode_i_count[label="atomic_inc_key_shared_inode_i_count"];
+                atomic_inc_key_private_mm_mm_count[label="atomic_inc_key_private_mm_mm_count"];
+        }
+
+        subgraph cluster_drop_key_refs{
+                label="static void drop_key_refs(union futex_key *key)";
+                key_both_ptr_not_eq_0[label="key_both_ptr_not_eq_0"];
+                key_both_offset_and_1[label="key_both_offset_and_1"];
+                input_key_shared_inode[label="input_key_shared_inode"];
+                mmdrop_key_private_mm[label="mmdrop_key_private_mm"];
+        }
+
+        subgraph cluster_get_futex_value_locked{
+                label="static inline int get_futex_value_locked(int *dest, int __user *from)";
+                inc_preempt_count[label="inc_preempt_count"];
+                set_ret___copy_from_user_inatomic_dest_from_sizeof_int[label="set_ret___copy_from_user_inatomic_dest_from_sizeof_int"];
+                dec_preempt_count[label="dec_preempt_count"];
+                return_EFAULT_or_0_decide_ret[label="return_EFAULT_or_0_decide_ret"];
+        }
+
+        subgraph cluster_wake_futex{
+                label="static void wake_futex(struct futex_q *q)";
+                list_del_init_q_list[label="list_del_init_q_list"];
+                q_filp_not_null[label="q_filp_not_null"];
+                send_sigio_q_filp_f_owner_q_fd_POLL_IN[label="send_sigio_q_filp_f_owner_q_fd_POLL_IN"];
+                wake_up_all_q_waiters[label="wake_up_all_q_waiters"];
+                clear_q_lock_ptr[label="clear_q_lock_ptr"];
+        }
+
+        subgraph cluster_futex_wake{
+                label="static int futex_wake(unsigned long uaddr, int nr_wake)";
+                down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+                set_ret_get_futex_uaddr_key[label="set_ret_get_futex_uaddr_key"];
+                ret_not_eq_0[label="ret_not_eq_0"];
+                goto_out[label="goto_out"];
+                set_bh_hash_futex_key[label="set_bh_hash_futex_key"];
+                lock_bh_lock[label="lock_bh_lock"];
+                set_head_bh_chain[label="set_head_bh_chain"];
+                list_for_each_entry_safe_this_next_head_list[label="list_for_each_entry_safe_this_next_head_list"];
+                match_futex_this_key_key[label="match_futex_this_key_key"];
+                wake_futex_this[label="wake_futex_this"];
+                inc_ret_not_small_nr_wake[label="inc_ret_not_small_nr_wake"];
+                unlock_bh_lock[label="unlock_bh_lock"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph futex_requeue{
+                label="static int futex_requeue(unsigned long uaddr1, unsigned long uaddr2, int nr_wake, int nr_requeue, int *valp)";
+                down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+                get_futex_key_uaddr1_key1[label="get_futex_key_uaddr1_key1"];
+                get_futex_key_uaddr2_key2[label="get_futex_key_uaddr2_key2"];
+                set_bh1_hash_futex_key1[label="set_bh1_hash_futex_key1"];
+                set_bh2_hash_futex_key2[label="set_bh2_hash_futex_key2"];
+                bh1_small_bh2[label="bh1_small_bh2"];
+                lock_bh1_lock[label="lock_bh1_lock"];
+                lock_bh2_lock[label="lock_bh2_lock"];
+                bh1_great_bh2[label="bh1_great_bh2"];
+                lock_bh1_lock[label="lock_bh1_lock"];
+                valp_not_eq_NULL[label="valp_not_eq_NULL"];
+                set_ret_get_futex_value_locked_curval_uaddr1[label="set_ret_get_futex_value_locked_curval_uaddr1"];
+                ret_not_null[label="ret_not_null"];
+                unlock_bh1_lock[label="unlock_bh1_lock"];
+                bh1_not_eq_bh2[label="bh1_not_eq_bh2"];
+                ulock_bh2_lock[label="ulock_bh2_lock"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                set_ret_get_user_curval_uaddr1[label="set_ret_get_user_curval_uaddr1"];
+                ret_null[label="ret_null"];
+                goto_retry[label="goto_retry"];
+                return_ret[label="return_ret"];
+                curval_not_eq_valp[label="curval_not_eq_valp"];
+                set_ret_EAGAIN[label="set_ret_EAGAIN"];
+                goto_out_unlock[label="goto_out_unlock"];
+                set_head1_bh1_chain[label="set_head1_bh1_chain"];
+                list_for_each_entry_safe_this_next_head1_list[label="list_for_each_entry_safe_this_next_head1_list"];
+                match_futex_this_key_key1_false[label="match_futex_this_key_key1_false"];
+                inc_ret_not_great_nr_wake[label="inc_ret_not_great_nr_wake"];
+                wake_futex_this[label="wake_futex_this"];
+                list_move_tail_this_list_bh2_chain[label="list_move_tail_this_list_bh2_chain"];
+                set_this_lock_ptr_bh2_lock[label="set_this_lock_ptr_bh2_lock"];
+                set_this_key_key2[label="set_this_key_key2"];
+                get_key_refs_key2[label="get_key_refs_key2"];
+                inc_drop_count[label="inc_drop_count"];
+                ret_sub_nr_wake_not_small_nr_requeue[label="ret_sub_nr_wake_not_small_nr_requeue"];
+                head1_eq_hb2_chain_and_head1_not_eq_next_list[label="head1_eq_hb2_chain_and_head1_not_eq_next_list"];
+                set_head1_this_list[label="set_head1_this_list"];
+                unlock_bh1_lock[label="unlock_bh1_lock"];
+                bh1_not_eq_bh2[label="bh1_not_eq_bh2"];
+                unlock_bh2_lock[label="unlock_bh2_lock"];
+                dec_drop_count_not_small_0[label="dec_drop_count_not_small_0"];
+                drop_key_refs_key1[label="drop_key_refs_key1"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_queue_lock{
+                label="static inline struct futex_hash_bucket *queue_lock(struct futex_q *q, int fd, struct file *filp)";
+                set_q_fd_fd[label="set_q_fd_fd"];
+                q_filp_filp[label="q_filp_filp"];
+                init_waitqueue_head_q_waiters[label="init_waitqueue_head_q_waiters"];
+                get_key_refs_q_key[label="get_key_refs_q_key"];
+                set_bh_hash_futex_q_key[label="set_bh_hash_futex_q_key"];
+                set_q_lock_ptr_bh_lock[label="set_q_lock_ptr_bh_lock"];
+                lock_bh_lock[label="lock_bh_lock"];
+                return_bh[label="return_bh"];
+        }
+
+        subgraph cluster___queue_me{
+                label="static inline void __queue_me(struct futex_q *q, struct futex_hash_bucket *bh)";
+                list_add_tail_q_list_bh_chain[label="list_add_tail_q_list_bh_chain"];
+                unlock_bh_lock[label="unlock_bh_lock"];
+        }
+
+        subgraph cluster_queue_unlock{
+                label="static inline void queue_unlock(struct futex_q *q, struct futex_hash_bucket *bh)";
+                spin_unlock_bh_lock[label="spin_unlock_bh_lock"];
+                drop_key_refs_q_key[label="drop_key_refs_q_key"];
+        }
+
+        subgraph cluster_queue_me{
+                label="static void queue_me(struct futex_q *q, int fd, struct file *filp)";
+                set_bh_queue_lock_q_fd_file[label="set_bh_queue_lock_q_fd_file"];
+                __queue_me_q_bh[label="__queue_me_q_bh"];
+        }
+
+        subgraph cluster_unqueue_me{
+                label="static int unqueue_me(struct futex_q *q)";
+                set_lock_ptr_q_lock_ptr[label="set_lock_ptr_q_lock_ptr"];
+                lock_ptr_not_eq_0[label="lock_ptr_not_eq_0"];
+                lock_lock_ptr[label="lock_lock_ptr"];
+                lock_ptr_not_eq_q_lock_ptr[label="lock_ptr_not_eq_q_lock_ptr"];
+                unlock_lock_ptr[label="unlock_lock_ptr"];
+                goto_retry[label="goto_retry"];
+                list_del_q_list[label="list_del_q_list"];
+                unlock_lock_ptr[label="unlock_lock_ptr"];
+                set_ret_1[label="set_ret_1"];
+                drop_key_refs_q_key[label="drop_key_refs_q_key"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_futex_wait{
+                label="static int futex_wait(unsigned long uaddr, int val, unsigned long time)";
+                DECLARE_WAITQUEUE_wait_current[label="DECLARE_WAITQUEUE_wait_current"];
+                down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+                set_ret_get_futex_key_uaddr_q_key[label="set_ret_get_futex_key_uaddr_q_key"];
+                ret_not_eq_0[label="ret_not_eq_0"];
+                goto_out_release_sem[label="goto_out_release_sem"];
+                set_bh_queue_lock_q_neg1_NULL[label="set_bh_queue_lock_q_neg1_NULL"];
+                set_ret_get_futex_value_locked_curval_uaddr[label="set_ret_get_futex_value_locked_curval_uaddr"];
+                ret_not_null[label="ret_not_null"];
+                queue_unlock_q_bh[label="queue_unlock_q_bh"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                set_ret_get_user_curval_uaddr[label="set_ret_get_user_curval_uaddr"];
+                ret_null[label="ret_null"];
+                goto_retry[label="goto_retry"];
+                return_ret[label="return_ret"];
+                curval_not_eq_val[label="curval_not_eq_val"];
+                set_ret_EWOULDBLOCK[label="set_ret_EWOULDBLOCK"];
+                queue_unlock_q_bh[label="queue_unlock_q_bh"];
+                goto_out_release_sem[label="goto_out_release_sem"];
+                __queue_me_q_bh[label="__queue_me_q_bh"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                add_wait_queue_q_waiters_wait[label="add_wait_queue_q_waiters_wait"];
+                list_empty_q_list_false[label="list_empty_q_list_false"];
+                set_time_schedule_timeout_time[label="set_time_schedule_timeout_time"];
+                __set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+                unqueue_me_q_null[label="unqueue_me_q_null"];
+                return_0[label="return_0"];
+                set_time_0[label="set_time_0"];
+                return_ETIMEDOUT[label="return_ETIMEDOUT"];
+                return_EINTR[label="return_EINTR"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_futex_close{
+                label="static int futex_close(struct inode *inode, struct file *filp)";
+                set_q_filp_private_data[label="set_q_filp_private_data"];
+                unqueue_me_q[label="unqueue_me_q"];
+                kfree_q[label="kfree_q"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_futex_poll{
+                label="static unsigned int futex_poll(struct file *filp,struct poll_table_struct *wait)";
+                set_q_filp_private_data[label="set_q_filp_private_data"];
+                poll_wait_filp_q_waiters_wait[label="poll_wait_filp_q_waiters_wait"];
+                list_empty_q_list[label="list_empty_q_list"];
+                set_ret_POLLIN_and_POLLRDNORM[label="set_ret_POLLIN_and_POLLRDNORM"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_futex_fd{
+                label="static int futex_fd(unsigned long uaddr, int signal)";
+                valid_signal_signal_false[label="valid_signal_signal_false"];
+                goto_out[label="goto_out"];
+                set_ret_get_unused_fd[label="set_ret_get_unused_fd"];
+                return_small_0[label="return_small_0"];
+                goto_out[label="goto_out"];
+                set_filp_get_empty_filp[label="set_filp_get_empty_filp"];
+                filp_null[label="filp_null"];
+                put_unused_fd_set[label="put_unused_fd_set"];
+                set_ret_ENFILE[label="set_ret_ENFILE"];
+                goto_out[label="goto_out"];
+                set_filp_f_op_futex_fops[label="set_filp_f_op_futex_fops"];[label="set_filp_f_op_futex_fops[label="set_filp_f_op_futex_fops"];"];
+                set_filp_f_vfsmnt_mntget_futex_mnt[label="set_filp_f_vfsmnt_mntget_futex_mnt"];
+                set_filp_f_dentry_dget_futex_mnt_mnt_root[label="set_filp_f_dentry_dget_futex_mnt_mnt_root"];
+                set_filp_f_mapping_filp_f_dentry_d_inode_i_mapping[label="set_filp_f_mapping_filp_f_dentry_d_inode_i_mapping"];
+                signal_not_null[label="signal_not_null"];
+                set_err_f_setown_file_current_pid_1[label="set_err_f_setown_file_current_pid_1"];
+                err_small_0[label="err_small_0"];
+                put_unused_fd_ret[label="put_unused_fd_ret"];
+                put_filp_filp[label="put_filp_filp"];
+                set_ret_err[label="set_ret_err"];
+                goto_out[label="goto_out"];
+                set_filp_f_owner_signum_signal[label="set_filp_f_owner_signum_signal"];
+                set_q_kmalloc[label="set_q_kmalloc"];
+                down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+                get_futex_key_uaddr_q_key[label="get_futex_key_uaddr_q_key"];
+                set_filp_private_data_q[label="set_filp_private_data_q"];
+                queue_me_q_ret_filp[label="queue_me_q_ret_filp"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                fd_install_ret_filp[label="fd_install_ret_filp"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_do_futex{
+                label="long do_futex(unsigned long uaddr, int op, int val, unsigned long timeout, unsigned long uaddr2, int val2, int val3)";
+                switch_op[label="switch_op"];
+                case_FUTEX_WAIT[label="case_FUTEX_WAIT"];
+                set_ret_futex_wait_uaddr_val_timeout[label="set_ret_futex_wait_uaddr_val_timeout"];
+                case_FUTEX_WAKE[label="case_FUTEX_WAKE"];
+                set_ret_futex_wake_uaddr_val[label="set_ret_futex_wake_uaddr_val"];
+                case_FUTEX_FD[label="case_FUTEX_FD"];
+                set_ret_futex_fd_uaddr_val[label="set_ret_futex_fd_uaddr_val"];
+                case_FUTEX_REQUEUE[label="case_FUTEX_REQUEUE"];
+                set_ret_futex_requeue_uaddr_uaddr2_val_val2_NULL[label="set_ret_futex_requeue_uaddr_uaddr2_val_val2_NULL"];
+                case_FUTEX_CMP_REQUEUE[label="case_FUTEX_CMP_REQUEUE"];
+                set_ret_futex_requeue_uaddr_uaddr2_val_val2_val3[label="set_ret_futex_requeue_uaddr_uaddr2_val_val2_val3"];
+                default_[label="default_"];
+                set_ret_ENOSYS[label="set_ret_ENOSYS"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_sys_futex{
+                label="asmlinkage long sys_futex(u32 __user *uaddr, int op, int val, struct timespec __user *utime, u32 __user *uaddr2, int val3)";
+                set_timeout_MAX_SCHEDULE_TIMEOUT[label="set_timeout_MAX_SCHEDULE_TIMEOUT"];
+                set_val2_0[label="set_val2_0"];
+                op_eq_FUTEX_WAIT_and_utime[label="op_eq_FUTEX_WAIT_and_utime"];
+                copy_from_user_utime[label="copy_from_user_utime"];
+                set_timeout_timespec_to_jiffies_t_add_1[label="set_timeout_timespec_to_jiffies_t_add_1"];
+                op_not_small_FUTEX_REQUEUE[label="op_not_small_FUTEX_REQUEUE"];
+                set_val2_utime[label="set_val2_utime"];
+                return_do_futex_uaddr_op_val_timeout_uaddr2_val2_val3[label="return_do_futex_uaddr_op_val_timeout_uaddr2_val2_val3"];
+        }
+
+        subgraph cluster_futexfs_get_sb{
+                label="static struct super_block * futexfs_get_sb(struct file_system_type *fs_type, int flags, const char *dev_name, void *data)";
+                return_get_sb_seudo_fs_type_futex_NULL_0xbad1dea[label="return_get_sb_seudo_fs_type_futex_NULL_0xbad1dea"];
+        }
+
+        subgraph cluster_init{
+                label="static int __init init(void)";
+                register_filesystem_futex_fs_type[label="register_filesystem_futex_fs_type"];
+                futex_mnt_kern_mount_futex_fs_type[label="futex_mnt_kern_mount_futex_fs_type"];
+                for_i_ARRAY_SIZE_futex_queues[label="for_i_ARRAY_SIZE_futex_queues"];
+                INIT_LIST_HEAD_futex_queues_i_chain[label="INIT_LIST_HEAD_futex_queues_i_chain"];
+                lock_init_futex_queues_i_lock[label="lock_init_futex_queues_i_lock"];
+                return_0[label="return_0"];
+        }
+}

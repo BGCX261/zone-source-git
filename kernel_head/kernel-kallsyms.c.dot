@@ -1,0 +1,197 @@
+digraph kallsyms_c{
+        subgraph cluster_is_kernel_inittex{
+                label="static inline int is_kernel_inittext(unsigned long addr)";
+                addr_not_small__sinittext_and_addr_not_great__einttext[label="addr_not_small__sinittext_and_addr_not_great__einttext"];
+                return_1[label="return_1"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_is_kernel_extratext{
+                label="static inline int is_kernel_extratext(unsigned long addr)";
+                addr_not_small__sextratext_and_not_great__eextratext[label="addr_not_small__sextratext_and_not_great__eextratext"];
+                return_1[label="return_1"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_is_kernel_text{
+                label="static inline int is_kernel_text(unsigned long addr)";
+                addr_not_small__stext_and_addr_not_great__etext[label="addr_not_small__stext_and_addr_not_great__etext"];
+                return_1[label="return_1"];
+                return_in_gate_area_not_task_addr[label="return_in_gate_area_not_task_addr"];
+        }
+
+        subgraph cluster_is_kernel{
+                label="static inline int is_kernel(unsigned long addr)";
+                addr_not_small__stext_and_addr_not_great__end[label="addr_not_small__stext_and_addr_not_great__end"];
+                return_in_gate_area_no_task_addr[label="return_in_gate_area_no_task_addr"];
+        }
+
+        subgraph cluster_kallsyms_expand_symbol{
+                label="static unsigned int kallsyms_expand_symbol(unsigned int off, char *result)";
+                set_skipped_first_0[label="set_skipped_first_0"];
+                set_data_kallsyms_names_off[label="set_data_kallsyms_names_off"];
+                set_len_data[label="set_len_data"];
+                inc_data[label="inc_data"];
+                off_self_add_len_add_1[label="off_self_add_len_add_1"];
+                len_not_null[label="len_not_null"];
+                set_tptr_kallsyms_token_table_kallayms_token_index_data[label="set_tptr_kallsyms_token_table_kallayms_token_index_data"];
+                inc_data[label="inc_data"];
+                dec_len[label="dec_len"];
+                tptr_not_null[label="tptr_not_null"];
+                skipped_first_not_null[label="skipped_first_not_null"];
+                set_result_tptr[label="set_result_tptr"];
+                inc_result[label="inc_result"];
+                set_skipped_first_1[label="set_skipped_first_1"];
+                inc_tptr[label="inc_tptr"];
+                set_result_char_EOF[label="set_result_char_EOF"];
+                return_off[label="return_off"];
+        }
+
+        subgraph cluster_kallsyms_get_symbol_type{
+                label="static char kallsyms_get_symbol_type(unsigned int off)";
+                return_kallsyms_token_table_kallsyms_token_index_kallsyms_name_off_add_1[label="return_kallsyms_token_table_kallsyms_token_index_kallsyms_name_off_add_1"];
+        }
+
+        subgraph cluster_get_symbol_offset{
+                label="static unsigned int get_symbol_offset(unsigned long pos)";
+                set_name_kallsyms_names_kallsyms_markers_pos_right_8[label="set_name_kallsyms_names_kallsyms_markers_pos_right_8"];
+                for_i_pos_and_0xff[label="for_i_pos_and_0xff"];
+                set_name_name_add_name_1[label="set_name_name_add_name_1"];
+                return_name_sub_kallsyms_names[label="return_name_sub_kallsyms_names"];
+        }
+
+        subgraph cluster_kallsyms_lookup_name{
+                label="unsigned long kallsyms_lookup_name(const char *name)";
+                for_i_kallsyms_num_syms[label="for_i_kallsyms_num_syms"];
+                set_off_kallsyms_expand_symbol_off_namebuf[label="set_off_kallsyms_expand_symbol_off_namebuf"];
+                strcmp_namebuf_name_eq_0[label="strcmp_namebuf_name_eq_0"];
+                return_kallsyms_addresses_i[label="return_kallsyms_addresses_i"];
+                return_module_kallsyms_lookup_name_name[label="return_module_kallsyms_lookup_name_name"];
+        }
+
+        subgraph cluster_kallsyms_lookup{
+                label="const char *kallsyms_lookup(unsigned long addr, unsigned long *symbolsize, unsigned long *offset, char **modname, char *namebuf)";
+                all_var_not_null_and_is_kernel_addr_true_or_all_var_null_and_is_kernel_text_addr_true_and_iskernel_inittext_addr_true_or_is_kernel_extractext_addr_true[label="all_var_not_null_and_is_kernel_addr_true_or_all_var_null_and_is_kernel_text_addr_true_and_iskernel_inittext_addr_true_or_is_kernel_extractext_addr_true"];
+                set_symbol_end_0[label="set_symbol_end_0"];
+                set_low_0[label="set_low_0"];
+                set_high_kallsyms_num_syms[label="set_high_kallsyms_num_syms"];
+                hight_sub_low_great_1[label="hight_sub_low_great_1"];
+                set_mid_low_add_hight_div_2[label="set_mid_low_add_hight_div_2"];
+                kallsyms_addresses_mid_not_great_addr[label="kallsyms_addresses_mid_not_great_addr"];
+                set_low_mid[label="set_low_mid"];
+                set_high_mid[label="set_high_mid"];
+                low_not_null_and_kallsyms_addresses_low_sub_1_eq_kallsyms_addresses_low[label="low_not_null_and_kallsyms_addresses_low_sub_1_eq_kallsyms_addresses_low"];
+                dec_low[label="dec_low"];
+                kallsyms_expand_symbol_get_symbol_offset_low_namebuf[label="kallsyms_expand_symbol_get_symbol_offset_low_namebuf"];
+                for_i_low_add_1_kallsyms_num_syms[label="for_i_low_add_1_kallsyms_num_syms"];
+                kallsyms_addresses_i_great_kallsyms_addressed_low[label="kallsyms_addresses_i_great_kallsyms_addressed_low"];
+                set_symbol_end_kallsyms_addresses_i[label="set_symbol_end_kallsyms_addresses_i"];
+                symbol_end_null[label="symbol_end_null"];
+                is_kernel_inittext_addr[label="is_kernel_inittext_addr"];
+                set_symbol_end__einittext[label="set_symbol_end__einittext"];
+                set_symbol_end__end_or__etext_decide_all_var[label="set_symbol_end__end_or__etext_decide_all_var"];
+                set_symbolsize_symbol_end_sub_kallsyms_addresses_low[label="set_symbolsize_symbol_end_sub_kallsyms_addresses_low"];
+                clear_modname[label="clear_modname"];
+                set_offset_addr_sub_kallsyms_addresses_low[label="set_offset_addr_sub_kallsyms_addresses_low"];
+                return_namebuf[label="return_namebuf"];
+                set_msym_module_address_lookup_addr_symbolsize_offset_modname[label="set_msym_module_address_lookup_addr_symbolsize_offset_modname"];
+                msym_not_null[label="msym_not_null"];
+                return_strncpy_namebuf_msym_KSYM_NAME_LEN[label="return_strncpy_namebuf_msym_KSYM_NAME_LEN"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph clsuter__print_symbol{
+                label="void __print_symbol(const char *fmt, unsigned long address)";
+                set_name_kallsyms_lookup_address_size_offset_modname_namebuf[label="set_name_kallsyms_lookup_address_size_offset_modname_namebuf"];
+                name_null[label="name_null"];
+                sprintf_buffer_address[label="sprintf_buffer_address"];
+                modname_not_null[label="modname_not_null"];
+                sprintf_buffer_name_offset_size_modname[label="sprintf_buffer_name_offset_size_modname"];
+                sprintf_buffer_name_offset_size[label="sprintf_buffer_name_offset_size"];
+                printk_fmt_buffer[label="printk_fmt_buffer"];
+        }
+
+        subgraph clsuter_upcase_if_global{
+                label="static void upcase_if_global(struct kallsym_iter *iter)";
+                is_exported_iter_name_iter_owner[label="is_exported_iter_name_iter_owner"];
+                iter_type_self_add_char_A_sub_char_a[label="iter_type_self_add_char_A_sub_char_a"];
+        }
+
+        subgraph cluster_get_ksymbol_mod{
+                label="static int get_ksymbol_mod(struct kallsym_iter *iter)";
+                set_iter_owner_module_get_kallsyms_iter_pos_sub_kallsyms_num_syms_iter_value_iter_type_iter_name[label="set_iter_owner_module_get_kallsyms_iter_pos_sub_kallsyms_num_syms_iter_value_iter_type_iter_name"];
+                iter_owner_eq_NULL[label="iter_owner_eq_NULL"];
+                return_0[label="return_0"];
+                upcase_if_global_iter[label="upcase_if_global_iter"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_get_ksymbol_core{
+                label="static unsigned long get_ksymbol_core(struct kallsym_iter *iter)";
+                set_off_iter_nameoff[label="set_off_iter_nameoff"];
+                clear_iter_owner[label="clear_iter_owner"];
+                set_iter_value_kallsyms_addresses_iter_pos[label="set_iter_value_kallsyms_addresses_iter_pos"];
+                set_iter_type_kallsyms_get_symbol_type_off[label="set_iter_type_kallsyms_get_symbol_type_off"];
+                set_off_kallsyms_expand_symbol_off_iter_name[label="set_off_kallsyms_expand_symbol_off_iter_name"];
+                return_off_sub_iter_nameoff[label="return_off_sub_iter_nameoff"];
+        }
+
+        subgraph cluster_reset_iter{
+                label="static void reset_iter(struct kallsym_iter *iter, loff_t new_pos)";
+                set_iter_name_0_EOF[label="set_iter_name_0_EOF"];
+                set_iter_nameoff_get_symbol_offset_new_pos[label="set_iter_nameoff_get_symbol_offset_new_pos"];
+                set_iter_pos_new_pos[label="set_iter_pos_new_pos"];
+        }
+
+        subgraph cluster_update_iter{
+                label="static int update_iter(struct kallsym_iter *iter, loff_t pos)";
+                pos_not_small_kallsyms_num_syms[label="pos_not_small_kallsyms_num_syms"];
+                set_iter_pos_pos[label="set_iter_pos_pos"];
+                return_get_ksymbol_mod_iter[label="return_get_ksymbol_mod_iter"];
+                pos_not_eq_iter_pos[label="pos_not_eq_iter_pos"];
+                reset_iter_iter_pos[label="reset_iter_iter_pos"];
+                iter_nameoff_self_add_get_ksymbol_core_iter[label="iter_nameoff_self_add_get_ksymbol_core_iter"];
+                inc_iter_pos[label="inc_iter_pos"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_s_next{
+                label="static void *s_next(struct seq_file *m, void *p, loff_t *pos)";
+                inc_pos[label="inc_pos"];
+                update_iter_m_private_pos_null[label="update_iter_m_private_pos_null"];
+                return_NULL[label="return_NULL"];
+                return_p[label="return_p"];
+        }
+
+        subgraph cluster_s_start{
+                label="static void *s_start(struct seq_file *m, loff_t *pos)";
+                update_iter_m_private_pos[label="update_iter_m_private_pos"];
+                return_NULL[label="return_NULL"];
+                return_m_provate[label="return_m_provate"];
+        }
+
+        subgraph cluster_kallsyms_open{
+                label="static int kallsyms_open(struct inode *inode, struct file *file)";
+                set_iter_kmalloc[label="set_iter_kmalloc"];
+                reset_iter_iter_0[label="reset_iter_iter_0"];
+                set_ret_open_file_kallsyms_op[label="set_ret_open_file_kallsyms_op"];
+                ret_eq_0[label="ret_eq_0"];
+                set_file_private_data_private_iter[label="set_file_private_data_private_iter"];
+                kfree_iter[label="kfree_iter"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_kallsyms_release{
+                label="static int kallsyms_release(struct inode *inode, struct file *file)";
+                set_m_file_private_data[label="set_m_file_private_data"];
+                kfree_m_private[label="kfree_m_private"];
+                return_seq_release_inode_file[label="return_seq_release_inode_file"];
+        }
+
+        subgraph cluster_kallsyms_init{
+                label="static int __init kallsyms_init(void)";
+                set_entry_create_proc_entry_kallsyms_0444_NULL[label="set_entry_create_proc_entry_kallsyms_0444_NULL"];
+                set_entry_proc_fops_kallsyms_operations[label="set_entry_proc_fops_kallsyms_operations"];
+                return_0[label="return_0"];
+        }
+}

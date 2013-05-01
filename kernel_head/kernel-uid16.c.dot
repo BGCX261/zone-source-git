@@ -1,0 +1,121 @@
+digraph uid16_c{
+        subgraph cluster_sys_chown16{
+                label="asmlinkage long sys_chown16(const char __user * filename, old_uid_t user, old_gid_t group)";
+                return_sys_lchown16_filename_low2highuid_user_low2highgid_group[label="return_sys_lchown16_filename_low2highuid_user_low2highgid_group"];
+        }
+
+        subgraph cluster_sys_lchown16{
+                label="asmlinkage long sys_lchown16(const char __user * filename, old_uid_t user, old_gid_t group)";
+                return_sys_lchown_filename_low2highuid_user_low2highgid_group[label="return_sys_lchown_filename_low2highuid_user_low2highgid_group"];
+        }
+
+        subgraph cluster_sys_fchown16{
+                label="asmlinkage long sys_fchown16(unsigned int fd, old_uid_t user, old_gid_t group)";
+                return_sys_fchown_fd_low2highuid_user_low2highgid_group[label="return_sys_fchown_fd_low2highuid_user_low2highgid_group"];
+        }
+
+        subgraph cluster_sys_setregid16{
+                label="asmlinkage long sys_setregid16(old_gid_t rgid, old_gid_t egid)";
+                return_sys_setregid_low2highgid_rgid_low2highgid_egid[label="return_sys_setregid_low2highgid_rgid_low2highgid_egid"];
+        }
+
+        subgraph cluster_sys_setgid16{
+                label="asmlinkage long sys_setgid16(old_gid_t gid)";
+                return_sys_setgid_low2highgid_gid[label="return_sys_setgid_low2highgid_gid"];
+        }
+
+        subgraph cluster_sys_setreuid16{
+                label="asmlinkage long sys_setreuid16(old_uid_t ruid, old_uid_t euid)";
+                return_sys_setreuid_low2highuid_ruid_low2highuid_euid[label="return_sys_setreuid_low2highuid_ruid_low2highuid_euid"];
+        }
+
+        subgraph cluster_sys_setuid16{
+                label="asmlinkage long sys_setuid16(old_uid_t uid)";
+                return_sys_setuid_low2highuid_uid[label="return_sys_setuid_low2highuid_uid"];
+        }
+
+        subgraph cluster_sys_setresuid16{
+                label="asmlinkage long sys_setresuid16(old_uid_t ruid, old_uid_t euid, old_uid_t suid)";
+                return_sys_setreuid_low2highuid_ruid_low2highuid_euid_low2highuid_suid[label="return_sys_setreuid_low2highuid_ruid_low2highuid_euid_low2highuid_suid"];
+        }
+
+        subgraph cluster_sys_getresuid16{
+                label="asmlinkage long sys_getresuid16(old_uid_t __user *ruid, old_uid_t __user *euid, old_uid_t __user *suid)";
+                set_retval_put_user_high2lowuid_current_uid_ruid_null_and_set_retval_put_user_high2lowuid_current_euid_euid_null[label="set_retval_put_user_high2lowuid_current_uid_ruid_null_and_set_retval_put_user_high2lowuid_current_euid_euid_null"];
+                set_retval_put_user_high2lowuid_current_suid_suid[label="set_retval_put_user_high2lowuid_current_suid_suid"];
+                return_retval[label="return_retval"];
+        }
+        
+        subgraph cluster_sys_setfsuid16{
+                label="asmlinkage long sys_setfsuid16(old_uid_t uid)";
+                return_sys_setfsuid_low2highuid_uid[label="return_sys_setfsuid_low2highuid_uid"];
+        }
+
+        subgraph cluster_sys_setfsgid16{
+                label="asmlinkage long sys_setfsgid16(old_gid_t gid)";
+                return_sys_setfsgid_low2highgid_gid[label="return_sys_setfsgid_low2highgid_gid"];
+        }
+
+        subgraph cluster_groups16_to_user{
+                label="static int groups16_to_user(old_gid_t __user *grouplist, struct group_info *group_info)";
+                for_i_group_info_ngroups[label="for_i_group_info_ngroups"];
+                set_group_high2lowgid_GROUP_AT_group_info_i[label="set_group_high2lowgid_GROUP_AT_group_info_i"];
+                put_user_group_grouplist_add_i[label="put_user_group_grouplist_add_i"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_groups16_from_user{
+                label="static int groups16_from_user(struct group_info *group_info, old_gid_t __user *grouplist)";
+                for_i_group_info_ngroups[label="for_i_group_info_ngroups"];
+                get_user_group_grouplist_add_i[label="get_user_group_grouplist_add_i"];
+                set_GROUP_AT_group_info_i_low2highgid_group[label="set_GROUP_AT_group_info_i_low2highgid_group"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sys_getgroups16{
+                label="asmlinkage long sys_getgroups16(int gidsetsize, old_gid_t __user *grouplist)";
+                get_group_info_current_group_info[label="get_group_info_current_group_info"];
+                set_i_current_group_info_ngroups[label="set_i_current_group_info_ngroups"];
+                gidsetsize_not_null[label="gidsetsize_not_null"];
+                i_great_gidsetsize[label="i_great_gidsetsize"];
+                set_i_EINVAL[label="set_i_EINVAL"];
+                goto_out[label="goto_out"];
+                groups16_to_user_grouplist_current_group_info[label="groups16_to_user_grouplist_current_group_info"];
+                put_group_info_current_group_info[label="put_group_info_current_group_info"];
+                return_i[label="return_i"];
+        }
+
+        subgraph cluster_sys_setgroups16{
+                label="asmlinkage long sys_setgroups16(int gidsetsize, old_gid_t __user *grouplist)";
+                capable_CAP_SETGID_fasle[label="capable_CAP_SETGID_fasle"];
+                return_EPERM[label="return_EPERM"];
+                set_group_info_groups_alloc_gidsetsize[label="set_group_info_groups_alloc_gidsetsize"];
+                set_retval_groups16_from_user_group_info_grouplist[label="set_retval_groups16_from_user_group_info_grouplist"];
+                return_not_null[label="return_not_null"];
+                put_group_info_group_info[label="put_group_info_group_info"];
+                return_retval[label="return_retval"];
+                set_retval_set_current_groups_group_info[label="set_retval_set_current_groups_group_info"];
+                put_group_info_group_info[label="put_group_info_group_info"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_sys_getuid16{
+                label="asmlinkage long sys_getuid16(void)";
+                return_high2lowuid_current_uid[label="return_high2lowuid_current_uid"];
+        }
+
+        subgraph cluster_sys_geteuid16{
+                label="asmlinkage long sys_geteuid16(void)";
+                return_high2lowuid_current_euid[label="return_high2lowuid_current_euid"];
+        }
+
+        subgraph cluster_sys_getgid16{
+                label="asmlinkage long sys_getgid16(void)";
+                return_high2lowgid_current_gid[label="return_high2lowgid_current_gid"];
+        }
+
+        subgraph cluster_sys_getegid16{
+                label="asmlinkage long sys_getegid16(void)";
+                return_high2lowgid_current_egid[label="return_high2lowgid_current_egid"];
+        }
+}

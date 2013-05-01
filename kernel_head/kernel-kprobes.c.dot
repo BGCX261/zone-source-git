@@ -1,0 +1,146 @@
+digraph kprobes_c{
+        subgraph cluster_lock_kprobes{
+                label="void lock_kprobes(void)";;
+                lock_kprobe_lock[label="lock_kprobe_lock"];
+                set_kprobe_cpu_smp_processor_id[label="set_kprobe_cpu_smp_processor_id"];
+        }
+
+        subgraph cluster_unlock_kprobes{
+                label="void unlock_kprobes(void)";
+                kprobe_cpu_NR_CPUS[label="kprobe_cpu_NR_CPUS"];
+                unlock_kprobe_lock[label="unlock_kprobe_lock"];
+        }
+
+        subgraph cluster_get_kprobe{
+                label="struct kprobe *get_kprobe(void *addr)";
+                set_head_kprobe_table_hash_ptr_addr_KPROBE_HASH_BITS[label="set_head_kprobe_table_hash_ptr_addr_KPROBE_HASH_BITS"];
+                hlist_for_each_node_head[label="hlist_for_each_node_head"];
+                sett_hlist_entry_node_hlist[label="sett_hlist_entry_node_hlist"];
+                p_addr_eq_addr[label="p_addr_eq_addr"];
+                return_p[label="return_p"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_aggr_pre_handler{
+                label="int aggr_pre_handler(struct kprobe *p, struct pt_regs *regs)";
+                list_for_each_entry_kp_p_list_list[label="list_for_each_entry_kp_p_list_list"];
+                kp_pre_handler_not_null[label="kp_pre_handler_not_null"];
+                set_curr_kprobe_kp[label="set_curr_kprobe_kp"];
+                kp_pre_handler_kp_regs[label="kp_pre_handler_kp_regs"];
+                clear_curr_kprobe[label="clear_curr_kprobe"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_aggr_post_handler{
+                label="void aggr_post_handler(struct kprobe *p, struct pt_regs *regs, unsigned long flags)";
+                list_for_each_entry_kp_p_list_list[label="list_for_each_entry_kp_p_list_list"];
+                kp_post_handler_not_null[label="kp_post_handler_not_null"];
+                set_curr_kprobe_kp[label="set_curr_kprobe_kp"];
+                kp_post_handler_kp_regs[label="kp_post_handler_kp_regs"];
+                clear_curr_kprobe[label="clear_curr_kprobe"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_arrg_fault_handler{
+                label="int aggr_fault_handler(struct kprobe *p, struct pt_regs *regs, int trapnr)";
+                curr_kprobe_not_null_and_curr_kprobe_fault_handler_not_null[label="curr_kprobe_not_null_and_curr_kprobe_fault_handler_not_null"];
+                curr_kprobe_fault_handler_curr_kprobe_regs_trapnr[label="curr_kprobe_fault_handler_curr_kprobe_regs_trapnr"];
+                return_1[label="return_1"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_add_aggr_kprobe{
+                label="static inline void add_aggr_kprobe(struct kprobe *ap, struct kprobe *p)";
+                set_ap_addr_p_addr[label="set_ap_addr_p_addr"];
+                set_ap_opcode_p_opcode[label="set_ap_opcode_p_opcode"];
+                memcpy_ap_ainsn_p_ainsn[label="memcpy_ap_ainsn_p_ainsn"];
+                set_ap_pre_handler_aggr_pre_handler[label="set_ap_pre_handler_aggr_pre_handler"];
+                set_ap_post_handler_aggr_post_handler[label="set_ap_post_handler_aggr_post_handler"];
+                set_ap_fault_handler_aggr_fault_handler[label="set_ap_fault_handler_aggr_fault_handler"];
+                INIT_LIST_HAED_ap_list[label="INIT_LIST_HAED_ap_list"];
+                list_add_p_list_ap_list[label="list_add_p_list_ap_list"];
+                INIT_HLIST_NODE_ap_hlist[label="INIT_HLIST_NODE_ap_hlist"];
+                hlist_del_p_hlist[label="hlist_del_p_hlist"];
+                hlist_add_head_ap_hlist_kprobe_table_hash_ptr_ap_addr_KPROBE_HASH_BITS[label="hlist_add_head_ap_hlist_kprobe_table_hash_ptr_ap_addr_KPROBE_HASH_BITS"];
+        }
+
+        subgraph cluster_register_aggr_kprobe{
+                label="static int register_aggr_kprobe(struct kprobe *old_p, struct kprobe *p)";
+                old_p_break_hndler_not_null_or_p_break_handler[label="old_p_break_hndler_not_null_or_p_break_handler"];
+                set_ret_EEXIST[label="set_ret_EEXIST"];
+                old_p_pre_handler_eq_aggr_pre_handler[label="old_p_pre_handler_eq_aggr_pre_handler"];
+                list_add_p_list_old_p_list[label="list_add_p_list_old_p_list"];
+                set_ap_kcalloc_1[label="set_ap_kcalloc_1"];
+                addr_aggr_kprobe_ap_old_p[label="addr_aggr_kprobe_ap_old_p"];
+                list_add_p_list_ap_list[label="list_add_p_list_ap_list"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_clearup_kprobe{
+                label="static inline void cleanup_kprobe(struct kprobe *p, unsigned long flags)";
+                set_p_addr_p_opcode[label="set_p_addr_p_opcode"];
+                hlist_del_p_hlist[label="hlist_del_p_hlist"];
+                flush_icache_range_p_addr_p_addr_add_sizeof_kprobe_opcode_t[label="flush_icache_range_p_addr_p_addr_add_sizeof_kprobe_opcode_t"];
+                unlock_kprobe_lock[label="unlock_kprobe_lock"];
+                arch_remove_kprobe_p[label="arch_remove_kprobe_p"];
+        }
+
+        subgraph cluster_cleanup_aggr_kprobe{
+                label="static inline void cleanup_aggr_kprobe(struct kprobe *old_p, struct kprobe *p, unsigned long flags)";
+                list_del_p_list[label="list_del_p_list"];
+                list_empty_old_p_list_true[label="list_empty_old_p_list_true"];
+                cleanup_kprobe_old_p[label="cleanup_kprobe_old_p"];
+                kfree_old_p[label="kfree_old_p"];
+                unlock_kprobe_lock[label="unlock_kprobe_lock"];
+        }
+
+        subgraph cluster_register_kprobe{
+                label="int register_kprobe(struct kprobe *p)";
+                set_ret_arch_prepare_kprobe_p_not_eq_0[label="set_ret_arch_prepare_kprobe_p_not_eq_0"];
+                goto_rm_kprobe[label="goto_rm_kprobe"];
+                lock_kprobe_lock[label="lock_kprobe_lock"];
+                set_old_p_get_kprobe_p_addr[label="set_old_p_get_kprobe_p_addr"];
+                old_p_not_null[label="old_p_not_null"];
+                set_ret_register_aggr_kprobe_old_p_p[label="set_ret_register_aggr_kprobe_old_p_p"];
+                goto_out[label="goto_out"];
+                arch_copy_kprobe_p[label="arch_copy_kprobe_p"];
+                INIT_HLIST_NODE_p_hlist[label="INIT_HLIST_NODE_p_hlist"];
+                hlist_add_head_p_hlist_kprobe_table_hash_ptr_p_addr_KPROBE_HASH_BITS[label="hlist_add_head_p_hlist_kprobe_table_hash_ptr_p_addr_KPROBE_HASH_BITS"];
+                set_p_opcode_p_addr[label="set_p_opcode_p_addr"];
+                set_p_addr_BREAKPOINT_INSTRUCTION[label="set_p_addr_BREAKPOINT_INSTRUCTION"];
+                flush_icache_range_p_addr_p_addr_add_sizeof_kprobe_opcode_t[label="flush_icache_range_p_addr_p_addr_add_sizeof_kprobe_opcode_t"];
+                unlock_kprobe_lock[label="unlock_kprobe_lock"];
+                ret_eq_EEXIST[label="ret_eq_EEXIST"];
+                arch_remove_kprobe_p[label="arch_remove_kprobe_p"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_unregister_kprobe{
+                label="void unregister_kprobe(struct kprobe *p)";
+                lock_kprobe_lock[label="lock_kprobe_lock"];
+                set_old_p_get_kprobe_p_addr[label="set_old_p_get_kprobe_p_addr"];
+                old_p_not_null[label="old_p_not_null"];
+                old_p_pre_handler_eq_aggr_pre_handler[label="old_p_pre_handler_eq_aggr_pre_handler"];
+                cleanup_aggr_kprobe_old_p_p_flags[label="cleanup_aggr_kprobe_old_p_p_flags"];
+                cleanup_kprobe_p_flags[label="cleanup_kprobe_p_flags"];
+                unlock_kprobe_lock_flags[label="unlock_kprobe_lock_flags"];
+        }
+
+        subgraph cluster_register_jprobe{
+                label="int register_jprobe(struct jprobe *jp)";
+                set_jp_kp_pre_handler_setjmp_pre_handler[label="set_jp_kp_pre_handler_setjmp_pre_handler"];
+                set_jp_kp_break_handler_longjmp_break_handler[label="set_jp_kp_break_handler_longjmp_break_handler"];
+                return_register_kprobe_jp_kp[label="return_register_kprobe_jp_kp"];
+        }
+
+        subgraph cluster_unregister_jprobe{
+                label="void unregister_jprobe(struct jprobe *jp)";
+                unregister_kprobe_jp_kp[label="unregister_kprobe_jp_kp"];
+        }
+
+        subgraph cluster_init_kprobes{
+                label="static int __init init_kprobes(void)";
+                for_i_KPROBE_TABLE_SIZE[label="for_i_KPROBE_TABLE_SIZE"];
+                INIT_HLIST_HEAD_kprobe_table_i[label="INIT_HLIST_HEAD_kprobe_table_i"];
+                return_register_die_notifier_kprobe_exceptions_nb[label="return_register_die_notifier_kprobe_exceptions_nb"];
+        }

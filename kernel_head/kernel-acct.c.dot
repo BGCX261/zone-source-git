@@ -1,0 +1,239 @@
+digraph acct_c{
+        subgraph cluster_acct_timeout{
+                label="static void acct_timeout(unsigned long unused)";
+                set_acct_globals_needcheck_1[label="set_acct_globals_needcheck_1"];
+        }
+
+        subgraph cluster_chech_free_space{
+                label="static int check_free_space(struct file *file)";
+                lock_acct_globals_lock[label="lock_acct_globals_lock"];
+                set_res_acct_globals_active[label="set_res_acct_globals_active"];
+                file_null_or_acct_globals_needcheck_null[label="file_null_or_acct_globals_needcheck_null"];
+                goto_out[label="goto_out"];
+                unlock_acct_globals_lock[label="unlock_acct_globals_lock"];
+                vfs_startfs_file_f_dentry_d_inode_i_sb_sbuf_false[label="vfs_startfs_file_f_dentry_d_inode_i_sb_sbuf_false"];
+                return_res[label="return_res"];
+                set_suspend_sbuf_f_block_multi_SUSPEND[label="set_suspend_sbuf_f_block_multi_SUSPEND"];
+                set_resum_sbuf_f_blocks_multi_RESUME[label="set_resum_sbuf_f_blocks_multi_RESUME"];
+                sector_div_suspend_100[label="sector_div_suspend_100"];
+                sector_div_resume_100[label="sector_div_resume_100"];
+                sbuf_f_bavail_not_great_suspend[label="sbuf_f_bavail_not_great_suspend"];
+                set_act_neg1[label="set_act_neg1"];
+                sbuf_f_bavail_not_small_resume[label="sbuf_f_bavail_not_small_resume"];
+                set_act_1[label="set_act_1"];
+                set_act_0[label="set_act_0"];
+                lock_acct_globals_lock[label="lock_acct_globals_lock"];
+                file_not_eq_acct_globals_file[label="file_not_eq_acct_globals_file"];
+                act_not_null[label="act_not_null"];
+                set_res_act_great_0[label="set_res_act_great_0"];
+                goto_out[label="goto_out"];
+                acct_globals_active_not_null[label="acct_globals_active_not_null"];
+                act_small_0[label="act_small_0"];
+                set_acc_gloabls_active_0[label="set_acc_gloabls_active_0"];
+                act_great_0[label="act_great_0"];
+                set_acct_globals_active_1[label="set_acct_globals_active_1"];
+                del_timer_acct_globals_timer[label="del_timer_acct_globals_timer"];
+                set_acct_globals_needcheck_0[label="set_acct_globals_needcheck_0"];
+                set_acct_globals_timer_expires_jifffies_ACCT_TIMEOUT_multi_HZ[label="set_acct_globals_timer_expires_jifffies_ACCT_TIMEOUT_multi_HZ"];
+                add_timer_acct_globals_timer[label="add_timer_acct_globals_timer"];
+                set_res_acct_globals_active[label="set_res_acct_globals_active"];
+                unlock_acct_globals_lock[label="unlock_acct_globals_lock"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_acct_file_reopen{
+                label="static void acct_file_reopen(struct file *file)";
+                acct_globals_file_not_null[label="acct_globals_file_not_null"];
+                set_old_acct_acct_globals_file[label="set_old_acct_acct_globals_file"];
+                del_timer_acct_globals_timer[label="del_timer_acct_globals_timer"];
+                set_acct_globals_active_0[label="set_acct_globals_active_0"];
+                set_acct_globals_needcheck_0[label="set_acct_globals_needcheck_0"];
+                clear_acct_globals_file[label="clear_acct_globals_file"];
+                file_not_null[label="file_not_null"];
+                set_acct_globals_file_file[label="set_acct_globals_file_file"];
+                set_acct_globals_needcheck_0[label="set_acct_globals_needcheck_0"];
+                set_acct_globals_active_1[label="set_acct_globals_active_1"];
+                init_timer_acct_globals_timer[label="init_timer_acct_globals_timer"];
+                set_acct_globals_timer_function_acct_timeout[label="set_acct_globals_timer_function_acct_timeout"];
+                acct_globals_timer_expires_jiffies_add_ACCT_TIMEOUT_mulit_HZ[label="acct_globals_timer_expires_jiffies_add_ACCT_TIMEOUT_mulit_HZ"];
+                add_timer_acct_globals_timer[label="add_timer_acct_globals_timer"];
+                old_acct_not_null[label="old_acct_not_null"];
+                unlock_acct_globals_lock[label="unlock_acct_globals_lock"];
+                do_acct_process_0_old_acct[label="do_acct_process_0_old_acct"];
+                filp_close_old_acct_NULL[label="filp_close_old_acct_NULL"];
+                lock_acct_globals_lock[label="lock_acct_globals_lock"];
+        }
+
+        subgraph cluster_sys_acct{
+                label="asmlinkage long sys_acct(const char __user *name)";
+                capable_CAP_SYS_PACCT_fasle[label="capable_CAP_SYS_PACCT_fasle"];
+                return_EPERM[label="return_EPERM"];
+                name_not_null[label="name_not_null"];
+                set_tmp_getname_name[label="set_tmp_getname_name"];
+                IS_ERR_tmp_true[label="IS_ERR_tmp_true"];
+                return_PTR_ERR_tmp[label="return_PTR_ERR_tmp"];
+                set_file_filp_open_tmp_O_WRONLY_or_O_APPEND_0[label="set_file_filp_open_tmp_O_WRONLY_or_O_APPEND_0"];
+                putname_tmp[label="putname_tmp"];
+                S_ISREG_file_f_dentry_d_inode_i_mode_false[label="S_ISREG_file_f_dentry_d_inode_i_mode_false"];
+                filp_close_file_NULL[label="filp_close_file_NULL"];
+                return_EACCES[label="return_EACCES"];
+                file_f_op_write_null[label="file_f_op_write_null"];
+                filp_close_file_NULL[label="filp_close_file_NULL"];
+                retturn_EIO[label="retturn_EIO"];
+                set_error_security_acct_file[label="set_error_security_acct_file"];
+                error_not_null[label="error_not_null"];
+                file_not_null[label="file_not_null"];
+                file_close_file_NULL[label="file_close_file_NULL"];
+                return_error[label="return_error"];
+                lock_acct_globals_lock[label="lock_acct_globals_lock"];
+                acct_file_reopen_file[label="acct_file_reopen_file"];
+                unlock_acct_globals_lock[label="unlock_acct_globals_lock"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_acct_auto_close{
+                label="void acct_auto_close(struct super_block *sb)";
+                lock_acct_globals_lock[label="lock_acct_globals_lock"];
+                acct_globals_file_not_null_and_acct_globals_file_f_dentry_d_inode_i_sb_eq_sb[label="acct_globals_file_not_null_and_acct_globals_file_f_dentry_d_inode_i_sb_eq_sb"];
+                acct_file_reopen_NULL[label="acct_file_reopen_NULL"];
+                unlock_acct_globals_lock[label="unlock_acct_globals_lock"];
+        }
+
+        subgraph cluster_encode_comp_t{
+                label="static comp_t encode_comp_t(unsigned long value)";
+                set_exp_rnd_0[label="set_exp_rnd_0"];
+                value_great_MAXFRACT[label="value_great_MAXFRACT"];
+                set_rnd_value_and_1_left_move_EXPSIZE_sub_1[label="set_rnd_value_and_1_left_move_EXPSIZE_sub_1"];
+                value_self_right_move_EXPSIZE[label="value_self_right_move_EXPSIZE"];
+                inc_exp[label="inc_exp"];
+                exp_self_left_move_MANTSIZE[label="exp_self_left_move_MANTSIZE"];
+                exp_self_add_value[label="exp_self_add_value"];
+                return_exp[label="return_exp"];
+        }
+
+        subgraph cluster_encode_comp2_t{
+                label="static comp2_t encode_comp2_t(u64 value)";
+                set_exp_value_great_MAXFRACT2_right_move_1[label="set_exp_value_great_MAXFRACT2_right_move_1"];
+                set_rnd_0[label="set_rnd_0"];
+                value_great_MAXFRACT2[label="value_great_MAXFRACT2"];
+                set_rnd_value_and_1[label="set_rnd_value_and_1"];
+                value_self_right_move_1[label="value_self_right_move_1"];
+                inc_exp[label="inc_exp"];
+                rnd_not_null_and_inc_value_great_MAXFRACT2[label="rnd_not_null_and_inc_value_great_MAXFRACT2"];
+                value_self_right_move_1[label="value_self_right_move_1"];
+                inc_exp[label="inc_exp"];
+                exp_great_MAXEXP2[label="exp_great_MAXEXP2"];
+                return_1_left_move_MANTSIZE2_add_EXPSIZE2_sub_1_sub_1[label="return_1_left_move_MANTSIZE2_add_EXPSIZE2_sub_1_sub_1"];
+                return_value_and_MAXFRACT2_right_move_1_or_exp_left_move_MANTSIZE2_sub_1[label="return_value_and_MAXFRACT2_right_move_1_or_exp_left_move_MANTSIZE2_sub_1"];
+        }
+
+        subgraph cluster_encode_float{
+                label="static u32 encode_float(u64 value)";
+                set_exp_190[label="set_exp_190"];
+                value_eq_0[label="value_eq_0"];
+                return_0[label="return_0"];
+                value_great_0[label="value_great_0"];
+                value_left_move_1[label="value_left_move_1"];
+                dec_exp[label="dec_exp"];
+                set_u_value_right_40_and_0x7fffff[label="set_u_value_right_40_and_0x7fffff"];
+                return_u_or_exp_left_move_23[label="return_u_or_exp_left_move_23"];
+        }
+
+        subgraph cluster_do_acct_process{
+                label="static void do_acct_process(long exitcode, struct file *file)";
+                check_free_space_file_null[label="check_free_space_file_null"];
+                return[label="return"];
+                memset_ac_0[label="memset_ac_0"];
+                set_ac_ac_version_ACCT_VERSION_or_ACCT_BYTEORDER[label="set_ac_ac_version_ACCT_VERSION_or_ACCT_BYTEORDER"];
+                strlcpy_ac_ac_comm_current_comm[label="strlcpy_ac_ac_comm_current_comm"];
+                do_posix_clock_monotomic_gettime_uptime[label="do_posix_clock_monotomic_gettime_uptime"];
+                set_run_time_uptime_tv_sec_NSEC_PER_SEC_add_uptime_tv_nsec[label="set_run_time_uptime_tv_sec_NSEC_PER_SEC_add_uptime_tv_nsec"];
+                run_time_self_sub_current_start_time_tv_sec_NSEC_PER_SEC_add_current_start_time_tv_nsec[label="run_time_self_sub_current_start_time_tv_sec_NSEC_PER_SEC_add_current_start_time_tv_nsec"];
+                set_elapsed_nsec_to_AHZ_run_time[label="set_elapsed_nsec_to_AHZ_run_time"];
+                set_ac_ac_etime_encode_float_elapsed[label="set_ac_ac_etime_encode_float_elapsed"];
+                set_ac_ac_etime_encode_comp_t_elapsed_or_neg1_decide_elapsed_small_neg1[label="set_ac_ac_etime_encode_comp_t_elapsed_or_neg1_decide_elapsed_small_neg1"];
+                ACCT_VERSION_eq_1_or_ACCT_VERSION_eq_2[label="ACCT_VERSION_eq_1_or_ACCT_VERSION_eq_2"];
+                set_etime_encode_comp2_t_elapsed[label="set_etime_encode_comp2_t_elapsed"];
+                set_ac_ac_etime_hi_etime_right_16[label="set_ac_ac_etime_hi_etime_right_16"];
+                set_ac_ac_etime_lo_etime[label="set_ac_ac_etime_lo_etime"];
+                do_div_elapsed_AHZ[label="do_div_elapsed_AHZ"];
+                set_ac_ac_btime_xtime_tv_sec_sub_elapsed[label="set_ac_ac_btime_xtime_tv_sec_sub_elapsed"];
+                set_ac_ac_utime_encode_comp_t_jiffies_to_AHZ_current_signal_utime_add_current_group_leader_utime[label="set_ac_ac_utime_encode_comp_t_jiffies_to_AHZ_current_signal_utime_add_current_group_leader_utime"];
+                set_ac_ac_stime_encode_comp_t_jiffies_to_AHZ_current_signal_stime_add_current_group_leader_stime[label="set_ac_ac_stime_encode_comp_t_jiffies_to_AHZ_current_signal_stime_add_current_group_leader_stime"];
+                set_ac_ac_uid_current_uid[label="set_ac_ac_uid_current_uid"];
+                set_ac_ac_gid_current_gid[label="set_ac_ac_gid_current_gid"];
+                ACCT_VERSION_eq_2[label="ACCT_VERSION_eq_2"];
+                set_ac_ac_ahz_AHZ[label="set_ac_ac_ahz_AHZ"];
+                ACCT_VERSION_eq_1_or_ACCT_VERSION_eq_2[label="ACCT_VERSION_eq_1_or_ACCT_VERSION_eq_2"];
+                set_ac_ac_uid16_current_uid[label="set_ac_ac_uid16_current_uid"];
+                set_ac_ac_gid16_current_gid[label="set_ac_ac_gid16_current_gid"];
+                ACCT_VERSION_3[label="ACCT_VERSION_3"];
+                set_ac_ac_pid_current_tgid[label="set_ac_ac_pid_current_tgid"];
+                set_ac_ac_ppid_current_parent_tgid[label="set_ac_ac_ppid_current_parent_tgid"];
+                lock_tasklist_lock[label="lock_tasklist_lock"];
+                set_ac_ac_tty_old_encode_dev_tty_devnum_current_signal_tty_or_0_decide_current_signal_tty[label="set_ac_ac_tty_old_encode_dev_tty_devnum_current_signal_tty_or_0_decide_current_signal_tty"];
+                unlock_tasklist_lock[label="unlock_tasklist_lock"];
+                set_ac_ac_flag_0[label="set_ac_ac_flag_0"];
+                current_flags_PF_FORKNOEXEC_set[label="current_flags_PF_FORKNOEXEC_set"];
+                ac_ac_flag_self_or_AFORK[label="ac_ac_flag_self_or_AFORK"];
+                current_flags_PF_SUPRPRIVE_set[label="current_flags_PF_SUPRPRIVE_set"];
+                ac_ac_flag_self_or_ASU[label="ac_ac_flag_self_or_ASU"];
+                current_flags_PF_DUMPCORE_set[label="current_flags_PF_DUMPCORE_set"];
+                ac_ac_flag_self_or_ACORE[label="ac_ac_flag_self_or_ACORE"];
+                current_flags_PF_SIGNALED_set[label="current_flags_PF_SIGNALED_set"];
+                ac_ac_flag_self_or_AXSIG[label="ac_ac_flag_self_or_AXSIG"];
+                set_vsize_0[label="set_vsize_0"];
+                current_mm_not_null[label="current_mm_not_null"];
+                down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+                set_vma_current_mm_mmap[label="set_vma_current_mm_mmap"];
+                vma_not_null[label="vma_not_null"];
+                vsize_self_add_vma_vm_end_sub_vma_vm_start[label="vsize_self_add_vma_vm_end_sub_vma_vm_start"];
+                set_vma_vm_next[label="set_vma_vm_next"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                set_vsize_vsize_div_1024[label="set_vsize_vsize_div_1024"];
+                set_ac_ac_mem_encode_comp_t_vsize[label="set_ac_ac_mem_encode_comp_t_vsize"];
+                set_ac_ac_io_encode_comp_t_0[label="set_ac_ac_io_encode_comp_t_0"];
+                set_ac_ac_rw_encode_comp_t_ac_ac_io_div_1024[label="set_ac_ac_rw_encode_comp_t_ac_ac_io_div_1024"];
+                set_ac_ac_minflt_encode_comp_t_current_signal_min_flt_add_current_group_leader_min_flt[label="set_ac_ac_minflt_encode_comp_t_current_signal_min_flt_add_current_group_leader_min_flt"];
+                set_ac_ac_majflt_encode_comp_t_current_signal_maj_flt_add_current_group_leader_maj_flt[label="set_ac_ac_majflt_encode_comp_t_current_signal_maj_flt_add_current_group_leader_maj_flt"];
+                set_ac_ac_swaps_encode_comp_t_0[label="set_ac_ac_swaps_encode_comp_t_0"];
+                set_ac_ac_exitcode_exitcode[label="set_ac_ac_exitcode_exitcode"];
+                set_fs_get_fs[label="set_fs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_flim_current_signal_rlim_RLIMIT_FSIZE_rlim_cur[label="set_flim_current_signal_rlim_RLIMIT_FSIZE_rlim_cur"];
+                fie_f_op_write_file_ac_sizeof_acct_t_file_f_pos[label="fie_f_op_write_file_ac_sizeof_acct_t_file_f_pos"];
+                current_signal_rlim_RLIMIT_FSIZE_rlim_cur_flim[label="current_signal_rlim_RLIMIT_FSIZE_rlim_cur_flim"];
+                set_fs_fs[label="set_fs_fs"];
+        }
+
+        subgraph cluster_acct_process{
+                label="void acct_process(long exitcode)";
+                acct_globals_file_null[label="acct_globals_file_null"];
+                return[label="return"];
+                lock_acctg_globals_lock[label="lock_acctg_globals_lock"];
+                set_file_acct_globals_file[label="set_file_acct_globals_file"];
+                file_null[label="file_null"];
+                unlock_acct_globals_lock[label="unlock_acct_globals_lock"];
+                return[label="return"];
+                get_file_file[label="get_file_file"];
+                unlock_acct_globals_lock[label="unlock_acct_globals_lock"];
+                do_acct_process_exitcode_file[label="do_acct_process_exitcode_file"];
+                fput_file[label="fput_file"];
+        }
+
+        subgraph cluster_acct_update_integrals{
+                label="void acct_update_integrals(struct task_struct *tsk)";
+                tsk_mm_not_null[label="tsk_mm_not_null"];
+                set_delta_tsk_stime_tsk_acct_stimexpd[label="set_delta_tsk_stime_tsk_acct_stimexpd"];
+                set_tsk_acct_stimexpd_tsk_stime[label="set_tsk_acct_stimexpd_tsk_stime"];
+                tsk_acct_rss_mem1_self_add_delta_multi_get_mm_counter_tsk_mm_rss[label="tsk_acct_rss_mem1_self_add_delta_multi_get_mm_counter_tsk_mm_rss"];
+                tsk_acct_rss_mem1_self_add_delta_multi_multi_tsk_mm_total_vm[label="tsk_acct_rss_mem1_self_add_delta_multi_multi_tsk_mm_total_vm"];
+        }
+
+        subgraph cluster_acct_clear_integrals{
+                label="void acct_clear_integrals(struct task_struct *tsk)";
+                set_tsk_acct_stimexpd_0[label="set_tsk_acct_stimexpd_0"];
+                set_tsk_acct_rss_mem1_0[label="set_tsk_acct_rss_mem1_0"];
+                set_tsk_acct_vm_mme1_0[label="set_tsk_acct_vm_mme1_0"];
+        }
+}

@@ -1,0 +1,63 @@
+digraph capability_c{
+        subgraph cluster_sys_capget{
+                label="asmlinkage long sys_capget(cap_user_header_t header, cap_user_data_t dataptr)";
+                get_user_version_header_vesion[label="get_user_version_header_vesion"];
+                version_not_eq__LINUX_CAPABILITY_VERSION[label="version_not_eq__LINUX_CAPABILITY_VERSION"];
+                put_user__LINUX_CAPABILITY_VERSION_header_version[label="put_user__LINUX_CAPABILITY_VERSION_header_version"];
+                return_EINVAL[label="return_EINVAL"];
+                get_user_pid_header_pid[label="get_user_pid_header_pid"];
+                pid_small_0[label="pid_small_0"];
+                lock_task_capability_lock[label="lock_task_capability_lock"];
+                read_locl_tasklist_lock[label="read_locl_tasklist_lock"];
+                pid_not_null_and_pid_not_eq_current_pid[label="pid_not_null_and_pid_not_eq_current_pid"];
+                set_target_find_task_by_pid_pid[label="set_target_find_task_by_pid_pid"];
+                set_target_current[label="set_target_current"];
+                set_security_capget_target_data_effective_data_inheritable_data_permitted[label="set_security_capget_target_data_effective_data_inheritable_data_permitted"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                unlock_task_capability_lock[label="unlock_task_capability_lock"];
+                copy_to_user_dataptr_data[label="copy_to_user_dataptr_data"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_cap_set_all{
+                label="static inline int cap_set_all(kernel_cap_t *effective, kernel_cap_t *inheritable,kernel_cap_t *permitted)";
+                set_found_0[label="set_found_0"];
+                do_each_thread_g_target[label="do_each_thread_g_target"];
+                target_eq_current_or_target_pid_eq_1[label="target_eq_current_or_target_pid_eq_1"];
+                set_found_1[label="set_found_1"];
+                security_capset_check_target_effective_inheritable_permitted[label="security_capset_check_target_effective_inheritable_permitted"];
+                set_ret_0[label="set_ret_0"];
+                security_capset_set_target_effective_inheritable_permitted[label="security_capset_set_target_effective_inheritable_permitted"];
+                while_each_thread_g_target[label="while_each_thread_g_target"];
+                found_null[label="found_null"];
+                set_ret_0[label="set_ret_0"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_sys_capset{
+                label="asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)";
+                get_user_version_header_version[label="get_user_version_header_version"];
+                version_not_eq__LINUX_CAPABILEITY_VERSION[label="version_not_eq__LINUX_CAPABILEITY_VERSION"];
+                put_user__LINUX_CAPABILITY_VERSION_header_version[label="put_user__LINUX_CAPABILITY_VERSION_header_version"];
+                get_user_pid_header_pid[label="get_user_pid_header_pid"];
+                pid_not_null_and_pid_not_eq_current_pid_and_capabel_CAP_SET_SETPCAP_false[label="pid_not_null_and_pid_not_eq_current_pid_and_capabel_CAP_SET_SETPCAP_false"];
+                copy_from_user_effective_data_effective_or_copy_from_user_inheritable_data_inheritable_or_copy_from_user_permitted_data_permitted[label="copy_from_user_effective_data_effective_or_copy_from_user_inheritable_data_inheritable_or_copy_from_user_permitted_data_permitted"];
+                return_EFAULT[label="return_EFAULT"];
+                lock_task_capability_lock[label="lock_task_capability_lock"];
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                pid_great_0_and_pid_not_eq_current_pid[label="pid_great_0_and_pid_not_eq_current_pid"];
+                set_target_find_task_by_pid_pid[label="set_target_find_task_by_pid_pid"];
+                set_target_current[label="set_target_current"];
+                se_ret_0[label="se_ret_0"];
+                pid_small_0[label="pid_small_0"];
+                pid_eq_neg1[label="pid_eq_neg1"];
+                set_ret_cap_set_all_effective_inheritable_ppermitted[label="set_ret_cap_set_all_effective_inheritable_ppermitted"];
+                set_ret_cap_set_pg_neg_pid_effective_inheritable_permitted[label="set_ret_cap_set_pg_neg_pid_effective_inheritable_permitted"];
+                set_ret_security_capset_check_target_effective_inheritable_permitted[label="set_ret_security_capset_check_target_effective_inheritable_permitted"];
+                ret_null[label="ret_null"];
+                security_capset_set_target_effective_inheritable_permitted[label="security_capset_set_target_effective_inheritable_permitted"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                unlock_task_capability_lock[label="unlock_task_capability_lock"];
+                return_ret[label="return_ret"];
+        }
+}

@@ -1,0 +1,100 @@
+digraph exec_domain_c{
+        subgraph cluster_default_handler{
+                label="static void default_handler(int segment, struct pt_regs *regp)";
+                set_persionnality_0[label="set_persionnality_0"];
+                current_thread_info_exec_domain_handler_not_eq_default_handler[label="current_thread_info_exec_domain_handler_not_eq_default_handler"];
+                current_thread_info_exec_domain_handler_segment_regpp[label="current_thread_info_exec_domain_handler_segment_regpp"];
+                send_sig_SIGSEGV_current_1[label="send_sig_SIGSEGV_current_1"];
+        }
+
+        subgraph cluster_lookup_exec_domain{
+                label="static struct exec_domain * lookup_exec_domain(u_long personality)";
+                set_pers_personality_personality[label="set_pers_personality_personality"];
+                read_lock_exec_domains_lock[label="read_lock_exec_domains_lock"];
+                for_ep_exec_domains_ep[label="for_ep_exec_domains_ep"];
+                pers_not_small_ep_pers_low_and_pers_not_great_ep_pers_high[label="pers_not_small_ep_pers_low_and_pers_not_great_ep_pers_high"];
+                try_module_get_ep_module[label="try_module_get_ep_module"];
+                goto_out[label="goto_out"];
+                CONFIG_KMOD[label="CONFIG_KMOD"];
+                read_unlock_exec_domains_lock[label="read_unlock_exec_domains_lock"];
+                request_module_personality_pers[label="request_module_personality_pers"];
+                read_lock_exec_domains_lock[label="read_lock_exec_domains_lock"];
+                for_ep_exec_domains_ep[label="for_ep_exec_domains_ep"];
+                pers_not_small_ep_pers_low_and_pers_not_great_ep_pers_high[label="pers_not_small_ep_pers_low_and_pers_not_great_ep_pers_high"];
+                try_module_get_ep_module[label="try_module_get_ep_module"];
+                goto_out[label="goto_out"];
+                set_ep_default_exec_domain[label="set_ep_default_exec_domain"];
+                read_unlock_exec_domains_lock[label="read_unlock_exec_domains_lock"];
+                return_ep[label="return_ep"];
+        }
+
+        subgraph cluster_register_exec_domain{
+                label="int register_exec_domain(struct exec_domain *ep)";
+                write_lock_exec_domains_lock[label="write_lock_exec_domains_lock"];
+                for_tmp_exec_domains_tmp[label="for_tmp_exec_domains_tmp"];
+                tmp_eq_ep[label="tmp_eq_ep"];
+                goto_out[label="goto_out"];
+                set_ep_next_exec_domains[label="set_ep_next_exec_domains"];
+                set_exec_domains_ep[label="set_exec_domains_ep"];
+                set_err_0[label="set_err_0"];
+                write_unlock_exec_domains_lock[label="write_unlock_exec_domains_lock"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_unregister_exec_domain{
+                label="int unregister_exec_domain(struct exec_domain *ep)";
+                set_epp_exec_domains[label="set_epp_exec_domains"];
+                write_lock_exec_domains_lock[label="write_lock_exec_domains_lock"];
+                for_epp_exec_domains_epp[label="for_epp_exec_domains_epp"];
+                ep_eq_epp[label="ep_eq_epp"];
+                goto_unregister[label="goto_unregister"];
+                write_unlock_exec_domains_lock[label="write_unlock_exec_domains_lock"];
+                return_EINVAL[label="return_EINVAL"];
+                set_epp_ep_next[label="set_epp_ep_next"];
+                clear_ep_next[label="clear_ep_next"];
+                write_unlock_exec_domains_lock[label="write_unlock_exec_domains_lock"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster___set_personality{
+                label="int __set_personality(u_long personality)";
+                set_ep_lookup_exec_domain_personality[label="set_ep_lookup_exec_domain_personality"];
+                ep_eq_current_thread_info_exec_domain[label="ep_eq_current_thread_info_exec_domain"];
+                set_current_personality_personality[label="set_current_personality_personality"];
+                return_0[label="return_0"];
+                atomic_read_current_fs_count_not_eq_1[label="atomic_read_current_fs_count_not_eq_1"];
+                set_fsp_copy_fs_struct_current_fs[label="set_fsp_copy_fs_struct_current_fs"];
+                fsp_eq_NULL[label="fsp_eq_NULL"];
+                task_lock_current[label="task_lock_current"];
+                set_ofsp_current_fs[label="set_ofsp_current_fs"];
+                set_current_fs_fsp[label="set_current_fs_fsp"];
+                task_unlock_current[label="task_unlock_current"];
+                put_fs_struct_ofsp[label="put_fs_struct_ofsp"];
+                set_current_personality_personality[label="set_current_personality_personality"];
+                set_oep_current_thread_info_exec_domain[label="set_oep_current_thread_info_exec_domain"];
+                current_thread_info_exec_domain_ep[label="current_thread_info_exec_domain_ep"];
+                set_fs_altroot[label="set_fs_altroot"];
+                module_put_oep_module[label="module_put_oep_module"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_get_exec_domain_list{
+                label="int get_exec_domain_list(char *page)";
+                read_lock_exec_domains_lock[label="read_lock_exec_domains_lock"];
+                for_ep_exec_domains_ep_and_len_small_PAGE_SIZE_sub_80[label="for_ep_exec_domains_ep_and_len_small_PAGE_SIZE_sub_80"];
+                len_self_add_sprintf[label="len_self_add_sprintf"];
+                read_unlock_exec_domains_lock[label="read_unlock_exec_domains_lock"];
+                return_len[label="return_len"];
+        }
+
+        subgraph cluster_sys_personality{
+                label="asmlinkage long sys_personality(u_long personality)";
+                set_old_current_personality[label="set_old_current_personality"];
+                personality_not_eq_0xFFFFFFFF[label="personality_not_eq_0xFFFFFFFF"];
+                set_personality_personality[label="set_personality_personality"];
+                current_personality_not_eq_personality[label="current_personality_not_eq_personality"];
+                return_EIVNAL[label="return_EIVNAL"];
+                return_old[label="return_old"];
+        }
+
+}

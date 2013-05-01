@@ -1,0 +1,183 @@
+digraph intermodule_c{
+        subgraph cluster_inter_module_register{
+                label="void inter_module_register(const char *im_name, struct module *owner, const void *userdata)";
+                setime_new_kmalloc_false[label="setime_new_kmalloc_false"];
+                set_kmalloc_failed_1[label="set_kmalloc_failed_1"];
+                return[label="return"];
+                memset_ime_new[label="memset_ime_new"];
+                set_ime_new_im_name_im_name[label="set_ime_new_im_name_im_name"];
+                set_ime_new_owner_owner[label="set_ime_new_owner_owner"];
+                set_ime_new_userdata_userdata[label="set_ime_new_userdata_userdata"];
+                lock_ime_lock[label="lock_ime_lock"];
+                list_for_each_tmp_ime_list[label="list_for_each_tmp_ime_list"];
+                set_list_entry_tmp_struct_inter_module_entry_list[label="set_list_entry_tmp_struct_inter_module_entry_list"];
+                strcmp_ime_im_name_im_name_eq_0[label="strcmp_ime_im_name_im_name_eq_0"];
+                unlock_ime_lock[label="unlock_ime_lock"];
+                kfree_ime_new[label="kfree_ime_new"];
+                list_add_ime_ne_list_ime_list[label="list_add_ime_ne_list_ime_list"];
+                unlock_ime_lock[label="unlock_ime_lock"];
+        }
+
+        subgraph cluster_inter_module_unregister{
+                label="void inter_module_unregister(const char *im_name)";
+                lock_ime_lock[label="lock_ime_lock"];
+                list_for_each_tmp_ime_list[label="list_for_each_tmp_ime_list"];
+                set_ime_list_entry_tmp_struct_inter_module_entry_list[label="set_ime_list_entry_tmp_struct_inter_module_entry_list"];
+                strcmp_ime_im_name_im_name_eq_0[label="strcmp_ime_im_name_im_name_eq_0"];
+                list_del_ime_list[label="list_del_ime_list"];
+                unlock_ime_lock[label="unlock_ime_lock"];
+                kfree_ime[label="kfree_ime"];
+                unlock_ime_lock[label="unlock_ime_lock"];
+                kmalloc_failed_true[label="kmalloc_failed_true"];
+                return[label="return"];
+        }
+
+        subgraph cluster_inter_module_get{
+                label="static const void *inter_module_get(const char *im_name)";
+                clear_result_NULL[label="clear_result_NULL"];
+                lock_ime_lock[label="lock_ime_lock"];
+                list_for_each_tmp_ime_list[label="list_for_each_tmp_ime_list"];
+                set_ime_list_entry_tmp_struct_inter_module_entry_list[label="set_ime_list_entry_tmp_struct_inter_module_entry_list"];
+                strcmp_ime_im_name_im_name_eq_0[label="strcmp_ime_im_name_im_name_eq_0"];
+                try_module_get_ime_owner_true[label="try_module_get_ime_owner_true"];
+                set_result_ime_userdata[label="set_result_ime_userdata"];
+                unlock_ime_lock[label="unlock_ime_lock"];
+                return_result[label="return_result"];
+        }
+
+        subgraph cluster_inter_module_get_request{
+                label="const void *inter_module_get_request(const char *im_name, const char *modname)";
+                set_result_inter_module_get_im_name[label="set_result_inter_module_get_im_name"];
+                result_null[label="result_null"];
+                request_module_s_modname[label="request_module_s_modname"];
+                set_result_inter_module_get_im_name[label="set_result_inter_module_get_im_name"];
+                return_result[label="return_result"];
+        }
+
+        subgraph cluster_inter_module_put{
+                label="void inter_module_put(const char *im_name)";
+                lock_ime_lock[label="lock_ime_lock"];
+                list_for_each_tmp_ime_list[label="list_for_each_tmp_ime_list"];
+                set_ime_list_entry_tmp_struct_inter_module_entry_list[label="set_ime_list_entry_tmp_struct_inter_module_entry_list"];
+                strcmp_ime_im_name_im_name_eq_0[label="strcmp_ime_im_name_im_name_eq_0"];
+                ime_owner_not_null[label="ime_owner_not_null"];
+                module_put_ime_owner[label="module_put_ime_owner"];
+                unlock_ime_lock[label="unlock_ime_lock"];
+                return[label="return"];
+                unlock_ime_lock[label="unlock_ime_lock"];
+        }
+
+        subgraph cluster_stopmachine{
+                label="static int stopmachine(void *cpu)";
+                set_cpus_allowed_current_cpumask_of_cpu_cpu[label="set_cpus_allowed_current_cpumask_of_cpu_cpu"];
+                smp_mb[label="smp_mb"];
+                atomic_inc_stoppmachine_thread_ack[label="atomic_inc_stoppmachine_thread_ack"];
+                while_stopmachine_state_not_eq_STOPMACHINE_EXIT[label="while_stopmachine_state_not_eq_STOPMACHINE_EXIT"];
+                stopmachine_state_eq_STOPMACHINE_DISABLE_IRQ_and_irqs_disabled_false[label="stopmachine_state_eq_STOPMACHINE_DISABLE_IRQ_and_irqs_disabled_false"];
+                local_irq_disable[label="local_irq_disable"];
+                set_irqs_disabled_1[label="set_irqs_disabled_1"];
+                smp_mb[label="smp_mb"];
+                atomic_inc_stopmachine_thread_ack[label="atomic_inc_stopmachine_thread_ack"];
+                stopmachine_state_eq_STOPMACHINE_PREPARE_and_prepared_null[label="stopmachine_state_eq_STOPMACHINE_PREPARE_and_prepared_null"];
+                preempt_disable[label="preempt_disable"];
+                set_prepared_1[label="set_prepared_1"];
+                smp_mb[label="smp_mb"];
+                atomic_inc_stopmachine_thread_ack[label="atomic_inc_stopmachine_thread_ack"];
+                prepared_null_and_irqs_disabled_null[label="prepared_null_and_irqs_disabled_null"];
+                yield[label="yield"];
+                cpu_relax[label="cpu_relax"];
+                smp_mb[label="smp_mb"];
+                atomic_inc_stopmachine_thread_ack[label="atomic_inc_stopmachine_thread_ack"];
+                irqs_disabled_not_null[label="irqs_disabled_not_null"];
+                local_irq_enable[label="local_irq_enable"];
+                prepared_not_null[label="prepared_not_null"];
+                preempt_enable[label="preempt_enable"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_stopmachine_set_state{
+                label="static void stopmachine_set_state(enum stopmachine_state state)";
+                atomic_set_stopmachine_thread_ack_0[label="atomic_set_stopmachine_thread_ack_0"];
+                smp_wmb[label="smp_wmb"];
+                set_stopmachine_state_state[label="set_stopmachine_state_state"];
+                while_atomic_read_stopmachine_thread_ack_not_eq_stopmachine_num_threads[label="while_atomic_read_stopmachine_thread_ack_not_eq_stopmachine_num_threads"];
+                cpu_relax[label="cpu_relax"];
+        }
+
+        subgraph cluster_stop_machine{
+                label="static int stop_machine(void)";
+                set_param_sched_priority_MAX_RT_PRIO_sub_1[label="set_param_sched_priority_MAX_RT_PRIO_sub_1"];
+                set_old_fs_get_fss[label="set_old_fs_get_fss"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                sys_sched_setscheduler_current_pid_SCHED_FIFO_param[label="sys_sched_setscheduler_current_pid_SCHED_FIFO_param"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                atomic_set_stopmachine_thread_ack_0[label="atomic_set_stopmachine_thread_ack_0"];
+                set_stopmachine_num_threads_0[label="set_stopmachine_num_threads_0"];
+                set_stopmachine_state_STOPMACHINE_WAIT[label="set_stopmachine_state_STOPMACHINE_WAIT"];
+                for_each_online_cpu_i[label="for_each_online_cpu_i"];
+                i_eq__smp_processor_id[label="i_eq__smp_processor_id"];
+                set_ret_kernel_thread_stopmachine_i_CLONE_KERNEL[label="set_ret_kernel_thread_stopmachine_i_CLONE_KERNEL"];
+                ret_small_0[label="ret_small_0"];
+                inc_stopmachine_num_threads[label="inc_stopmachine_num_threads"];
+                atomic_read_stopmachine_thread_ack_not_eq_stopmachine_num_threads[label="atomic_read_stopmachine_thread_ack_not_eq_stopmachine_num_threads"];
+                yield[label="yield"];
+                ret_small_0[label="ret_small_0"];
+                stopmachine_set_state_STOPMACHINE_EXIT[label="stopmachine_set_state_STOPMACHINE_EXIT"];
+                up_stopmachine_mutex[label="up_stopmachine_mutex"];
+                return_ret[label="return_ret"];
+                local_irq_disable[label="local_irq_disable"];
+                stopmachine_set_state_STOPMACHINE_PREPARE[label="stopmachine_set_state_STOPMACHINE_PREPARE"];
+                stopmachine_set_state_STOPMACHINE_DISABLE_IRQ[label="stopmachine_set_state_STOPMACHINE_DISABLE_IRQ"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_restart_machine{
+                label="static void restart_machine(void)";
+                stopmachine_set_state_STOPMACHINE_EXIT[label="stopmachine_set_state_STOPMACHINE_EXIT"];
+                local_irq_enable[label="local_irq_enable"];
+        }
+
+        subgraph cluster_do_stop{
+                label="static int do_stop(void *_smdata)";
+                set_smdata__smdata[label="set_smdata__smdata"];
+                set_stop_machine[label="set_stop_machine"];
+                ret_eq_0[label="ret_eq_0"];
+                set_ret_smdata_fn_smdata_data[label="set_ret_smdata_fn_smdata_data"];
+                restart_machine[label="restart_machine"];
+                complete_smdata_done[label="complete_smdata_done"];
+                set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                kthread_should_stop_null[label="kthread_should_stop_null"];
+                schedule[label="schedule"];
+                set_current_state_TASK_INTERUPTIBLE[label="set_current_state_TASK_INTERUPTIBLE"];
+                __set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster___stop_machine_run{
+                label="struct task_struct *__stop_machine_run(int (*fn)(void *), void *data, unsigned int cpu)";
+                set_smdata_fn_fn[label="set_smdata_fn_fn"];
+                set_smdata_data_data[label="set_smdata_data_data"];
+                init_completion_smdata_done[label="init_completion_smdata_done"];
+                down_stopmachine_mutex[label="down_stopmachine_mutex"];
+                cpu_eq_NR_CPUS[label="cpu_eq_NR_CPUS"];
+                set_cpu__smp_processor_id[label="set_cpu__smp_processor_id"];
+                set_p_kthread_create_do_stop_smdata_kstopmachine[label="set_p_kthread_create_do_stop_smdata_kstopmachine"];
+                IS_ERR_p_null[label="IS_ERR_p_null"];
+                kthread_info_bind_p_cpu[label="kthread_info_bind_p_cpu"];
+                wake_up_process_p[label="wake_up_process_p"];
+                wait_for_completion_smdata_done[label="wait_for_completion_smdata_done"];
+                up_stopmachine_mutex[label="up_stopmachine_mutex"];
+                return_p[label="return_p"];
+        }
+
+        subgraph cluster_stop_machine_run{
+                label="int stop_machine_run(int (*fn)(void *), void *data, unsigned int cpu)";
+                lock_cpu_hotplug[label="lock_cpu_hotplug"];
+                set_p___stop_machine_run_fn_data_cpu[label="set_p___stop_machine_run_fn_data_cpu"];
+                IS_ERR_p_NULL[label="IS_ERR_p_NULL"];
+                set_ret_kthread_stop_p[label="set_ret_kthread_stop_p"];
+                set_ret_PTR_ERR_p[label="set_ret_PTR_ERR_p"];
+                unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+                return_ret[label="return_ret"];
+        }
+}
