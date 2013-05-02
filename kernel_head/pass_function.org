@@ -1,0 +1,17 @@
+#+STARTUP: showall
+** struct pid * fastcall find_pid(enum pid_type type, int nr)
+- 没办法，还是要用遍历
+** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
+- 注意所有的成员都要设置好。
+** static fastcall int __detach_pid(task_t *task, enum pid_type type)
+- 返回值被detach_pid使用得有点巧妙。
+** void fastcall detach_pid(task_t *task, enum pid_type type)
+- 比__detach_pid ()多一个功能就是把从pid位图里把nr删掉。
+** task_t *find_task_by_pid_type(int type, int nr)
+** void switch_exec_pids(task_t *leader, task_t *thread)
+- 一个非领头线程调用sys_execve()时就调用它。
+** void __init pidhash_init(void)
+** void __init pidmap_init(void)
+- 主要是做0号进程的工作。只分配一页。
+** int alloc_pidmap(void)
+- 在这里也分配页给page

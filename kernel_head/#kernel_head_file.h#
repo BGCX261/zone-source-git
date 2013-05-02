@@ -136,7 +136,7 @@ lib/rwsem-spinlock.c里出现
   * 在detach_pid()为什么要用for来遍历PIDTYPED_MAX呢?其实这样做是为了检查type的有效性。但这好像也不太对，因为之前调用的__detach_pid()
   的type参数没有被检查。看错了，不是这个意思的。
 
-  * PIDMAP_ENTRIES这个宏教你如何取整(cell)
+  * PIDMAP_ENTRIES这个宏教你如何取整(ceil)
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */

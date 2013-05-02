@@ -1,3 +1,45 @@
 digraph spurious_c{
-subgraph cluster
+	subgraph cluster___report_bad_rq{
+		label="static void __report_bad_irq(unsigned int irq, irq_desc_t *desc, irqreturn_t action_ret)";
+		action_ret_not_eq_IRQ_HANDLED_and_action_ret_not_eq_IRQ_NONE[label="action_ret_not_eq_IRQ_HANDLED_and_action_ret_not_eq_IRQ_NONE"];
+		printk_irq_action_ret[label="printk_irq_action_ret"];
+		printk_irq[label="printk_irq"];
+		dump_stack[label="dump_stack"];
+		set_action_desc_action[label="set_action_desc_action"];
+		action_not_null[label="action_not_null"];
+		printk_action_handler[label="printk_action_handler"];
+		print_symbol_action_handler[label="print_symbol_action_handler"];
+		set_action_action_next[label="set_action_action_next"];
+	}
+
+	subgraph cluster_report_bad_irq{
+		label="void report_bad_irq(unsigned int irq, irq_desc_t *desc, irqreturn_t action_ret)";
+		set_count_100[label="set_count_100"];
+		count_great_0[label="count_great_0"];
+		dec_count[label="dec_count"];
+		__report_bad_irq_irq_desc_action_ret[label="__report_bad_irq_irq_desc_action_ret"];
+	}
+
+	subgraph cluster_note_interrupt{
+		label="void note_interrupt(unsigned int irq, irq_desc_t *desc, irqreturn_t action_ret)";
+		action_ret_not_eq_IRQ_HANDLED[label="action_ret_not_eq_IRQ_HANDLED"];
+		inc_desc_irqs_unhandled[label="inc_desc_irqs_unhandled"];
+		action_ret_not_eq_IRQ_NONE[label="action_ret_not_eq_IRQ_NONE"];
+		report_bad_irq_irq_desc_action_ret[label="report_bad_irq_irq_desc_action_ret"];
+		inc_desc_irq_count[label="inc_desc_irq_count"];
+		desc_irq_count_small_100000[label="desc_irq_count_small_100000"];
+		return[label="return"];
+		set_desc_irq_count_0[label="set_desc_irq_count_0"];
+		desc_irqs_unhandled_gread_99900[label="desc_irqs_unhandled_gread_99900"];
+		__report_bad_irq_irq_desc_action_ret[label="__report_bad_irq_irq_desc_action_ret"];
+		desc_status_self_or_IRQ_DISABLED[label="desc_status_self_or_IRQ_DISABLED"];
+		desc_handler_disable_irq[label="desc_handler_disable_irq"];
+		set_desc_irqs_unhandled_0[label="set_desc_irqs_unhandled_0"];
+	}
+
+	subgraph cluster_noirqdebug_setup{
+		label="int __init noirqdebug_setup(char *str)";
+		set_noirqdebug_1[label="set_noirqdebug_1"];
+		return_1[label="return_1"];
+	}
 }
