@@ -1,0 +1,73 @@
+digraph autoprobe_c{
+	subgraph cluster_probe_irq_on{
+		label="unsigned long probe_irq_on(void)";
+		down_probe_sem[label="down_probe_sem"];
+		for_i_NR_IRQS[label="for_i_NR_IRQS"];
+		set_desc_irq_desc_add_i[label="set_desc_irq_desc_add_i"];
+		lock_desc_lock[label="lock_desc_lock"];
+		irq_desc_i_action_null[label="irq_desc_i_action_null"];
+		irq_desc_i_handler_startup_i[label="irq_desc_i_handler_startup_i"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+		for_delay_jiffies_add_HZ_div_50_time_after_delay_jiffies[label="for_delay_jiffies_add_HZ_div_50_time_after_delay_jiffies"];
+		barrier[label="barrier"];
+		for_i_NR_IRQS[label="for_i_NR_IRQS"];
+		set_desc_irq_desc_add_i[label="set_desc_irq_desc_add_i"];
+		lock_desc_lock[label="lock_desc_lock"];
+		desc_action_null[label="desc_action_null"];
+		desc_status_self_or_IRQ_AUTODETECT_or_IRQ_WAITING[label="desc_status_self_or_IRQ_AUTODETECT_or_IRQ_WAITING"];
+		desc_handler_startup_i_not_null[label="desc_handler_startup_i_not_null"];
+		desc_status_self_or_IRQ_PENDING[label="desc_status_self_or_IRQ_PENDING"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+		for_delay_jiffies_add_HZ_div_10_time_after_delay_jiffies[label="for_delay_jiffies_add_HZ_div_10_time_after_delay_jiffies"];
+		barrier[label="barrier"];
+		set_val_0[label="set_val_0"];
+		for_i_NR_IRQS[label="for_i_NR_IRQS"];
+		set_desc_irq_desc_add_i[label="set_desc_irq_desc_add_i"];
+		lock_desc_lock[label="lock_desc_lock"];
+		set_status_desc_status[label="set_status_desc_status"];
+		status_IRQ_AUTODETECT_set[label="status_IRQ_AUTODETECT_set"];
+		status_IRQ_WAITING_clear[label="status_IRQ_WAITING_clear"];
+		set_dese_status_status_except_IRQ_AUTODETECT[label="set_dese_status_status_except_IRQ_AUTODETECT"];
+		desc_handler_shutdown_i[label="desc_handler_shutdown_i"];
+		i_small_32[label="i_small_32"];
+		val_self_or_1_left_move_i[label="val_self_or_1_left_move_i"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+		return_val[label="return_val"];
+	}
+
+	subgraph cluster_probe_irq_mask{
+		label="unsigned int probe_irq_mask(unsigned long val)";
+		set_mask_0[label="set_mask_0"];
+		for_i_NR_IRQS[label="for_i_NR_IRQS"];
+		set_irq_desc_add_i[label="set_irq_desc_add_i"];
+		lock_desc_lock[label="lock_desc_lock"];
+		set_status_desc_status[label="set_status_desc_status"];
+		status_IRQ_AUTODETECT_set[label="status_IRQ_AUTODETECT_set"];
+		i_small_16_and_status_IRQ_WAITING_clear[label="i_small_16_and_status_IRQ_WAITING_clear"];
+		mask_self_or_1_left_move_i[label="mask_self_or_1_left_move_i"];
+		set_desc_status_status_except_IRQ_AUTODETECT[label="set_desc_status_status_except_IRQ_AUTODETECT"];
+		desc_handler_shutdown_i[label="desc_handler_shutdown_i"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+		up_probe_sem[label="up_probe_sem"];
+		return_mask_and_val[label="return_mask_and_val"];
+	}
+
+	subgraph cluster_probe_irq_off{
+		label="int probe_irq_off(unsigned long val)";
+		set_desc_irq_desc_add_i[label="set_desc_irq_desc_add_i"];
+		lock_desc_lock[label="lock_desc_lock"];
+		set_status_desc_status[label="set_status_desc_status"];
+		status_IRQ_AUTODETECT_set[label="status_IRQ_AUTODETECT_set"];
+		status_IRQ_WAITING_clear[label="status_IRQ_WAITING_clear"];
+		nr_irqs_null[label="nr_irqs_null"];
+		set_irq_found_i[label="set_irq_found_i"];
+		inc_nr_irqs[label="inc_nr_irqs"];
+		set_desc_status_status_except_IRQ_AUTODETECT[label="set_desc_status_status_except_IRQ_AUTODETECT"];
+		desc_handler_shutdown_i[label="desc_handler_shutdown_i"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+		up_probe_sem[label="up_probe_sem"];
+		nr_irqs_great_1[label="nr_irqs_great_1"];
+		set_irq_found_neg_irq_found[label="set_irq_found_neg_irq_found"];
+		return_irq_found[label="return_irq_found"];
+	}
+}

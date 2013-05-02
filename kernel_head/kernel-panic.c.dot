@@ -1,0 +1,51 @@
+digraph panic_c{
+	subgraph cluster_panic_setup{
+		label="static int __init panic_setup(char *str)";
+		set_panic_timeout_simple_strtoul_str_NULL_0[label="set_panic_timeout_simple_strtoul_str_NULL_0"];
+		return_1[label="return_1"];
+	}
+
+	subgraph cluster_no_blink{
+		label="static long no_blink(long time)";
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_panic{
+		label="NORET_TYPE void panic(const char * fmt, ...)";
+		bust_spinlocks_1[label="bust_spinlocks_1"];
+		va_start_args_fmt[label="va_start_args_fmt"];
+		vsnpritf_buf_sizeof_buf_fmt_args[label="vsnpritf_buf_sizeof_buf_fmt_args"];
+		va_end_args[label="va_end_args"];
+		bust_spinlocks_0[label="bust_spinlocks_0"];
+		CONFIG_SMP[label="CONFIG_SMP"];
+		set_smp_send_stop[label="set_smp_send_stop"];
+		notifier_call_chain_panic_notifier_list_0_buf[label="notifier_call_chain_panic_notifier_list_0_buf"];
+		panic_blink_null[label="panic_blink_null"];
+		set_panic_blink_no_blink[label="set_panic_blink_no_blink"];
+		panic_timeout_great_0[label="panic_timeout_great_0"];
+		for_i_panic_timeout_multi_1000[label="for_i_panic_timeout_multi_1000"];
+		touch_nmi_watchdog[label="touch_nmi_watchdog"];
+		i_self_add_panic_blink_i[label="i_self_add_panic_blink_i"];
+		mdelay_1[label="mdelay_1"];
+		inc_i[label="inc_i"];
+		machine_restart_NULL[label="machine_restart_NULL"];
+		local_irq_enable[label="local_irq_enable"];
+		for_i[label="for_i"];
+		i_self_add_panic_blink_i[label="i_self_add_panic_blink_i"];
+		mdelay_1[label="mdelay_1"];
+		inc_i[label="inc_i"];
+	}
+
+	subgraph cluster_print_tainted{
+		label="const char *print_tainted(void)";
+		tainted_not_null[label="tainted_not_null"];
+		snprintf_buf_sizeof_buf_P_or_G_decide_tainted_TAINT_PROPRIETARY_MODULE_set_F_or_null_decide_tainted_TAINT_FORCED_MODULE_set_S_or_null_decide_tainted_TAINT_UNSAFE_SMP_set_R_or_null_decide_tainted_TAINT-FORCED_RMMOD_set_M_or_null_decide_tainted_TAINT_MACHINE_CHECK_set_B_or_null_decide_tainted_TAINT_BAD_PAGE_set[label="snprintf_buf_sizeof_buf_P_or_G_decide_tainted_TAINT_PROPRIETARY_MODULE_set_F_or_null_decide_tainted_TAINT_FORCED_MODULE_set_S_or_null_decide_tainted_TAINT_UNSAFE_SMP_set_R_or_null_decide_tainted_TAINT-FORCED_RMMOD_set_M_or_null_decide_tainted_TAINT_MACHINE_CHECK_set_B_or_null_decide_tainted_TAINT_BAD_PAGE_set"];
+		snprintf_buf_sizeof_buf_not_tainted[label="snprintf_buf_sizeof_buf_not_tainted"];
+		return_buf[label="return_buf"];
+	}
+
+	subgraph cluster_add_taint{
+		label="void add_taint(unsigned flag)";
+		tainted_self_or_flag[label="tainted_self_or_flag"];
+	}
+}

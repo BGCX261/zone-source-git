@@ -1,0 +1,78 @@
+digraph proc_c{
+	subgraph cluster_proc_set_irq_affinity{
+		label="void __attribute__((weak)) proc_set_irq_affinity(unsigned int irq, cpumask_t mask_val)";
+		irq_affinity_irq_mask_val[label="irq_affinity_irq_mask_val"];
+		irq_desc_irq_handler_set_affinity_irq_mask_val[label="irq_desc_irq_handler_set_affinity_irq_mask_val"];
+	}
+
+	subgraph cluster_irq_affinity_read_proc{
+		label="static int irq_affinity_read_proc(char *page, char **start, off_t off, int count, int *eof, void *data)";
+		set_len_cpumask_scnprintf_page_count_irq_affinity_data[label="set_len_cpumask_scnprintf_page_count_irq_affinity_data"];
+		count_sub_len_small_2[label="count_sub_len_small_2"];
+		return_EINVAL[label="return_EINVAL"];
+		len_self_add_sprintf_page_add_len[label="len_self_add_sprintf_page_add_len"];
+		return_len[label="return_len"];
+	}
+
+	subgraph cluster_irq_affinity_write_proc{
+		label="static int irq_affinity_write_proc(struct file *file, const char __user *buffer, unsigned long count, void *data)";
+		set_irq_data[label="set_irq_data"];
+		set_full_count_count[label="set_full_count_count"];
+		irq_desc_irq_handler_set_affinity_or_no_irq_affinity[label="irq_desc_irq_handler_set_affinity_or_no_irq_affinity"];
+		return_EIO[label="return_EIO"];
+		err_cpumask_parse_buffer_count_new_value[label="err_cpumask_parse_buffer_count_new_value"];
+		cpus_and_tmp_new_value_cpu_online_map[label="cpus_and_tmp_new_value_cpu_online_map"];
+		cpus_empty_tmp_true[label="cpus_empty_tmp_true"];
+		return_EINVAL[label="return_EINVAL"];
+		proc_set_irq_affinity_irq_new_value[label="proc_set_irq_affinity_irq_new_value"];
+		return_full_count[label="return_full_count"];
+	}
+
+	subgraph cluster_name_unique{
+		label="static int name_unique(unsigned int irq, struct irqaction *new_action)";
+		set_desc_irq_desc_irq[label="set_desc_irq_desc_irq"];
+		for_action_desc_action[label="for_action_desc_action"];
+		action_not_eq_new_action_and_action_name_not_null_and_strcmp_new_action_name_action_name_null[label="action_not_eq_new_action_and_action_name_not_null_and_strcmp_new_action_name_action_name_null"];
+		return_0[label="return_0"];
+		return_1[label="return_1"];
+	}
+
+	subgraph cluster_register_handler_proc{
+		label="void register_handler_proc(unsigned int irq, struct irqaction *action)";
+		irq_dir_irq_null_or_action_dir_not_null_or_action_name_null_or_name_unique_irq_action_false[label="irq_dir_irq_null_or_action_dir_not_null_or_action_name_null_or_name_unique_irq_action_false"];
+		return[label="return"];
+		snprintf_name_action_name[label="snprintf_name_action_name"];
+		set_action_dir_proc_mkdir_name_irq_idr_irq[label="set_action_dir_proc_mkdir_name_irq_idr_irq"];
+	}
+
+	subgraph cluster_register_irq_proc{
+		label="void register_irq_proc(unsigned int irq)";
+		root_irq_dir_null_or_irq_desc_irq_handler_eq_no_irq_type_or_irq_dir_irq[label="root_irq_dir_null_or_irq_desc_irq_handler_eq_no_irq_type_or_irq_dir_irq"];
+		return[label="return"];
+		sprintf_name_irq[label="sprintf_name_irq"];
+		irq_dir_irq_proc_mkdir_name_root_irq_dir[label="irq_dir_irq_proc_mkdir_name_root_irq_dir"];
+		CONFIG_SMP[label="CONFIG_SMP"];
+		set_entry_create_proc_entry_smp_affinity_0600_irq_dir_irq[label="set_entry_create_proc_entry_smp_affinity_0600_irq_dir_irq"];
+		entry_not_null[label="entry_not_null"];
+		set_entry_nlink_1[label="set_entry_nlink_1"];
+		set_entry_data_irq[label="set_entry_data_irq"];
+		set_entry_read_proc_irq_affinity_read_proc[label="set_entry_read_proc_irq_affinity_read_proc"];
+		set_entry_write_proc_irq_affinity_write_proc[label="set_entry_write_proc_irq_affinity_write_proc"];
+		smp_affinity_entry_irq_entry[label="smp_affinity_entry_irq_entry"];
+	}
+
+	subgraph cluster_unregister_handlerr_proc{
+		label="void unregister_handler_proc(unsigned int irq, struct irqaction *action)";
+		action_dir_not_null[label="action_dir_not_null"];
+		remove_proc_entry_action_dir_name_irq_dir_irq[label="remove_proc_entry_action_dir_name_irq_dir_irq"];
+	}
+
+	subgraph cluster_init_irq_proc{
+		label="void init_irq_proc(void)";
+		root_irq_dir_proc_mkdir_irq_NULL[label="root_irq_dir_proc_mkdir_irq_NULL"];
+		root_irq_dir_null[label="root_irq_dir_null"];
+		return[label="return"];
+		for_i_NR_IRQS[label="for_i_NR_IRQS"];
+		register_irq_proc_i[label="register_irq_proc_i"];
+	}
+}

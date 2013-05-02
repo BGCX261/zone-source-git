@@ -1,55 +1,55 @@
 digraph handle_c{
-        subgraph cluster___do_IRQ{
-                label="unsigned int __do_IRQ(unsigned int irq, struct pt_regs *regs)";
-                get_irq_desc_t[label="get_irq_desc_t"];;
-                inc_kernel_stat_irqs_irq[label="inc_kernel_stat_irqs_irq"];
-                irq_desc_t_status_IRQ_PER_CPU_set[label="irq_desc_t_status_IRQ_PER_CPU_set"];
-                irq_desc_t_handler_ack[label=""irq_desc_t_handler_ack] ;
-                handle_IRQ_event[label="handle_IRQ_event(irq, regs, desc->action)"];
-                irq_desc_t_handler_end[label="irq_desc_t_handler_end(irq)"];
-                return_1[label=""return_1];;
-                get_irq_desc_t_lock[label="get_irq_desc_t_lock"];
-                irq_desc_t_handler_ack_1[label=""irq_desc_t_handler_ack] ;
-                clear_irq_desc_t_status_IRQ_REPLAY_IRQ_WAITING[label="clear_irq_desc_t_status_IRQ_REPLAY_IRQ_WAITING"];
-                set_IRQ_PENDING[label="set_IRQ_PENDING"];
-                clear_action[label="clear_action"];
-                IRQ_DISABLE_or_IRQ_INPROGRESS_clear[label="IRQ_DISABLE_or_IRQ_INPROGRESS_clear"];
-                get_action[label="get_action"];
-                clear_IRQ_PENDING[label="clear_IRQ_PENDING"];
-                set_IRQ_INPROGRESS[label="set_IRQ_INPROGRESS"];
-                set_irq_desc_t_status[label="set_irq_desc_t_status"];
-                action_null[label="action_null"];
-                unlock_irq_desc_lock[label="unlock_irq_desc_lock"];
-                handle_IRQ_event[label="handle_IRQ_event(irq,regs,action)"];
-                lock_irq_desc_t_lock[label="lock_irq_desc_t_lock"];
-                not_interrupt[label="not_interrupt(irq,desc,action_ret)"];
-                irq_desc_t_status_IRQ_PENDING_clear[label="irq_desc_t_status_IRQ_PENDING_clear"];
-                clear_irq_desc_t_status[label="clear_irq_desc_t_status"];
-                clear_irq_desc_status_IRQ_INPROGRESS[label="clear_irq_desc_status_IRQ_INPROGRESS"];
-                irq_desc_handler_end[label="irq_desc_handler_end"];
-                unlock_irq_desc_t_lock[label="unlock_irq_desc_t_lock"];
-                return_1_1[label="return_1"];
+	subgraph cluster___do_IRQ{
+		label="unsigned int __do_IRQ(unsigned int irq, struct pt_regs *regs)";
+		get_irq_desc_t[label="get_irq_desc_t"];;
+		inc_kernel_stat_irqs_irq[label="inc_kernel_stat_irqs_irq"];
+		irq_desc_t_status_IRQ_PER_CPU_set[label="irq_desc_t_status_IRQ_PER_CPU_set"];
+		irq_desc_t_handler_ack[label=""irq_desc_t_handler_ack] ;
+		handle_IRQ_event[label="handle_IRQ_event(irq, regs, desc->action)"];
+		irq_desc_t_handler_end[label="irq_desc_t_handler_end(irq)"];
+		return_1[label=""return_1];;
+		get_irq_desc_t_lock[label="get_irq_desc_t_lock"];
+		irq_desc_t_handler_ack_1[label=""irq_desc_t_handler_ack] ;
+		clear_irq_desc_t_status_IRQ_REPLAY_IRQ_WAITING[label="clear_irq_desc_t_status_IRQ_REPLAY_IRQ_WAITING"];
+		set_IRQ_PENDING[label="set_IRQ_PENDING"];
+		clear_action[label="clear_action"];
+		IRQ_DISABLE_or_IRQ_INPROGRESS_clear[label="IRQ_DISABLE_or_IRQ_INPROGRESS_clear"];
+		get_action[label="get_action"];
+		clear_IRQ_PENDING[label="clear_IRQ_PENDING"];
+		set_IRQ_INPROGRESS[label="set_IRQ_INPROGRESS"];
+		set_irq_desc_t_status[label="set_irq_desc_t_status"];
+		action_null[label="action_null"];
+		unlock_irq_desc_lock[label="unlock_irq_desc_lock"];
+		handle_IRQ_event[label="handle_IRQ_event(irq,regs,action)"];
+		lock_irq_desc_t_lock[label="lock_irq_desc_t_lock"];
+		not_interrupt[label="not_interrupt(irq,desc,action_ret)"];
+		irq_desc_t_status_IRQ_PENDING_clear[label="irq_desc_t_status_IRQ_PENDING_clear"];
+		clear_irq_desc_t_status[label="clear_irq_desc_t_status"];
+		clear_irq_desc_status_IRQ_INPROGRESS[label="clear_irq_desc_status_IRQ_INPROGRESS"];
+		irq_desc_handler_end[label="irq_desc_handler_end"];
+		unlock_irq_desc_t_lock[label="unlock_irq_desc_t_lock"];
+		return_1_1[label="return_1"];
                 
-        }
+	}
 
-        subgraph cluster_handle_IRQ_event{
-                label="fastcall int handle_IRQ_event(unsigned int irq, struct pt_regs *regs,struct irqaction *action)";
+	subgraph cluster_handle_IRQ_event{
+		label="fastcall int handle_IRQ_event(unsigned int irq, struct pt_regs *regs,struct irqaction *action)";
                 
-                irqaction_flags_SA_INTERRUPT_clean[label="irqaction_flags_SA_INTERRUPT_clean"];
-                local_irq_enable[label="local_irq_enable"];
-                call_irqaction_handler[label="call_irqaction_handler"];
-                IRQ_HANDLED_return[label="IRQ_HANDLED_return"];
-                set_or_status_action_flags[label="set_or_status_action_flags"];
-                set_or_retval[label="set_or_retval"];
-                get_next_irqaction[label="get_next_irqaction"];
-                SA_SAMPLE_RANDOM_set[label="SA_SAMPLE_RANDOM_set"];
-                call_add_interrupt_randomness[label="call_add_interrupt_randomness"];
-                local_irq_disable[label="call_local_irq_disable"];
-                
-        }
+		irqaction_flags_SA_INTERRUPT_clean[label="irqaction_flags_SA_INTERRUPT_clean"];
+		local_irq_enable[label="local_irq_enable"];
+		call_irqaction_handler[label="call_irqaction_handler"];
+		IRQ_HANDLED_return[label="IRQ_HANDLED_return"];
+		set_or_status_action_flags[label="set_or_status_action_flags"];
+		set_or_retval[label="set_or_retval"];
+		get_next_irqaction[label="get_next_irqaction"];
+		SA_SAMPLE_RANDOM_set[label="SA_SAMPLE_RANDOM_set"];
+		call_add_interrupt_randomness[label="call_add_interrupt_randomness"];
+		local_irq_disable[label="call_local_irq_disable"];
+	}
 
+	subgraph cluster_ack_none{
+		label="static void ack_none(unsigned int irq)";
+		ack_bad_irq_irq[label="ack_bad_irq_irq"];
+	}
         
-}
-                
-                
 }

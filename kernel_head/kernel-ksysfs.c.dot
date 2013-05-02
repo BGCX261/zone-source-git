@@ -1,0 +1,9 @@
+digraph ksysfs_c{
+	subgraph cluster_ksysfs_init{
+		label="static int __init ksysfs_init(void)";
+		set_error_subsystem_register_kernel_subsys[label="set_error_subsystem_register_kernel_subsys"];
+		error_null[label="error_null"];
+		set_error_sysfs_create_group_kernel_subsys_kset_kobj_kernel_attr_group[label="set_error_sysfs_create_group_kernel_subsys_kset_kobj_kernel_attr_group"];
+		return_error[label="return_error"];
+	}
+}

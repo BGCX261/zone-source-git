@@ -1,0 +1,59 @@
+digraph configs_c{
+	subgraph cluster_ikconfig_read_current{
+		label="static ssize_t ikconfig_read_current(struct file *file, char __user *buf, size_t len, loff_t * offset)";
+		set_pos_offset[label="set_pos_offset"];
+		set_count_min_len_kernel_config_data_size_sub_pos[label="set_count_min_len_kernel_config_data_size_sub_pos"];
+		copy_to_user_buf_kernel_config_data_add_MAGIC_SIZE_add_pos_count[label="copy_to_user_buf_kernel_config_data_add_MAGIC_SIZE_add_pos_count"];
+		offset_self_add_count[label="offset_self_add_count"];
+		return_count[label="return_count"];
+	}
+
+	subgraph cluster_ikconfig_init{
+		label="static int __init ikconfig_init(void)";
+		set_entry_create_proc_entry_config_gz_S_IFREG_or_S_IRUGO_proc_root[label="set_entry_create_proc_entry_config_gz_S_IFREG_or_S_IRUGO_proc_root"];
+		set_entry_proc_fops_ikconfig_kfile_ops[label="set_entry_proc_fops_ikconfig_kfile_ops"];
+		set_entry_size_kernel_config_data_size[label="set_entry_size_kernel_config_data_size"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_ikconfig_cleanup{
+		label="static void __exit ikconfig_cleanup(void)";
+		remove_proc_entry_config_gz_proc_root[label="remove_proc_entry_config_gz_proc_root"];
+	}
+
+	subgraph cluster_sort_main_extable{
+		label="void __init sort_main_extable(void)";
+		sort_extable___start___ex_table___stop___ex_table[label="sort_extable___start___ex_table___stop___ex_table"];
+	}
+
+	subgraph cluster_search_exception_tables{
+		label="const struct exception_table_entry *search_exception_tables(unsigned long addr)";
+		set_e_search_extable___start___ex_table___stop___ex_table_sub_1_addr[label="set_e_search_extable___start___ex_table___stop___ex_table_sub_1_addr"];
+		e_null[label="e_null"];
+		set_e_search_module_extables_addr[label="set_e_search_module_extables_addr"];
+		return_e[label="return_e"];
+	}
+
+	subgraph cluster_core_kernel_text{
+		label="static int core_kernel_text(unsigned long addr)";
+		addr_not_small__stext_and_addr_not_great__etext[label="addr_not_small__stext_and_addr_not_great__etext"];
+		return_1[label="return_1"];
+		addr_not_small__sinittext_and_addr_not_great__einittext[label="addr_not_small__sinittext_and_addr_not_great__einittext"];
+		return_1[label="return_1"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster___kernel_text_address{
+		label="int __kernel_text_address(unsigned long addr)";
+		core_kernel_text_addr[label="core_kernel_text_addr"];
+		return_1[label="return_1"];
+		return___module_text_address_addr_not_eq_NULL[label="return___module_text_address_addr_not_eq_NULL"];
+	}
+
+	subgraph cluster_kernel_text_address{
+		label="int kernel_text_address(unsigned long addr)";
+		core_kernel_text_addr[label="core_kernel_text_addr"];
+		return_1[label="return_1"];
+		return_module_text_address_addr_not_eq_NULL[label="return_module_text_address_addr_not_eq_NULL"];
+	}
+}

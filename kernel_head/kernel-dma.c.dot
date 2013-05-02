@@ -1,0 +1,43 @@
+digraph dma_c{
+	subgraph cluster_request_dma{
+		label="int request_dma(unsigned int dmanr, const char * device_id)";
+		dmanr_not_small_MAX_DMA_CHANNELS[label="dmanr_not_small_MAX_DMA_CHANNELS"];
+		return_EINVAL[label="return_EINVAL"];
+		xchg_dma_chan_busy_dmanr_lock_1_not_eq_0[label="xchg_dma_chan_busy_dmanr_lock_1_not_eq_0"];
+		return_EBUSY[label="return_EBUSY"];
+		set_dma_chan_busy_dmanr_device_id_device_id[label="set_dma_chan_busy_dmanr_device_id_device_id"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_free_dma{
+		label="void free_dma(unsigned int dmanr)";
+		dmanr_not_small_MAX_DMA_CHANNELS[label="dmanr_not_small_MAX_DMA_CHANNELS"];
+		return[label="return"];
+		xchg_dma_chan_busy_dmanr_lock_0_eq_0[label="xchg_dma_chan_busy_dmanr_lock_0_eq_0"];
+		return[label="return"];
+	}
+
+	subgraph cluster_proc_dma_show{
+		label="static int proc_dma_show(struct seq_file *m, void *v)";
+		MAX_DMA_CHANNELS[label="MAX_DMA_CHANNELS"];
+		for_i_MAX_DMA_CHANNELS[label="for_i_MAX_DMA_CHANNELS"];
+		dma_chan_busy_i_lock[label="dma_chan_busy_i_lock"];
+		seq_printf_m_i_dma_chan_busy_i_device_id[label="seq_printf_m_i_dma_chan_busy_i_device_id"];
+		return_0[label="return_0"];
+		seq_puts_m[label="seq_puts_m"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_proc_dma_open{
+		label="static int proc_dma_open(struct inode *inode, struct file *file)";
+		return_single_open_file_proc_dma_show_NULL[label="return_single_open_file_proc_dma_show_NULL"];
+	}
+
+	subgraph cluster_proc_dma_init{
+		label="static int __init proc_dma_init(void)";
+		set_e_create_proc_entry_dma_0_NULL[label="set_e_create_proc_entry_dma_0_NULL"];
+		e_not_null[label="e_not_null"];
+		set_e_proc_fops_proc_dam_operations[label="set_e_proc_fops_proc_dam_operations"];
+		return_0[label="return_0"];
+	}
+}

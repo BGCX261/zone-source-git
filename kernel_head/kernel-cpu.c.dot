@@ -1,0 +1,98 @@
+digraph cpu_c{
+	subgraph cluster_register_cpu_notifier{
+		label="int register_cpu_notifier(struct notifier_block *nb)";
+		set_ret_down_interruptible_cpucontrol_not_eq_0[label="set_ret_down_interruptible_cpucontrol_not_eq_0"];
+		return_ret[label="return_ret"];
+		up_cpucontrol[label="up_cpucontrol"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_unregister_cpu_notifier{
+		label="void unregister_cpu_notifier(struct notifier_block *nb)";
+		down_cpucontrol[label="down_cpucontrol"];
+		notifier_chain_unregister_cpu_chain_nb[label="notifier_chain_unregister_cpu_chain_nb"];
+		up_cpucontrol[label="up_cpucontrol"];
+	}
+
+	subgraph cluster_check_for_tasks{
+		label="static inline void check_for_tasks(int cpu)";
+		CONFIG_HOTPLUG_CPU[label="CONFIG_HOTPLUG_CPU"];
+		write_lock_irq_tasklist_lock[label="write_lock_irq_tasklist_lock"];
+		for_each_process_p[label="for_each_process_p"];
+		task_cpu_p_eq_cpu_and_cputime_eq_p_utime_cputime_zero_false_or_cputime_eq_p_stime_cputime_zero_false[label="task_cpu_p_eq_cpu_and_cputime_eq_p_utime_cputime_zero_false_or_cputime_eq_p_stime_cputime_zero_false"];
+		printk_p_comm_p_pid_cpu_p_state_p_flags[label="printk_p_comm_p_pid_cpu_p_state_p_flags"];
+		write_unlock_irq_tasklist_lock[label="write_unlock_irq_tasklist_lock"];
+	}
+
+	subgraph cluster_task_cpu_down{
+		label="static int take_cpu_down(void *unused)";
+		cpu_clear_smp_processor_id_cpu_online_map[label="cpu_clear_smp_processor_id_cpu_online_map"];
+		set_err___cpu_disable[label="set_err___cpu_disable"];
+		err_small_0[label="err_small_0"];
+		cpu_set_smp_processor_id_cpu_online_map[label="cpu_set_smp_processor_id_cpu_online_map"];
+		sched_idle_next[label="sched_idle_next"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_cpu_down{
+		label="int cpu_down(unsigned int cpu)";
+		set_err_lock_cpu_hotplug_interruptible_not_eq_0[label="set_err_lock_cpu_hotplug_interruptible_not_eq_0"];
+		return_err[label="return_err"];
+		num_online_cpus_eq_1[label="num_online_cpus_eq_1"];
+		set_err_EBUSY[label="set_err_EBUSY"];
+		goto_out[label="goto_out"];
+		cpu_online_cpu_false[label="cpu_online_cpu_false"];
+		set_err_EINVAL[label="set_err_EINVAL"];
+		goto_out[label="goto_out"];
+		set_err_notifier_call_chain_cpu_chain_CPU_DOWN_PREPARE_cpu[label="set_err_notifier_call_chain_cpu_chain_CPU_DOWN_PREPARE_cpu"];
+		err_eq_NOTIFY_BAD[label="err_eq_NOTIFY_BAD"];
+		set_err_EINVAL[label="set_err_EINVAL"];
+		goto_out[label="goto_out"];
+		set_old_allowed_current_cpus_allowed[label="set_old_allowed_current_cpus_allowed"];
+		set_tmp_CPU_MASK_ALL[label="set_tmp_CPU_MASK_ALL"];
+		cpu_clear_cpu_tmp[label="cpu_clear_cpu_tmp"];
+		set_cpus_allowed_current_tmp[label="set_cpus_allowed_current_tmp"];
+		set_p___stop_machine_run_take_cpu_down_NULL_cpu[label="set_p___stop_machine_run_take_cpu_down_NULL_cpu"];
+		IS_ERR_p_not_null[label="IS_ERR_p_not_null"];
+		notifier_call_chain_cpu_chain_CPU_DOWN_FAILED_cpu_eq_NOTIFY_BAD[label="notifier_call_chain_cpu_chain_CPU_DOWN_FAILED_cpu_eq_NOTIFY_BAD"];
+		set_err_PTR_ERR_p[label="set_err_PTR_ERR_p"];
+		goto_out_allowed[label="goto_out_allowed"];
+		cpu_online_cpu[label="cpu_online_cpu"];
+		goto_out_thread[label="goto_out_thread"];
+		while_idle_cpu_cpu[label="while_idle_cpu_cpu"];
+		yield[label="yield"];
+		__cpu_die_cpu[label="__cpu_die_cpu"];
+		kthread_bind_p_get_cpu[label="kthread_bind_p_get_cpu"];
+		put_cpu[label="put_cpu"];
+		notifier_call_chain_cpu_chain_CPU_DEAD_cpu_eq_NOTIFY_BAD[label="notifier_call_chain_cpu_chain_CPU_DEAD_cpu_eq_NOTIFY_BAD"];
+		check_for_task_cpu[label="check_for_task_cpu"];
+		set_err_thread_stop_p[label="set_err_thread_stop_p"];
+		set_cpus_allowed_current_old_allowed[label="set_cpus_allowed_current_old_allowed"];
+		unlock_cpu_hotplug[label="unlock_cpu_hotplug"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_cpu_up{
+		label="int __devinit cpu_up(unsigned int cpu)";
+		set_hcpu_cpu[label="set_hcpu_cpu"];
+		set_ret_downinteruptible_cpucontrol_not_eq_0[label="set_ret_downinteruptible_cpucontrol_not_eq_0"];
+		return_ret[label="return_ret"];
+		cpu_online_cpu_not_null_or_cpu_present_cpu_null[label="cpu_online_cpu_not_null_or_cpu_present_cpu_null"];
+		set_ret_EINVAL[label="set_ret_EINVAL"];
+		goto_out[label="goto_out"];
+		set_ret_notifier_call_chain_cpu_chain_CPU_UP_PREPARE_hcpu[label="set_ret_notifier_call_chain_cpu_chain_CPU_UP_PREPARE_hcpu"];
+		set_ret_NOTIFY_BAD[label="set_ret_NOTIFY_BAD"];
+		set_ret_EINVAL[label="set_ret_EINVAL"];
+		goto_out_notify[label="goto_out_notify"];
+		set_ret___cpu_up_cpu[label="set_ret___cpu_up_cpu"];
+		ret_not_eq_0[label="ret_not_eq_0"];
+		goto_out_notify[label="goto_out_notify"];
+		cpu_online_cpu_false[label="cpu_online_cpu_false"];
+		BUG[label="BUG"];
+		notifier_call_chain_cpu_chain_CPU_ONLINE_hcpu[label="notifier_call_chain_cpu_chain_CPU_ONLINE_hcpu"];
+		ret_not_eq_0[label="ret_not_eq_0"];
+		notifier_call_chain_cpu_chain_CPU_UP_CANCELED_hcpu[label="notifier_call_chain_cpu_chain_CPU_UP_CANCELED_hcpu"];
+		up_cpucontrol[label="up_cpucontrol"];
+		return_ret[label="return_ret"];
+	}
+}

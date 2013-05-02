@@ -1,47 +1,123 @@
 digraph manage_c{
-        subgraph cluster_request_irq{
-                label="int request_irq(unsigned int irq,irqreturn_t (*handler)(int, void *, struct pt_regs *),unsigned long irqflags, const char * devname, void *dev_id)";
-                irqflags_SA_SHIRQ_clean_and_dev_id_null[label="irqflags_SA_SHIRQ_clean_and_dev_id_null"];
-                return_EINVAL;
-                irq_great_NR_IRQS[label="irq_great_NR_IRQS"];
-                handler_null[label="handler_null"];
-                kmalloc_irqaction[label="kmalloc_irqaction"];
-                set_irqaction_handler[label="set_irqaction_handler_handler"];
-                set_irqaction_flags[label="set_irqaction_flags_irqflags"];
-                cpus_clear_irqaction_mask[label="cpus_clear_irqaction_mask"];
-                set_irqaction_name[label="set_irqaction_name"];
-                clean_irqaction_next[label="clean_irqaction_next"];
-                set_action_dev_id_dev_id[label="set_action_dev_id_dev_id"];
-                setup_irq[label="setup_irq(irq, action)"];
-        }
+	subgraph cluster_request_irq{
+		label="int request_irq(unsigned int irq,irqreturn_t (*handler)(int, void *, struct pt_regs *),unsigned long irqflags, const char * devname, void *dev_id)";
+		irqflags_SA_SHIRQ_clean_and_dev_id_null[label="irqflags_SA_SHIRQ_clean_and_dev_id_null"];
+		return_EINVAL;
+		irq_great_NR_IRQS[label="irq_great_NR_IRQS"];
+		handler_null[label="handler_null"];
+		kmalloc_irqaction[label="kmalloc_irqaction"];
+		set_irqaction_handler[label="set_irqaction_handler_handler"];
+		set_irqaction_flags[label="set_irqaction_flags_irqflags"];
+		cpus_clear_irqaction_mask[label="cpus_clear_irqaction_mask"];
+		set_irqaction_name[label="set_irqaction_name"];
+		clean_irqaction_next[label="clean_irqaction_next"];
+		set_action_dev_id_dev_id[label="set_action_dev_id_dev_id"];
+		setup_irq[label="setup_irq(irq, action)"];
+	}
 
-        subgraph cluster_setup_irq{
-                label="int setup_irq(unsigned int irq, struct irqaction * new);";
-                irq_desc_handler_eq_no_irq_type[label="irq_desc_handler_eq_no_irq_type"];
-                return_ENOSYS;
-                new_flags_SA_SAMPLE_RANDOM_set[label="new_flags_SA_SAMPLE_RANDOM_set"];
-                call_rand_initialize_irq[label="call_rand_initialize_irq"];
-                lock_irq_desc_lock[label="lock_desc_lock"];
-                set_p_desc_t_action[label="set_p_desc_t_action"];
-                set_old_p_not_null[label="set_old_p_not_null"];
-                old_flags_set_SA_SHIRQ_and_new_flags_set_SA_SHIRQ[label="old_flags_set_SA_SHIRQ_and_new_flags_set_SA_SHIRQ;"];
-                unlock_irq_desc_lock[label="unlock_irq_desc_lock"];
-                return_EBUSY[label="return_EBUSY"];
-                set_p_tail[label="set_p_tail"];
-                set_p_new[label="set_p_new"];
-                set_shared[label="set_shared"];
-                shared_not_null[label="shared_not_null"];
-                clear_irq_desc_depth[label="clear_irq_desc_depth"];
-                clear_irq_desc_status_IRQ_DISABLED_IRQ_AUTODETECT_IRQ_WAITING_IRQ_INPROGRESS[label="clear_irq_desc_status_IRQ_DISABLED_IRQ_AUTODETECT_IRQ_WAITING_IRQ_INPROGRESS"];
-                irq_desc_handler_startup_not_null[label="irq_desc_handler_startup_not_null"];
-                call_irq_desc_handler_startup[label="call_irq_desc_handler_startup"];
-                call_irq_desc_handler_enable[label="call_irq_desc_handler_enable"];
-                unlock_irq_desc_lock[label="unlock_irq_desc_lock"];
-                set_new_irq_irq[label="set_new_irq_irq"];
-                call_register_irq_proc[label="call_register_irq_proc"];
-                clear_new_dir[label="clear_new_dir"];
-                register_handler_proc[label="register_handler_proc"];
-                
-                
-                }
+	subgraph cluster_setup_irq{
+		label="int setup_irq(unsigned int irq, struct irqaction * new);";
+		irq_desc_handler_eq_no_irq_type[label="irq_desc_handler_eq_no_irq_type"];
+		return_ENOSYS;
+		new_flags_SA_SAMPLE_RANDOM_set[label="new_flags_SA_SAMPLE_RANDOM_set"];
+		call_rand_initialize_irq[label="call_rand_initialize_irq"];
+		lock_irq_desc_lock[label="lock_desc_lock"];
+		set_p_desc_t_action[label="set_p_desc_t_action"];
+		set_old_p_not_null[label="set_old_p_not_null"];
+		old_flags_set_SA_SHIRQ_and_new_flags_set_SA_SHIRQ[label="old_flags_set_SA_SHIRQ_and_new_flags_set_SA_SHIRQ;"];
+		unlock_irq_desc_lock[label="unlock_irq_desc_lock"];
+		return_EBUSY[label="return_EBUSY"];
+		set_p_tail[label="set_p_tail"];
+		set_p_new[label="set_p_new"];
+		set_shared[label="set_shared"];
+		shared_not_null[label="shared_not_null"];
+		clear_irq_desc_depth[label="clear_irq_desc_depth"];
+		clear_irq_desc_status_IRQ_DISABLED_IRQ_AUTODETECT_IRQ_WAITING_IRQ_INPROGRESS[label="clear_irq_desc_status_IRQ_DISABLED_IRQ_AUTODETECT_IRQ_WAITING_IRQ_INPROGRESS"];
+		irq_desc_handler_startup_not_null[label="irq_desc_handler_startup_not_null"];
+		call_irq_desc_handler_startup[label="call_irq_desc_handler_startup"];
+		call_irq_desc_handler_enable[label="call_irq_desc_handler_enable"];
+		unlock_irq_desc_lock[label="unlock_irq_desc_lock"];
+		set_new_irq_irq[label="set_new_irq_irq"];
+		call_register_irq_proc[label="call_register_irq_proc"];
+		clear_new_dir[label="clear_new_dir"];
+		register_handler_proc[label="register_handler_proc"];
+	}
+
+	subgraph cluster_synchronize_irq{
+		label="void synchronize_irq(unsigned int irq)";
+		set_desc_irq_desc_add_irq[label="set_desc_irq_desc_add_irq"];
+		while_desc_status_IRQ_INPROGESS_set[label="while_desc_status_IRQ_INPROGESS_set"];
+		cpu_relax[label="cpu_relax"];
+	}
+
+	subgraph cluster_disable_irq_nosync{
+		label="void disable_irq_nosync(unsigned int irq)";
+		set_desc_irq_desc_add_irq[label="set_desc_irq_desc_add_irq"];
+		lock_desc_lock[label="lock_desc_lock"];
+		desc_depth_inc_null[label="desc_depth_inc_null"];
+		sesc_status_self_or_IRQ_DISABLED[label="sesc_status_self_or_IRQ_DISABLED"];
+		desc_handler_disable_irq[label="desc_handler_disable_irq"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+	}
+
+	subgraph cluster_disable_irq{
+		label="void disable_irq(unsigned int irq)";
+		set_desc_irq_desc_add_irq[label="set_desc_irq_desc_add_irq"];
+		disable_irq_nosync_irq[label="disable_irq_nosync_irq"];
+		desc_action_not_null[label="desc_action_not_null"];
+		synchronize_irq_irq[label="synchronize_irq_irq"];
+	}
+
+	subgraph cluster_enable_irq{
+		label="void enable_irq(unsigned int irq)";
+		set_desc_irq_desc_irq[label="set_desc_irq_desc_irq"];
+		lock_desc_lock[label="lock_desc_lock"];
+		switch_desc_depth[label="switch_desc_depth"];
+		case_0[label="case_0"];
+		case_1[label="case_1"];
+		set_status_desc_status_except_IRQ_DISABLED[label="set_status_desc_status_except_IRQ_DISABLED"];
+		set_desc_status_status[label="set_desc_status_status"];
+		status_and_IRQ_PENDING_or_IRQ_REPLAY_eq_IRQ_PENDING[label="status_and_IRQ_PENDING_or_IRQ_REPLAY_eq_IRQ_PENDING"];
+		set_desc_status_status_or_IRQ_REPLAY[label="set_desc_status_status_or_IRQ_REPLAY"];
+		hw_resend_irq_desc_handler_irq[label="hw_resend_irq_desc_handler_irq"];
+		desc_handler_enable_irq[label="desc_handler_enable_irq"];
+		dec_desc_depth[label="dec_desc_depth"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+	}
+
+	subgraph cluster_can_request_irq{
+		label="int can_request_irq(unsigned int irq, unsigned long irqflags)";
+		set_action_irq_desc_irq_action[label="set_action_irq_desc_irq_action"];
+		action_not_null[label="action_not_null"];
+		irqflags_and_action_flags_and_SA_SHIRQ_not_null[label="irqflags_and_action_flags_and_SA_SHIRQ_not_null"];
+		clear_NULL[label="clear_NULL"];
+		return_rever_action[label="return_rever_action"];
+	}
+
+	subgraph cluster_free_irq{
+		label="void free_irq(unsigned int irq, void *dev_id)";
+		set_desc_irq_desc_add_irq[label="set_desc_irq_desc_add_irq"];
+		lock_desc_lock[label="lock_desc_lock"];
+		set_p_desc_action[label="set_p_desc_action"];
+		dead_for[label="dead_for"];
+		set_action_p[label="set_action_p"];
+		action_not_null[label="action_not_null"];
+		set_pp_p[label="set_pp_p"];
+		set_p_action_next[label="set_p_action_next"];
+		action_dev_id_not_eq_dev_id[label="action_dev_id_not_eq_dev_id"];
+		set_pp_action_next[label="set_pp_action_next"];
+		desc_action_null[label="desc_action_null"];
+		desc_status_self_or_IRQ_DISABLED[label="desc_status_self_or_IRQ_DISABLED"];
+		desc_handler_shutdown_not_null[label="desc_handler_shutdown_not_null"];
+		set_desc_handler_shutdown_irq[label="set_desc_handler_shutdown_irq"];
+		set_desc_handler_disable_irq[label="set_desc_handler_disable_irq"];
+		unlock_desc_lock_flags[label="unlock_desc_lock_flags"];
+		unregister_handler_proc_irq_action[label="unregister_handler_proc_irq_action"];
+		synchronize_irq_irq[label="synchronize_irq_irq"];
+		kfree_action[label="kfree_action"];
+		return[label="return"];
+		unlock_desc_lock[label="unlock_desc_lock"];
+		return[label="return"];
+	}
+		
 }
