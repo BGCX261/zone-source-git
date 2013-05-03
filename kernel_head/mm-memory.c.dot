@@ -174,4 +174,83 @@ digrapch memory_c{
                 return_VM_FAAULT_OOM[label="return_VM_FAAULT_OOM"];
         }
 
+		subgraph cluster_free_pte_range{
+			label="static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd)";
+			set_page_pmd_page_pmd[label="set_page_pmd_page_pmd"];
+			pmd_clear_pmd[label="pmd_clear_pmd"];
+			pte_free_tlb_tlb_page[label="pte_free_tlb_tlb_page"];
+			dec_page_state_nr_page_table_pages[label="dec_page_state_nr_page_table_pages"];
+			dec_tlb_mm_nr_ptes[label="dec_tlb_mm_nr_ptes"];
+		}
+
+		subgraph cluster_free_pmd_range{
+			label="static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud, unsigned long addr, unsigned long end, unsigned long floor, unsigned long ceiling)";
+			set_start_addr[label="set_start_addr"];
+			set_pmd_pmd_offset_pud_addr[label="set_pmd_pmd_offset_pud_addr"];
+			set_next_pmd_addr_end_addr_end[label="set_next_pmd_addr_end_addr_end"];
+			pmd_none_or_clear_bad_pmd_ture[label="pmd_none_or_clear_bad_pmd_ture"];
+			free_pte_range_tlb_pmd[label="free_pte_range_tlb_pmd"];
+			inc_pmd_set_addr_next_addr_not_eq_end[label="inc_pmd_set_addr_next_addr_not_eq_end"];
+			start_self_and_PUD_MASK[label="start_self_and_PUD_MASK"];
+			start_small_floor[label="start_small_floor"];
+			ceiling_not_null[label="ceiling_not_null"];
+			ceiling_self_set_PUD_MASK[label="ceiling_self_set_PUD_MASK"];
+			ceiling_null[label="ceiling_null"];
+			end_sub_1_great_ceiling_sub_1[label="end_sub_1_great_ceiling_sub_1"];
+			set_pmd_pmd_offset_pud_start[label="set_pmd_pmd_offset_pud_start"];
+			pud_clear_pud[label="pud_clear_pud"];
+			pmd_free_tlb_tlb_pmd[label="pmd_free_tlb_tlb_pmd"];
+		}
+
+		
+		subgraph cluster_free_pud_range{
+			label="static inline void free_pud_range(struct mmu_gather *tlb, pgd_t *pgd, unsigned long addr, unsigned long end, unsigned long floor, unsigned long ceiling)";
+			set_start_addr[label="set_start_addr"];
+			set_pud_pud_offset_pgd_addr[label="set_pud_pud_offset_pgd_addr"];
+			set_next_pud_addr_end_addr_end[label="set_next_pud_addr_end_addr_end"];
+			pud_none_or_clear_bad_pud_ture[label="pud_none_or_clear_bad_pud_ture"];
+			free_pte_range_tlb_pud[label="free_pte_range_tlb_pud"];
+			inc_pud_set_addr_next_addr_not_eq_end[label="inc_pud_set_addr_next_addr_not_eq_end"];
+			start_self_and_GPDIR_MASK[label="start_self_and_GPDIR_MASK"];
+			start_small_floor[label="start_small_floor"];
+			ceiling_not_null[label="ceiling_not_null"];
+			ceiling_self_set_GPDIR_MASK[label="ceiling_self_set_GPDIR_MASK"];
+			ceiling_null[label="ceiling_null"];
+			end_sub_1_great_ceiling_sub_1[label="end_sub_1_great_ceiling_sub_1"];
+			set_pud_pud_offset_pgd_start[label="set_pud_pud_offset_pgd_start"];
+			pgd_clear_pgd[label="pgd_clear_pgd"];
+			pud_free_tlb_tlb_pud[label="pud_free_tlb_tlb_pud"];
+		}
+
+		subgraph cluster_free_pgd_range{
+			label="void free_pgd_range(struct mmu_gather **tlb, unsigned long addr, unsigned long end, unsigned long floor, unsigned long ceiling)";
+			addr_self_and_PMD_MASK[label="addr_self_and_PMD_MASK"];
+			addr_small_floor[label="addr_small_floor"];
+			addr_self_add_PMD_SIZE[label="addr_self_add_PMD_SIZE"];
+			addr_null[label="addr_null"];
+			return[label="return"];
+			ceiling_not_null[label="ceiling_not_null"];
+			ceiling_self_and_PMD_MASK[label="ceiling_self_and_PMD_MASK"];
+			ceiling_null[label="ceiling_null"];
+			return[label="return"];
+			end_sub_1_great_ceiling_sub_1[label="end_sub_1_great_ceiling_sub_1"];
+			end_self_sub_PMD_SIZE[label="end_self_sub_PMD_SIZE"];
+			addr_great_end_sub_1[label="addr_great_end_sub_1"];
+			return[label="return"];
+			set_start_addr[label="set_start_addr"];
+			set_pgd_pgd_offset_tlb_mm_addr[label="set_pgd_pgd_offset_tlb_mm_addr"];
+			set_next_pgd_addr_end_addr_end[label="set_next_pgd_addr_end_addr_end"];
+			pgd_none_or_clear_bad_pgd[label="pgd_none_or_clear_bad_pgd"];
+			free_pud_range_tlb_pgd_addr_next_floor_ceiling[label="free_pud_range_tlb_pgd_addr_next_floor_ceiling"];
+			pgd_inc_se_addr_next_addr_not_eq_end[label="pgd_inc_se_addr_next_addr_not_eq_end"];
+			tlb_is_full_mm_tlb_false[label="tlb_is_full_mm_tlb_false"];
+			flush_tlb_pgtables_tlb_mm_start_end[label="flush_tlb_pgtables_tlb_mm_start_end"];
+		}
+
+		subgraph cluster_free_pgtables{
+			label="void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma, unsigned long floor, unsigned long ceiling)";
+			vma_not_null[label="vma_not_null"];
+			set_next_
+		}
+
 }
