@@ -729,6 +729,18 @@ digrapch memory_c{
 			return_ENOMEM[label="return_ENOMEM"];
 			inc_pmd_set_addr_next_addr_not_eq_end[label="inc_pmd_set_addr_next_addr_not_eq_end"];
 			return_0[label="return_0"];
-			
 		}
+
+		subgraph cluster_remap_pud_range{
+			label="static inline int remap_pud_range(struct mm_struct *mm, pud_t *pud, unsigned long addr, unsigned long end, unsigned long pfn, pgprot_t prot)";
+			pfn_self_sub_addr_right_move_PAGE_SHIFT[label="pfn_self_sub_addr_right_move_PAGE_SHIFT"];
+			set_pud_pud_alloc_mm_pud_addr[label="set_pud_pud_alloc_mm_pud_addr"];
+			set_next_pud_addr_end_addr_end[label="set_next_pud_addr_end_addr_end"];
+			remap_pmd_range_mm_pud_addr_next_pfn_add_addr_right_right_move_PAGE_SHIFT_prot_not_null[label="remap_pmd_range_mm_pud_addr_next_pfn_add_addr_right_right_move_PAGE_SHIFT_prot_not_null"];
+			return_ENOMEM[label="return_ENOMEM"];
+			inc_pud_set_addr_next_addr_not_eq_end[label="inc_pud_set_addr_next_addr_not_eq_end"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_
 }
