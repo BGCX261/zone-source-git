@@ -1060,6 +1060,4 @@ digraph slab_c{
 			local_irq_restore_flags[label="local_irq_restore_flags"];
 			return_size[label="return_size"];
 		}
-
-		subgraph cluster_
 }
