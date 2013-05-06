@@ -512,7 +512,16 @@ digraph page_alloc_c{
 
         subgraph cluster___get_page_state{
                 label="void __get_page_state(struct page_state *ret, int nr)";
-                
+                memset_ret_0[label="memset_ret_0"];
+                set_cpu_first_cpu_cpu_online_map[label="set_cpu_first_cpu_cpu_online_map"];
+                cpu_small_NR_CPUS[label="cpu_small_NR_CPUS"];
+                set_in_per_cpu_page_states_cpu[label="set_in_per_cpu_page_states_cpu"];
+                set_cpu_next_cpu_cpu_cpu_online_map[label="set_cpu_next_cpu_cpu_cpu_online_map"];
+                cpu_small_NR_CPUS[label="cpu_small_NR_CPUS"];
+                prefetch_per_cpu_page_states_cpu[label="prefetch_per_cpu_page_states_cpu"];
+                set_out_ret[label="set_out_ret"];
+                for_off_nr[label="for_off_nr"];
+                out_inc_self_add_in_inc[label="out_inc_self_add_in_inc"];
         }
 	
 }
