@@ -509,10 +509,458 @@ digraph page_alloc_c{
                 pages_self_add_pgdat_node_zones_ZONE_HIGHMEM_free_pages[label="pages_self_add_pgdat_node_zones_ZONE_HIGHMEM_free_pages"];
                 return_pages[label="return_pages"];
         }
-
         subgraph cluster___get_page_state{
                 label="void __get_page_state(struct page_state *ret, int nr)";
-                
+                memset_ret_0[label="memset_ret_0"];
+				set_cpu_first_cpu_cpu_online_map[label="set_cpu_first_cpu_cpu_online_map"];
+				cpu_small_NR_CPUS[label="cpu_small_NR_CPUS"];
+				set_in_per_cpu_page_states_cpu[label="set_in_per_cpu_page_states_cpu"];
+				set_cpu_next_cpu_cpu_online_map[label="set_cpu_next_cpu_cpu_online_map"];
+				cpu_small_NR_CPUS[label="cpu_small_NR_CPUS"];
+				prefetch_per_cpu_page_states_cpu[label="prefetch_per_cpu_page_states_cpu"];
+				set_out_ret[label="set_out_ret"];
+				for_off_nr[label="for_off_nr"];
+				out_inc_self_add_in_inc[label="out_inc_self_add_in_inc"];
         }
-	
+
+		subgraph cluster_get_page_state{
+			label="void get_page_state(struct page_state *ret)";
+			set_nr_offsetof_struct_page_state_GET_PAGE_STATE_LAST[label="set_nr_offsetof_struct_page_state_GET_PAGE_STATE_LAST"];
+			nr_self_div_sizeof_unsigned_long[label="nr_self_div_sizeof_unsigned_long"];
+			__get_page_state_ret_nr_add_1[label="__get_page_state_ret_nr_add_1"];
+		}
+
+		subgraph cluster_get_full_page_state{
+			label="void get_full_page_state(struct page_state *ret)";
+			__get_page_state_ret_sizeof_ret_div_sizeof_unsined_long[label="__get_page_state_ret_sizeof_ret_div_sizeof_unsined_long"];
+		}
+
+		subgraph cluster___read_page_state{
+			label="unsigned long __read_page_state(unsigned offset)";
+			for_each_online_cpu_cpu[label="for_each_online_cpu_cpu"];
+			set_in_per_cpu_page_states_cpu_add_offset[label="set_in_per_cpu_page_states_cpu_add_offset"];
+			ret_self_add_in[label="ret_self_add_in"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster___mod_page_state{
+			label="void __mod_page_state(unsigned offset, unsigned long delta)";
+			local_irq_save[label="local_irq_save"];
+			set_ptr___get_cpu_var_page_states[label="set_ptr___get_cpu_var_page_states"];
+			ptr_add_offset_self_add_delta[label="ptr_add_offset_self_add_delta"];
+			local_irq_restore[label="local_irq_restore"];
+		}
+
+		subgraph cluster___get_zone_counts{
+			label="void __get_zone_counts(unsigned long *active, unsigned long *inactive, unsigned long *free, struct pglist_data *pgdat)";
+			set_zones_pgdat_node_zones[label="set_zones_pgdat_node_zones"];
+			set_active_0[label="set_active_0"];
+			set_inactive_0[label="set_inactive_0"];
+			set_free_0[label="set_free_0"];
+			for_i_MAX_NR_ZONES[label="for_i_MAX_NR_ZONES"];
+			active_self_add_zones_i_nr_active[label="active_self_add_zones_i_nr_active"];
+			inactive_self_add_zones_i_nr_inactive[label="inactive_self_add_zones_i_nr_inactive"];
+			free_self_add_zones_i_free_pages[label="free_self_add_zones_i_free_pages"];
+		}
+
+		subgraph cluster_get_zone_counts{
+			label="void get_zone_counts(unsigned long *active, unsigned long *inactive, unsigned long *free)";
+			set_active_0[label="set_active_0"];
+			set_inactive_0[label="set_inactive_0"];
+			set_free_0[label="set_free_0"];
+			for_each_pgdat_pgdat[label="for_each_pgdat_pgdat"];
+			__get_zone_counts_l_m_n_pgdat[label="__get_zone_counts_l_m_n_pgdat"];
+			active_self_add_l[label="active_self_add_l"];
+			inactive_self_add_m[label="inactive_self_add_m"];
+			free_self_add_n[label="free_self_add_n"];
+		}
+
+		subgraph cluster_si_meminfo{
+			label="void si_meminfo(struct sysinfo *val)";
+			set_val_totalram_totalram_pages[label="set_val_totalram_totalram_pages"];
+			set_val_sharedram_0[label="set_val_sharedram_0"];
+			set_val_freeram_nr_free_pages[label="set_val_freeram_nr_free_pages"];
+			set_val_bufferram_nr_blockdev_pages[label="set_val_bufferram_nr_blockdev_pages"];
+			CONFIG_HIGHMEM[label="CONFIG_HIGHMEM"];
+			set_val_totalhigh_totalhigh_pages[label="set_val_totalhigh_totalhigh_pages"];
+			set_val_freehigh_nr_free_highpages[label="set_val_freehigh_nr_free_highpages"];
+			set_val_totalhigh_0[label="set_val_totalhigh_0"];
+			set_val_freehigh_0[label="set_val_freehigh_0"];
+			set_val_mem_unit_PAGE_SIZE[label="set_val_mem_unit_PAGE_SIZE"];
+		}
+
+		subgraph cluster_si_meminfo_node{
+			label="void si_meminfo_node(struct sysinfo *val, int nid)";
+			pgdat_NODE_DATA_nid[label="pgdat_NODE_DATA_nid"];
+			set_val_totalram_pgdat_node_present_pages[label="set_val_totalram_pgdat_node_present_pages"];
+			set_val_freeram_nr_free_pages_pgdat_pgdat[label="set_val_freeram_nr_free_pages_pgdat_pgdat"];
+			set_val_totalhigh_pgdat_node_zones_ZONE_HIGHMEM_present_pages[label="set_val_totalhigh_pgdat_node_zones_ZONE_HIGHMEM_present_pages"];
+			set_val_freehigh_pgdat_node_zones_ZONE_HIGHMEM_free_pages[label="set_val_freehigh_pgdat_node_zones_ZONE_HIGHMEM_free_pages"];
+			set_val_mem_unit_PAGE_SIZE[label="set_val_mem_unit_PAGE_SIZE"];
+		}
+
+		subgraph cluster_build_zonelist_node{
+			label="static int __init build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist, int j, int k)";
+			switch_k[label="switch_k"];
+			default_[label="default_"];
+			BUG[label="BUG"];
+			case_ZONE_HIGHMEM[label="case_ZONE_HIGHMEM"];
+			set_zone_pgdat_node_zones_add_ZONE_HIGHMEM[label="set_zone_pgdat_node_zones_add_ZONE_HIGHMEM"];
+			zone_present_pages_true[label="zone_present_pages_true"];
+			set_zonelist_zone_j_inc_zone[label="set_zonelist_zone_j_inc_zone"];
+			case_ZONE_NORMAL[label="case_ZONE_NORMAL"];
+			set_zone_pgdat_node_zones_add_ZONE_NORMAL[label="set_zone_pgdat_node_zones_add_ZONE_NORMAL"];
+			zone_present_pages_true[label="zone_present_pages_true"];
+			set_zonelist_zone_j_inc_zone[label="set_zonelist_zone_j_inc_zone"];
+			case_ZONE_DMA[label="case_ZONE_DMA"];
+			set_zone_pgdat_node_zones_add_ZONE_DMA[label="set_zone_pgdat_node_zones_add_ZONE_DMA"];
+			zone_present_pages_true[label="zone_present_pages_true"];
+			set_zonelist_zones_j_inc_zone[label="set_zonelist_zones_j_inc_zone"];
+			return_j[label="return_j"];
+		}
+		
+		subgraph cluster_find_next_node{
+			label="static int __init find_next_best_node(int node, nodemask_t *used_node_mask)";
+			set_min_val_INT_MAX[label="set_min_val_INT_MAX"];
+			set_best_node_neg1[label="set_best_node_neg1"];
+			for_each_online_node_i[label="for_each_online_node_i"];
+			set_n_node_add_i_mod_num_online_nodes[label="set_n_node_add_i_mod_num_online_nodes"];
+			node_isset_n_used_node_mask_true[label="node_isset_n_used_node_mask_true"];
+			node_isset_node_used_node_mask_false[label="node_isset_node_used_node_mask_false"];
+			set_best_node_node[label="set_best_node_node"];
+			set_val_node_distance_node_n[label="set_val_node_distance_node_n"];
+			set_tmp_node_to_cpumask_n[label="set_tmp_node_to_cpumask_n"];
+			cpus_empty_tmp_false[label="cpus_empty_tmp_false"];
+			val_self_add_PENALTY_FOR_NODE_WITH_CPUS[label="val_self_add_PENALTY_FOR_NODE_WITH_CPUS"];
+			val_self_multi_MAX_NODE_LOAD_multi_MAX_NUMNODES[label="val_self_multi_MAX_NODE_LOAD_multi_MAX_NUMNODES"];
+			val_self_add_node_load_n[label="val_self_add_node_load_n"];
+			val_small_min_val[label="val_small_min_val"];
+			set_min_val_val[label="set_min_val_val"];
+			set_best_node_n[label="set_best_node_n"];
+			best_node_not_small_0[label="best_node_not_small_0"];
+			node_set_best_node_used_node_mask[label="node_set_best_node_used_node_mask"];
+			return_best_node[label="return_best_node"];
+		}
+
+		subgraph cluster_build_zonelists{
+			label="static void __init build_zonelists(pg_data_t *pgdat)";
+			for_i_GFP_ZONETYPES[label="for_i_GFP_ZONETYPES"];
+			set_zonelist_pgdat_node_zonelist_add_i[label="set_zonelist_pgdat_node_zonelist_add_i"];
+			clear_zonelist_zones_0[label="clear_zonelist_zones_0"];
+			set_local_node_pgdat_node_id[label="set_local_node_pgdat_node_id"];
+			set_load_num_online_nodes[label="set_load_num_online_nodes"];
+			set_prev_node_local_node[label="set_prev_node_local_node"];
+			nodes_clear_used_mask[label="nodes_clear_used_mask"];
+			set_node_find_next_best_node_local_node_used_mask_not_small_0[label="set_node_find_next_best_node_local_node_used_mask_not_small_0"];
+			node_distance_local_node_node_not_eq_node_distance_local_node_prev_node[label="node_distance_local_node_node_not_eq_node_distance_local_node_prev_node"];
+			node_local_node_self_add_load[label="node_local_node_self_add_load"];
+			set_prev_node_node[label="set_prev_node_node"];
+			dec_load[label="dec_load"];
+			for_i_GFP_ZONETYPES[label="for_i_GFP_ZONETYPES"];
+			set_zonelist_pgdat_node_zonelist_add_i[label="set_zonelist_pgdat_node_zonelist_add_i"];
+			for_j_zonelist_zones_j[label="for_j_zonelist_zones_j"];
+			set_k_ZONE_NORMAL[label="set_k_ZONE_NORMAL"];
+			i___GFP_HIGHMEM_set[label="i___GFP_HIGHMEM_set"];
+			set_k_ZONE_HIGHMEM[label="set_k_ZONE_HIGHMEM"];
+			i___GFP_DMA_set[label="i___GFP_DMA_set"];
+			set_k_ZONE_DMA[label="set_k_ZONE_DMA"];
+			set_j_build_zonelist_node_NODE_DATA_node_zonelist_j_k[label="set_j_build_zonelist_node_NODE_DATA_node_zonelist_j_k"];
+			clear_zonelist_zones_j[label="clear_zonelist_zones_j"];
+		}
+
+		subgraph cluster_build_zonelists{
+			label="static void __init build_zonelists(pg_data_t *pgdat)";
+			set_local_node_pgdat_node_id[label="set_local_node_pgdat_node_id"];
+			for_i_GFP_ZONETYPES[label="for_i_GFP_ZONETYPES"];
+			set_zonelist_pgdat_node_zonelists_add_i[label="set_zonelist_pgdat_node_zonelists_add_i"];
+			set_j_0[label="set_j_0"];
+			set_k_ZONE_NORMAL[label="set_k_ZONE_NORMAL"];
+			i___GFP_HIGHMEM_set[label="i___GFP_HIGHMEM_set"];
+			set_k_ZONE_HIGHMEM[label="set_k_ZONE_HIGHMEM"];
+			i___GFP_DMA_set[label="i___GFP_DMA_set"];
+			set_k_ZONE_DMA[label="set_k_ZONE_DMA"];
+			set_j_build_zonelists_node_pgdat_zonelist_j_k[label="set_j_build_zonelists_node_pgdat_zonelist_j_k"];
+			for_node_local_node_add_1_MAX_NUMNODES[label="for_node_local_node_add_1_MAX_NUMNODES"];
+			node_online_node_false[label="node_online_node_false"];
+			set_j_build_zonelists_node_NODE_DATA_node_zonelist_j_k[label="set_j_build_zonelists_node_NODE_DATA_node_zonelist_j_k"];
+			for_node_local_node[label="for_node_local_node"];
+			node_online_node_false[label="node_online_node_false"];
+			set_j_build_zonelists_node_NODE_DATA_node_zonelist_j_k[label="set_j_build_zonelists_node_NODE_DATA_node_zonelist_j_k"];
+			clear_zonelist_zones_j[label="clear_zonelist_zones_j"];
+		}
+
+		subgraph cluster_build_all_zonelist{
+			label="void __init build_all_zonelists(void)";
+			for_each_online_node_i[label="for_each_online_node_i"];
+			build_zonelist_NODE_DATA_i[label="build_zonelist_NODE_DATA_i"];
+			cpuset_init_current_mems_allowed[label="cpuset_init_current_mems_allowed"];
+		}
+
+		subgraph cluster_wait_table_size{
+			label="static inline unsigned long wait_table_size(unsigned long pages)";
+			set_size_1[label="set_size_1"];
+			pages_self_div_PAGES_PER_WAITQUEUE[label="pages_self_div_PAGES_PER_WAITQUEUE"];
+			size_small_pages[label="size_small_pages"];
+			size_self_left_move_1[label="size_self_left_move_1"];
+			set_size_min_size_4096[label="set_size_min_size_4096"];
+			return_max_size_4[label="return_max_size_4"];
+		}
+
+		subgraph cluster_wait_table_bits{
+			label="static inline unsigned long wait_table_bits(unsigned long size)";
+			return_ffz_rever_size[label="return_ffz_rever_size"];
+		}
+
+		subgraph cluster_calculate_zone_total_pages{
+			label="static void __init calculate_zone_totalpages(struct pglist_data *pgdat, unsigned long *zones_size, unsigned long *zholes_size)";
+			set_tatalpages[label="set_tatalpages"];
+			for_i_MAX_NR_ZONES[label="for_i_MAX_NR_ZONES"];
+			totalpages_self_add_zones_size_i[label="totalpages_self_add_zones_size_i"];
+			set_pgdat_node_spanned_pages_totalpages[label="set_pgdat_node_spanned_pages_totalpages"];
+			set_realtotalpages_totalpages[label="set_realtotalpages_totalpages"];
+			zholes_size_true[label="zholes_size_true"];
+			for_i_MAX_NR_ZONES[label="for_i_MAX_NR_ZONES"];
+			realtotalpages_self_sub_zholes_size_i[label="realtotalpages_self_sub_zholes_size_i"];
+			set_pgdat_node_present_pages_realtotalpages[label="set_pgdat_node_present_pages_realtotalpages"];
+		}
+
+		subgraph cluster_memmap_init_zone{
+			label="void __init memmap_init_zone(unsigned long size, int nid, unsigned long zone, unsigned long start_pfn)";
+			set_start_pfn_to_page_start_pfn[label="set_start_pfn_to_page_start_pfn"];
+			for_page_start_start_add_size[label="for_page_start_start_add_size"];
+			set_page_zone_page_NODEZONE_nid_zone[label="set_page_zone_page_NODEZONE_nid_zone"];
+			set_page_count_page_0[label="set_page_count_page_0"];
+			reset_page_mapcount_page[label="reset_page_mapcount_page"];
+			SetPageReserved_page[label="SetPageReserved_page"];
+			INIT_LIST_HEAD_page_lru[label="INIT_LIST_HEAD_page_lru"];
+			WANT_PAGE_VIRTUAL[label="WANT_PAGE_VIRTUAL"];
+			is_highmem_idx_zone_false[label="is_highmem_idx_zone_false"];
+			set_page_address_page__va_start_pfn_left_move_PAGE_SHIFT[label="set_page_address_page__va_start_pfn_left_move_PAGE_SHIFT"];
+			inc_start_pfn[label="inc_start_pfn"];
+		}
+
+		subgraph cluster_zone_init_free_lists{
+			label="void zone_init_free_lists(struct pglist_data *pgdat, struct zone *zone, unsigned long size)";
+			for_order_MAX_ORDER[label="for_order_MAX_ORDER"];
+			INIT_LIST_HEAD_zone_free_area_order_free_list[label="INIT_LIST_HEAD_zone_free_area_order_free_list"];
+			set_zone_free_area_order_nr_free_0[label="set_zone_free_area_order_nr_free_0"];
+		}
+
+		subgraph cluster_free_area_init_core{
+			label="static void __init free_area_init_core(struct pglist_data *pgdat, unsigned long *zones_size, unsigned long *zholes_size)";
+			set_zone_required_alignmemt_1_left_move_MAX_ORDER_sub_1[label="set_zone_required_alignmemt_1_left_move_MAX_ORDER_sub_1"];
+			set_nid_pgdat_node_id[label="set_nid_pgdat_node_id"];
+			set_zone_start_pfn_pgdat_node_start_pfn[label="set_zone_start_pfn_pgdat_node_start_pfn"];
+			set_pgdat_nr_zones_0[label="set_pgdat_nr_zones_0"];
+			init_waitqueue_head_pgdat_kswapd_wait[label="init_waitqueue_head_pgdat_kswapd_wait"];
+			set_pgdat_kswapd_max_order_0[label="set_pgdat_kswapd_max_order_0"];
+			for_j_MAX_NR_ZONES[label="for_j_MAX_NR_ZONES"];
+			set_zone_pgdat_node_zones_add_j[label="set_zone_pgdat_node_zones_add_j"];
+			set_zone_table_NODEZONE_nid_j_zone[label="set_zone_table_NODEZONE_nid_j_zone"];
+			set_realsize_size_zones_size_j[label="set_realsize_size_zones_size_j"];
+			zholes_size_true[label="zholes_size_true"];
+			realsize_self_sub_zholes_size_j[label="realsize_self_sub_zholes_size_j"];
+			j_eq_ZONE_DMA_or_j_eq_ZONE_NORMAL[label="j_eq_ZONE_DMA_or_j_eq_ZONE_NORMAL"];
+			nr_kernel_pages_self_add_realsize[label="nr_kernel_pages_self_add_realsize"];
+			nr_all_pages_self_add_realsize[label="nr_all_pages_self_add_realsize"];
+			set_zone_spanned_pages_size[label="set_zone_spanned_pages_size"];
+			set_zone_present_pages_realsize[label="set_zone_present_pages_realsize"];
+			set_zone_name_zone_names_j[label="set_zone_name_zone_names_j"];
+			lock_init_zone_lock[label="lock_init_zone_lock"];
+			lock_init_zone_lru_lock[label="lock_init_zone_lru_lock"];
+			set_zone_zone_pgdat_pgdat[label="set_zone_zone_pgdat_pgdat"];
+			set_zone_free_pages_0[label="set_zone_free_pages_0"];
+			set_zone_temp_priority_zone_prev_priority_DEF_PRIORITY[label="set_zone_temp_priority_zone_prev_priority_DEF_PRIORITY"];
+			set_batch_zone_present_pages_div_1024[label="set_batch_zone_present_pages_div_1024"];
+			batch_multi_PAGE_SIZE_great_256_multi_1024[label="batch_multi_PAGE_SIZE_great_256_multi_1024"];
+			set_batch_256_multi_1024_div_PAGE_SIZE[label="set_batch_256_multi_1024_div_PAGE_SIZE"];
+			batch_self_div_4[label="batch_self_div_4"];
+			batch_small_1[label="batch_small_1"];
+			set_batch_1[label="set_batch_1"];
+			set_batch_1_left_move_fls_batch_add_batch_div_2_sub_1[label="set_batch_1_left_move_fls_batch_add_batch_div_2_sub_1"];
+			for_cpu_NR_CPUS[label="for_cpu_NR_CPUS"];
+			set_pcp_zone_pageset_cpu_pcp_0[label="set_pcp_zone_pageset_cpu_pcp_0"];
+			set_pcp_count_0[label="set_pcp_count_0"];
+			set_pcp_low_2_multi_batch[label="set_pcp_low_2_multi_batch"];
+			set_pcp_high_6_multi_batch[label="set_pcp_high_6_multi_batch"];
+			set_pcp_batch_1_multi_batch[label="set_pcp_batch_1_multi_batch"];
+			INIT_LIST_HEAD_pcp_list[label="INIT_LIST_HEAD_pcp_list"];
+			set_pcp_zone_pageset_cpu_pcp_1[label="set_pcp_zone_pageset_cpu_pcp_1"];
+			set_pcp_count_0[label="set_pcp_count_0"];
+			set_pcp_low_0[label="set_pcp_low_0"];
+			set_pcp_high_2_multi_batch[label="set_pcp_high_2_multi_batch"];
+			set_pcp_batch_1_multi_batch[label="set_pcp_batch_1_multi_batch"];
+			INIT_LIST_HEAD_pcp_list[label="INIT_LIST_HEAD_pcp_list"];
+			INIT_LIST_HEAD_zone_active_list[label="INIT_LIST_HEAD_zone_active_list"];
+			INIT_LIST_HEAD_zone_inactive_list[label="INIT_LIST_HEAD_zone_inactive_list"];
+			set_zone_nr_scan_active_0[label="set_zone_nr_scan_active_0"];
+			set_zone_nr_scan_inactive_0[label="set_zone_nr_scan_inactive_0"];
+			set_zone_nr_active_0[label="set_zone_nr_active_0"];
+			set_zone_nr_inactive_0[label="set_zone_nr_inactive_0"];
+			size_false[label="size_false"];
+			set_zone_wait_table_size_wait_table_size_size[label="set_zone_wait_table_size_wait_table_size_size"];
+			set_zone_wait_table_bits_wait_table_bits_zone_wait_table_size[label="set_zone_wait_table_bits_wait_table_bits_zone_wait_table_size"];
+			set_zone_wait_table_alloc_bootmem_node_pgdat_zone_wait_table_size_sizeof_wait_queue_head_t[label="set_zone_wait_table_alloc_bootmem_node_pgdat_zone_wait_table_size_sizeof_wait_queue_head_t"];
+			for_i_zone_wait_table_size[label="for_i_zone_wait_table_size"];
+			init_waitqueue_head_zone_wait_table_add_i[label="init_waitqueue_head_zone_wait_table_add_i"];
+			set_pgdat_nr_zones_j_add_1[label="set_pgdat_nr_zones_j_add_1"];
+			set_zone_zone_mem_map_pfn_to_page_zone_start_pfn[label="set_zone_zone_mem_map_pfn_to_page_zone_start_pfn"];
+			set_zone_zone_start_pfn_zone_start_pfn[label="set_zone_zone_start_pfn_zone_start_pfn"];
+			zone_start_pfn_and_zone_required_alignmemt_sub_1_true[label="zone_start_pfn_and_zone_required_alignmemt_sub_1_true"];
+			memmap_init_size_nid_j_zone_start_pfn[label="memmap_init_size_nid_j_zone_start_pfn"];
+			zone_start_pfn_self_add_size[label="zone_start_pfn_self_add_size"];
+			zone_init_free_lists_pgdat_zone_zone_spanned_pages[label="zone_init_free_lists_pgdat_zone_zone_spanned_pages"];
+		}
+
+		subgraph cluster_alloc_node_mem_map{
+			label="static void __init alloc_node_mem_map(struct pglist_data *pgdat)";
+			pgdat_node_mem_map_false[label="pgdat_node_mem_map_false"];
+			set_size_pgdat_node_spanned_pages_add_1_multi_sizeof_struct_page[label="set_size_pgdat_node_spanned_pages_add_1_multi_sizeof_struct_page"];
+			set_pgdat_node_mem_map_alloc_bootmem_node_pgdat_size[label="set_pgdat_node_mem_map_alloc_bootmem_node_pgdat_size"];
+			CONFIG_DISCONTIGMEM[label="CONFIG_DISCONTIGMEM"];
+			pgdat_eq_NODE_DATA_0[label="pgdat_eq_NODE_DATA_0"];
+			set_mem_map_NODE_DATA_0_node_mem_map[label="set_mem_map_NODE_DATA_0_node_mem_map"];
+		}
+
+		subgraph cluster_free_area_init_node{
+			label="void __init free_area_init_node(int nid, struct pglist_data *pgdat, unsigned long *zones_size, unsigned long node_start_pfn, unsigned long *zholes_size)";
+			set_pgdat_node_id_nid[label="set_pgdat_node_id_nid"];
+			set_pgdat_node_start_pfn_node_start_pfn[label="set_pgdat_node_start_pfn_node_start_pfn"];
+			calculate_zone_totalpages_pgdat_zones_size_zholes_size[label="calculate_zone_totalpages_pgdat_zones_size_zholes_size"];
+			alloc_node_mem_map_pgdat[label="alloc_node_mem_map_pgdat"];
+			free_area_init_core_pgdat_zones_size_zholes_size[label="free_area_init_core_pgdat_zones_size_zholes_size"];
+		}
+
+		subgraph cluster_free_area_init{
+			label="void __init free_area_init(unsigned long *zones_size)";
+			free_area_init_node_0_contig_page_data_zones_size__pa_PAGE_OFFSET_right_move_PAGE_SHIFT_NULL[label="free_area_init_node_0_contig_page_data_zones_size__pa_PAGE_OFFSET_right_move_PAGE_SHIFT_NULL"];
+		}
+
+		subgraph cluster_page_alloc_cpu_notify{
+			label="static int page_alloc_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)";
+			set_cpu_hcpu[label="set_cpu_hcpu"];
+			action_eq_CPU_DEAD[label="action_eq_CPU_DEAD"];
+			set_count_per_cpu_nr_pagecache_local_cpu[label="set_count_per_cpu_nr_pagecache_local_cpu"];
+			atomic_add_count_nr_pagecache[label="atomic_add_count_nr_pagecache"];
+			set_count_0[label="set_count_0"];
+			local_irq_disable__drain_pages_cpu[label="local_irq_disable__drain_pages_cpu"];
+			set_dest___get_cpu_var_page_states[label="set_dest___get_cpu_var_page_states"];
+			set_src_pre_cpu_page_states_cpu[label="set_src_pre_cpu_page_states_cpu"];
+			for_i_sizeof_struct_page_state_sizeof_long[label="for_i_sizeof_struct_page_state_sizeof_long"];
+			dest_i_self_add_src_i[label="dest_i_self_add_src_i"];
+			set_src_i_0[label="set_src_i_0"];
+			local_irq_enable[label="local_irq_enable"];
+			return_NOTIFY_OK[label="return_NOTIFY_OK"];
+		}
+
+		subgraph cluster_page_alloc_init{
+			label="void __init page_alloc_init(void)";
+			hotcpu_notifier_page_alloc_cpu_notify_0[label="hotcpu_notifier_page_alloc_cpu_notify_0"];
+		}
+
+		subgraph cluster_setup_per_zone_lowmem_reserve{
+			label="static void setup_per_zone_lowmem_reserve(void)";
+			for_each_pgdat_pgdat[label="for_each_pgdat_pgdat"];
+			for_j_MAX_NR_ZONES[label="for_j_MAX_NR_ZONES"];
+			set_zone_pgdat_node_zones_add_j[label="set_zone_pgdat_node_zones_add_j"];
+			set_present_pages_zone_present_pages[label="set_present_pages_zone_present_pages"];
+			set_zone_lowmem_reserve_j_0[label="set_zone_lowmem_reserve_j_0"];
+			for_idx_j_sub_1_0[label="for_idx_j_sub_1_0"];
+			sysctl_lowmem_reserve_ratio_idx_small_1[label="sysctl_lowmem_reserve_ratio_idx_small_1"];
+			set_sysctl_lowmem_reserve_ratio_idx_1[label="set_sysctl_lowmem_reserve_ratio_idx_1"];
+			set_lower_zone_pgdat_node_zones_add_idx[label="set_lower_zone_pgdat_node_zones_add_idx"];
+			set_lower_zone_lowmem_reserve_j_present_pages_div_sysctl_lowmem_reserve_ratio_idx[label="set_lower_zone_lowmem_reserve_j_present_pages_div_sysctl_lowmem_reserve_ratio_idx"];
+			present_pages_self_add_lower_zone_present_pages[label="present_pages_self_add_lower_zone_present_pages"];
+		}
+
+		subgraph cluster_setup_per_zone_pages_min{
+			label="static void setup_per_zone_pages_min(void)";
+			set_pages_min_min_free_kbytes_right_move_PAGE_SHIFT_sub_10[label="set_pages_min_min_free_kbytes_right_move_PAGE_SHIFT_sub_10"];
+			set_lowmem_pages_0[label="set_lowmem_pages_0"];
+			for_each_zone_zone[label="for_each_zone_zone"];
+			is_highmem_zone_false[label="is_highmem_zone_false"];
+			lowmem_pages_self_add_zone_present_pages[label="lowmem_pages_self_add_zone_present_pages"];
+			for_each_zone_zone[label="for_each_zone_zone"];
+			lock_zone_lru_lock[label="lock_zone_lru_lock"];
+			is_highmem_zone_true[label="is_highmem_zone_true"];
+			set_min_pages_zone_present_pages_div_1024[label="set_min_pages_zone_present_pages_div_1024"];
+			min_pages_small_SWAP_CLUSTER_MAX[label="min_pages_small_SWAP_CLUSTER_MAX"];
+			set_min_pages_SWAP_CLUSTER_MAX[label="set_min_pages_SWAP_CLUSTER_MAX"];
+			min_pages_great_128[label="min_pages_great_128"];
+			set_min_pages_128[label="set_min_pages_128"];
+			set_zone_pages_min_min_pages[label="set_zone_pages_min_min_pages"];
+			set_zone_pages_min_pages_min_multi_zone_present_pages_div_lowmem_pages[label="set_zone_pages_min_pages_min_multi_zone_present_pages_div_lowmem_pages"];
+			set_zone_pages_low_zone_pages_min_multi_5_div_4[label="set_zone_pages_low_zone_pages_min_multi_5_div_4"];
+			set_zone_pages_high_zone_pages_min_multi_6_div_4[label="set_zone_pages_high_zone_pages_min_multi_6_div_4"];
+			unlock_zone_lru_lock[label="unlock_zone_lru_lock"];
+		}
+
+		subgraph cluster_init_per_zone_pages_min{
+			label="static int __init init_per_zone_pages_min(void)";
+			set_lowmem_kbytes_nr_free_buffer_pages_multi_PAGE_SIZE_right_move_10[label="set_lowmem_kbytes_nr_free_buffer_pages_multi_PAGE_SIZE_right_move_10"];
+			set_min_free_kbytes_int_sqrt_lowmem_kbytes_multi_16[label="set_min_free_kbytes_int_sqrt_lowmem_kbytes_multi_16"];
+			min_free_kbytes_small_128[label="min_free_kbytes_small_128"];
+			set_min_free_kbytes_128[label="set_min_free_kbytes_128"];
+			min_free_kbytes_great_65536[label="min_free_kbytes_great_65536"];
+			set_min_free_kbytes_65536[label="set_min_free_kbytes_65536"];
+			setup_per_zone_pages_min[label="setup_per_zone_pages_min"];
+			setup_per_zone_lowmem_reserve[label="setup_per_zone_lowmem_reserve"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_min_free_kbytes_sysctl_handler{
+			label="int min_free_kbytes_sysctl_handler(ctl_table *table, int write, struct file *file, void __user *buffer, size_t *length, loff_t *ppos)";
+			proc_dointvec_table_write_file_buffer_length_ppos[label="proc_dointvec_table_write_file_buffer_length_ppos"];
+			setup_per_zone_pages_min[label="setup_per_zone_pages_min"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_lowmem_reserve_ratio_sysctl_handler{
+			label="int lowmem_reserve_ratio_sysctl_handler(ctl_table *table, int write,struct file *file, void __user *buffer, size_t *length, loff_t *ppos)";
+			proc_diontvec_minmax_table_write_file_buffer_length_ppos[label="proc_diontvec_minmax_table_write_file_buffer_length_ppos"];
+			setup_per_zone_lowmem_reserve[label="setup_per_zone_lowmem_reserve"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_set_hashdist{
+			label="static int __init set_hashdist(char *str)";
+			str_null[label="str_null"];
+			return_0[label="return_0"];
+			set_hashdist_simple_strtoul_str_str_0[label="set_hashdist_simple_strtoul_str_str_0"];
+			return_1[label="return_1"];
+		}
+
+		subgraph cluster_alloc_large_system_hash{
+			label="void *__init alloc_large_system_hash(const char *tablename, unsigned long bucketsize, unsigned long numentries, int scale, int flags, unsigned int *_hash_shift, unsigned int *_hash_mask, unsigned long limit)";
+			set_max_limit[label="set_max_limit"];
+			clear_table[label="clear_table"];
+			numentries_false[label="numentries_false"];
+			set_numentries_nr_all_pages_or_nr_kernel_pages_decide_flags_HASH_HIGHMEM_set[label="set_numentries_nr_all_pages_or_nr_kernel_pages_decide_flags_HASH_HIGHMEM_set"];
+			numentries_self_add_1_left_move_20_sub_PAGE_SHIFT_sub_1[label="numentries_self_add_1_left_move_20_sub_PAGE_SHIFT_sub_1"];
+			numentries_self_right_move_20_sub_PAGE_SHIFT[label="numentries_self_right_move_20_sub_PAGE_SHIFT"];
+			numentries_self_left_move_20_sub_PAGE_SHIFT[label="numentries_self_left_move_20_sub_PAGE_SHIFT"];
+			scale_great_PAGE_SHIFT[label="scale_great_PAGE_SHIFT"];
+			numentries_self_right_move_scale_PAGE_SHIFT[label="numentries_self_right_move_scale_PAGE_SHIFT"];
+			numentries_self_left_move_PAGE_SHIFT_sub_scale[label="numentries_self_left_move_PAGE_SHIFT_sub_scale"];
+			set_numentries_1_left_move_long_log2_numentries_add_1[label="set_numentries_1_left_move_long_log2_numentries_add_1"];
+			max_eq_0[label="max_eq_0"];
+			set_max_nr_all_pages_left_move_PAGE_SHIFT_right_move_4[label="set_max_nr_all_pages_left_move_PAGE_SHIFT_right_move_4"];
+			do_div_max_bucketsize[label="do_div_max_bucketsize"];
+			numentries_great_max[label="numentries_great_max"];
+			set_numentries_max[label="set_numentries_max"];
+			set_log2qty_long_log2_numentries[label="set_log2qty_long_log2_numentries"];
+			set_size_bucketsize_left_move_log2qty[label="set_size_bucketsize_left_move_log2qty"];
+			flags_HASH_EAPLY_set[label="flags_HASH_EAPLY_set"];
+			set_table_alloc_bootmem_size[label="set_table_alloc_bootmem_size"];
+			hashdist_true[label="hashdist_true"];
+			set_table___vmalloc_size_GFP_ATOMIC_PAGE_KERNEL[label="set_table___vmalloc_size_GFP_ATOMIC_PAGE_KERNEL"];
+			for_order_1_left_move_order_left_move_PAGE_SHIFT_small_size[label="for_order_1_left_move_order_left_move_PAGE_SHIFT_small_size"];
+			set_table___get_free_pages_GFP_ATOMIC_order[label="set_table___get_free_pages_GFP_ATOMIC_order"];
+			table_false_and_size_great_PAGE_SIZE_and_dec_log2qty_true[label="table_false_and_size_great_PAGE_SIZE_and_dec_log2qty_true"];
+			_hash_shift_true[label="_hash_shift_true"];
+			set__hash_shift_log2qty[label="set__hash_shift_log2qty"];
+			_hash_mask_true[label="_hash_mask_true"];
+			set__hash_mask_1_left_move_log2qty_sub_1[label="set__hash_mask_1_left_move_log2qty_sub_1"];
+			return_table[label="return_table"];
+		}
 }
