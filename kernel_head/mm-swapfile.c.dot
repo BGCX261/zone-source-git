@@ -446,6 +446,12 @@ digraph swapfile_c{
 
         subgraph cluster_setup_swap_extents{
                 label="static int setup_swap_extents(struct swap_info_struct *sis)";
+                set_inode_sis_swap_file_f_mapping_host[label="set_inode_sis_swap_file_f_mapping_host"];
+                S_ISBLK_inode_i_mode_true[label="S_ISBLK_inode_i_mode_true"];
+                set_ret_add_swap_extent_sis_0_sis_max_0[label="set_ret_add_swap_extent_sis_0_sis_max_0"];
+                goto_done[label="goto_done"];
+                set_blkbits_inode_i_blkbits[label="set_blkbits_inode_i_blkbits"];
+                set_blocks_per_page_PAGE_SIZE_right_blkbits[label="set_blocks_per_page_PAGE_SIZE_right_blkbits"];
                 
         }
 }
