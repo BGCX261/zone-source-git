@@ -449,6 +449,227 @@ digraph mempolicy_c{
 	subgraph cluster___mpol_copy{
 		label="struct mempolicy *__mpol_copy(struct mempolicy *old)";
 		set_new_kmem_cache_alloc_policy_cache_GFP_KERNEL[label="set_new_kmem_cache_alloc_policy_cache_GFP_KERNEL"];
-		
+		new_false[label="new_false"];
+                return_ERR_PTR_ENOMEM[label="return_ERR_PTR_ENOMEM"];
+                set_new_old[label="set_new_old"];
+                atomic_set_new_refcnt_1[label="atomic_set_new_refcnt_1"];
+                new_policy_eq_MPOL_BIND[label="new_policy_eq_MPOL_BIND"];
+                set_sz_ksize_old_v_zonelist[label="set_sz_ksize_old_v_zonelist"];
+                set_new_v_zonlist_kmalloc[label="set_new_v_zonlist_kmalloc"];
+                new_v_zonelist_false[label="new_v_zonelist_false"];
+                kmem_cache_free_policy_cache_new[label="kmem_cache_free_policy_cache_new"];
+                return_ERR_PTR_ENOMEM[label="return_ERR_PTR_ENOMEM"];
+                memcpy_new_v_zonelist_old_v_zonelist[label="memcpy_new_v_zonelist_old_v_zonelist"];
+                return_new[label="return_new"];
 	}
+
+        subgraph cluster___mpol_equal{
+                label="int __mpol_equal(struct mempolicy *a, struct mempolicy *b)";
+                a_false_or_b_false[label="a_false_or_b_false"];
+                return_0[label="return_0"];
+                a_policy_not_eq_b_policy[label="a_policy_not_eq_b_policy"];
+                return_0[label="return_0"];
+                switch_a_policy[label="switch_a_policy"];
+                case_MPOL_DEFAULT[label="case_MPOL_DEFAULT"];
+                return_1[label="return_1"];
+                case_MPOL_INTERLEAVE[label="case_MPOL_INTERLEAVE"];
+                return_bitmap_equal_a_v_nodes_b_v_nodes_MAX_NUMNODES[label="return_bitmap_equal_a_v_nodes_b_v_nodes_MAX_NUMNODES"];
+                case_MPOL_FREFERRED[label="case_MPOL_FREFERRED"];
+                return_a_v_preferred_node_eq_b_v_preferred_node[label="return_a_v_preferred_node_eq_b_v_preferred_node"];
+                case_MPOL_BIND[label="case_MPOL_BIND"];
+                for_i_a_v_zonelist_zones_i[label="for_i_a_v_zonelist_zones_i"];
+                a_v_zonelist_zones_i_not_eq_b_v_zonelist_zones_i[label="a_v_zonelist_zones_i_not_eq_b_v_zonelist_zones_i"];
+                return_0[label="return_0"];
+                return_b_v_zonelist_zones_i_eq_NULL[label="return_b_v_zonelist_zones_i_eq_NULL"];
+                default_[label="default_"];
+                BUG[label="BUG"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster___mpol_free{
+                label="void __mpol_free(struct mempolicy *p)";
+                atomic_dec_and_test_p_refcnt_false[label="atomic_dec_and_test_p_refcnt_false"];
+                return[label="return"];
+                p_policy_eq_MPOL_BIND[label="p_policy_eq_MPOL_BIND"];
+                kfree_p_v_zonelist[label="kfree_p_v_zonelist"];
+                set_p_policy_MPOL_DEFAULT[label="set_p_policy_MPOL_DEFAULT"];
+                kmem_cache_free_policy_cache_p[label="kmem_cache_free_policy_cache_p"];
+        }
+
+        subgraph cluster_mpol_first_node{
+                label="int mpol_first_node(struct vm_area_struct *vma, unsigned long addr)";
+                set_pol_get_vma_policy_vma_addr[label="set_pol_get_vma_policy_vma_addr"];
+                switch_pol_policy[label="switch_pol_policy"];
+                case_MPOL_DEFAULT[label="case_MPOL_DEFAULT"];
+                return_numa_node_id[label="return_numa_node_id"];
+                case_MPOL_BIND[label="case_MPOL_BIND"];
+                return_pol_v_zonelist_zones_0_zone_pgdat_node_id[label="return_pol_v_zonelist_zones_0_zone_pgdat_node_id"];
+                case_MPOL_INTERLEAVE[label="case_MPOL_INTERLEAVE"];
+                return_interleave_nodes_pol[label="return_interleave_nodes_pol"];
+                case_MPOL_PREFERRED[label="case_MPOL_PREFERRED"];
+                return_pol_v_preferred_node_or_numa_node_id_decide_pol_v_preferred_node_[label="return_pol_v_preferred_node_or_numa_node_id_decide_pol_v_preferred_node_"];
+                BUG[label="BUG"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_mpol_node_valid{
+                label="int mpol_node_valid(int nid, struct vm_area_struct *vma, unsigned long addr)";
+                set_pol_get_vma_policy_vma_addr[label="set_pol_get_vma_policy_vma_addr"];
+                switch_pol_policy[label="switch_pol_policy"];
+                case_MPOL_PREFERRED[label="case_MPOL_PREFERRED"];
+                case_MPOL_DEFAULT[label="case_MPOL_DEFAULT"];
+                case_MPOL_INTERLEAVE[label="case_MPOL_INTERLEAVE"];
+                return_1[label="return_1"];
+                case_MPOL_BIND[label="case_MPOL_BIND"];
+                for_z_pol_v_zonelist_zones[label="for_z_pol_v_zonelist_zones"];
+                z_zone_pgdat_zone_id_eq_nid[label="z_zone_pgdat_zone_id_eq_nid"];
+                return_1[label="return_1"];
+                return_0[label="return_0"];
+                default_[label="default_"];
+                BUG[label="BUG"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sp_lookup{
+                label="static struct sp_node *sp_lookup(struct shared_policy *sp, unsigned long start, unsigned long end)";
+                set_n_sp_root_rb_node[label="set_n_sp_root_rb_node"];
+                n_true[label="n_true"];
+                set_p_rb_entry_n_struct_sp_node_nd[label="set_p_rb_entry_n_struct_sp_node_nd"];
+                start_not_small_p_end[label="start_not_small_p_end"];
+                set_n_n_rb_right[label="set_n_n_rb_right"];
+                end_not_great_p_start[label="end_not_great_p_start"];
+                set_n_n_rb_left[label="set_n_n_rb_left"];
+                n_false[label="n_false"];
+                return_NULL[label="return_NULL"];
+                dead_for[label="dead_for"];
+                clear_w_NULL[label="clear_w_NULL"];
+                set_prev_rb_prev_n[label="set_prev_rb_prev_n"];
+                prev_false[label="prev_false"];
+                set_w_rb_entry_prev_struct_sp_node_nd[label="set_w_rb_entry_prev_struct_sp_node_nd"];
+                w_end_not_great_start[label="w_end_not_great_start"];
+                set_n_prev[label="set_n_prev"];
+                return_rb_entry_n_struct_sp_node_nd[label="return_rb_entry_n_struct_sp_node_nd"];
+        }
+
+        subgraph cluster_sp_insert{
+                label="static void sp_insert(struct shared_policy *sp, struct sp_node *new)";
+                set_p_sp_root_rb_node[label="set_p_sp_root_rb_node"];
+                clear_parent_NULL[label="clear_parent_NULL"];
+                p_true[label="p_true"];
+                set_parent_p[label="set_parent_p"];
+                set_nd_rb_entry_parent_struct_sp_node_nd[label="set_nd_rb_entry_parent_struct_sp_node_nd"];
+                new_start_small_nd_start[label="new_start_small_nd_start"];
+                set_p_p_rb_left[label="set_p_p_rb_left"];
+                new_end_great_nd_end[label="new_end_great_nd_end"];
+                set_p_p_rb_right[label="set_p_p_rb_right"];
+                BUG[label="BUG"];
+                rb_link_node_new_nd_parent_p[label="rb_link_node_new_nd_parent_p"];
+                rb_insert_color_new_nd_sp_root[label="rb_insert_color_new_nd_sp_root"];
+        }
+
+        subgraph cluster_mpol_shared_policy_lookup{
+                label="struct mempolicy *mpol_shared_policy_lookup(struct shared_policy *sp, unsigned long idx)";
+                clear_pol[label="clear_pol"];
+                sp_root_rb_node_false[label="sp_root_rb_node_false"];
+                return_NULL[label="return_NULL"];
+                lock_sp_lock[label="lock_sp_lock"];
+                set_sn_sp_lookup_sp_idx_idx_add_1[label="set_sn_sp_lookup_sp_idx_idx_add_1"];
+                sn_true[label="sn_true"];
+                mpol_get_sn_policy[label="mpol_get_sn_policy"];
+                set_pol_sn_policy[label="set_pol_sn_policy"];
+                unlock_sp_lock[label="unlock_sp_lock"];
+                return_pol[label="return_pol"];
+        }
+
+        subgraph cluster_sp_delete{
+                label="static void sp_delete(struct shared_policy *sp, struct sp_node *n)";
+                rb_erase_n_nd_sp_root[label="rb_erase_n_nd_sp_root"];
+                mpol_free_n_policy[label="mpol_free_n_policy"];
+                kmem_cache_free_sn_cache_n[label="kmem_cache_free_sn_cache_n"];
+        }
+
+        subgraph cluster_sp_alloc{
+                label="struct sp_node *sp_alloc(unsigned long start, unsigned long end, struct mempolicy *pol)";
+                set_n_kmem_cache_alloc_sn_cache_GFP_KERNEL[label="set_n_kmem_cache_alloc_sn_cache_GFP_KERNEL"];
+                n_false[label="n_false"];
+                return_NULL[label="return_NULL"];
+                set_n_start_start[label="set_n_start_start"];
+                set_n_end_end[label="set_n_end_end"];
+                mpol_get_pol[label="mpol_get_pol"];
+                set_n_policy_pol[label="set_n_policy_pol"];
+                return_n[label="return_n"];
+        }
+
+        subgraph cluster_shared_policy_replace{
+                label="static int shared_policy_replace(struct shared_policy *sp, unsigned long start, unsigned long end, struct sp_node *new)";
+                clear_new2[label="clear_new2"];
+                set_n_sp_lookup_sp_start_end[label="set_n_sp_lookup_sp_start_end"];
+                n_true_and_n_start_small_end[label="n_true_and_n_start_small_end"];
+                set_next_rb_next_n_nd[label="set_next_rb_next_n_nd"];
+                n_start_not_small_start[label="n_start_not_small_start"];
+                n_end_not_great_end[label="n_end_not_great_end"];
+                sp_delete_sp_n[label="sp_delete_sp_n"];
+                set_n_start_end[label="set_n_start_end"];
+                n_end_great_end[label="n_end_great_end"];
+                new2_false[label="new2_false"];
+                unlock_sp_lock[label="unlock_sp_lock"];
+                set_new2_sp_alloc_end_n_end_n_policy[label="set_new2_sp_alloc_end_n_end_n_policy"];
+                new2_false[label="new2_false"];
+                return_ENOMEM[label="return_ENOMEM"];
+                goto_restart[label="goto_restart"];
+                set_n_end_start[label="set_n_end_start"];
+                sp_insert_sp_new2[label="sp_insert_sp_new2"];
+                clear_NULL[label="clear_NULL"];
+                set_n_end_start[label="set_n_end_start"];
+                next_false[label="next_false"];
+                set_n_rb_entry_next_struct_sp_node_nd[label="set_n_rb_entry_next_struct_sp_node_nd"];
+                new_true[label="new_true"];
+                sp_insert_sp_new[label="sp_insert_sp_new"];
+                unlock_sp_lock[label="unlock_sp_lock"];
+                new2_true[label="new2_true"];
+                mpol_free_new2_policy[label="mpol_free_new2_policy"];
+                kmem_cache_free_sn_cache_new2[label="kmem_cache_free_sn_cache_new2"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_mpol_set_shared_policy{
+                label="int mpol_set_shared_policy(struct shared_policy *info, struct vm_area_struct *vma, struct mempolicy *npol)";
+                clear_new[label="clear_new"];
+                set_sz_vma_pages_vma[label="set_sz_vma_pages_vma"];
+                npol_true[label="npol_true"];
+                set_new_sp_alloc_vma_vm_pgoff_vma_vm_pgoff_add_sz_npol[label="set_new_sp_alloc_vma_vm_pgoff_vma_vm_pgoff_add_sz_npol"];
+                new_false[label="new_false"];
+                return_ENOMEM[label="return_ENOMEM"];
+                set_err_shared_policy_replace_info_vma_vm_pgoff_vma_vm_pgoff_add_sz_new[label="set_err_shared_policy_replace_info_vma_vm_pgoff_vma_vm_pgoff_add_sz_new"];
+                err_true_and_new_true[label="err_true_and_new_true"];
+                kmem_cache_free_sn_cache_new[label="kmem_cache_free_sn_cache_new"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_mpol_free_shared_policy{
+                label="void mpol_free_shared_policy(struct shared_policy *p)";
+                p_root_rb_node_false[label="p_root_rb_node_false"];
+                return[label="return"];
+                lock_p_lock[label="lock_p_lock"];
+                set_next_rb_first_p_root[label="set_next_rb_first_p_root"];
+                next_true[label="next_true"];
+                set_n_rb_entry_next_struct_sp_node_nd[label="set_n_rb_entry_next_struct_sp_node_nd"];
+                set_next_rb_next_n_nd[label="set_next_rb_next_n_nd"];
+                mpol_free_n_policy[label="mpol_free_n_policy"];
+                kmem_cache_free_sn_cache_n[label="kmem_cache_free_sn_cache_n"];
+                unlock_p_lock[label="unlock_p_lock"];
+                set_p_root_RB_ROOT[label="set_p_root_RB_ROOT"];
+        }
+
+        subgraph cluster_numa_policy_init{
+                label="void __init numa_policy_init(void)";
+                set_policy_cache_kmem_cache_create_numa_policy_sizeof_struct_mempolicy_0_SLAB_PANIC_NULL_NULL[label="set_policy_cache_kmem_cache_create_numa_policy_sizeof_struct_mempolicy_0_SLAB_PANIC_NULL_NULL"];
+                set_sn_cache_kmem_cache_create_shared_policy_node_sizeof_struct_sp_node_0_SLAB_PANIC_NULL_NULL[label="set_sn_cache_kmem_cache_create_shared_policy_node_sizeof_struct_sp_node_0_SLAB_PANIC_NULL_NULL"];
+                sys_set_mempolicy_MPOL_INTERLEAVE_nodes_addr_node_online_map_MAX_NUMNODES_small_0[label="sys_set_mempolicy_MPOL_INTERLEAVE_nodes_addr_node_online_map_MAX_NUMNODES_small_0"];
+        }
+
+        subgraph cluster_numa_default_policy{
+                label="void numa_default_policy(void)";
+                sys_set_mempolicy_MPOL_DEFAULT_NULL_0[label="sys_set_mempolicy_MPOL_DEFAULT_NULL_0"];
+        }
 }

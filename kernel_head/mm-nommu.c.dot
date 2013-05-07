@@ -1,0 +1,195 @@
+digraph nommu_c{
+        subgraph cluster_vmtruncate{
+                label="int vmtruncate(struct inode *inode, loff_t offset)";
+                set_mapping_inode_i_mapping[label="set_mapping_inode_i_mapping"];
+                inode_i_size_small_offset[label="inode_i_size_small_offset"];
+                goto_do_expand[label="goto_do_expand"];
+                i_size_write_inode_offset[label="i_size_write_inode_offset"];
+                truncate_inode_pages_mapping_offset[label="truncate_inode_pages_mapping_offset"];
+                goto_out_truncate[label="goto_out_truncate"];
+                set_limit_current_signal_rlim_RLIMIT_FSIZE_rlim_cur[label="set_limit_current_signal_rlim_RLIMIT_FSIZE_rlim_cur"];
+                limit_not_eq_RLIM_INFINITY_and_offset_great_limit[label="limit_not_eq_RLIM_INFINITY_and_offset_great_limit"];
+                goto_out_sig[label="goto_out_sig"];
+                offset_great_inode_i_sb_s_maxbytes[label="offset_great_inode_i_sb_s_maxbytes"];
+                goto_out[label="goto_out"];
+                i_size_write_inode_offset[label="i_size_write_inode_offset"];
+                inode_i_op_true_and_inode_i_op_truncate_true[label="inode_i_op_true_and_inode_i_op_truncate_true"];
+                set_inode_i_op_truncate_inode[label="set_inode_i_op_truncate_inode"];
+                return_0[label="return_0"];
+                send_sig_SIGXFSZ_current_0[label="send_sig_SIGXFSZ_current_0"];
+                return_EFBIG[label="return_EFBIG"];
+        }
+
+        subgraph cluster_kobjsize{
+                label="unsigned int kobjsize(const void *objp)";
+                objp_false_or_set_page_virt_to_page_objp_false[label="objp_false_or_set_page_virt_to_page_objp_false"];
+                return_0[label="return_0"];
+                PageSlab_page_true[label="PageSlab_page_true"];
+                return_ksize_objp[label="return_ksize_objp"];
+                return_PAGE_SIZE_left_move_page_index[label="return_PAGE_SIZE_left_move_page_index"];
+        }
+
+        subgraph cluster_get_user_pages{
+                label="int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start, int len, int write, int force, struct page **pages, struct vm_area_struct **vmas)";
+                for_i_len[label="for_i_len"];
+                pages_true[label="pages_true"];
+                pages_i_virt_to_page_start[label="pages_i_virt_to_page_start"];
+                pages_i_true[label="pages_i_true"];
+                page_cache_get_pages_i[label="page_cache_get_pages_i"];
+                vmas_true[label="vmas_true"];
+                vmas_i_dummy_vma[label="vmas_i_dummy_vma"];
+                start_self_add_PAGE_SIZE[label="start_self_add_PAGE_SIZE"];
+                return_i[label="return_i"];
+        }
+
+        subgraph cluster_vfree{
+                label="void vfree(void *addr)";
+                kfree_addr[label="kfree_addr"];
+        }
+
+        subgraph cluster___vmalloc{
+                label="void *__vmalloc(unsigned long size, unsigned int __nocast gfp_mask, pgprot_t prot)";
+                return_kmalloc_size_gfp_mask_clear___GFP_HIGHMEM[label="return_kmalloc_size_gfp_mask_clear___GFP_HIGHMEM"];
+        }
+
+        subgraph cluster_vmalloc_to_page{
+                label="struct page * vmalloc_to_page(void *addr)";
+                return_virt_to_page_addr[label="return_virt_to_page_addr"];
+        }
+
+        subgraph cluster_vmalloc_to_pfn{
+                label="unsigned long vmalloc_to_pfn(void *addr)";
+                return_page_to_pfn_virt_to_page_addr[label="return_page_to_pfn_virt_to_page_addr"];
+        }
+
+        subgraph cluster_vread{
+                label="long vread(char *buf, char *addr, unsigned long count)";
+                memcpy_buf_addr_count[label="memcpy_buf_addr_count"];
+                return_count[label="return_count"];
+        }
+
+        subgraph cluster_vwrite{
+                label="long vwrite(char *buf, char *addr, unsigned long count)";
+                addr_add_count_small_count[label="addr_add_count_small_count"];
+                set_count_neg_addr[label="set_count_neg_addr"];
+                memcpy_addr_buf_count[label="memcpy_addr_buf_count"];
+                return_count[label="return_count"];
+        }
+
+        subgraph cluster_vmalloc{
+                label="void *vmalloc(unsigned long size)";
+                return___vmalloc_size_GFP_KERNEL_or___GFP_HIGHMEM_PAGE_KERNEL[label="return___vmalloc_size_GFP_KERNEL_or___GFP_HIGHMEM_PAGE_KERNEL"];
+        }
+
+        subgraph cluster_vmalloc_32{
+                label="void *vmalloc_32(unsigned long size)";
+                return___vmalloc_size_GFP_KERNEL_PAGE_KERNLE[label="return___vmalloc_size_GFP_KERNEL_PAGE_KERNLE"];
+        }
+
+        subgraph cluster_vmap{
+                label="void *vmap(struct page **pages, unsigned int count, unsigned long flags, pgprot_t prot)";
+                BUG[label="BUG"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_vunmap{
+                label="void vunmap(void *addr)";
+                BUG[label="BUG"];
+        }
+
+        subgraph cluster_sys_brk{
+                label="asmlinkage unsigned long sys_brk(unsigned long brk)";
+                set_mm_current_mm[label="set_mm_current_mm"];
+                brk_small_mm_start_brk_or_brk_great_mm_context_end_brk[label="brk_small_mm_start_brk_or_brk_great_mm_context_end_brk"];
+                return_mm_brk[label="return_mm_brk"];
+                mm_brk_eq_brk[label="mm_brk_eq_brk"];
+                return_mm_brk[label="return_mm_brk"];
+                brk_not_geat_mm_brk[label="brk_not_geat_mm_brk"];
+                set_mm_brk_brk[label="set_mm_brk_brk"];
+                return_brk[label="return_brk"];
+                return_mm_brk_brk[label="return_mm_brk_brk"];
+        }
+
+        subgraph cluster_find_nommu_vma{
+                label="static inline struct vm_area_struct *find_nommu_vma(unsigned long start)";
+                set_n_nommu_vma_tree_rb_node[label="set_n_nommu_vma_tree_rb_node"];
+                n_true[label="n_true"];
+                set_vma_rb_entry_n_struct_vm_area_struct_vm_rb[label="set_vma_rb_entry_n_struct_vm_area_struct_vm_rb"];
+                start_small_vma_vm_start[label="start_small_vma_vm_start"];
+                set_n_n_rb_left[label="set_n_n_rb_left"];
+                start_great_vma_vm_start[label="start_great_vma_vm_start"];
+                set_n_n_rb_right[label="set_n_n_rb_right"];
+                return_vma[label="return_vma"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_add_nommu_vma{
+                label="static void add_nommu_vma(struct vm_area_struct *vma)";
+                set_p_nommu_vma_tree_rb_node[label="set_p_nommu_vma_tree_rb_node"];
+                clear_parent[label="clear_parent"];
+                vma_vm_file_true[label="vma_vm_file_true"];
+                set_mapping_vma_vm_file_f_mapping[label="set_mapping_vma_vm_file_f_mapping"];
+                flush_dcache_mmap_lock_mapping[label="flush_dcache_mmap_lock_mapping"];
+                vma_prio_tree_insert_vma_mapping_i_mmap[label="vma_prio_tree_insert_vma_mapping_i_mmap"];
+                flush_dcache_mmap_unlock_mapping[label="flush_dcache_mmap_unlock_mapping"];
+                p_true[label="p_true"];
+                set_parent_p[label="set_parent_p"];
+                set_pvma_rb_entry_parent_struct_vm_area_struct_vm_rb[label="set_pvma_rb_entry_parent_struct_vm_area_struct_vm_rb"];
+                vma_vm_start_small_pvma_vm_start[label="vma_vm_start_small_pvma_vm_start"];
+                set_p_p_rb_left[label="set_p_p_rb_left"];
+                vma_vm_start_great_pvma_vm_start[label="vma_vm_start_great_pvma_vm_start"];
+                set_p_p_rb_right[label="set_p_p_rb_right"];
+                vma_small_pvma[label="vma_small_pvma"];
+                set_p_p_rb_left[label="set_p_p_rb_left"];
+                vma_great_pvma[label="vma_great_pvma"];
+                set_p_p_rb_right[label="set_p_p_rb_right"];
+                BUG[label="BUG"];
+                rb_link_node_vma_vm_rb_parent_p[label="rb_link_node_vma_vm_rb_parent_p"];
+                rb_insert_color_vma_vm_rb_nommu_vma_tree[label="rb_insert_color_vma_vm_rb_nommu_vma_tree"];
+        }
+
+        subgraph cluster_delete_nommu_vma{
+                label="static void delete_nommu_vma(struct vm_area_struct *vma)";
+                vma_vm_file_true[label="vma_vm_file_true"];
+                set_mapping_vma_vm_file_f_mapping[label="set_mapping_vma_vm_file_f_mapping"];
+                flush_dcache_mmap_lock_mapping[label="flush_dcache_mmap_lock_mapping"];
+                vma_prio_tree_remove_vma_mapping_i_mmap[label="vma_prio_tree_remove_vma_mapping_i_mmap"];
+                flush_dcache_mmap_unlock_mapping[label="flush_dcache_mmap_unlock_mapping"];
+                rb_erase_vma_vm_rb_nommu_vma_tree[label="rb_erase_vma_vm_rb_nommu_vma_tree"];
+        }
+
+        subgraph cluster_validate_mmap_request{
+                label="static int validate_mmap_request(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long pgoff, unsigned long *_capabilities)";
+                set_reqprot_prot[label="set_reqprot_prot"];
+                flags_MAP_FIXED_set_or_addr_true[label="flags_MAP_FIXED_set_or_addr_true"];
+                return_EINVAL[label="return_EINVAL"];
+                flags_MAP_TYPE_not_eq_MAY_PRIVATE_and_flags_MAP_TYPE_not_eq_MAP_SHARED[label="flags_MAP_TYPE_not_eq_MAY_PRIVATE_and_flags_MAP_TYPE_not_eq_MAP_SHARED"];
+                return_EINVAL[label="return_EINVAL"];
+                PAGE_ALIGN_len_eq_0[label="PAGE_ALIGN_len_eq_0"];
+                return_addr[label="return_addr"];
+                len_great_TASK_SIZE[label="len_great_TASK_SIZE"];
+                return_EINVAL[label="return_EINVAL"];
+                pgoff_add_len_left_move_PAGE_SHIFT_small_pgoff[label="pgoff_add_len_left_move_PAGE_SHIFT_small_pgoff"];
+                return_EINVAL[label="return_EINVAL"];
+                file_true[label="file_true"];
+                file_f_op_false_or_file_f_op_mmap_false[label="file_f_op_false_or_file_f_op_mmap_false"];
+                return_ENODEV[label="return_ENODEV"];
+                set_mapping_file_f_mapping[label="set_mapping_file_f_mapping"];
+                mapping_false[label="mapping_false"];
+                set_mapping_file_f_dentry_d_inode_i_mapping[label="set_mapping_file_f_dentry_d_inode_i_mapping"];
+                set_capabilities_0[label="set_capabilities_0"];
+                mapping_true_and_mapping_backing_dev_info[label="mapping_true_and_mapping_backing_dev_info"];
+                set_capabilities_mapping_backing_dev_info_capabilities[label="set_capabilities_mapping_backing_dev_info_capabilities"];
+                capabilities_false[label="capabilities_false"];
+                switch_file_f_dentry_d_inode_i_mode_S_IFMT_set[label="switch_file_f_dentry_d_inode_i_mode_S_IFMT_set"];
+                case_S_IFREG[label="case_S_IFREG"];
+                case_S_IFBLK[label="case_S_IFBLK"];
+                set_capabilities_BDI_CAP_MAP_COPY[label="set_capabilities_BDI_CAP_MAP_COPY"];
+                case_S_IFCHR[label="case_S_IFCHR"];
+                set_capabilities_BDI_CAP_MAP_DIRECT_or_BDI_CAP_READ_MAP_or_BDI_CAP_WRITE_MAP[label="set_capabilities_BDI_CAP_MAP_DIRECT_or_BDI_CAP_READ_MAP_or_BDI_CAP_WRITE_MAP"];
+                default_[label="default_"];
+                return_EINVAL[label="return_EINVAL"];
+
+                
+        }
+}
