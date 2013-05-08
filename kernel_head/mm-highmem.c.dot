@@ -62,5 +62,99 @@ digraph highmem_c{
 				flush_tlb_kernel_range_PKMAP_ADDR_0_PKMAP_ADDR_LAST_PKMAP[label="flush_tlb_kernel_range_PKMAP_ADDR_0_PKMAP_ADDR_LAST_PKMAP"];
 		}
 
-		
+		subgraph cluster_page_pool_alloc{
+			label="static void *page_pool_alloc(unsigned int __nocast gfp_mask, void *data)";
+			set_gfp_gfp_mask_or_data[label="set_gfp_gfp_mask_or_data"];
+			return_alloc_page_gfp[label="return_alloc_page_gfp"];
+		}
+
+		subgraph cluster_page_pool_free{
+			label="static void page_pool_free(void *page, void *data)";
+			__free_page_page[label="__free_page_page"];
+		}
+
+		subgraph cluster_flush_all_zone_pkmaps{
+			label="static void flush_all_zero_pkmaps(void)";
+			flush_cache_kmaps[label="flush_cache_kmaps"];
+			for_i_LAST_PKMAP[label="for_i_LAST_PKMAP"];
+			pkmap_count_i_not_eq_1[label="pkmap_count_i_not_eq_1"];
+			set_pkmap_count_i_0[label="set_pkmap_count_i_0"];
+			pte_none_pkmap_page_table_i[label="pte_none_pkmap_page_table_i"];
+			BUG[label="BUG"];
+			set_page_pte_page_pkmap_page_table_i[label="set_page_pte_page_pkmap_page_table_i"];
+			pte_clear_init_mm_page_address_page_pkmap_page_table_i[label="pte_clear_init_mm_page_address_page_pkmap_page_table_i"];
+			set_page_address_page_NULL[label="set_page_address_page_NULL"];
+			flush_tlb_kernel_range_PKMAP_ADDR_0_PKMAP_ADDR_LAST_PKMAP[label="flush_tlb_kernel_range_PKMAP_ADDR_0_PKMAP_ADDR_LAST_PKMAP"];
+		}
+
+		subgraph cluster_kunmap_high{
+			label="void fastcall kunmap_high(struct page *page)";
+			lock_kmap_lock[label="lock_kmap_lock"];
+			set_vaddr_page_address_page[label="set_vaddr_page_address_page"];
+			vaddr_false[label="vaddr_false"];
+			set_nr_PKMAP_NR_vaddr[label="set_nr_PKMAP_NR_vaddr"];
+			set_need_wakeup_0[label="set_need_wakeup_0"];
+			dec_pkmap_count_nr[label="dec_pkmap_count_nr"];
+			case_0[label="case_0"];
+			BUG[label="BUG"];
+			case_1[label="case_1"];
+			set_need_wakeup_waitqueue_active_pkmap_map_wait[label="set_need_wakeup_waitqueue_active_pkmap_map_wait"];
+			unlock_kmap_lock[label="unlock_kmap_lock"];
+			need_wakeup[label="need_wakeup"];
+			wake_up_pkmap_map_wait[label="wake_up_pkmap_map_wait"];
+		}
+
+		subgraph cluster_init_emergency_pool{
+			label="static __init int init_emergency_pool(void)";
+			si_meminfo_i[label="si_meminfo_i"];
+			si_swapinfo_i[label="si_swapinfo_i"];
+			i_totalhigh_false[label="i_totalhigh_false"];
+			return_0[label="return_0"];
+			set_page_pool_mempool_creat_POOL_SIZE_page_pool_alloc_page_pool_free_NULL[label="set_page_pool_mempool_creat_POOL_SIZE_page_pool_alloc_page_pool_free_NULL"];
+			page_pool_false[label="page_pool_false"];
+			BUG[label="BUG"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_bounce_copy_vec{
+			label="static void bounce_copy_vec(struct bio_vec *to, unsigned char *vfrom)";
+			local_irq_flags[label="local_irq_flags"];
+			set_vto_kmap_atomic_to_bv_page_KM_BOUNCE_READ[label="set_vto_kmap_atomic_to_bv_page_KM_BOUNCE_READ"];
+			memcpy_vto_add_to_bv_offset_vfrom[label="memcpy_vto_add_to_bv_offset_vfrom"];
+			kunmap_atomic_vto_KM_BOUNCE_READ[label="kunmap_atomic_vto_KM_BOUNCE_READ"];
+			local_irq_flags[label="local_irq_flags"];
+		}
+
+		subgraph cluster_init_emergency_isa_pool{
+			label="int init_emergency_isa_pool(void)";
+			isa_page_pool_true[label="isa_page_pool_true"];
+			return_0[label="return_0"];
+			set_isa_page_pool_mempool_create_ISA_POOL_SIZE_page_pool_alloc_page_pool_free___GFP_DMA[label="set_isa_page_pool_mempool_create_ISA_POOL_SIZE_page_pool_alloc_page_pool_free___GFP_DMA"];
+			isa_page_pool_false[label="isa_page_pool_false"];
+			BUG[label="BUG"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_copy_to_high_bio_irq{
+			label="static void copy_to_high_bio_irq(struct bio *to, struct bio *from)";
+			__bio_for_each_segment_tovec_to_i_0[label="__bio_for_each_segment_tovec_to_i_0"];
+			set_fromvec_from_bi_io_vec_add_i[label="set_fromvec_from_bi_io_vec_add_i"];
+			tovec_bv_page_eq_fromvec_bv_page[label="tovec_bv_page_eq_fromvec_bv_page"];
+			set_vfrom_page_address_fromvec_bv_page_add_tovec_bv_offset[label="set_vfrom_page_address_fromvec_bv_page_add_tovec_bv_offset"];
+			flush_dcache_page_tovec_bv_page[label="flush_dcache_page_tovec_bv_page"];
+			bounce_copy_vec_tovec_vfrom[label="bounce_copy_vec_tovec_vfrom"];
+		}
+
+		subgraph cluster_bounce_end_io{
+			label="static void bounce_end_io(struct bio *bio, mempool_t *pool, int err)";
+			test_bit_BIO_EOPNOTUPP_bio_bi_flags_true[label="test_bit_BIO_EOPNOTUPP_bio_bi_flags_true"];
+			set_bit_BIO_EOPNOTSUPP_bio_orig_bi_flags[label="set_bit_BIO_EOPNOTSUPP_bio_orig_bi_flags"];
+			__bio_for_each_segment_bvec_bio_i_0[label="__bio_for_each_segment_bvec_bio_i_0"];
+			set_org_vec_bio_orig_bi_io_vec_add_i[label="set_org_vec_bio_orig_bi_io_vec_add_i"];
+			bvec_bv_page_eq_org_vec_bv_page[label="bvec_bv_page_eq_org_vec_bv_page"];
+			mempool_free_bvec_bv_page_pool[label="mempool_free_bvec_bv_page_pool"];
+			dec_page_state_nr_bounce[label="dec_page_state_nr_bounce"];
+			bio_endio_bio_orig_bio_orig_bi_size_err[label="bio_endio_bio_orig_bio_orig_bi_size_err"];
+			bio_put_bio[label="bio_put_bio"];
+		}
 }

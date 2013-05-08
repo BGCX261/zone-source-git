@@ -189,7 +189,352 @@ digraph nommu_c{
                 set_capabilities_BDI_CAP_MAP_DIRECT_or_BDI_CAP_READ_MAP_or_BDI_CAP_WRITE_MAP[label="set_capabilities_BDI_CAP_MAP_DIRECT_or_BDI_CAP_READ_MAP_or_BDI_CAP_WRITE_MAP"];
                 default_[label="default_"];
                 return_EINVAL[label="return_EINVAL"];
-
-                
+				file_f_op_get_unmapped_area[label="file_f_op_get_unmapped_area"];
+				clear_capabilities_BDI_CAP_MAP_DIRECT[label="clear_capabilities_BDI_CAP_MAP_DIRECT"];
+				file_f_op_read_false[label="file_f_op_read_false"];
+				clear_capabilities_BDI_CAP_MAP_COPY[label="clear_capabilities_BDI_CAP_MAP_COPY"];
+				flags_MAP_SHARED_set[label="flags_MAP_SHARED_set"];
+				prot_PROT_WRITE_set_and_file_f_mode_FMODE_WRITE_clear[label="prot_PROT_WRITE_set_and_file_f_mode_FMODE_WRITE_clear"];
+				return_EACCES[label="return_EACCES"];
+				IS_APPEND_file_f_dentry_d_inode_true_and_file_f_mode_FMODE_WRITE_set[label="IS_APPEND_file_f_dentry_d_inode_true_and_file_f_mode_FMODE_WRITE_set"];
+				return_EACCES[label="return_EACCES"];
+				locks_verify_locked_file_f_dentry_d_inode_true[label="locks_verify_locked_file_f_dentry_d_inode_true"];
+				return_EAGAIN[label="return_EAGAIN"];
+				capabilities_BDI_CAP_MAP_DIRECT_false[label="capabilities_BDI_CAP_MAP_DIRECT_false"];
+				return_ENODEV[label="return_ENODEV"];
+				prot_PROT_READ_set_and_capabilities_BDI_CAP_READ_MAP_clear_or_prot_PROT_WRITE_set_and_capabilities_BDI_CAP_WRITE_MAP_clear_or_prot_PROT_EXEC_set_and_capabilities_BDI_CAP_EXEC_MAP_clear[label="prot_PROT_READ_set_and_capabilities_BDI_CAP_READ_MAP_clear_or_prot_PROT_WRITE_set_and_capabilities_BDI_CAP_WRITE_MAP_clear_or_prot_PROT_EXEC_set_and_capabilities_BDI_CAP_EXEC_MAP_clear"];
+				return_EINVAL[label="return_EINVAL"];
+				clear_capabilities_BDI_CAP_MAP_COPY[label="clear_capabilities_BDI_CAP_MAP_COPY"];
+				capabilities_BDI_CAP_MAP_COPY_clear[label="capabilities_BDI_CAP_MAP_COPY_clear"];
+				return_ENODEV[label="return_ENODEV"];
+				prot_PROT_WRITE_set[label="prot_PROT_WRITE_set"];
+				clear_capabilities_BDI_CAP_MAP_DIRECT[label="clear_capabilities_BDI_CAP_MAP_DIRECT"];
+				file_f_vfsmnt_mnt_flags_MNT_NOEXEC_set[label="file_f_vfsmnt_mnt_flags_MNT_NOEXEC_set"];
+				prot_PROT_EXEC_set[label="prot_PROT_EXEC_set"];
+				return_EPERM[label="return_EPERM"];
+				prot_PROT_READ_set_and_prot_PROT_EXEC_clear[label="prot_PROT_READ_set_and_prot_PROT_EXEC_clear"];
+				current_personality_READ_IMPLIES_EXEC_set[label="current_personality_READ_IMPLIES_EXEC_set"];
+				capabilities_BDI_CAP_EXEC_MAP_set[label="capabilities_BDI_CAP_EXEC_MAP_set"];
+				prot_self_or_PROT_EXEC[label="prot_self_or_PROT_EXEC"];
+				prot_PROT_READ_set_and_prot_PROT_EXEC_set_and_capabilities_BDI_CAP_EXEC_MAP_clear[label="prot_PROT_READ_set_and_prot_PROT_EXEC_set_and_capabilities_BDI_CAP_EXEC_MAP_clear"];
+				clear_capabilities_BDI_CAP_MAP_DIRECT[label="clear_capabilities_BDI_CAP_MAP_DIRECT"];
+				set_capabilities_BDI_CAP_MAP_COPY[label="set_capabilities_BDI_CAP_MAP_COPY"];
+				prot_PROT_READ_set_and_current_personality_READ_IMPLIES_EXEC_set[label="prot_PROT_READ_set_and_current_personality_READ_IMPLIES_EXEC_set"];
+				prot_self_or_PROT_EXEC[label="prot_self_or_PROT_EXEC"];
+				set_ret_security_file_mmap_file_reqprot_prot_flags[label="set_ret_security_file_mmap_file_reqprot_prot_flags"];
+				ret_small_0[label="ret_small_0"];
+				return_ret[label="return_ret"];
+				set__capabilities_capabilities[label="set__capabilities_capabilities"];
+				return_0[label="return_0"];
         }
+
+		subgraph cluster_determine_vm_flags{
+			label="static unsigned long determine_vm_flags(struct file *file, unsigned long prot, unsigned long flags, unsigned long capabilities)";
+			set_vm_flags_calc_vm_prot_bits_prot_or_calc_vm_flag_bits_flags[label="set_vm_flags_calc_vm_prot_bits_prot_or_calc_vm_flag_bits_flags"];
+			vm_flags_self_or_VM_MAYREAD_VM_MAYWRITE_VM_MAYEXEC[label="vm_flags_self_or_VM_MAYREAD_VM_MAYWRITE_VM_MAYEXEC"];
+			capabilities_BDI_CAP_MAP_DIRECT_clear[label="capabilities_BDI_CAP_MAP_DIRECT_clear"];
+			file_true_and_prot_PROT_WRITE_clear[label="file_true_and_prot_PROT_WRITE_clear"];
+			vm_flags_self_or_VM_MAYSHARE[label="vm_flags_self_or_VM_MAYSHARE"];
+			flags_MAP_SHARED_set[label="flags_MAP_SHARED_set"];
+			vm_flags_self_or_VM_MAYSHARE_or_VM_SHARED[label="vm_flags_self_or_VM_MAYSHARE_or_VM_SHARED"];
+			vm_flags_and_capabilites_xor_vm_flags_and_BDI_CAP_VMFLAGS_eq_0[label="vm_flags_and_capabilites_xor_vm_flags_and_BDI_CAP_VMFLAGS_eq_0"];
+			vm_flags_self_or_VM_MAYSHARE[label="vm_flags_self_or_VM_MAYSHARE"];
+			flags_MAP_PRIVATE_set_and_current_ptrace_PT_PTRACED_set[label="flags_MAP_PRIVATE_set_and_current_ptrace_PT_PTRACED_set"];
+			vm_flags_VM_MAYSHARE_clear[label="vm_flags_VM_MAYSHARE_clear"];
+			return_vm_flags[label="return_vm_flags"];
+		}
+
+		subgraph cluster_do_mmap_shared_file{
+			label="static int do_mmap_shared_file(struct vm_area_struct *vma, unsigned long len)";
+			set_ret_vma_vm_file_f_op_mmap_vma_vm_file_vma[label="set_ret_vma_vm_file_f_op_mmap_vma_vm_file_vma"];
+			ret_not_eq_ENOSYS[label="ret_not_eq_ENOSYS"];
+			return_ret[label="return_ret"];
+			return_ENODEV[label="return_ENODEV"];
+		}
+
+		subgraph cluster_do_mmap_private{
+			label="static int do_mmap_private(struct vm_area_struct *vma, unsigned long len)";
+			vma_vm_file_true[label="vma_vm_file_true"];
+			set_ret_vma_vm_file_f_op_mmap_vma_vm_file_vma[label="set_ret_vma_vm_file_f_op_mmap_vma_vm_file_vma"];
+			ret_not_eq_ENOSYS[label="ret_not_eq_ENOSYS"];
+			return_ret[label="return_ret"];
+			set_base_kmalloc[label="set_base_kmalloc"];
+			base_true[label="base_true"];
+			goto_enomem[label="goto_enomem"];
+			set_vma_vm_start_base[label="set_vma_vm_start_base"];
+			set_vma_vm_end_vma_vm_start_add_len[label="set_vma_vm_end_vma_vm_start_add_len"];
+			vma_vm_flags_self_or_VM_MAPPED_COPY[label="vma_vm_flags_self_or_VM_MAPPED_COPY"];
+			vma_vm_file_true[label="vma_vm_file_true"];
+			set_fops_vma_vm_pgoff[label="set_fops_vma_vm_pgoff"];
+			fpos_self_left_move_PAGE_SHIFT[label="fpos_self_left_move_PAGE_SHIFT"];
+			set_old_fs_get_fs[label="set_old_fs_get_fs"];
+			set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+			set_ret_vma_vm_file_f_op_read_vma_vm_file_base_len_fpos[label="set_ret_vma_vm_file_f_op_read_vma_vm_file_base_len_fpos"];
+			set_fs_old_fs[label="set_fs_old_fs"];
+			ret_small_0[label="ret_small_0"];
+			goto_error_free[label="goto_error_free"];
+			ret_small_len[label="ret_small_len"];
+			memset_base_add_ret_0[label="memset_base_add_ret_0"];
+			memset_base_0[label="memset_base_0"];
+			return_0[label="return_0"];
+			kfree_base[label="kfree_base"];
+			set_vma_vm_start_0[label="set_vma_vm_start_0"];
+			return_ret[label="return_ret"];
+			show_free_areas[label="show_free_areas"];
+			return_ENOMEM[label="return_ENOMEM"];
+		}
+
+		subgraph cluster_do_mmap_pgoff{
+			label="unsigned long do_mmap_pgoff(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long pgoff)";
+			clear_vml[label="clear_vml"];
+			clear_vma[label="clear_vma"];
+			set_ret_validate_mmap_request_file_addr_len_prot_flags_pgoff_capabilities[label="set_ret_validate_mmap_request_file_addr_len_prot_flags_pgoff_capabilities"];
+			return_small_0[label="return_small_0"];
+			return_ret[label="return_ret"];
+			set_vm_flags_determine_vm_flags_file_prot_flags_capabilities[label="set_vm_flags_determine_vm_flags_file_prot_flags_capabilities"];
+			set_vml_kmalloc[label="set_vml_kmalloc"];
+			vml_false[label="vml_false"];
+			goto_error_getting_vml[label="goto_error_getting_vml"];
+			memset_vml_0[label="memset_vml_0"];
+			down_write_nommu_vma_sem[label="down_write_nommu_vma_sem"];
+			vm_flags_VM_MAYSHARE[label="vm_flags_VM_MAYSHARE"];
+			set_pglen_len_add_PAGE_sub_1_right_move_PAGE_SHIFT[label="set_pglen_len_add_PAGE_sub_1_right_move_PAGE_SHIFT"];
+			for_rb_first_nommu_vma_tree_rb_next_sr[label="for_rb_first_nommu_vma_tree_rb_next_sr"];
+			set_vma_rb_entry_rb_struct_vm_area_struct_vm_rb[label="set_vma_rb_entry_rb_struct_vm_area_struct_vm_rb"];
+			vma_vm_flags_VM_MAYSHARE_clear[label="vma_vm_flags_VM_MAYSHARE_clear"];
+			vma_vm_file_f_dentry_d_inode_not_eq_file_f_dentry_d_inode[label="vma_vm_file_f_dentry_d_inode_not_eq_file_f_dentry_d_inode"];
+			vma_vm_pgoff_not_small_pgoff_add_pglen[label="vma_vm_pgoff_not_small_pgoff_add_pglen"];
+			set_vmpglen_vma_vm_end_sub_vma_vm_start_add_PAGE_SIZE_sub_1[label="set_vmpglen_vma_vm_end_sub_vma_vm_start_add_PAGE_SIZE_sub_1"];
+			vmpglen_self_left_move_PAGE_SHIFT[label="vmpglen_self_left_move_PAGE_SHIFT"];
+			pgoff_not_small_vma_vm_pgoff_add_vmpglen[label="pgoff_not_small_vma_vm_pgoff_add_vmpglen"];
+			vma_vm_pgoff_not_eq_pgoff_or_vmpglen_not_eq_pglen[label="vma_vm_pgoff_not_eq_pgoff_or_vmpglen_not_eq_pglen"];
+			capabilities_BDI_CAP_MAP_DIRECT_clear[label="capabilities_BDI_CAP_MAP_DIRECT_clear"];
+			goto_sharing_violation[label="goto_sharing_violation"];
+			atomic_inc_vma_vm_usage[label="atomic_inc_vma_vm_usage"];
+			set_vml_vma_vma[label="set_vml_vma_vma"];
+			set_result_vma_vm_start[label="set_result_vma_vm_start"];
+			goto_shared[label="goto_shared"];
+			clear_vma[label="clear_vma"];
+			file_true_and_file_f_op_get_unmapped_area_true[label="file_true_and_file_f_op_get_unmapped_area_true"];
+			set_addr_file_f_op_get_unmapped_area_file_addr_len_pgoff_flags[label="set_addr_file_f_op_get_unmapped_area_file_addr_len_pgoff_flags"];
+			IS_ERR_addr_true[label="IS_ERR_addr_true"];
+			set_ret_addr[label="set_ret_addr"];
+			ret_not_eq_ENOSYS[label="ret_not_eq_ENOSYS"];
+			goto_error[label="goto_error"];
+			set_ret_ENODEV[label="set_ret_ENODEV"];
+			capabilities_BDI_CAP_MAP_COPY_clear[label="capabilities_BDI_CAP_MAP_COPY_clear"];
+			goto_error[label="goto_error"];
+			clear_capabilities_BDI_CAP_MAP_DIRECT[label="clear_capabilities_BDI_CAP_MAP_DIRECT"];
+			set_vma_kmalloc[label="set_vma_kmalloc"];
+			vma_false[label="vma_false"];
+			goto_error_getting_vma[label="goto_error_getting_vma"];
+			memset_vma_0[label="memset_vma_0"];
+			INIT_LIST_HEAD_vma_anon_vma_node[label="INIT_LIST_HEAD_vma_anon_vma_node"];
+			atomic_set_vma_vm_usage_1[label="atomic_set_vma_vm_usage_1"];
+			file_true[label="file_true"];
+			get_file_file[label="get_file_file"];
+			set_vma_vm_file_file[label="set_vma_vm_file_file"];
+			set_vma_vm_flags_vm_flags[label="set_vma_vm_flags_vm_flags"];
+			set_vma_vm_start_addr[label="set_vma_vm_start_addr"];
+			set_vma_vm_end_addr_add_len[label="set_vma_vm_end_addr_add_len"];
+			set_vma_vm_pgoff_pgoff[label="set_vma_vm_pgoff_pgoff"];
+			set_vml_vma_vma[label="set_vml_vma_vma"];
+			file_true_and_vma_vm_flags_VM_SHARED_set[label="file_true_and_vma_vm_flags_VM_SHARED_set"];
+			set_ret_do_mmap_shared_file_vma_len[label="set_ret_do_mmap_shared_file_vma_len"];
+			set_ret_do_mmap_private_vma_len[label="set_ret_do_mmap_private_vma_len"];
+			ret_small_0[label="ret_small_0"];
+			goto_error[label="goto_error"];
+			set_result_vma_vm_start[label="set_result_vma_vm_start"];
+			vma_vm_flags_VM_MAPPED_COPY_set[label="vma_vm_flags_VM_MAPPED_COPY_set"];
+			realalloc_self_add_kobjsize_result[label="realalloc_self_add_kobjsize_result"];
+			askedalloc_self_add_len[label="askedalloc_self_add_len"];
+			realalloc_self_add_kobjsize_vma[label="realalloc_self_add_kobjsize_vma"];
+			askedalloc_self_add_sizeof_vma[label="askedalloc_self_add_sizeof_vma"];
+			current_mm_total_vm_self_add_len_right_move_PAGE_SHIFT[label="current_mm_total_vm_self_add_len_right_move_PAGE_SHIFT"];
+			add_nommu_vma_vma[label="add_nommu_vma_vma"];
+			realalloc_self_add_kobjsize_vml[label="realalloc_self_add_kobjsize_vml"];
+			askedalloc_self_add_size_vml[label="askedalloc_self_add_size_vml"];
+			set_vml_next_current_mm_context_vmlist[label="set_vml_next_current_mm_context_vmlist"];
+			set_current_mm_context_vmlist_vml[label="set_current_mm_context_vmlist_vml"];
+			up_write_nommu_vma_sem[label="up_write_nommu_vma_sem"];
+			prot_PROT_EXEC_set[label="prot_PROT_EXEC_set"];
+			flush_icache_range_result_result_add_len[label="flush_icache_range_result_result_add_len"];
+			return_result[label="return_result"];
+			up_write_nommu_vma_sem[label="up_write_nommu_vma_sem"];
+			kfree_vml[label="kfree_vml"];
+			vma_true[label="vma_true"];
+			fput_vma_vm_file[label="fput_vma_vm_file"];
+			kfree_vma[label="kfree_vma"];
+			return_ret[label="return_ret"];
+			up_write_nommu_vma_sem[label="up_write_nommu_vma_sem"];
+			kfree_mvl[label="kfree_mvl"];
+			return_EINVAL[label="return_EINVAL"];
+			up_write_nommu_vma_sem[label="up_write_nommu_vma_sem"];
+			kfree_vml[label="kfree_vml"];
+			show_free_areas[label="show_free_areas"];
+			return_ENOMEM[label="return_ENOMEM"];
+			show_free_areas[label="show_free_areas"];
+			return_ENOMEM[label="return_ENOMEM"];
+		}
+
+		subgraph put_vma{
+			label="static void put_vma(struct vm_area_struct *vma)";
+			vma_true[label="vma_true"];
+			down_write_nommu_vma_sem[label="down_write_nommu_vma_sem"];
+			atomic_dec_and_test_vma_vm_usage_true[label="atomic_dec_and_test_vma_vm_usage_true"];
+			delete_nommu_vma_vma[label="delete_nommu_vma_vma"];
+			vma_vm_ops_true_and_vma_vm_ops_close_true[label="vma_vm_ops_true_and_vma_vm_ops_close_true"];
+			vma_vm_ops_close_vma[label="vma_vm_ops_close_vma"];
+			vma_vm_flags_VM_MAPPED_COPY_set[label="vma_vm_flags_VM_MAPPED_COPY_set"];
+			realalloc_self_sub_kobjsize_vma_vm_start[label="realalloc_self_sub_kobjsize_vma_vm_start"];
+			askeddelloc_self_sub_vma_vm_end_sub_vma_vm_start[label="askeddelloc_self_sub_vma_vm_end_sub_vma_vm_start"];
+			kfree_vma_vm_start[label="kfree_vma_vm_start"];
+			realalloc_self_sub_kobjsize_vma[label="realalloc_self_sub_kobjsize_vma"];
+			askedalloc_self_sub_sizeof_vma[label="askedalloc_self_sub_sizeof_vma"];
+			vma_vm_file_true[label="vma_vm_file_true"];
+			fput_vma_vm_file[label="fput_vma_vm_file"];
+			kfree_vma[label="kfree_vma"];
+			up_write_nommu_vma_sem[label="up_write_nommu_vma_sem"];
+		}
+
+		subgraph cluster_do_munmap{
+			label="int do_munmap(struct mm_struct *mm, unsigned long addr, size_t len)";
+			set_end_addr_add_len[label="set_end_addr_add_len"];
+			for_parent_mm_context_vmlist_parent_next[label="for_parent_mm_context_vmlist_parent_next"];
+			parent_vma_vm_start_eq_addr_and_parent_vma_vm_end_eq_end[label="parent_vma_vm_start_eq_addr_and_parent_vma_vm_end_eq_end"];
+			goto_found[label="goto_found"];
+			return_EINVAL[label="return_EINVAL"];
+			set_vml_parent[label="set_vml_parent"];
+			put_vma_vml_vma[label="put_vma_vml_vma"];
+			set_parent_vml_next[label="set_parent_vml_next"];
+			realalloc_self_sub_kobjsize_vml[label="realalloc_self_sub_kobjsize_vml"];
+			askedalloc_self_sub_sizeof_vml[label="askedalloc_self_sub_sizeof_vml"];
+			kfree_vml[label="kfree_vml"];
+			mm_total_vm_self_sub_len_right_PAGE_SHIFT[label="mm_total_vm_self_sub_len_right_PAGE_SHIFT"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_exit_mmap{
+			label="void exit_mmap(struct mm_struct * mm)";
+			mm_true[label="mm_true"];
+			set_mm_total_vm_0[label="set_mm_total_vm_0"];
+			set_tmp_mm_context_vmlist_true[label="set_tmp_mm_context_vmlist_true"];
+			set_mm_context_vmlist_tmp_next[label="set_mm_context_vmlist_tmp_next"];
+			put_vma_tmp_vma[label="put_vma_tmp_vma"];
+			realalloc_self_sub_kobjsize_tmp[label="realalloc_self_sub_kobjsize_tmp"];
+			askedalloc_self_sub_sizeof_tmp[label="askedalloc_self_sub_sizeof_tmp"];
+			kfree_tmp[label="kfree_tmp"];
+		}
+
+		subgraph cluster_sys_munmap{
+			label="asmlinkage long sys_munmap(unsigned long addr, size_t len)";
+			set_mm_current_mm[label="set_mm_current_mm"];
+			down_write_mm_mmap_sem[label="down_write_mm_mmap_sem"];
+			set_ret_do_munmap_mm_addr_len[label="set_ret_do_munmap_mm_addr_len"];
+			up_write_mm_mmap_sem[label="up_write_mm_mmap_sem"];
+			return_ret[label="return_ret"];
+		}
+
+		subgraph cluster_do_brk{
+			label="unsigned long do_brk(unsigned long addr, unsigned long len)";
+			return_ENOMEM[label="return_ENOMEM"];
+		}
+
+		subgraph cluster_do_mremap{
+			label="unsigned long do_mremap(unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr)";
+			clear_vml[label="clear_vml"];
+			new_len_eq_0[label="new_len_eq_0"];
+			return_EINVAL[label="return_EINVAL"];
+			flags_MREMAP_FIXED_set_and_new_addr_not_eq_addr[label="flags_MREMAP_FIXED_set_and_new_addr_not_eq_addr"];
+			return_EINVAL[label="return_EINVAL"];
+			for_vml_current_mm_context_vmlist_vml_next[label="for_vml_current_mm_context_vmlist_vml_next"];
+			vml_vma_vm_start_eq_addr[label="vml_vma_vm_start_eq_addr"];
+			goto_found[label="goto_found"];
+			return_EINVAL[label="return_EINVAL"];
+			vml_vma_vm_end_not_eq_vml_vma_vm_start_add_old_len[label="vml_vma_vm_end_not_eq_vml_vma_vm_start_add_old_len"];
+			return_EFAULT[label="return_EFAULT"];
+			vml_vma_vm_flags_VM_MAYSHARE_set[label="vml_vma_vm_flags_VM_MAYSHARE_set"];
+			return_EPERM[label="return_EPERM"];
+			new_len_great_kobjsize_addr[label="new_len_great_kobjsize_addr"];
+			return_ENOMEM[label="return_ENOMEM"];
+			set_vml_vma_vm_end_vml_vma_vm_start_add_new_len[label="set_vml_vma_vm_end_vml_vma_vm_start_add_new_len"];
+			askedalloc_self_sub_old_len[label="askedalloc_self_sub_old_len"];
+			askedalloc_self_add_new_len[label="askedalloc_self_add_new_len"];
+			return_vml_vma_vm_start[label="return_vml_vma_vm_start"];
+		}
+
+		subgraph cluster_find_vma{
+			label="struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)";
+			for_vml_mm_context_vmlist_vml_next[label="for_vml_mm_context_vmlist_vml_next"];
+			addr_not_small_vml_vma_vm_start_and_addr_small_vml_vma_vm_end[label="addr_not_small_vml_vma_vm_start_and_addr_small_vml_vma_vm_end"];
+			return_vml_vma[label="return_vml_vma"];
+			return_NULL[label="return_NULL"];
+		}
+
+		subgraph cluster_follow_page{
+			label="struct page * follow_page(struct mm_struct *mm, unsigned long addr, int write)";
+			return_NULL[label="return_NULL"];
+		}
+
+		subgraph cluster_find_extend_vma{
+			label="struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)";
+			return_NULL[label="return_NULL"];
+		}
+
+		subgraph cluster_remap_pfn_range{
+			label="int remap_pfn_range(struct vm_area_struct *vma, unsigned long from, unsigned long to, unsigned long size, pgprot_t prot)";
+			return_EPERM[label="return_EPERM"];
+		}
+
+		subgraph cluster_arch_get_unmapped_area{
+			label="unsigned long arch_get_unmapped_area(struct file *file, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags)";
+			return_ENOMEM[label="return_ENOMEM"];
+		}
+
+		subgraph cluster_update_mem_hiwater{
+			label="void update_mem_hiwater(struct task_struct *tsk)";
+			set_rss_get_mm_counter_tsk_mm_rss[label="set_rss_get_mm_counter_tsk_mm_rss"];
+			tsk_mm_true[label="tsk_mm_true"];
+			tsk_mm_hiwater_rr_small_rss[label="tsk_mm_hiwater_rr_small_rss"];
+			set_tsk_mm_hiwater_rss_rss[label="set_tsk_mm_hiwater_rss_rss"];
+			tsk_mm_hiwater_vm_small_tsk_mm_total_vm[label="tsk_mm_hiwater_vm_small_tsk_mm_total_vm"];
+			set_tsk_mm_hiwater_vm_tsk_mm_total_vm[label="set_tsk_mm_hiwater_vm_tsk_mm_total_vm"];
+		}
+
+		subgraph cluster___vm_enough_memory{
+			label="int __vm_enough_memory(long pages, int cap_sys_admin)";
+			vm_acct_memory_pages[label="vm_acct_memory_pages"];
+			sysctl_overcommit_memory_eq_OVERCOMMIT_ALWAYS[label="sysctl_overcommit_memory_eq_OVERCOMMIT_ALWAYS"];
+			return_0[label="return_0"];
+			sysctl_overcommit_memory_eq_OVERCOMMIT_GUESS[label="sysctl_overcommit_memory_eq_OVERCOMMIT_GUESS"];
+			set_free_get_page_cache_size[label="set_free_get_page_cache_size"];
+			free_self_add_nr_swap_pages[label="free_self_add_nr_swap_pages"];
+			free_self_add_atomic_read_slab_reclaim_pages[label="free_self_add_atomic_read_slab_reclaim_pages"];
+			cap_sys_admin_false[label="cap_sys_admin_false"];
+			free_self_sub_free_div_32[label="free_self_sub_free_div_32"];
+			free_great_pages[label="free_great_pages"];
+			return_0[label="return_0"];
+			set_n_nr_free_pages[label="set_n_nr_free_pages"];
+			cap_sys_admin_false[label="cap_sys_admin_false"];
+			n_self_sub_n_div_32[label="n_self_sub_n_div_32"];
+			free_self_add_n[label="free_self_add_n"];
+			free_great_pages[label="free_great_pages"];
+			return_0[label="return_0"];
+			vm_unacct_memory_pages[label="vm_unacct_memory_pages"];
+			return_ENOMEM[label="return_ENOMEM"];
+			set_allowed_totalram_pages_multi_sysctl_overcommit_ratio_div_100[label="set_allowed_totalram_pages_multi_sysctl_overcommit_ratio_div_100"];
+			cap_sys_admin_false[label="cap_sys_admin_false"];
+			allowed_self_sub_allowed_div_32[label="allowed_self_sub_allowed_div_32"];
+			allowed_self_add_total_swap_pages[label="allowed_self_add_total_swap_pages"];
+			allowed_self_sub_current_mm_total_vm_div_32[label="allowed_self_sub_current_mm_total_vm_div_32"];
+			atomic_read_vm_committed_space_small_allowed[label="atomic_read_vm_committed_space_small_allowed"];
+			return_0[label="return_0"];
+			vm_unacct_memory_pages[label="vm_unacct_memory_pages"];
+			return_ENOMEM[label="return_ENOMEM"];
+		}
+
+		subgraph cluster_in_gate_area_no_task{
+			label="int in_gate_area_no_task(unsigned long addr)";
+			return_0[label="return_0"];
+		}
 }
