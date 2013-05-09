@@ -1,0 +1,102 @@
+digraph madvise_c{
+        subgraph cluster_madvise_behavior{
+                label="static long madvise_behavior(struct vm_area_struct * vma, unsigned long start, unsigned long end, int behavior)";
+                set_mm_vma_vm_mm[label="set_mm_vma_vm_mm"];
+                start_not_eq_vma_vm_start[label="start_not_eq_vma_vm_start"];
+                set_error_split_vma_mm_vma_start_1[label="set_error_split_vma_mm_vma_start_1"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                end_not_eq_vma_vm_end[label="end_not_eq_vma_vm_end"];
+                set_error_split_vma_mm_vma_end_0[label="set_error_split_vma_mm_vma_end_0"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                VM_ClearReadHint_vma[label="VM_ClearReadHint_vma"];
+                switch_behavior[label="switch_behavior"];
+                case_MADV_SEQUENTAIL[label="case_MADV_SEQUENTAIL"];
+                vma_vm_flags_self_or_VM_SEQ_READ[label="vma_vm_flags_self_or_VM_SEQ_READ"];
+                case_MADV_RANDOM[label="case_MADV_RANDOM"];
+                vma_vm_flags_self_or_VM_RAND_READ[label="vma_vm_flags_self_or_VM_RAND_READ"];
+                default_[label="default_"];
+                error_not_eq_ENOMEM[label="error_not_eq_ENOMEM"];
+                set_error_EAGAIN[label="set_error_EAGAIN"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_madvise_willneed{
+                label="static long madvise_willneed(struct vm_area_struct * vma, unsigned long start, unsigned long end)";
+                set_file_vma_vm_file[label="set_file_vma_vm_file"];
+                file_false[label="file_false"];
+                return_EBADF[label="return_EBADF"];
+                set_start_start_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff[label="set_start_start_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff"];
+                end_great_vma_vm_end[label="end_great_vma_vm_end"];
+                set_end_vma_vm_end[label="set_end_vma_vm_end"];
+                set_end_end_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff[label="set_end_end_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff"];
+                force_page_cache_readahead_file_f_mapping_file_start_max_sane_readahead_end_sub_start[label="force_page_cache_readahead_file_f_mapping_file_start_max_sane_readahead_end_sub_start"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_madvise_dontneed{
+                label="static long madvise_dontneed(struct vm_area_struct * vma, unsigned long start, unsigned long end)";
+                vma_vm_flags_VM_LOCKED_set_or_is_vm_hugetlb_page_vma_true[label="vma_vm_flags_VM_LOCKED_set_or_is_vm_hugetlb_page_vma_true"];
+                return_EINVAL[label="return_EINVAL"];
+                vma_vm_flags_VM_NONLINEAR_set[label="vma_vm_flags_VM_NONLINEAR_set"];
+                set_details_nonlinear_vma_vma_last_index_ULONG_MAX[label="set_details_nonlinear_vma_vma_last_index_ULONG_MAX"];
+                zap_page_range_vma_start_end_sub_start_details[label="zap_page_range_vma_start_end_sub_start_details"];
+                zap_page_range_vma_start_end_sub_start_NULL[label="zap_page_range_vma_start_end_sub_start_NULL"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_madvise_vma{
+                label="static long madvise_vma(struct vm_area_struct * vma, unsigned long start, unsigned long end, int behavior)";
+                set_error_EBADF[label="set_error_EBADF"];
+                switch_behavior[label="switch_behavior"];
+                case_MADV_NORMAL[label="case_MADV_NORMAL"];
+                case_MADV_SEQUENTAIL[label="case_MADV_SEQUENTAIL"];
+                case_MADV_RADOM[label="case_MADV_RADOM"];
+                set_error_madvise_behavior_vma_start_end_behavior[label="set_error_madvise_behavior_vma_start_end_behavior"];
+                case_MADV_WILLNEED[label="case_MADV_WILLNEED"];
+                set_error_madvise_villneed_vma_start_end[label="set_error_madvise_villneed_vma_start_end"];
+                case_MADV_DONTNEED[label="case_MADV_DONTNEED"];
+                set_error_madvise_dontneed_vma_start_end[label="set_error_madvise_dontneed_vma_start_end"];
+                default_[label="default_"];
+                set_error_EIVNAL[label="set_error_EIVNAL"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_madvise{
+                label="asmlinkage long sys_madvise(unsigned long start, size_t len_in, int behavior)";
+                set_unmapped_error_0[label="set_unmapped_error_0"];
+                down_write_current_mm_mmap_sem[label="down_write_current_mm_mmap_sem"];
+                set_len_len_in_add_rever_PAGE_MASK_and_PAGE_MASK[label="set_len_len_in_add_rever_PAGE_MASK_and_PAGE_MASK"];
+                len_in_true_and_len_false[label="len_in_true_and_len_false"];
+                goto_out[label="goto_out"];
+                set_end_start_add_len[label="set_end_start_add_len"];
+                end_small_start[label="end_small_start"];
+                goto_out[label="goto_out"];
+                set_error_0[label="set_error_0"];
+                end_eq_start[label="end_eq_start"];
+                goto_out[label="goto_out"];
+                set_vma_find_vma_current_mm_start[label="set_vma_find_vma_current_mm_start"];
+                dead_for[label="dead_for"];
+                set_error_ENOMEM[label="set_error_ENOMEM"];
+                vma_false[label="vma_false"];
+                goto_out[label="goto_out"];
+                start_small_vma_vm_start[label="start_small_vma_vm_start"];
+                set_unmapped_error_ENOMEM[label="set_unmapped_error_ENOMEM"];
+                set_start_vma_vm_start[label="set_start_vma_vm_start"];
+                end_not_great_vma_vm_end[label="end_not_great_vma_vm_end"];
+                start_small_end[label="start_small_end"];
+                set_error_madvise_vma_vma_start_end_behavior[label="set_error_madvise_vma_vma_start_end_behavior"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_error_unmapped_error[label="set_error_unmapped_error"];
+                goto_out[label="goto_out"];
+                set_error_madvvise_vma_vma_start_vma_vm_end_behavior[label="set_error_madvvise_vma_vma_start_vma_vm_end_behavior"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_start_vma_vm_end[label="set_start_vma_vm_end"];
+                set_vma_vma_vm_next[label="set_vma_vma_vm_next"];
+                up_write_current_mm_mmap_sem[label="up_write_current_mm_mmap_sem"];
+                return_error[label="return_error"];
+        }
+}

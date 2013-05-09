@@ -1,0 +1,156 @@
+digraph mprotect_c{
+        subgraph cluster_change_pte_range{
+                label="static void change_pte_range(struct mm_struct *mm, pmd_t *pmd, unsigned long addr, unsigned long end, pgprot_t newprot)";
+                set_pte_pte_offset_map_pmd_addr[label="set_pte_pte_offset_map_pmd_addr"];
+                pte_present_pte_true[label="pte_present_pte_true"];
+                set_ptent_pte_modify_ptep_get_and_get_mm_addr_pte_newprot[label="set_ptent_pte_modify_ptep_get_and_get_mm_addr_pte_newprot"];
+                set_pte_at_mm_addr_pte_ptent[label="set_pte_at_mm_addr_pte_ptent"];
+                lazy_mmu_prot_update_ptent[label="lazy_mmu_prot_update_ptent"];
+                inc_pte_addr_self_add_PAGE_SIZE_addr_not_eq_end[label="inc_pte_addr_self_add_PAGE_SIZE_addr_not_eq_end"];
+                pte_unmap_pte_sub_1[label="pte_unmap_pte_sub_1"];
+        }
+
+        subgraph cluster_change_pmd_range{
+                label="static inline void change_pmd_range(struct mm_struct *mm, pud_t *pud, unsigned long addr, unsigned long end, pgprot_t newprot)";
+                set_pmd_pmd_offset_pud_addr[label="set_pmd_pmd_offset_pud_addr"];
+                set_next_pmd_addr_end_addr_end[label="set_next_pmd_addr_end_addr_end"];
+                pmd_none_or_clear_bad_pmd_true[label="pmd_none_or_clear_bad_pmd_true"];
+                change_pte_range_mm_pmd_addr_next_newprot[label="change_pte_range_mm_pmd_addr_next_newprot"];
+                inc_pmd_set_addr_next_addr_not_eq_end[label="inc_pmd_set_addr_next_addr_not_eq_end"];
+        }
+
+        subgraph cluster_change_pud_range{
+                label="static inline void change_pud_range(struct mm_struct *mm, pgd_t *pgd, unsigned long addr, unsigned long end, pgprot_t newprot)";
+                set_pud_pud_offset_pgd_addr[label="set_pud_pud_offset_pgd_addr"];
+                set_next_pud_addr_end_addr_end[label="set_next_pud_addr_end_addr_end"];
+                pud_none_or_clear_bad_pud_true[label="pud_none_or_clear_bad_pud_true"];
+                change_pmd_range_mm_pud_addr_next_newprot[label="change_pmd_range_mm_pud_addr_next_newprot"];
+                inc_pud_set_addr_next_addr_not_eq_end[label="inc_pud_set_addr_next_addr_not_eq_end"];
+        }
+
+        subgraph cluster_change_protection{
+                label="static void change_protection(struct vm_area_struct *vma, unsigned long addr, unsigned long end, pgprot_t newprot)";
+                set_mm_vma_vm_mm[label="set_mm_vma_vm_mm"];
+                set_start_addr[label="set_start_addr"];
+                set_pgd_pgd_offset_mm_addr[label="set_pgd_pgd_offset_mm_addr"];
+                flush_cache_range_vma_addr_end[label="flush_cache_range_vma_addr_end"];
+                lock_mm_page_table_lock[label="lock_mm_page_table_lock"];
+                set_next_pgd_addr_end_addr_end[label="set_next_pgd_addr_end_addr_end"];
+                pgd_none_or_clear_bad_pgd_true[label="pgd_none_or_clear_bad_pgd_true"];
+                change_pud_range_mm_pgd_addr_next_newprot[label="change_pud_range_mm_pgd_addr_next_newprot"];
+                inc_pgd_set_addr_next_addr_not_eq_end[label="inc_pgd_set_addr_next_addr_not_eq_end"];
+                flush_tlb_range_vma_start_end[label="flush_tlb_range_vma_start_end"];
+                unlock_mm_page_table_lock[label="unlock_mm_page_table_lock"];
+        }
+
+        subgraph cluster_mprotect_fixup{
+                label="static int mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev, unsigned long start, unsigned long end, unsigned long newflags)";
+                set_mm_vma_vm_mm[label="set_mm_vma_vm_mm"];
+                set_oldfags_vma_vm_flags[label="set_oldfags_vma_vm_flags"];
+                set_nrpages_end_sub_start_right_move_PAGE_SHIFT[label="set_nrpages_end_sub_start_right_move_PAGE_SHIFT"];
+                set_charged_0[label="set_charged_0"];
+                newflags_eq_oldflags[label="newflags_eq_oldflags"];
+                set_pprev_vma[label="set_pprev_vma"];
+                return_0[label="return_0"];
+                newflags_VM_WRITE_set[label="newflags_VM_WRITE_set"];
+                oldflags_VM_ACCOUNT_VM_WRITE_VM_SHARED_VM_HUGETLB_clear[label="oldflags_VM_ACCOUNT_VM_WRITE_VM_SHARED_VM_HUGETLB_clear"];
+                set_charged_nrpages[label="set_charged_nrpages"];
+                security_vm_enough_memory_charged_true[label="security_vm_enough_memory_charged_true"];
+                return_ENOMEM[label="return_ENOMEM"];
+                newflags_self_or_VM_ACCOUNT[label="newflags_self_or_VM_ACCOUNT"];
+                set_newprot_protection_map_newflags_and_0xf[label="set_newprot_protection_map_newflags_and_0xf"];
+                set_pgoff_vma_vm_pgoff_add_start_sub_vma_vm_start_right_move_PAGE_SHIFT[label="set_pgoff_vma_vm_pgoff_add_start_sub_vma_vm_start_right_move_PAGE_SHIFT"];
+                set_pprev_vma_merge_mm_pprev_start_end_newflags_vma_anon_vma_vma_vm_file_pgoff_vma_policy_vma[label="set_pprev_vma_merge_mm_pprev_start_end_newflags_vma_anon_vma_vma_vm_file_pgoff_vma_policy_vma"];
+                pprev_false[label="pprev_false"];
+                set_vma_pprev[label="set_vma_pprev"];
+                goto_success[label="goto_success"];
+                set_pprev_vma[label="set_pprev_vma"];
+                start_not_eq_vma_vm_start[label="start_not_eq_vma_vm_start"];
+                set_error_split_vma_mm_vma_start_1[label="set_error_split_vma_mm_vma_start_1"];
+                error_true[label="error_true"];
+                goto_fail[label="goto_fail"];
+                end_not_eq_vma_vm_end[label="end_not_eq_vma_vm_end"];
+                set_error_split_vma_mm_vma_end_0[label="set_error_split_vma_mm_vma_end_0"];
+                error_true[label="error_true"];
+                goto_fail[label="goto_fail"];
+                set_vma_vm_flags_newflags[label="set_vma_vm_flags_newflags"];
+                set_vma_vm_page_prot_newprot[label="set_vma_vm_page_prot_newprot"];
+                change_protection_vma_start_end_newprot[label="change_protection_vma_start_end_newprot"];
+                __vm_stat_account_mm_oldflags_vma_vm_file_neg_nrpages[label="__vm_stat_account_mm_oldflags_vma_vm_file_neg_nrpages"];
+                __vm_stat_account_mm_newflags_vma_vm_file_nrgpages[label="__vm_stat_account_mm_newflags_vma_vm_file_nrgpages"];
+                return_0[label="return_0"];
+                vm_unacct_memory_charged[label="vm_unacct_memory_charged"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_mprotect{
+                label="asmlinkage long sys_mprotect(unsigned long start, size_t len, unsigned long prot)";
+                set_error_EINVAL[label="set_error_EINVAL"];
+                set_grows_prot_and_PROT_GROWSDOWN_PROT_GROWSUP[label="set_grows_prot_and_PROT_GROWSDOWN_PROT_GROWSUP"];
+                prot_clear_PROT_GROWSDOWN_PROT_GROWSUP[label="prot_clear_PROT_GROWSDOWN_PROT_GROWSUP"];
+                grows_eq_PROT_GROWSDOWN_PROT_GROWSUP[label="grows_eq_PROT_GROWSDOWN_PROT_GROWSUP"];
+                return_EINVAL[label="return_EINVAL"];
+                start_PAGE_MASK_clear[label="start_PAGE_MASK_clear"];
+                return_EINVAL[label="return_EINVAL"];
+                len_false[label="len_false"];
+                return_0[label="return_0"];
+                set_len_PAGE_ALIGN_len[label="set_len_PAGE_ALIGN_len"];
+                set_end_start_add_len[label="set_end_start_add_len"];
+                end_not_great_start[label="end_not_great_start"];
+                return_ENOMEM[label="return_ENOMEM"];
+                prot_PROT_READ_PROT_WRITE_PROT_EXEC_PROT_SEM_clear[label="prot_PROT_READ_PROT_WRITE_PROT_EXEC_PROT_SEM_clear"];
+                return_EINVAL[label="return_EINVAL"];
+                set_reqprot_prot[label="set_reqprot_prot"];
+                prot_PROT_READ_set_and_current_personality_READ_IMPLIES_EXEC_set[label="prot_PROT_READ_set_and_current_personality_READ_IMPLIES_EXEC_set"];
+                prot_self_or_PROT_EXEC[label="prot_self_or_PROT_EXEC"];
+                set_vm_flags_calc_vm_prot_bits_prot[label="set_vm_flags_calc_vm_prot_bits_prot"];
+                down_flags_current_mm_mmap_sem[label="down_flags_current_mm_mmap_sem"];
+                set_vma_find_vma_prev_current_mm_start_prev[label="set_vma_find_vma_prev_current_mm_start_prev"];
+                set_error_ENOMEM[label="set_error_ENOMEM"];
+                vma_false[label="vma_false"];
+                goto_out[label="goto_out"];
+                grows_PROT_GROWSDOWN_set[label="grows_PROT_GROWSDOWN_set"];
+                vma_vm_start_not_small_end[label="vma_vm_start_not_small_end"];
+                goto_out[label="goto_out"];
+                set_start_vma_vm_start[label="set_start_vma_vm_start"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                vma_vm_flags_VM_GROWSDOWN_clear[label="vma_vm_flags_VM_GROWSDOWN_clear"];
+                goto_out[label="goto_out"];
+                vma_vm_start_great_start[label="vma_vm_start_great_start"];
+                grows_PROT_GROWSUP_set[label="grows_PROT_GROWSUP_set"];
+                set_end_vma_vm_end[label="set_end_vma_vm_end"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                vma_vm_flags_VM_GROWSUP_clear[label="vma_vm_flags_VM_GROWSUP_clear"];
+                goto_out[label="goto_out"];
+                start_great_vma_vm_start[label="start_great_vma_vm_start"];
+                set_prev_vma[label="set_prev_vma"];
+                for_nstart_start[label="for_nstart_start"];
+                is_vm_hugetlb_page_vma_true[label="is_vm_hugetlb_page_vma_true"];
+                set_error_EACCES[label="set_error_EACCES"];
+                goto_out[label="goto_out"];
+                set_newflags_vm_flags_or_vma_vm_flags_except_VM_READ_VM_WRITE_VM_EXEC[label="set_newflags_vm_flags_or_vma_vm_flags_except_VM_READ_VM_WRITE_VM_EXEC"];
+                newflags_newflags_left_move_4_clear_and_0xf_true[label="newflags_newflags_left_move_4_clear_and_0xf_true"];
+                set_error_EACCES[label="set_error_EACCES"];
+                goto_out[label="goto_out"];
+                set_error_security_file_mprotect_vma_reqprot_prot[label="set_error_security_file_mprotect_vma_reqprot_prot"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_tmp_vma_vm_end[label="set_tmp_vma_vm_end"];
+                tmp_great_end[label="tmp_great_end"];
+                set_tmp_end[label="set_tmp_end"];
+                set_error_mprotect_fixup_vma_prev_nstart_tmp_newflags[label="set_error_mprotect_fixup_vma_prev_nstart_tmp_newflags"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_nstart_tmp[label="set_nstart_tmp"];
+                nstart_small_prev_vm_end[label="nstart_small_prev_vm_end"];
+                set_nstart_prev_vm_end[label="set_nstart_prev_vm_end"];
+                nstart_not_small_end[label="nstart_not_small_end"];
+                goto_out[label="goto_out"];
+                set_vma_prev_vm_next[label="set_vma_prev_vm_next"];
+                vma_false_or_vma_vm_start_not_eq_nstart[label="vma_false_or_vma_vm_start_not_eq_nstart"];
+                set_error_ENOMEM[label="set_error_ENOMEM"];
+                goto_out[label="goto_out"];
+                up_write_current_mm_mmap_sem[label="up_write_current_mm_mmap_sem"];
+                return_error[label="return_error"];
+        }
+}
