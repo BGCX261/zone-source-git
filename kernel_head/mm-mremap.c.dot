@@ -1,0 +1,20 @@
+digraph mremap_c{
+        subgraph cluster_get_one_pte_map_nested{
+                label="static pte_t *get_one_pte_map_nested(struct mm_struct *mm, unsigned long addr)";
+                clear_pte[label="clear_pte"];
+                set_pgd_pgd_offset_mm_addr[label="set_pgd_pgd_offset_mm_addr"];
+                pgd_none_or_clear_bad_pgd_true[label="pgd_none_or_clear_bad_pgd_true"];
+                goto_end[label="goto_end"];
+                set_pud_pud_offset_pgd_addr[label="set_pud_pud_offset_pgd_addr"];
+                pud_none_or_clear_bad_pud_true[label="pud_none_or_clear_bad_pud_true"];
+                goto_end[label="goto_end"];
+                set_pmd_pmd_offset_pud_addr[label="set_pmd_pmd_offset_pud_addr"];
+                pmd_none_or_clear_bad_pmd_true[label="pmd_none_or_clear_bad_pmd_true"];
+                goto_end[label="goto_end"];
+                set_pte_pte_offset_map_nested_pmd_addr[label="set_pte_pte_offset_map_nested_pmd_addr"];
+                pte_none_pte_true[label="pte_none_pte_true"];
+                pte_unmap_nested_pte[label="pte_unmap_nested_pte"];
+                clear_pte[label="clear_pte"];
+                return_pte[label="return_pte"];
+        }
+}
