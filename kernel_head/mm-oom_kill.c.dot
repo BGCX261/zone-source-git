@@ -1,0 +1,112 @@
+digraph oom_kill_c{
+	subgraph cluster_badness{
+		label="unsigned long badness(struct task_struct *p, unsigned long uptime)";
+		p_mm_false[label="p_mm_false"];
+		return_0[label="return_0"];
+		set_points_p_mm_total_vm[label="set_points_p_mm_total_vm"];
+		list_for_each_tsk_p_children[label="list_for_each_tsk_p_children"];
+		set_chld_list_entry_tsk_struct_task_struct_sibling[label="set_chld_list_entry_tsk_struct_task_struct_sibling"];
+		chld_mm_not_eq_p_mm_chld_mm_true[label="chld_mm_not_eq_p_mm_chld_mm_true"];
+		points_self_add_chld_mm_total_vm[label="points_self_add_chld_mm_total_vm"];
+		set_cpu_time_cputime_to_jiffies_p_utime_add_cputime_to_jiffies_p_stime_right_move_SHIFT_HZ_add_3[label="set_cpu_time_cputime_to_jiffies_p_utime_add_cputime_to_jiffies_p_stime_right_move_SHIFT_HZ_add_3"];
+		uptime_not_small_p_start_time_tv_sec[label="uptime_not_small_p_start_time_tv_sec"];
+		set_run_time_uptime_sub_p_start_time_tv_sec_right_move_10[label="set_run_time_uptime_sub_p_start_time_tv_sec_right_move_10"];
+		set_run_time_0[label="set_run_time_0"];
+		set_s_int_sqrt_cpu_time[label="set_s_int_sqrt_cpu_time"];
+		s_true[label="s_true"];
+		points_self_div_s[label="points_self_div_s"];
+		set_s_int_sqrt_int_sqrt_run_time[label="set_s_int_sqrt_int_sqrt_run_time"];
+		s_true[label="s_true"];
+		points_self_div_s[label="points_self_div_s"];
+		task_nice_p_great_0[label="task_nice_p_great_0"];
+		points_self_multi_2[label="points_self_multi_2"];
+		cap_t_p_cap_effective_and_CAP_TO_MASK_CAP_SYS_ADMIN_true_or_p_uid_eq_0_or_p_euid_eq_0[label="cap_t_p_cap_effective_and_CAP_TO_MASK_CAP_SYS_ADMIN_true_or_p_uid_eq_0_or_p_euid_eq_0"];
+		points_self_div_4[label="points_self_div_4"];
+		cap_t_p_cap_effective_and_CAP_TO_MASK_CAP_SYS_RAWIO_true[label="cap_t_p_cap_effective_and_CAP_TO_MASK_CAP_SYS_RAWIO_true"];
+		points_self_div_4[label="points_self_div_4"];
+		p_oomkilladj_true[label="p_oomkilladj_true"];
+		p_oomkilladj_great_0[label="p_oomkilladj_great_0"];
+		points_self_left_move_p_oomkilladj[label="points_self_left_move_p_oomkilladj"];
+		points_self_right_move_p_oomkilladj[label="points_self_right_move_p_oomkilladj"];
+		return_points[label="return_points"];
+	}
+
+	subgraph cluster_select_bad_process{
+		label="static struct task_struct * select_bad_process(void)";
+		do_posix_clock_monotonic_gettime_uptime[label="do_posix_clock_monotonic_gettime_uptime"];
+		do_each_thread_g_p[label="do_each_thread_g_p"];
+		p_pid_great_1_and_p_oomkilladj_not_eq_OOM_DISABLE[label="p_pid_great_1_and_p_oomkilladj_not_eq_OOM_DISABLE"];
+		test_tsk_thread_flag_p_TIF_MEMDIE_true_or_p_flags_PF_EXITING_set_and_p_flags_PF_DEAD_clear[label="test_tsk_thread_flag_p_TIF_MEMDIE_true_or_p_flags_PF_EXITING_set_and_p_flags_PF_DEAD_clear"];
+		return_ERR_PTR_neg1[label="return_ERR_PTR_neg1"];
+		p_flags_PF_SWAPOFF_set[label="p_flags_PF_SWAPOFF_set"];
+		return_p[label="return_p"];
+		set_points_badness_p_uptime_tv_sec[label="set_points_badness_p_uptime_tv_sec"];
+		points_great_maxpoints_or_chosen_false[label="points_great_maxpoints_or_chosen_false"];
+		set_chosen_p[label="set_chosen_p"];
+		set_maxpoints_points[label="set_maxpoints_points"];
+		while_each_thread_g_p[label="while_each_thread_g_p"];
+		return_chosen[label="return_chosen"];
+	}
+
+	subgraph cluster___oom_kill_task{
+		label="static void __oom_kill_task(task_t *p)";
+		p_pid_eq_1[label="p_pid_eq_1"];
+		return[label="return"];
+		task_lock_p[label="task_lock_p"];
+		p_mm_false_or_p_mm_eq_init_mm[label="p_mm_false_or_p_mm_eq_init_mm"];
+		task_unlock_p[label="task_unlock_p"];
+		return[label="return"];
+		task_unlock_p[label="task_unlock_p"];
+		set_p_time_slice_HZ[label="set_p_time_slice_HZ"];
+		set_tsk_thread_flag_p_TIF_MEMDIE[label="set_tsk_thread_flag_p_TIF_MEMDIE"];
+		force_sig_SIGKILL_p[label="force_sig_SIGKILL_p"];
+	}
+
+	subgraph cluster_oom_kill_task{
+		label="static struct mm_struct *oom_kill_task(task_t *p)";
+		set_mm_get_task_mm_p[label="set_mm_get_task_mm_p"];
+		mm_false[label="mm_false"];
+		return_NULL[label="return_NULL"];
+		mm_eq_init_mm[label="mm_eq_init_mm"];
+		mmput_mm[label="mmput_mm"];
+		return_NULL[label="return_NULL"];
+		__oom_kill_task_p[label="__oom_kill_task_p"];
+		do_each_thread_g_q[label="do_each_thread_g_q"];
+		q_mm_eq_mm_and_q_tgid_not_eq_p_tgid[label="q_mm_eq_mm_and_q_tgid_not_eq_p_tgid"];
+		__oom_kill_task_q[label="__oom_kill_task_q"];
+		while_each_thread_g_q[label="while_each_thread_g_q"];
+		return_mm[label="return_mm"];
+	}
+
+	subgraph cluster_oom_kill_process{
+		label="static struct mm_struct *oom_kill_process(struct task_struct *p)";
+		list_for_each_tsk_p_children[label="list_for_each_tsk_p_children"];
+		set_c_list_entry_tsk_struct_task_struct_sibling[label="set_c_list_entry_tsk_struct_task_struct_sibling"];
+		c_mm_eq_p_mm[label="c_mm_eq_p_mm"];
+		set_mm_oom_kill_task_c[label="set_mm_oom_kill_task_c"];
+		mm_true[label="mm_true"];
+		return_mm[label="return_mm"];
+		return_oom_kill_task_p[label="return_oom_kill_task_p"];
+	}
+
+	subgraph cluster_out_of_memory{
+		label="void out_of_memory(unsigned int __nocast gfp_mask)";
+		clear_mm[label="clear_mm"];
+		read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+		set_p_select_bad_process[label="set_p_select_bad_process"];
+		PTR_ERR_p_eq_neg1[label="PTR_ERR_p_eq_neg1"];
+		goto_out[label="goto_out"];
+		p_false[label="p_false"];
+		read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+		show_free_areas[label="show_free_areas"];
+		show_free_areas[label="show_free_areas"];
+		set_mm_oom_kill_process_p[label="set_mm_oom_kill_process_p"];
+		mm_false[label="mm_false"];
+		goto_retry[label="goto_retry"];
+		read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+		mm_true[label="mm_true"];
+		mmput_mm[label="mmput_mm"];
+		__set_current_state_TASK_INTERRUPTIBLE[label="__set_current_state_TASK_INTERRUPTIBLE"];
+		schedule_timeout_1[label="schedule_timeout_1"];
+	}
+}

@@ -94,4 +94,45 @@ digraph mempool_c{
 		label="void mempool_free_slab(void *element, void *pool_data)";
 		kmem_cache_free_mem_element[label="kmem_cache_free_mem_element"];
 	}
+
+	subgraph cluster_mempool_resize{
+		label="int mempool_resize(mempool_t *pool, int new_min_nr, unsigned int __nocast gfp_mask)";
+		lock_pool_lock_flags[label="lock_pool_lock_flags"];
+		new_min_nr_not_great_pool_min_nr[label="new_min_nr_not_great_pool_min_nr"];
+		new_min_nr_small_pool_curr_nr[label="new_min_nr_small_pool_curr_nr"];
+		set_element_remove_element_pool[label="set_element_remove_element_pool"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		pool_free_element_pool_pool_data[label="pool_free_element_pool_pool_data"];
+		lock_pool_lock[label="lock_pool_lock"];
+		set_pool_min_nr_new_min_nr[label="set_pool_min_nr_new_min_nr"];
+		goto_out_unlock[label="goto_out_unlock"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		set_new_elements_kmalloc[label="set_new_elements_kmalloc"];
+		new_elements_false[label="new_elements_false"];
+		return_ENOMEM[label="return_ENOMEM"];
+		lock_pool_lock[label="lock_pool_lock"];
+		new_min_nr_not_great_pool_min_nr[label="new_min_nr_not_great_pool_min_nr"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		kfree_new_elements[label="kfree_new_elements"];
+		goto_out[label="goto_out"];
+		memcpy_new_elements_pool_elemets[label="memcpy_new_elements_pool_elemets"];
+		kfree_pool_elements[label="kfree_pool_elements"];
+		set_pool_elements_new_elements[label="set_pool_elements_new_elements"];
+		pool_min_nr_new_min_nr[label="pool_min_nr_new_min_nr"];
+		pool_curr_nr_small_pool_min_nr[label="pool_curr_nr_small_pool_min_nr"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		set_element_pool_alloc_gfp_mask_pool_pool_data[label="set_element_pool_alloc_gfp_mask_pool_pool_data"];
+		element_false[label="element_false"];
+		goto_out[label="goto_out"];
+		lock_pool_lock[label="lock_pool_lock"];
+		pool_curr_nr_small_pool_min_nr[label="pool_curr_nr_small_pool_min_nr"];
+		add_element_pool_element[label="add_element_pool_element"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		pool_free_element_pool_pool_data[label="pool_free_element_pool_pool_data"];
+		goto_out[label="goto_out"];
+		unlock_pool_lock[label="unlock_pool_lock"];
+		return_0[label="return_0"];
+	}
+
+	
 }
