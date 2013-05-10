@@ -1,0 +1,62 @@
+digraph tiny_shmem_c{
+	subgraph cluster_init_tmpfs{
+		label="static int __init init_tmpfs(void)";
+		register_filesystem_tmpfs_fs_type[label="register_filesystem_tmpfs_fs_type"];
+		CONFIG_TMPFS[label="CONFIG_TMPFS"];
+		devfs_mk_dir_shm[label="devfs_mk_dir_shm"];
+		set_shm_mnt_kern_mount_tmpfs_fs_type[label="set_shm_mnt_kern_mount_tmpfs_fs_type"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_shmem_file_setup{
+		label="struct file *shmem_file_setup(char *name, loff_t size, unsigned long flags)";
+		IS_ERR_shm_mnt_true[label="IS_ERR_shm_mnt_true"];
+		return_shm_mnt[label="return_shm_mnt"];
+		set_error_ENOMEM[label="set_error_ENOMEM"];
+		set_this_name_name[label="set_this_name_name"];
+		set_this_len_strlen_name[label="set_this_len_strlen_name"];
+		set_this_hash_0[label="set_this_hash_0"];
+		set_root_shm_mnt_mnt_root[label="set_root_shm_mnt_mnt_root"];
+		set_dentry_d_alloc_root_this[label="set_dentry_d_alloc_root_this"];
+		dentry_false[label="dentry_false"];
+		goto_putmemory[label="goto_putmemory"];
+		set_error_ENFIL[label="set_error_ENFIL"];
+		set_file_get_empty_filp[label="set_file_get_empty_filp"];
+		file_false[label="file_false"];
+		goto_put_dentry[label="goto_put_dentry"];
+		set_error_ENOSPC[label="set_error_ENOSPC"];
+		set_inode_ramfs_get_inode_root_d_sb_S_IFREG_or_S_IRWXUGO_0[label="set_inode_ramfs_get_inode_root_d_sb_S_IFREG_or_S_IRWXUGO_0"];
+		inode_false[label="inode_false"];
+		goto_close_file[label="goto_close_file"];
+		d_instantiate_dentry_inode[label="d_instantiate_dentry_inode"];
+		set_inode_i_size_size[label="set_inode_i_size_size"];
+		set_inode_i_nlink_0[label="set_inode_i_nlink_0"];
+		set_file_f_vfsmnt_mntget_shm_mnt[label="set_file_f_vfsmnt_mntget_shm_mnt"];
+		set_file_f_dentry_dentry[label="set_file_f_dentry_dentry"];
+		set_file_f_mapping_inode_i_mapping[label="set_file_f_mapping_inode_i_mapping"];
+		set_file_f_op_ranfs_file_operations[label="set_file_f_op_ranfs_file_operations"];
+		set_file_f_mode_FMODE_WRITE_or_FMODE_READ[label="set_file_f_mode_FMODE_WRITE_or_FMODE_READ"];
+		return_file[label="return_file"];
+		put_filp_file[label="put_filp_file"];
+		dput_dentry[label="dput_dentry"];
+		return_ERR_PTR_error[label="return_ERR_PTR_error"];
+	}
+
+	subgraph cluster_shmem_zero_setup{
+		label="int shmem_zero_setup(struct vm_area_struct *vma)";
+		set_size_vma_vm_end_sub_vma_vm_start[label="set_size_vma_vm_end_sub_vma_vm_start"];
+		set_file_shmem_file_setup_dev_zero_size_vma_vm_flags[label="set_file_shmem_file_setup_dev_zero_size_vma_vm_flags"];
+		IS_ERR_file_true[label="IS_ERR_file_true"];
+		return_PTR_ERR_file[label="return_PTR_ERR_file"];
+		vma_vm_file_true[label="vma_vm_file_true"];
+		fput_vma_vm_file[label="fput_vma_vm_file"];
+		set_vma_vm_file_file[label="set_vma_vm_file_file"];
+		set_vma_vm_ops_generic_file_vm_ops[label="set_vma_vm_ops_generic_file_vm_ops"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_shmem_unuse{
+		label="int shmem_unuse(swp_entry_t entry, struct page *page)";
+		return_0[label="return_0"];
+	}
+}
