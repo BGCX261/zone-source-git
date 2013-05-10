@@ -1,0 +1,213 @@
+digraph hugetlb_c{
+	subgraph cluster_enqueue_huge_page{
+		label="static void enqueue_huge_page(struct page *page)";
+		set_nid_page_to_nid_page[label="set_nid_page_to_nid_page"];
+		list_add_page_lru_hugepage_freelists_nid[label="list_add_page_lru_hugepage_freelists_nid"];
+		inc_free_huge_pages[label="inc_free_huge_pages"];
+		inc_free_huge_pages_node_nid[label="inc_free_huge_pages_node_nid"];
+	}
+
+	subgraph cluster_dequeue_huge_page{
+		label="static struct page *dequeue_huge_page(void)";
+		set_nid_numa_node_id[label="set_nid_numa_node_id"];
+		clear_page[label="clear_page"];
+		list_empty_hugepage_freelists_nid_true[label="list_empty_hugepage_freelists_nid_true"];
+		for_nid_0_MAX_NUMNODES[label="for_nid_0_MAX_NUMNODES"];
+		list_empty_hugepage_freelists_nid_false[label="list_empty_hugepage_freelists_nid_false"];
+		nid_not_small_0_and_nid_small_MAX_NUMNODES_and_list_empty_hugepage_freelists_nid_false[label="nid_not_small_0_and_nid_small_MAX_NUMNODES_and_list_empty_hugepage_freelists_nid_false"];
+		set_page_list_entry_hugepage_freelists_nid_next_struct_page_lru[label="set_page_list_entry_hugepage_freelists_nid_next_struct_page_lru"];
+		list_del_page_lru[label="list_del_page_lru"];
+		dec_free_huge_pages[label="dec_free_huge_pages"];
+		dec_free_huge_pages_node_nid[label="dec_free_huge_pages_node_nid"];
+		return_page[label="return_page"];
+	}
+
+	subgraph cluster_alloc_fresh_huge_page{
+		label="static struct page *alloc_fresh_huge_page(void)";
+		set_page_alloc_pages_node_nid_GFP_HIGHUSER___GFP_COMP___GFP_NOWARN_HUGETLB_PAGE_ORDER[label="set_page_alloc_pages_node_nid_GFP_HIGHUSER___GFP_COMP___GFP_NOWARN_HUGETLB_PAGE_ORDER"];
+		set_nid_nid_add_1_mod_num_online_nodes[label="set_nid_nid_add_1_mod_num_online_nodes"];
+		page_true[label="page_true"];
+		inc_nr_huge_pages[label="inc_nr_huge_pages"];
+		inc_nr_huge_pages_node_page_to_nid_page[label="inc_nr_huge_pages_node_page_to_nid_page"];
+		return_page[label="return_page"];
+	}
+
+	subgraph cluster_free_huge_page{
+		label="void free_huge_page(struct page *page)";
+		INIT_LIST_HEAD_page_lru[label="INIT_LIST_HEAD_page_lru"];
+		clear_page_1_mapping[label="clear_page_1_mapping"];
+		lock_hugetlb_lock[label="lock_hugetlb_lock"];
+		enqueue_huge_page_page[label="enqueue_huge_page_page"];
+		unlock_hugetlb_lock[label="unlock_hugetlb_lock"];
+	}
+
+	subgraph cluster_alloc_huge_page{
+		label="struct page *alloc_huge_page(void)";
+		lock_hugetlb_lock[label="lock_hugetlb_lock"];
+		set_page_dequeue_huge_page[label="set_page_dequeue_huge_page"];
+		page_false[label="page_false"];
+		unlock_hugetlb_lock[label="unlock_hugetlb_lock"];
+		return_NULL[label="return_NULL"];
+		unlock_hugetlb_lock[label="unlock_hugetlb_lock"];
+		set_page_count_page_1[label="set_page_count_page_1"];
+		set_page_1_mapping_free_huge_page[label="set_page_1_mapping_free_huge_page"];
+		for_i_HPAGE_SIZE_div_PAGE_SIZE[label="for_i_HPAGE_SIZE_div_PAGE_SIZE"];
+		clear_highpage_page_1[label="clear_highpage_page_1"];
+		return_page[label="return_page"];
+	}
+
+	subgraph cluster_hugetlb_init{
+		label="static int __init hugetlb_init(void)";
+		for_i_MAX_NUMNODES[label="for_i_MAX_NUMNODES"];
+		INIT_LIST_HEAD_hugepage_freelists_i[label="INIT_LIST_HEAD_hugepage_freelists_i"];
+		for_i_max_huge_pages[label="for_i_max_huge_pages"];
+		set_page_alloc_fresh_huge_page[label="set_page_alloc_fresh_huge_page"];
+		page_false[label="page_false"];
+		lock_hugetlb_lock[label="lock_hugetlb_lock"];
+		enqueue_huge_page_page[label="enqueue_huge_page_page"];
+		unlock_hugetlb_lock[label="unlock_hugetlb_lock"];
+		set_max_huge_pages_free_huge_pages_nr_huge_pages_i[label="set_max_huge_pages_free_huge_pages_nr_huge_pages_i"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_and_free_page{
+		label="static void update_and_free_page(struct page *page)";
+		CONFIG_SYSCTL[label="CONFIG_SYSCTL"];
+		dec_nr_huge_pages[label="dec_nr_huge_pages"];
+		dec_nr_huge_pages_node_page_zone_page_zone_pgdat_node_id[label="dec_nr_huge_pages_node_page_zone_page_zone_pgdat_node_id"];
+		for_i_HPAGE_SIZE_div_PAGE_SIZE[label="for_i_HPAGE_SIZE_div_PAGE_SIZE"];
+		page_i_flags_clear_PG_locked_PG_error_PG_referenced_PG_dirty_PG_active_PG_reserved_PG_private_PG_writeback[label="page_i_flags_clear_PG_locked_PG_error_PG_referenced_PG_dirty_PG_active_PG_reserved_PG_private_PG_writeback"];
+		set_page_count_page_i_0[label="set_page_count_page_i_0"];
+		set_page_count_page_1[label="set_page_count_page_1"];
+		__free_pages_page_HUGETLB_PAGE_ORDER[label="__free_pages_page_HUGETLB_PAGE_ORDER"];
+	}
+
+	subgraph cluster_try_to_free_low{
+		label="static void try_to_free_low(unsigned long count)";
+		CONFIG_HIGHMEM[label="CONFIG_HIGHMEM"];
+		for_i_MAX_NUMNODES[label="for_i_MAX_NUMNODES"];
+		list_for_each_entry_safe_page_next_hugepage_freelists_i_lru[label="list_for_each_entry_safe_page_next_hugepage_freelists_i_lru"];
+		PageHighMem_page_true[label="PageHighMem_page_true"];
+		list_del_page_lru[label="list_del_page_lru"];
+		update_and_free_page_page[label="update_and_free_page_page"];
+		set_nid_page_zone_page_zone_pgdat_node_id[label="set_nid_page_zone_page_zone_pgdat_node_id"];
+		dec_free_huge_pages[label="dec_free_huge_pages"];
+		dec_free_huge_pages_node_nid[label="dec_free_huge_pages_node_nid"];
+		count_not_small_nr_huge_pages[label="count_not_small_nr_huge_pages"];
+		return[label="return"];
+	}
+
+	subgraph cluster_set_max_huge_pages{
+		label="static unsigned long set_max_huge_pages(unsigned long count)";
+		count_great_nr_huge_pages[label="count_great_nr_huge_pages"];
+		set_page_alloc_fresh_huge_page[label="set_page_alloc_fresh_huge_page"];
+		page_false[label="page_false"];
+		return_nr_huge_pages[label="return_nr_huge_pages"];
+		lock_hugetlb_lock[label="lock_hugetlb_lock"];
+		enqueue_huge_page_page[label="enqueue_huge_page_page"];
+		unlock_hugetlb_lock[label="unlock_hugetlb_lock"];
+		count_not_small_nr_huge_pages[label="count_not_small_nr_huge_pages"];
+		return_nr_huge_pages[label="return_nr_huge_pages"];
+		lock_hugetlb_lock[label="lock_hugetlb_lock"];
+		try_to_free_low_count[label="try_to_free_low_count"];
+		count_small_nr_huge_page[label="count_small_nr_huge_page"];
+		set_page_dequeue_huge_page[label="set_page_dequeue_huge_page"];
+		page_false[label="page_false"];
+		update_and_free_page_page[label="update_and_free_page_page"];
+		unlock_hugetlb_lock[label="unlock_hugetlb_lock"];
+		return_nr_huge_pages[label="return_nr_huge_pages"];
+	}
+
+	subgraph cluster_hugetlb_sysctl_handler{
+		label="int hugetlb_sysctl_handler(struct ctl_table *table, int write, struct file *file, void __user *buffer, size_t *length, loff_t *ppos)";
+		proc_doulongvec_minmax_table_write_file_buffer_length_ppos[label="proc_doulongvec_minmax_table_write_file_buffer_length_ppos"];
+		set_max_huge_pages_set_max_huge_pages_max_huge_pages[label="set_max_huge_pages_set_max_huge_pages_max_huge_pages"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_hugetlb_total_pages{
+		label="unsigned long hugetlb_total_pages(void)";
+		return_nr_huge_pages_HPAGE_SIZE_div_PAGE_SIZE[label="return_nr_huge_pages_HPAGE_SIZE_div_PAGE_SIZE"];
+	}
+
+	subgraph cluster_zap_hugepage_range{
+		label="void zap_hugepage_range(struct vm_area_struct *vma, unsigned long start, unsigned long length)";
+		set_mm_vma_vm_mm[label="set_mm_vma_vm_mm"];
+		lock_mm_page_table_lock[label="lock_mm_page_table_lock"];
+		unmap_hugepage_range_vma_start_start_add_length[label="unmap_hugepage_range_vma_start_start_add_length"];
+		unlock_mm_page_table_lock[label="unlock_mm_page_table_lock"];
+	}
+
+	subgraph cluster___pdflush{
+		label="static int __pdflush(struct pdflush_work *my_work)";
+		set_current_flags_self_or_PF_FLUSHER[label="set_current_flags_self_or_PF_FLUSHER"];
+		clear_my_work_fn[label="clear_my_work_fn"];
+		set_my_work_who_current[label="set_my_work_who_current"];
+		INIT_LIST_HEAD_my_work_list[label="INIT_LIST_HEAD_my_work_list"];
+		lock_pdflush_lock[label="lock_pdflush_lock"];
+		inc_nr_pdflush_threads[label="inc_nr_pdflush_threads"];
+		dead_for[label="dead_for"];
+		set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+		list_move_my_work_list_pdflush_list[label="list_move_my_work_list_pdflush_list"];
+		set_my_work_when_i_went_to_sleep_jiffies[label="set_my_work_when_i_went_to_sleep_jiffies"];
+		unlock_pdflush_lock[label="unlock_pdflush_lock"];
+		schedule[label="schedule"];
+		try_to_freeze_PF_FREEZE_true[label="try_to_freeze_PF_FREEZE_true"];
+		lock_pdflush_lock[label="lock_pdflush_lock"];
+		lock_pdflush_lock[label="lock_pdflush_lock"];
+		list_empty_my_work_list_false[label="list_empty_my_work_list_false"];
+		clear_my_work_fn[label="clear_my_work_fn"];
+		my_work_fn_eq_NUL[label="my_work_fn_eq_NUL"];
+		unlock_pdflush_lock[label="unlock_pdflush_lock"];
+		my_work_fn_my_work_arg0[label="my_work_fn_my_work_arg0"];
+		jiffies_sub_last_empty_jifs_great_1_multi_HZ[label="jiffies_sub_last_empty_jifs_great_1_multi_HZ"];
+		list_empty_pdflush_list_true[label="list_empty_pdflush_list_true"];
+		nr_pdflush_threads_small_MAX_PDFLUSH_THREADS[label="nr_pdflush_threads_small_MAX_PDFLUSH_THREADS"];
+		start_one_pdflush_thread[label="start_one_pdflush_thread"];
+		lock_pdflush_lock[label="lock_pdflush_lock"];
+		clear_my_work_fn[label="clear_my_work_fn"];
+		list_empty_pdflush_list_true[label="list_empty_pdflush_list_true"];
+		nr_pdflush_threads_not_great_MIN_PDFLUSH_THREADS[label="nr_pdflush_threads_not_great_MIN_PDFLUSH_THREADS"];
+		set_pdf_list_entry_pdflush_list_prev_struct_pdflush_work_list[label="set_pdf_list_entry_pdflush_list_prev_struct_pdflush_work_list"];
+		jiffies_sub_pdf_when_i_went_to_sleep_great_1_multi_HZ[label="jiffies_sub_pdf_when_i_went_to_sleep_great_1_multi_HZ"];
+		set_pdf_when_i_went_to_sleep_jiffies[label="set_pdf_when_i_went_to_sleep_jiffies"];
+		dec_nr_pdflush_theads[label="dec_nr_pdflush_theads"];
+		unlock_pdflush_lock[label="unlock_pdflush_lock"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pdflush{
+		label="static int pdflush(void *dummy)";
+		set_user_nice_current_0[label="set_user_nice_current_0"];
+		return___pdflush_my_work[label="return___pdflush_my_work"];
+	}
+
+	subgraph cluster_pdflush_operation{
+		label="int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)";
+		lock_pdflush_lock[label="lock_pdflush_lock"];
+		list_empty_pdflush_list_true[label="list_empty_pdflush_list_true"];
+		unlock_pdflush_lock[label="unlock_pdflush_lock"];
+		set_ret_neg1[label="set_ret_neg1"];
+		set_pdf_list_entry_pdflush_list_next_struct_pdflush_work_list[label="set_pdf_list_entry_pdflush_list_next_struct_pdflush_work_list"];
+		list_del_init_pdf_list[label="list_del_init_pdf_list"];
+		list_empty_pdflush_list_true[label="list_empty_pdflush_list_true"];
+		set_last_empty_jifs_jiffies[label="set_last_empty_jifs_jiffies"];
+		set_pdf_fn_fn[label="set_pdf_fn_fn"];
+		set_pdf_arg0_arg0[label="set_pdf_arg0_arg0"];
+		wake_up_process_pdf_who[label="wake_up_process_pdf_who"];
+		unlock_pdflush_lock[label="unlock_pdflush_lock"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_start_one_pdflush_thread{
+		label="static void start_one_pdflush_thread(void)";
+		kthread_run_pdflush_NULL_pdflush[label="kthread_run_pdflush_NULL_pdflush"];
+	}
+
+	subgraph cluster_pdflush_init{
+		label="static int __init pdflush_init(void)";
+		for_i_MIN_PDFLUSH_THREADS[label="for_i_MIN_PDFLUSH_THREADS"];
+		start_one_pdflush_thread[label="start_one_pdflush_thread"];
+		return_0[label="return_0"];
+	}
+}
