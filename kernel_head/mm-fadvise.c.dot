@@ -29,6 +29,18 @@ digraph fadvise_c{
 		case_POSIX_FADV_DONTNEED[label="case_POSIX_FADV_DONTNEED"];
 		bdi_write_congested_mapping_backing_dev_info_false[label="bdi_write_congested_mapping_backing_dev_info_false"];
 		filemap_flush_mapping[label="filemap_flush_mapping"];
-		set_start_index_offset_add_PAGE_CACHE
+		set_start_index_offset_add_PAGE_CACHE_SHIFT_sub_1_right_move_PAGE_CACHE_SHIFT[label="set_start_index_offset_add_PAGE_CACHE_SHIFT_sub_1_right_move_PAGE_CACHE_SHIFT"];
+		set_end_index_endbyte_right_move_PAGE_CACHE_SHIFT[label="set_end_index_endbyte_right_move_PAGE_CACHE_SHIFT"];
+		end_index_great_start_index[label="end_index_great_start_index"];
+		invalidate_mapping_pages_mapping_start_index_end_index_sub_1[label="invalidate_mapping_pages_mapping_start_index_end_index_sub_1"];
+		default_[label="default_"];
+		set_ret_EINVAL[label="set_ret_EINVAL"];
+		fput_file[label="fput_file"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_sys_fadvise64{
+		label="asmlinkage long sys_fadvise64(int fd, loff_t offset, size_t len, int advice)";
+		return_sys_fadvise64_64_fd_offset_len_advice[label="return_sys_fadvise64_64_fd_offset_len_advice"];
 	}
 }
