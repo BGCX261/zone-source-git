@@ -1,0 +1,34 @@
+digraph fadvise_c{
+	subgraph cluster_sys_fadvise64_64{
+		label="asmlinkage long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice)";
+		set_file_fget_fd[label="set_file_fget_fd"];
+		set_mapping_file_f_mapping[label="set_mapping_file_f_mapping"];
+		set_endbyte_offset_add_len[label="set_endbyte_offset_add_len"];
+		len_false_or_endbyte_small_len[label="len_false_or_endbyte_small_len"];
+		set_endbytes_neg1[label="set_endbytes_neg1"];
+		set_bdi_mapping_backing_dev_info[label="set_bdi_mapping_backing_dev_info"];
+		switch_advice[label="switch_advice"];
+		case_POSIX_FADV_NORMAL[label="case_POSIX_FADV_NORMAL"];
+		set_file_f_ra_ra_pages_bdi_ra_pages[label="set_file_f_ra_ra_pages_bdi_ra_pages"];
+		case_POSIX_FADV_RANDOM[label="case_POSIX_FADV_RANDOM"];
+		set_file_f_ra_ra_pages_0[label="set_file_f_ra_ra_pages_0"];
+		case_POSIX_FADV_SEQUENTIAL[label="case_POSIX_FADV_SEQUENTIAL"];
+		set_file_f_ra_ra_pages_bdi_ra_pages_multi_2[label="set_file_f_ra_ra_pages_bdi_ra_pages_multi_2"];
+		case_POSIX_FADV_WILLNEED[label="case_POSIX_FADV_WILLNEED"];
+		case_POSIX_FADV_NOREUSE[label="case_POSIX_FADV_NOREUSE"];
+		mapping_a_ops_readpage_false[label="mapping_a_ops_readpage_false"];
+		set_ret_EINVAL[label="set_ret_EINVAL"];
+		set_start_index_offset_right_move_PAGE_CACHE_SHIFT[label="set_start_index_offset_right_move_PAGE_CACHE_SHIFT"];
+		set_end_index_endbyte_sub_1_right_move_PAGE_CACHE_SHIFT[label="set_end_index_endbyte_sub_1_right_move_PAGE_CACHE_SHIFT"];
+		set_nr_pages_end_index_sub_start_index_add_1[label="set_nr_pages_end_index_sub_start_index_add_1"];
+		nrpages_false[label="nrpages_false"];
+		set_nrpages_rever_0[label="set_nrpages_rever_0"];
+		set_ret_force_page_cache_readahead_mapping_file_start_index_max_sane_readahead_nrapges[label="set_ret_force_page_cache_readahead_mapping_file_start_index_max_sane_readahead_nrapges"];
+		ret_great_0[label="ret_great_0"];
+		set_ret_0[label="set_ret_0"];
+		case_POSIX_FADV_DONTNEED[label="case_POSIX_FADV_DONTNEED"];
+		bdi_write_congested_mapping_backing_dev_info_false[label="bdi_write_congested_mapping_backing_dev_info_false"];
+		filemap_flush_mapping[label="filemap_flush_mapping"];
+		set_start_index_offset_add_PAGE_CACHE
+	}
+}
