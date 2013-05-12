@@ -1,0 +1,42 @@
+digraph thrash_c{
+	subgraph should_release_swap_token{
+		label="static int should_release_swap_token(struct mm_struct *mm)";
+		mm_recent_pagein_false[label="mm_recent_pagein_false"];
+		set_ret_SWAP_TAKEN_ENOUGH_RSS[label="set_ret_SWAP_TAKEN_ENOUGH_RSS"];
+		time_after_jiffies_swap_token_timeout_true[label="time_after_jiffies_swap_token_timeout_true"];
+		set_ret_SWAP_TOKEN_TIMED_OUT[label="set_ret_SWAP_TOKEN_TIMED_OUT"];
+		set_mm_recent_pagein_0[label="set_mm_recent_pagein_0"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_grab_swap_token{
+		label="void grab_swap_token(void)";
+		has_swap_token_current_mm_true[label="has_swap_token_current_mm_true"];
+		set_current_mm_recent_pagein_1[label="set_current_mm_recent_pagein_1"];
+		return[label="return"];
+		time_after_jiffies_swap_token_check_true[label="time_after_jiffies_swap_token_check_true"];
+		time_befor_jiffies_current_mm_swap_token_time_true[label="time_befor_jiffies_current_mm_swap_token_time_true"];
+		return[label="return"];
+		trylock_swap_token_lock_false[label="trylock_swap_token_lock_false"];
+		return[label="return"];
+		set_swap_token_check_jiffies_add_SWAP_TOKEN_CHECK_INTERVAL[label="set_swap_token_check_jiffies_add_SWAP_TOKEN_CHECK_INTERVAL"];
+		set_mm_swap_token_mm[label="set_mm_swap_token_mm"];
+		set_reason_should_release_swap_token_mm_true[label="set_reason_should_release_swap_token_mm_true"];
+		set_eligible_jiffies[label="set_eligible_jiffies"];
+		eligible_self_add_swap_token_default_timeout[label="eligible_self_add_swap_token_default_timeout"];
+		set_mm_swap_token_time_eligible[label="set_mm_swap_token_time_eligible"];
+		set_swap_token_timeout_jiffies_add_swap_token_default_timeout[label="set_swap_token_timeout_jiffies_add_swap_token_default_timeout"];
+		set_swap_token_mm_current_mm[label="set_swap_token_mm_current_mm"];
+		unlock_swap_token_lock[label="unlock_swap_token_lock"];
+		return[label="return"];
+	}
+
+	subgraph cluster___put_swap_token{
+		label="void __put_swap_token(struct mm_struct *mm)";
+		lock_swap_token_lock[label="lock_swap_token_lock"];
+		mm_eq_swap_token_mm[label="mm_eq_swap_token_mm"];
+		set_swap_token_mm_init_mm[label="set_swap_token_mm_init_mm"];
+		set_swap_token_check_jiffies[label="set_swap_token_check_jiffies"];
+		unlock_swap_token_lock[label="unlock_swap_token_lock"];
+	}
+}

@@ -1,0 +1,72 @@
+digraph prio_tree_c{
+	subgraph vma_prio_tree_add{
+		label="void vma_prio_tree_add(struct vm_area_struct *vma, struct vm_area_struct *old)";
+		clear_vma_shared_vm_set_head[label="clear_vma_shared_vm_set_head"];	
+		clear_vma_shared_vm_set_parent[label="clear_vma_shared_vm_set_parent"];
+		old_shared_vm_set_parent_false[label="old_shared_vm_set_parent_false"];
+		list_add_vma_shared_vm_set_list_old_shared_vm_set_list[label="list_add_vma_shared_vm_set_list_old_shared_vm_set_list"];
+		old_shared_vm_set_haed_true[label="old_shared_vm_set_haed_true"];
+		list_add_tail_vma_shared_vm_set_list_old_shared_vm_set_head_shared_vm_set_list[label="list_add_tail_vma_shared_vm_set_list_old_shared_vm_set_head_shared_vm_set_list"];
+		INIT_LIST_HEAD_vma_shared_vm_set_list[label="INIT_LIST_HEAD_vma_shared_vm_set_list"];
+		set_vma_shared_vm_set_head_old[label="set_vma_shared_vm_set_head_old"];
+		set_old_shared_vm_set_head_vma[label="set_old_shared_vm_set_head_vma"];
+	}
+
+	subgraph cluster_vma_prio_tree_insert{
+		label="void vma_prio_tree_insert(struct vm_area_struct *vma, struct prio_tree_root *root)";
+		clear_vma_shared_vm_set_head[label="clear_vma_shared_vm_set_head"];
+		set_ptr_raw_prio_tree_insert_root_vma_shared_prio_tree_node[label="set_ptr_raw_prio_tree_insert_root_vma_shared_prio_tree_node"];
+		ptr_not_eq_vma_shared_prio_tree_node[label="ptr_not_eq_vma_shared_prio_tree_node"];
+		set_old_prio_tree_entry_ptr_struct_vm_area_struct_shared_prio_tree_node[label="set_old_prio_tree_entry_ptr_struct_vm_area_struct_shared_prio_tree_node"];
+		vma_prio_tree_add_vma_old[label="vma_prio_tree_add_vma_old"];
+	}
+
+	subgraph cluster_vma_prio_tree_remove{
+		label="void vma_prio_tree_remove(struct vm_area_struct *vma, struct prio_tree_root *root)";
+		vma_shared_vm_set_head_false[label="vma_shared_vm_set_head_false"];
+		vma_shared_vm_set_parent_false[label="vma_shared_vm_set_parent_false"];
+		list_del_init_vma_shared_vm_set_list[label="list_del_init_vma_shared_vm_set_list"];
+		raw_prio_tree_remove_root_vma_shared_prio_tree_node[label="raw_prio_tree_remove_root_vma_shared_prio_tree_node"];
+		vma_shared_vm_set_parent_true[label="vma_shared_vm_set_parent_true"];
+		set_head_vma_shared_vm_set_head[label="set_head_vma_shared_vm_set_head"];
+		list_empty_head_shared_vm_set_list_false[label="list_empty_head_shared_vm_set_list_false"];
+		set_new_head_list_entry_head_shared_vm_set_list_next_struct_vm_area_struct_shared_vm_set_list[label="set_new_head_list_entry_head_shared_vm_set_list_next_struct_vm_area_struct_shared_vm_set_list"];
+		list_del_init_head_shared_vm_set_list[label="list_del_init_head_shared_vm_set_list"];
+		clear_new_head[label="clear_new_head"];
+		raw_prio_tree_replace_root_vma_shared_prio_tree_node_head_shared_prio_tree_node[label="raw_prio_tree_replace_root_vma_shared_prio_tree_node_head_shared_prio_tree_node"];
+		set_head_shared_vm_set_head_new_head[label="set_head_shared_vm_set_head_new_head"];
+		new_head_true[label="new_head_true"];
+		new_head_shared_vm_set_head_head[label="new_head_shared_vm_set_head_head"];
+		set_node_vma_shared_vm_set_head[label="set_node_vma_shared_vm_set_head"];
+		list_empty_vma_shared_vm_set_list_false[label="list_empty_vma_shared_vm_set_list_false"];
+		set_new_head_list_entry_vma_shared_vm_set_list_nex_struct_vm_area_struct_shared_vm_set_list[label="set_new_head_list_entry_vma_shared_vm_set_list_nex_struct_vm_area_struct_shared_vm_set_list"];
+		list_del_init_vma_shared_vm_set_list[label="list_del_init_vma_shared_vm_set_list"];
+		set_node_shared_vm_set_head_new_head[label="set_node_shared_vm_set_head_new_head"];
+		set_new_head_shared_vm_set_head_node[label="set_new_head_shared_vm_set_head_node"];
+		clear_node_shared_vm_set_head[label="clear_node_shared_vm_set_head"];
+	}
+
+	subgraph cluster_vma_prio_tree_next{
+		label="struct vm_area_struct *vma_prio_tree_next(struct vm_area_struct *vma, struct prio_tree_iter *iter)";
+		vma_false[label="vma_false"];
+		set_ptr_prio_tree_next_ptr_stuct_vm_area_struct_shared_prio_tree_node[label="set_ptr_prio_tree_next_ptr_stuct_vm_area_struct_shared_prio_tree_node"];
+		prefetch_next_shared_vm_set_head[label="prefetch_next_shared_vm_set_head"];
+		return_next[label="return_next"];
+		return_NULL[label="return_NULL"];
+		vma_shared_vm_set_parent_true[label="vma_shared_vm_set_parent_true"];
+		vma_shared_vm_set_head_true[label="vma_shared_vm_set_head_true"];
+		set_next_vma_shared_vm_set_head[label="set_next_vma_shared_vm_set_head"];
+		prefetch_next_shared_vm_set_list_next[label="prefetch_next_shared_vm_set_list_next"];
+		return_next[label="return_next"];
+		set_next_list_entry_vma_shared_vm_set_list_next_struct_vm_area_struct_shared_vm_set_list[label="set_next_list_entry_vma_shared_vm_set_list_next_struct_vm_area_struct_shared_vm_set_list"];
+		next_shared_vm_set_head_false[label="next_shared_vm_set_head_false"];
+		prefetch_next_shared_vm_set_list_next[label="prefetch_next_shared_vm_set_list_next"];
+		return_next[label="return_next"];
+		set_ptr_prio_tree_next_iter[label="set_ptr_prio_tree_next_iter"];
+		ptr_true[label="ptr_true"];
+		set_next_prio_tree_entry_ptr_struct_vm_area_struct_shared_prio_tree_node[label="set_next_prio_tree_entry_ptr_struct_vm_area_struct_shared_prio_tree_node"];
+		prefetch_next_shared_vm_set_head[label="prefetch_next_shared_vm_set_head"];
+		return_next[label="return_next"];
+		return_NULL[label="return_NULL"];
+	}
+}

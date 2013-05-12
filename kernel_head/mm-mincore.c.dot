@@ -1,0 +1,76 @@
+digraph mincore_c{
+	subgraph mincore_page{
+		label="static unsigned char mincore_page(struct vm_area_struct * vma, unsigned long pgoff)";
+		set_as_vma_vm_file_f_mapping[label="set_as_vma_vm_file_f_mapping"];
+		set_page_find_get_page_as_pgoff[label="set_page_find_get_page_as_pgoff"];
+		page_true[label="page_true"];
+		set_present_PageUptodate_page[label="set_present_PageUptodate_page"];
+		page_cache_release_page[label="page_cache_release_page"];
+		return_present[label="return_present"];
+	}
+
+	subgraph cluster_mincore_vma{
+		label="static long mincore_vma(struct vm_area_struct * vma, unsigned long start, unsigned long end, unsigned char __user * vec)";
+		vma_vm_file_false[label="vma_vm_file_false"];
+		return_error[label="return_error"];
+		set_start_start_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff[label="set_start_start_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff"];
+		end_great_vma_vm_end[label="end_great_vma_vm_end"];
+		set_end_vma_vm_end[label="set_end_vma_vm_end"];
+		set_end_end_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff[label="set_end_end_sub_vma_vm_start_right_move_PAGE_SHIFT_add_vma_vm_pgoff"];
+		set_error_EAGIN[label="set_error_EAGIN"];
+		set_tmp___get_free_page_GFP_KERNEL[label="set_tmp___get_free_page_GFP_KERNEL"];
+		tmp_false[label="tmp_false"];
+		return_error[label="return_error"];
+		remaining_end_sub_start[label="remaining_end_sub_start"];
+		set_error_0[label="set_error_0"];
+		for_i_remaining[label="for_i_remaining"];
+		set_j_0[label="set_j_0"];
+		set_thispiece_remaining_or_PAGE_SIZE_decide_remaining_small_PAGE_SIZE[label="set_thispiece_remaining_or_PAGE_SIZE_decide_remaining_small_PAGE_SIZE"];
+		j_small_thispiece[label="j_small_thispiece"];
+		tmp_j_inc_mincore_page_vma_inc_start[label="tmp_j_inc_mincore_page_vma_inc_start"];
+		copy_to_user_vec_add_PAGE_SIZE_multi_i_tmp_thispiece[label="copy_to_user_vec_add_PAGE_SIZE_multi_i_tmp_thispiece"];
+		free_page_tmp[label="free_page_tmp"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_sys_mincore{
+		label="asmlinkage long sys_mincore(unsigned long start, size_t len, unsigned char __user * vec)";
+		start_set_except_PAGE_CACHE_MASK[label="start_set_except_PAGE_CACHE_MASK"];
+		goto_einval[label="goto_einval"];
+		set_limit_TASK_SIZE[label="set_limit_TASK_SIZE"];
+		start_not_small_limit[label="start_not_small_limit"];
+		goto_enomem[label="goto_enomem"];
+		set_max_limit_sub_start[label="set_max_limit_sub_start"];
+		set_len_PAGE_CACHE_ALIGN_len[label="set_len_PAGE_CACHE_ALIGN_len"];
+		len_great_max_or_len_false[label="len_great_max_or_len_false"];
+		goto_enomem[label="goto_enomem"];
+		set_end_start_add_len[label="set_end_start_add_len"];
+		set_error_EFAULT[label="set_error_EFAULT"];
+		down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+		access_ok_VERIFY_WRITE_vec_len_right_move_PAGE_SHIFT[label="access_ok_VERIFY_WRITE_vec_len_right_move_PAGE_SHIFT"];
+		set_error_0[label="set_error_0"];
+		set_vma_find_vma_current_mm_start[label="set_vma_find_vma_current_mm_start"];
+		vma_true[label="vma_true"];
+		start_small_vma_vm_start[label="start_small_vma_vm_start"];
+		set_unmapped_error_ENOMEM[label="set_unmapped_error_ENOMEM"];
+		set_start_vma_vm_start[label="set_start_vma_vm_start"];
+		end_not_great_vma_vm_end[label="end_not_great_vma_vm_end"];
+		start_small_end[label="start_small_end"];
+		set_error_mincore_vma_mva_start_end_vec_index[label="set_error_mincore_vma_mva_start_end_vec_index"];
+		error_true[label="error_true"];
+		goto_out[label="goto_out"];
+		set_error_unmapped_error[label="set_error_unmapped_error"];
+		goto_out[label="goto_out"];
+		set_error_mincore_vma_vma_start_vma_vm_end_vec_index[label="set_error_mincore_vma_vma_start_vma_vm_end_vec_index"];
+		error_true[label="error_true"];
+		goto_out[label="goto_out"];
+		index_self_add_vma_vm_end_sub_start_right_move_PAGE_CACHE_SHIFT[label="index_self_add_vma_vm_end_sub_start_right_move_PAGE_CACHE_SHIFT"];
+		set_start_vma_vm_end[label="set_start_vma_vm_end"];
+		set_vma_vma_vm_next[label="set_vma_vma_vm_next"];
+		set_error_ENOMEM[label="set_error_ENOMEM"];
+		up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+		return_error[label="return_error"];
+		return_EINVAL[label="return_EINVAL"];
+		return_ENOMEM[label="return_ENOMEM"];
+	}
+}
