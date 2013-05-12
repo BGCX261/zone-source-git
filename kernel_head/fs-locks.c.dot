@@ -1,0 +1,305 @@
+digraph locks_c{
+        subgraph cluster_*locks_alloc_lock{
+                label="static struct file_lock *locks_alloc_lock(void)
+";
+                return_kmem_cache_alloc_filelock_cache_SLAB_KERNEL[label="return_kmem_cache_alloc_filelock_cache_SLAB_KERNEL"];
+        }
+
+        subgraph cluster_locks_free_lock{
+                label="static inline void locks_free_lock(struct file_lock *fl)
+";
+                wait_queue_active_fl_fl_wait_true[label="wait_queue_active_fl_fl_wait_true"];
+                panic[label="panic"];
+                list_empty_fl_bl_block_false[label="list_empty_fl_bl_block_false"];
+                panic[label="panic"];
+                list_empty_fl_fl_link_false[label="list_empty_fl_fl_link_false"];
+                panic[label="panic"];
+                fl_fl_ops_true[label="fl_fl_ops_true"];
+                fl_fl_ops_fl_release_private_true[label="fl_fl_ops_fl_release_private_true"];
+                fl_fl_ops_fl_release_private_fl[label="fl_fl_ops_fl_release_private_fl"];
+                clear_fl_fl_ops[label="clear_fl_fl_ops"];
+                fl_fl_lmops_true[label="fl_fl_lmops_true"];
+                fl_fl_lmops_fl_release_private_true[label="fl_fl_lmops_fl_release_private_true"];
+                fl_fl_lmops_fl_release_private_fl[label="fl_fl_lmops_fl_release_private_fl"];
+                clear_fl_fl_lmops[label="clear_fl_fl_lmops"];
+                kmem_cache_free_filelock_cache_fl[label="kmem_cache_free_filelock_cache_fl"];
+        }
+
+        subgraph cluster_locks_init_lock{
+                label="void locks_init_lock(struct file_lock *fl)
+";
+                INIT_LIST_HEAD_fl_fl_link[label="INIT_LIST_HEAD_fl_fl_link"];
+                INIT_LIST_HEAD_fl_fl_block[label="INIT_LIST_HEAD_fl_fl_block"];
+                init_waitqueue_head_fl_fl_wait[label="init_waitqueue_head_fl_fl_wait"];
+                clear_fl_fl_next[label="clear_fl_fl_next"];
+                clear_fl_fl_fasync[label="clear_fl_fl_fasync"];
+                clear_fl_fl_owner[label="clear_fl_fl_owner"];
+                set_fl_fl_pid_0[label="set_fl_fl_pid_0"];
+                clear_fl_fl_file[label="clear_fl_fl_file"];
+                set_fl_fl_flags_0[label="set_fl_fl_flags_0"];
+                set_fl_fl_type_0[label="set_fl_fl_type_0"];
+                set_fl_fl_start_fl_end_0[label="set_fl_fl_start_fl_end_0"];
+                clear_fl_fl_ops[label="clear_fl_fl_ops"];
+                clear_fl_fl_lmpos[label="clear_fl_fl_lmpos"];
+        }
+
+        subgraph cluster_init_once{
+                label="static void init_once(void *foo, kmem_cache_t *cache, unsigned long flags)
+";
+                set_lock_foo[label="set_lock_foo"];
+                flags_SLAB_CTRO_CONSTRUCTOR_set_except_SLAB_CTOR_VERIFY[label="flags_SLAB_CTRO_CONSTRUCTOR_set_except_SLAB_CTOR_VERIFY"];
+                return[label="return"];
+                locks_init_lock_lock[label="locks_init_lock_lock"];
+        }
+
+        subgraph cluster_locks_copy_lock{
+                label="void locks_copy_lock(struct file_lock *new, struct file_lock *fl)
+";
+                set_new_fl_owner_fl_fl_owner[label="set_new_fl_owner_fl_fl_owner"];
+                set_new_fl_pid_fl_fl_pid[label="set_new_fl_pid_fl_fl_pid"];
+                set_new_fl_file_fl_fl_file[label="set_new_fl_file_fl_fl_file"];
+                set_new_fl_flags_fl_fl_flags[label="set_new_fl_flags_fl_fl_flags"];
+                set_new_fl_type_fl_fl_type[label="set_new_fl_type_fl_fl_type"];
+                set_new_fl_start_fl_fl_start[label="set_new_fl_start_fl_fl_start"];
+                set_new_fl_end_fl_fl_end[label="set_new_fl_end_fl_fl_end"];
+                set_new_fl_ops_fl_fl_ops[label="set_new_fl_ops_fl_fl_ops"];
+                set_new_fl_lmops_fl_fl_lmops[label="set_new_fl_lmops_fl_fl_lmops"];
+                fl_fl_ops_true_and_fl_fl_ops_fl_copy_lock_true[label="fl_fl_ops_true_and_fl_fl_ops_fl_copy_lock_true"];
+                fl_fl_ops_fl_copy_lock_new_fl[label="fl_fl_ops_fl_copy_lock_new_fl"];
+                fl_fl_lmops_true_and_fl_fl_lmops_fl_copy_lock_true[label="fl_fl_lmops_true_and_fl_fl_lmops_fl_copy_lock_true"];
+                fl_fl_lmops_fl_copy_lock_new_fl[label="fl_fl_lmops_fl_copy_lock_new_fl"];
+        }
+
+        subgraph cluster_flock_translate_cmd{
+                label="static inline int flock_translate_cmd(int cmd) ";
+                cmd_LOCK_MAND_set[label="cmd_LOCK_MAND_set"];
+                return_cmd_LOCK_MAND_LOCK_RW_set[label="return_cmd_LOCK_MAND_LOCK_RW_set"];
+                switch_cmd[label="switch_cmd"];
+                case_LOCK_SH[label="case_LOCK_SH"];
+                return_F_RDLCK[label="return_F_RDLCK"];
+                case_LOCK_EX[label="case_LOCK_EX"];
+                return_F_WRLCK[label="return_F_WRLCK"];
+                case_LOCK_UN[label="case_LOCK_UN"];
+                return_F_UNLCK[label="return_F_UNLCK"];
+                return_EINVAL[label="return_EINVAL"];
+        }
+
+        subgraph cluster_flock_make_lock{
+                label="static int flock_make_lock(struct file *filp, struct file_lock **lock,
+		unsigned int cmd)
+";
+                set_type_flock_translate_cmd_cmd[label="set_type_flock_translate_cmd_cmd"];
+                type_small_0[label="type_small_0"];
+                return_type[label="return_type"];
+                set_fl_locks_alloc_lock[label="set_fl_locks_alloc_lock"];
+                fl_eq_NULL[label="fl_eq_NULL"];
+                return_ENOMEM[label="return_ENOMEM"];
+                set_fl_fl_file_filp[label="set_fl_fl_file_filp"];
+                set_fl_fl_pid_current_tgid[label="set_fl_fl_pid_current_tgid"];
+                set_fl_fl_flags_FL_FLOCK[label="set_fl_fl_flags_FL_FLOCK"];
+                set_fl_fl_type_type[label="set_fl_fl_type_type"];
+                set_fl_fl_end_OFFSET_MAX[label="set_fl_fl_end_OFFSET_MAX"];
+                set_lock_fl[label="set_lock_fl"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_assign_type{
+                label="static int assign_type(struct file_lock *fl, int type)
+";
+                switch_type[label="switch_type"];
+                case_F_RDLCK[label="case_F_RDLCK"];
+                case_F_WRLCK[label="case_F_WRLCK"];
+                case_F_UNLCK[label="case_F_UNLCK"];
+                set_fl_fl_type_type[label="set_fl_fl_type_type"];
+                default_EINVAL[label="default_EINVAL"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_flock_to_posix_lock{
+                label="static int flock_to_posix_lock(struct file *filp, struct file_lock *fl,
+			       struct flock *l)
+";
+                switch_l_l_whence[label="switch_l_l_whence"];
+                case_0[label="case_0"];
+                set_start_0[label="set_start_0"];
+                case_1[label="case_1"];
+                set_start_filp_f_pos[label="set_start_filp_f_pos"];
+                case_2[label="case_2"];
+                set_start_i_size_read_filp_f_dentry_d_inode[label="set_start_i_size_read_filp_f_dentry_d_inode"];
+                default_EINVAL[label="default_EINVAL"];
+                start_self_add_l_l_start[label="start_self_add_l_l_start"];
+                set_end_start_add_l_l_len_sub_1[label="set_end_start_add_l_l_len_sub_1"];
+                l_l_len_small_0[label="l_l_len_small_0"];
+                set_end_start_sub_1[label="set_end_start_sub_1"];
+                start_self_add_l_len[label="start_self_add_l_len"];
+                start_small_0[label="start_small_0"];
+                return_EINVAL[label="return_EINVAL"];
+                l_l_len_great_0_and_end_small_0[label="l_l_len_great_0_and_end_small_0"];
+                return_EOVERFLOW[label="return_EOVERFLOW"];
+                set_fl_fl_start_start[label="set_fl_fl_start_start"];
+                set_fl_end_end[label="set_fl_end_end"];
+                l_l_len_eq_0[label="l_l_len_eq_0"];
+                set_fl_fl_end_OFFSET_MAX[label="set_fl_fl_end_OFFSET_MAX"];
+                set_fl_fl_owner_current_files[label="set_fl_fl_owner_current_files"];
+                set_fl_fl_pid_current_tgid[label="set_fl_fl_pid_current_tgid"];
+                set_fl_fl_file_filp[label="set_fl_fl_file_filp"];
+                set_fl_fl_flags_FL_POSIX[label="set_fl_fl_flags_FL_POSIX"];
+                clear_fl_fl_ops[label="clear_fl_fl_ops"];
+                clear_fl_fl_lmops[label="clear_fl_fl_lmops"];
+                return_assign_type_fl_l_l_type[label="return_assign_type_fl_l_l_type"];
+        }
+
+        subgraph cluster_flock64_to_posix_lock{
+                label="static int flock64_to_posix_lock(struct file *filp, struct file_lock *fl,
+				 struct flock64 *l)
+";
+                switch_l_l_whence[label="switch_l_l_whence"];
+                case_0[label="case_0"];
+                set_start_0[label="set_start_0"];
+                case_1[label="case_1"];
+                set_start_filp_f_pos[label="set_start_filp_f_pos"];
+                case_2[label="case_2"];
+                set_start_i_size_read_filp_f_dentry_d_inode[label="set_start_i_size_read_filp_f_dentry_d_inode"];
+                default_EINVAL[label="default_EINVAL"];
+                start_self_add_l_l_start_small_0_or_l_len_small_0[label="start_self_add_l_l_start_small_0_or_l_len_small_0"];
+                return_EINVAL[label="return_EINVAL"];
+                set_fl_fl_end_start_add_l_len_sub_1[label="set_fl_fl_end_start_add_l_len_sub_1"];
+                l_l_len_great_0_true_and_fl_fl_end_small_0[label="l_l_len_great_0_true_and_fl_fl_end_small_0"];
+                return_EOVERFLOW[label="return_EOVERFLOW"];
+                set_fl_fl_start_start[label="set_fl_fl_start_start"];
+                l_l_len_eq_0[label="l_l_len_eq_0"];
+                set_fl_fl_end_OFFSET_MAX[label="set_fl_fl_end_OFFSET_MAX"];
+                set_fl_fl_owner_current_files[label="set_fl_fl_owner_current_files"];
+                set_fl_fl_pid_current_tgid[label="set_fl_fl_pid_current_tgid"];
+                set_fl_fl_file_filp[label="set_fl_fl_file_filp"];
+                set_fl_fl_flags_FL_POSIX[label="set_fl_fl_flags_FL_POSIX"];
+                clear_fl_fl_ops[label="clear_fl_fl_ops"];
+                clear_fl_fl_lmops[label="clear_fl_fl_lmops"];
+                switch_l_l_type[label="switch_l_l_type"];
+                case_F_RDLCK[label="case_F_RDLCK"];
+                case_F_WRLCK[label="case_F_WRLCK"];
+                case_F_UNLCK[label="case_F_UNLCK"];
+                set_fl_fl_type_l_l_type[label="set_fl_fl_type_l_l_type"];
+                default_[label="default_"];
+                return_EINVAL[label="return_EINVAL"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_lease_break_callback{
+                label="static void lease_break_callback(struct file_lock *fl)
+";
+                kill_fasync_fl_fl_fasync_SIGIO_POLL_MSG[label="kill_fasync_fl_fl_fasync_SIGIO_POLL_MSG"];
+        }
+
+        subgraph cluster_lease_release_private_callback{
+                label="static void lease_release_private_callback(struct file_lock *fl)
+";
+                fl_fl_file_false[label="fl_fl_file_false"];
+                return[label="return"];
+                f_delown_fl_fl_file[label="f_delown_fl_fl_file"];
+                set_fl_fl_file_f_owner_signum_0[label="set_fl_fl_file_f_owner_signum_0"];
+        }
+
+        subgraph cluster_lease_mylease_callback{
+                label="static int lease_mylease_callback(struct file_lock *fl, struct file_lock *try)
+";
+                return_fl_fl_file_eq_try_fl_file[label="return_fl_fl_file_eq_try_fl_file"];
+        }
+
+        subgraph cluster_lease_init{
+                label="static int lease_init(struct file *filp, int type, struct file_lock *fl)
+ ";
+                set_fl_fl_owner_current_files[label="set_fl_fl_owner_current_files"];
+                set_fl_fl_pid_current_tgid[label="set_fl_fl_pid_current_tgid"];
+                set_fl_fl_file_filp[label="set_fl_fl_file_filp"];
+                set_fl_fl_flags_FL_LEASE[label="set_fl_fl_flags_FL_LEASE"];
+                assign_type_fl_type_not_eq_0[label="assign_type_fl_type_not_eq_0"];
+                locks_free_lock_fl[label="locks_free_lock_fl"];
+                return_EINVAL[label="return_EINVAL"];
+                set_fl_fl_start_0[label="set_fl_fl_start_0"];
+                set_fl_fl_end_OFFSET_MAX[label="set_fl_fl_end_OFFSET_MAX"];
+                clear_fl_fl_ops[label="clear_fl_fl_ops"];
+                clear_fl_fl_lmops_lease_manager_ops[label="clear_fl_fl_lmops_lease_manager_ops"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_lease_alloc{
+                label="static int lease_alloc(struct file *filp, int type, struct file_lock **flp)
+";
+                set_fl_locks_alloc_lock[label="set_fl_locks_alloc_lock"];
+                fl_eq_NULL[label="fl_eq_NULL"];
+                return_ENOMEM[label="return_ENOMEM"];
+                set_err_lease_init_filp_type_fl[label="set_err_lease_init_filp_type_fl"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_flp_fl[label="set_flp_fl"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_locks_overlap{
+                label="static inline int locks_overlap(struct file_lock *fl1, struct file_lock *fl2)
+";
+                return_fl1_fl_end_not_small_fl2_fl_start_and_fl2_fl_end_not_small_fl1_fl_start[label="return_fl1_fl_end_not_small_fl2_fl_start_and_fl2_fl_end_not_small_fl1_fl_start"];
+        }
+
+        subgraph cluster_ posix_same_owner{
+                label="static inline int posix_same_owner(struct file_lock *fl1, struct file_lock *fl2)
+";
+                fl1_fl_lmops_true_fl1_fl_lmops_fl_compare_ownerr_true[label="fl1_fl_lmops_true_fl1_fl_lmops_fl_compare_ownerr_true"];
+                return_fl2_fl_lmops_eq_fl1_fl_lmops_and_fl1_fl_lmops_fl_compare_owner_fl1_fl2[label="return_fl2_fl_lmops_eq_fl1_fl_lmops_and_fl1_fl_lmops_fl_compare_owner_fl1_fl2"];
+                return_fl1_fl_owner_eq_fl2_fl_owner[label="return_fl1_fl_owner_eq_fl2_fl_owner"];
+        }
+
+        subgraph cluster___locks_delete_block{
+                label="static inline void __locks_delete_block(struct file_lock *waiter)
+";
+                list_del_init_waiter_fl_block[label="list_del_init_waiter_fl_block"];
+                list_del_init_waiter_fl_link[label="list_del_init_waiter_fl_link"];
+                clear_waiter_fl_next[label="clear_waiter_fl_next"];
+        }
+
+        subgraph cluster_locks_delete_block{
+                label="static void locks_delete_block(struct file_lock *waiter)
+";
+                lock_kernel[label="lock_kernel"];
+                __locks_delete_block_waiter[label="__locks_delete_block_waiter"];
+                unlock_kernel[label="unlock_kernel"];
+        }
+
+        subgraph cluster_locks_insert_block{
+                label="static void locks_insert_block(struct file_lock *blocker, 
+			       struct file_lock *waiter)
+";
+                list_empty_waiter_fl_block_false[label="list_empty_waiter_fl_block_false"];
+                __locks_delete_block_waiter[label="__locks_delete_block_waiter"];
+                list_add_tail_waiter_fl_block_blocker_fl_block[label="list_add_tail_waiter_fl_block_blocker_fl_block"];
+                set_waiter_fl_next_blocker[label="set_waiter_fl_next_blocker"];
+                IS_POSIX_blocker_true[label="IS_POSIX_blocker_true"];
+                list_add_waiter_fl_link_blocked_list[label="list_add_waiter_fl_link_blocked_list"];
+        }
+
+        subgraph cluster_locks_wake_up_blocks{
+                label="static void locks_wake_up_blocks(struct file_lock *blocker)
+";
+                list_empty_blocker_fl_block_false[label="list_empty_blocker_fl_block_false"];
+                set_waiter_list_entry_blocker_fl_block_next_struct_file_lock_fl_block[label="set_waiter_list_entry_blocker_fl_block_next_struct_file_lock_fl_block"];
+                __locks_delete_block_waiter[label="__locks_delete_block_waiter"];
+                waiter_fl_lmops_true_and_waiter_fl_lmops_fl_notify_true[label="waiter_fl_lmops_true_and_waiter_fl_lmops_fl_notify_true"];
+                waiter_fl_lmops_fl_notify_waiter[label="waiter_fl_lmops_fl_notify_waiter"];
+                wake_up_waiter_fl_wait[label="wake_up_waiter_fl_wait"];
+        }
+
+        subgraph cluster_locks_insert_lock{
+                label="static void locks_insert_lock(struct file_lock **pos, struct file_lock *fl)
+";
+                list_add_fl_fl_link_file_lock_list[label="list_add_fl_fl_link_file_lock_list"];
+                set_fl_fl_next_pos[label="set_fl_fl_next_pos"];
+                set_pos_fl[label="set_pos_fl"];
+                fl_fl_ops_true_and_fl_fl_ops_fl_insert_true[label="fl_fl_ops_true_and_fl_fl_ops_fl_insert_true"];
+                fl_fl_ops_fl_insert_fl[label="fl_fl_ops_fl_insert_fl"];
+        }
+
+        
+
+        
+}
