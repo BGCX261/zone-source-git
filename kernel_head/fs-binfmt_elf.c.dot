@@ -40,6 +40,25 @@ digraph binfmt_elf_c{
 		__copy_to_user_u_platform_k_platform[label="__copy_to_user_u_platform_k_platform"];
 		set_elf_info_current_mm_saved_auxv[label="set_elf_info_current_mm_saved_auxv"];
 		set_elf_info_ei_index_inc_id[label="set_elf_info_ei_index_inc_id"];
-		set_elf_info_ei_index_inc_
+		set_elf_info_ei_index_inc_val[label="set_elf_info_ei_index_inc_val"];
+		NEW_AUX_ENT_AT_HWCAP_ELF_HWCAP[label="NEW_AUX_ENT_AT_HWCAP_ELF_HWCAP"];
+		NEW_AUX_ENT_AT_PAGESZ_ELF_EXEC_PAGESIZE[label="NEW_AUX_ENT_AT_PAGESZ_ELF_EXEC_PAGESIZE"];
+		NEW_AUX_ENT_AT_CLKTCK_CLOCKS_PER_SEC[label="NEW_AUX_ENT_AT_CLKTCK_CLOCKS_PER_SEC"];
+		NEW_AUX_ENT_AT_PHDR_load_addr_add_exec_e_phoff[label="NEW_AUX_ENT_AT_PHDR_load_addr_add_exec_e_phoff"];
+		NEW_AUX_ENT_AT_PHENT_sizeof_struct_elf_phdr[label="NEW_AUX_ENT_AT_PHENT_sizeof_struct_elf_phdr"];
+		NEW_AUX_ENT_AT_PHNUM_exec_e_phnum[label="NEW_AUX_ENT_AT_PHNUM_exec_e_phnum"];
+		NEW_AUX_ENT_AT_BASE_interp_load_addr[label="NEW_AUX_ENT_AT_BASE_interp_load_addr"];
+		NEW_AUX_ENT_AT_FLAGS_0[label="NEW_AUX_ENT_AT_FLAGS_0"];
+		NEW_AUX_ENT_AT_ENTRY_exec_e_entry[label="NEW_AUX_ENT_AT_ENTRY_exec_e_entry"];
+		NEW_AUX_ENT_AT_UID_tsk_euid[label="NEW_AUX_ENT_AT_UID_tsk_euid"];
+		NEW_AUX_ENT_AT_EUID_tsk_euid[label="NEW_AUX_ENT_AT_EUID_tsk_euid"];
+		NEW_AUX_ENT_AT_GID_tsk_gid[label="NEW_AUX_ENT_AT_GID_tsk_gid"];
+		NEW_AUX_ENT_AT_EGID_tsk_egid[label="NEW_AUX_ENT_AT_EGID_tsk_egid"];
+		NEW_AUX_ENT_AT_SECURE_security_bprm_secureexec_bprm[label="NEW_AUX_ENT_AT_SECURE_security_bprm_secureexec_bprm"];
+		k_platform_true[label="k_platform_true"];
+		NEW_AUX_ENT_AT_PLATFORM_u_platform[label="NEW_AUX_ENT_AT_PLATFORM_u_platform"];
+		bprm_interp_flags_BINPRM_FLAGS_EXECFD_set[label="bprm_interp_flags_BINPRM_FLAGS_EXECFD_set"];
+		NEW_AUX_ENT_AT_EXECFD_bprm_interp_data[label="NEW_AUX_ENT_AT_EXECFD_bprm_interp_data"];
+		
 	}
 }
