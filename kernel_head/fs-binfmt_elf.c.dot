@@ -1,0 +1,45 @@
+digraph binfmt_elf_c{
+	subgraph cluster_set_brk{
+		label="static int set_brk(unsigned long start, unsigned long end)";
+		set_start_ELF_PAGEALIGN_start[label="set_start_ELF_PAGEALIGN_start"];
+		set_end_ELF_PAGEALIGN_end[label="set_end_ELF_PAGEALIGN_end"];
+		end_great_start[label="end_great_start"];
+		down_write_current_mm_mmap_sem[label="down_write_current_mm_mmap_sem"];
+		set_addr_do_brk_start_end_sub_start[label="set_addr_do_brk_start_end_sub_start"];
+		up_write_current_mm_mmap_sem[label="up_write_current_mm_mmap_sem"];
+		BAD_ADDR_addr_true[label="BAD_ADDR_addr_true"];
+		return_addr[label="return_addr"];
+		set_current_mm_start_brk_current_mm_brk_end[label="set_current_mm_start_brk_current_mm_brk_end"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_padzero{
+		label="static int padzero(unsigned long elf_bss)";
+		set_nbyte_ELF_PAGEOFFSET_elf_bss[label="set_nbyte_ELF_PAGEOFFSET_elf_bss"];
+		nbyte_true[label="nbyte_true"];
+		set_nbyte_ELF_MIN_ALIGN_sub_nbyte[label="set_nbyte_ELF_MIN_ALIGN_sub_nbyte"];
+		clear_user_elf_bss_nbyte_true[label="clear_user_elf_bss_nbyte_true"];
+		return_EFAULT[label="return_EFAULT"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_create_elf_tables{
+		label="static int create_elf_tables(struct linux_binprm *bprm, struct elfhdr * exec,
+		int interp_aout, unsigned long load_addr,
+		unsigned long interp_load_addr)";
+		clear_p_bprm_p[label="clear_p_bprm_p"];
+		set_argc_bprm_argc[label="set_argc_bprm_argc"];
+		envc_bprm_envc[label="envc_bprm_envc"];
+		set_k_platform_ELF_PLATFORM[label="set_k_platform_ELF_PLATFORM"];
+		set_tsk_current[label="set_tsk_current"];
+		clear_u_platform[label="clear_u_platform"];
+		k_platform_true[label="k_platform_true"];
+		set_len_strlen_k_platform_add_1[label="set_len_strlen_k_platform_add_1"];
+		set_p_arch_align_stack_p[label="set_p_arch_align_stack_p"];
+		set_u_platform_STACK_ALLOC_p_len[label="set_u_platform_STACK_ALLOC_p_len"];
+		__copy_to_user_u_platform_k_platform[label="__copy_to_user_u_platform_k_platform"];
+		set_elf_info_current_mm_saved_auxv[label="set_elf_info_current_mm_saved_auxv"];
+		set_elf_info_ei_index_inc_id[label="set_elf_info_ei_index_inc_id"];
+		set_elf_info_ei_index_inc_
+	}
+}
