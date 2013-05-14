@@ -547,5 +547,399 @@ digraph dquot_c{
 		return_ret[label="return_ret"];
 	}
 
+	subgraph cluster_dquot_free_space{
+		label="int dquot_free_space(struct inode *inode, qsize_t number)";
+		IS_NOQUOTA_inode_true[label="IS_NOQUOTA_inode_true"];
+		inode_sub_bytes_inode_number[label="inode_sub_bytes_inode_number"];
+		return_QUOTA_OK[label="return_QUOTA_OK"];
+		down_read_sb_dqopt_inode_i_sb_dqptr_sem[label="down_read_sb_dqopt_inode_i_sb_dqptr_sem"];
+		IS_NOQUOTA_inode_true[label="IS_NOQUOTA_inode_true"];
+		up_read_sb_dqopt_inode_i_sb_dqptr_sem[label="up_read_sb_dqopt_inode_i_sb_dqptr_sem"];
+		goto_out_sub[label="goto_out_sub"];
+		lock_dq_data_lock[label="lock_dq_data_lock"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		inode_i_dquot_cnt_eq_NODQUOT[label="inode_i_dquot_cnt_eq_NODQUOT"];
+		dquot_decr_space_inode_i_dquot_cnt_number[label="dquot_decr_space_inode_i_dquot_cnt_number"];
+		inode_sub_bytes_inode_number[label="inode_sub_bytes_inode_number"];
+		unlock_dq_data_lock[label="unlock_dq_data_lock"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		inode_i_dquot_cnt_true[label="inode_i_dquot_cnt_true"];
+		mark_dquot_dirty_inode_i_dquot_cnt[label="mark_dquot_dirty_inode_i_dquot_cnt"];
+		up_read_sb_dqopt_inode_i_sb_dqptr_sem[label="up_read_sb_dqopt_inode_i_sb_dqptr_sem"];
+		return_QUOTA_OK[label="return_QUOTA_OK"];
+	}
+
+	subgraph cluster_dquot_free_inode{
+		label="int dquot_free_inode(const struct inode *inode, unsigned long number)";
+		IS_NOQUOTA_inode_true[label="IS_NOQUOTA_inode_true"];
+		return_QUOTA_OK[label="return_QUOTA_OK"];
+		down_read_sb_dqopt_inode_i_sb_dqptr_sem[label="down_read_sb_dqopt_inode_i_sb_dqptr_sem"];
+		IS_NOQUOTA_inode_true[label="IS_NOQUOTA_inode_true"];
+		up_read_sb_dqopt_inode_i_sb_dqptr_sem[label="up_read_sb_dqopt_inode_i_sb_dqptr_sem"];
+		goto_out_sub[label="goto_out_sub"];
+		lock_dq_data_lock[label="lock_dq_data_lock"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		inode_i_dquot_cnt_eq_NODQUOT[label="inode_i_dquot_cnt_eq_NODQUOT"];
+		dquot_decr_inodes_inode_i_dquot_cnt_number[label="dquot_decr_inodes_inode_i_dquot_cnt_number"];
+		unlock_dq_data_lock[label="unlock_dq_data_lock"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		inode_i_dquot_cnt_true[label="inode_i_dquot_cnt_true"];
+		mark_dquot_dirty_inode_i_dquot_cnt[label="mark_dquot_dirty_inode_i_dquot_cnt"];
+		up_read_sb_dqopt_inode_i_sb_dqptr_sem[label="up_read_sb_dqopt_inode_i_sb_dqptr_sem"];
+		return_QUOTA_OK[label="return_QUOTA_OK"];
+	}
+
+	subgraph cluster_dquot_transfer{
+		label="int dquot_transfer(struct inode *inode, struct iattr *iattr)";
+		set_ret_NO_QUOTA[label="set_ret_NO_QUOTA"];
+		set_chuid_iattr_ia_valid_and_ATTR_UID_and_inode_i_uid_not_eq_iattr_ia_uid[label="set_chuid_iattr_ia_valid_and_ATTR_UID_and_inode_i_uid_not_eq_iattr_ia_uid"];
+		set_chgid_iattr_ia_valid_ATTR_GID_and_inode_i_gid_not_eq_iattr_ia_gid[label="set_chgid_iattr_ia_valid_ATTR_GID_and_inode_i_gid_not_eq_iattr_ia_gid"];
+		IS_NOQUOTA_inode_true[label="IS_NOQUOTA_inode_true"];
+		return_QUOTA_OK[label="return_QUOTA_OK"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		transfer_to_cnt_transfer_from_cnt_NODQUOT[label="transfer_to_cnt_transfer_from_cnt_NODQUOT"];
+		set_warntype_cnt_NOWARN[label="set_warntype_cnt_NOWARN"];
+		down_write_sb_dqopt_inode_i_sb_dqptr_sem[label="down_write_sb_dqopt_inode_i_sb_dqptr_sem"];
+		IS_NOQUOTA_inode_true[label="IS_NOQUOTA_inode_true"];
+		up_write_sb_dqopt_inode_i_sb_dqptr_sem[label="up_write_sb_dqopt_inode_i_sb_dqptr_sem"];
+		return_QUOTA_OK[label="return_QUOTA_OK"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		switch_cnt[label="switch_cnt"];
+		case_USRQUOTA[label="case_USRQUOTA"];
+		chuid_false[label="chuid_false"];
+		transfer_to_cnt_dqget_inode_i_sb_iattr_ia_uid_cnt[label="transfer_to_cnt_dqget_inode_i_sb_iattr_ia_uid_cnt"];
+		case_GRPQUOTA[label="case_GRPQUOTA"];
+		chgid_false[label="chgid_false"];
+		transfer_to_cnt_dqget_inode_i_sb_iattr_ia_gid_cnt[label="transfer_to_cnt_dqget_inode_i_sb_iattr_ia_gid_cnt"];
+		lock_dq_data_lock[label="lock_dq_data_lock"];
+		set_space_inode_get_bytes_inode[label="set_space_inode_get_bytes_inode"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		transfer_to_cnt_eq_NODQUOT[label="transfer_to_cnt_eq_NODQUOT"];
+		transfer_from_cnt_inode_i_dquot_cnt[label="transfer_from_cnt_inode_i_dquot_cnt"];
+		check_idq_transfer_to_cnt_1_warntype_add_cnt_eq_NO_QUOTA_or_check_bdq_transfer_to_cnt_space_0_warntype_add_cnt_eq_NO_QUOTA[label="check_idq_transfer_to_cnt_1_warntype_add_cnt_eq_NO_QUOTA_or_check_bdq_transfer_to_cnt_space_0_warntype_add_cnt_eq_NO_QUOTA"];
+		goto_warn_put_all[label="goto_warn_put_all"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		transfer_to_cnt_eq_NODQUOT[label="transfer_to_cnt_eq_NODQUOT"];
+		transfer_from_cnt_true[label="transfer_from_cnt_true"];
+		dquot_decr_inodes_transfer_from_cnt_1[label="dquot_decr_inodes_transfer_from_cnt_1"];
+		dquot_decr_space_transfer_from_cnt_space[label="dquot_decr_space_transfer_from_cnt_space"];
+		dquot_incr_inodes_transfer_to_cnt_1[label="dquot_incr_inodes_transfer_to_cnt_1"];
+		dquot_incr_space_transfer_to_cnt_space[label="dquot_incr_space_transfer_to_cnt_space"];
+		set_inode_i_dquot_cnt_transfer_to_cnt[label="set_inode_i_dquot_cnt_transfer_to_cnt"];
+		set_ret_QUOTA_OK[label="set_ret_QUOTA_OK"];
+		unlock_dq_data_lock[label="unlock_dq_data_lock"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		transfer_from_cnt_true[label="transfer_from_cnt_true"];
+		mark_dquot_dirty_transfer_from_cnt[label="mark_dquot_dirty_transfer_from_cnt"];
+		transfer_to_cnt_true[label="transfer_to_cnt_true"];
+		mark_dquot_dirty_transfer_to_cnt[label="mark_dquot_dirty_transfer_to_cnt"];
+		flush_warnings_transfer_to_warntype[label="flush_warnings_transfer_to_warntype"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		ret_eq_QUOTA_OK_and_trnasfer_from_cnt_not_eq_NODQUOT[label="ret_eq_QUOTA_OK_and_trnasfer_from_cnt_not_eq_NODQUOT"];
+		dqput_transfer_from_cnt[label="dqput_transfer_from_cnt"];
+		ret_eq_NO_QUOTA_and_transfer_to_cnt_not_eq_NODQUOT[label="ret_eq_NO_QUOTA_and_transfer_to_cnt_not_eq_NODQUOT"];
+		dqput_transfer_to_cnt[label="dqput_transfer_to_cnt"];
+		up_write_sb_dqopt_inode_i_sb_dqptr_sem[label="up_write_sb_dqopt_inode_i_sb_dqptr_sem"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_dquot_commit_info{
+		label="int dquot_commit_info(struct super_block *sb, int type)";
+		set_dqopt_sb_dqopt_sb[label="set_dqopt_sb_dqopt_sb"];
+		down_dqopt_dqio_sem[label="down_dqopt_dqio_sem"];
+		set_ret_dqopt_ops_type_write_file_info_sb_type[label="set_ret_dqopt_ops_type_write_file_info_sb_type"];
+		up_dqopt_dqio_sem[label="up_dqopt_dqio_sem"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_set_enable_flags{
+		label="static inline void set_enable_flags(struct quota_info *dqopt, int type)";
+		switch_type[label="switch_type"];
+		case_USRQUOTA[label="case_USRQUOTA"];
+		dqopt_flags_self_or_DQUOT_USR_ENABLED[label="dqopt_flags_self_or_DQUOT_USR_ENABLED"];
+		case_GRPQUOTA[label="case_GRPQUOTA"];
+		dqopt_flags_self_or_DQUOT_GRP_ENABLED[label="dqopt_flags_self_or_DQUOT_GRP_ENABLED"];
+	}
+
+	subgraph cluster_reset_enable_flags{
+		label="static inline void reset_enable_flags(struct quota_info *dqopt, int type)";
+		switch_type[label="switch_type"];
+		case_USRQUOTA[label="case_USRQUOTA"];
+		dqopt_flags_clear_DQUOT_USR_ENABLED[label="dqopt_flags_clear_DQUOT_USR_ENABLED"];
+		case_GRPQUOTA[label="case_GRPQUOTA"];
+		dqopt_flags_clear_DQUOT_GRP_ENABLED[label="dqopt_flags_clear_DQUOT_GRP_ENABLED"];
+	}
+
+	subgraph cluster_vfs_quota_off{
+		label="int vfs_quota_off(struct super_block *sb, int type)";
+		set_dqopt_sb_dqopt_sb[label="set_dqopt_sb_dqopt_sb"];
+		down_dqopt_dqonoff_sem[label="down_dqopt_dqonoff_sem"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		clear_toputinode_cnt[label="clear_toputinode_cnt"];
+		lear_toputmnt_cnt[label="lear_toputmnt_cnt"];
+		type_not_eq_neg1_and_cnt_not_eq_type[label="type_not_eq_neg1_and_cnt_not_eq_type"];
+		sb_has_quota_enabled_sb_cnt_false[label="sb_has_quota_enabled_sb_cnt_false"];
+		reset_enable_flags_dqopt_cnt[label="reset_enable_flags_dqopt_cnt"];
+		drop_dquot_ref_sb_cnt[label="drop_dquot_ref_sb_cnt"];
+		invalidate_dquots_sb_cnt[label="invalidate_dquots_sb_cnt"];
+		info_dirty_dqopt_info_cnt_true[label="info_dirty_dqopt_info_cnt_true"];
+		sb_dq_op_write_info_sb_cnt[label="sb_dq_op_write_info_sb_cnt"];
+		dqopt_ops_cnt_free_file_info_true[label="dqopt_ops_cnt_free_file_info_true"];
+		dqopt_ops_cnt_free_file_info_sb_cnt[label="dqopt_ops_cnt_free_file_info_sb_cnt"];
+		put_quota_format_dqopt_info_cnt_dqi_format[label="put_quota_format_dqopt_info_cnt_dqi_format"];
+		set_toputinode_cnt_dqopt_files_cnt[label="set_toputinode_cnt_dqopt_files_cnt"];
+		set_toputmnt_cnt_dqopt_mnt_cnt[label="set_toputmnt_cnt_dqopt_mnt_cnt"];
+		clear_dqopt_files_cnt[label="clear_dqopt_files_cnt"];
+		clear_dqopt_mnt_cnt[label="clear_dqopt_mnt_cnt"];
+		set_dqopt_info_cnt_dqi_flags_0[label="set_dqopt_info_cnt_dqi_flags_0"];
+		set_dqopt_info_cnt_dqi_igrace_0[label="set_dqopt_info_cnt_dqi_igrace_0"];
+		dqopt_info_cnt_dqi_bgrace_0[label="dqopt_info_cnt_dqi_bgrace_0"];
+		clear_dqopt_ops_cnt[label="clear_dqopt_ops_cnt"];
+		up_dqopt_dqonoff_sem[label="up_dqopt_dqonoff_sem"];
+		sb_s_op_sync_fs_true[label="sb_s_op_sync_fs_true"];
+		sb_s_op_sync_fs_sb_1[label="sb_s_op_sync_fs_sb_1"];
+		sync_blockdev_sb_s_bdev[label="sync_blockdev_sb_s_bdev"];
+		for_cnt_MAXQUOTAS[label="for_cnt_MAXQUOTAS"];
+		toputinode_cnt_true[label="toputinode_cnt_true"];
+		down_dqopt_dqonoff_sem[label="down_dqopt_dqonoff_sem"];
+		sb_has_quota_enabled_sb_cnt_false[label="sb_has_quota_enabled_sb_cnt_false"];
+		down_toputinodec_cnt_i_sem[label="down_toputinodec_cnt_i_sem"];
+		toputinode_cnt_i_flags_clear_S_IMMUTABLE_S_NOATIME_S_NOQUOTA[label="toputinode_cnt_i_flags_clear_S_IMMUTABLE_S_NOATIME_S_NOQUOTA"];
+		truncate_inode_pages_toputinode_cnt_i_data_0[label="truncate_inode_pages_toputinode_cnt_i_data_0"];
+		up_toputinode_cnt_i_sem[label="up_toputinode_cnt_i_sem"];
+		mark_inode_dirty_toputinode_cnt[label="mark_inode_dirty_toputinode_cnt"];
+		iput_toputinode_cnt[label="iput_toputinode_cnt"];
+		up_dqopt_dqonoff_sem[label="up_dqopt_dqonoff_sem"];
+		toputmnt_cnt_true[label="toputmnt_cnt_true"];
+		mntput_toputmnt_cnt[label="mntput_toputmnt_cnt"];
+		sb_s_bdev_true[label="sb_s_bdev_true"];
+		invalidate_bdev_sb_s_bdev_0[label="invalidate_bdev_sb_s_bdev_0"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_vfs_quota_on_inode{
+		label="static int vfs_quota_on_inode(struct inode *inode, int type, int format_id)";
+		set_fmt_find_quota_format_format_id[label="set_fmt_find_quota_format_format_id"];
+		set_sb_inode_i_sb[label="set_sb_inode_i_sb"];
+		set_dqopt_sb_dqopt_sb[label="set_dqopt_sb_dqopt_sb"];
+		fmt_false[label="fmt_false"];
+		return_ESRCH[label="return_ESRCH"];
+		S_ISREG_inode_i_mode_false[label="S_ISREG_inode_i_mode_false"];
+		set_error_EACCES[label="set_error_EACCES"];
+		goto_out_fmt[label="goto_out_fmt"];
+		IS_RDONLY_inode_true[label="IS_RDONLY_inode_true"];
+		set_error_EROFS[label="set_error_EROFS"];
+		goto_out_fmt[label="goto_out_fmt"];
+		sb_s_op_quota_write_false_or_sb_s_op_quota_read_false[label="sb_s_op_quota_write_false_or_sb_s_op_quota_read_false"];
+		set_error_EINVAL[label="set_error_EINVAL"];
+		goto_out_fmt[label="goto_out_fmt"];
+		write_inode_now_inode_1[label="write_inode_now_inode_1"];
+		invalidate_bdev_sb_s_bdev_0[label="invalidate_bdev_sb_s_bdev_0"];
+		down_inode_i_sem[label="down_inode_i_sem"];
+		down_dqopt_dqonoff_sem[label="down_dqopt_dqonoff_sem"];
+		sb_has_quota_enabled_sb_type_true[label="sb_has_quota_enabled_sb_type_true"];
+		set_error_EBUSY[label="set_error_EBUSY"];
+		goto_out_lock[label="goto_out_lock"];
+		down_write_dqopt_dqptr_sem[label="down_write_dqopt_dqptr_sem"];
+		set_old_flags_inode_i_flags_and_S_NOATIME_S_IMMUTABLE_S_NOQUOTA[label="set_old_flags_inode_i_flags_and_S_NOATIME_S_IMMUTABLE_S_NOQUOTA"];
+		inode_i_flags_self_or_S_NOQUOTA_S_NOATIME_S_IMMUTABLE[label="inode_i_flags_self_or_S_NOQUOTA_S_NOATIME_S_IMMUTABLE"];
+		up_write_dqopt_dqptr_sem[label="up_write_dqopt_dqptr_sem"];
+		sb_dq_op_drop_inode[label="sb_dq_op_drop_inode"];
+		set_error_EIO[label="set_error_EIO"];
+		set_dqopt_files_type_igrab_inode[label="set_dqopt_files_type_igrab_inode"];
+		dqopt_files_type_false[label="dqopt_files_type_false"];
+		goto_out_lock[label="goto_out_lock"];
+		set_error_EINVAL[label="set_error_EINVAL"];
+		fmt_qf_ops_check_quota_file_sb_type_false[label="fmt_qf_ops_check_quota_file_sb_type_false"];
+		goto_out_file_init[label="goto_out_file_init"];
+		set_dqopt_ops_type_fmt_qf_ops[label="set_dqopt_ops_type_fmt_qf_ops"];
+		set_dqopt_info_type_dqi_format_fmt[label="set_dqopt_info_type_dqi_format_fmt"];
+		INIT_LIST_HEAD_dqopt_info_type_dqi_dirty_list[label="INIT_LIST_HEAD_dqopt_info_type_dqi_dirty_list"];
+		down_dqopt_dqio_sem[label="down_dqopt_dqio_sem"];
+		set_error_dqopt_ops_type_read_file_info_sb_type_small_0[label="set_error_dqopt_ops_type_read_file_info_sb_type_small_0"];
+		up_dqopt_dqio_sem[label="up_dqopt_dqio_sem"];
+		goto_out_file_init[label="goto_out_file_init"];
+		up_dqopt_dqio_sem[label="up_dqopt_dqio_sem"];
+		up_inode_i_sem[label="up_inode_i_sem"];
+		set_enable_flags_dqopt_type[label="set_enable_flags_dqopt_type"];
+		add_dquot_ref_sb_type[label="add_dquot_ref_sb_type"];
+		up_dqopt_dqonoff_sem[label="up_dqopt_dqonoff_sem"];
+		return_0[label="return_0"];
+		clear_dqopt_files_type[label="clear_dqopt_files_type"];
+		iput_inode[label="iput_inode"];
+		up_dqopt_dqonoff_sem[label="up_dqopt_dqonoff_sem"];
+		oldflags_not_eq_neg1[label="oldflags_not_eq_neg1"];
+		down_write_dqopt_dqptr_sem[label="down_write_dqopt_dqptr_sem"];
+		clear_inode_i_flags_S_NOATIME_S_NOQUOTA_S_IMMUTABLE[label="clear_inode_i_flags_S_NOATIME_S_NOQUOTA_S_IMMUTABLE"];
+		inode_i_flags_self_of_oldflags[label="inode_i_flags_self_of_oldflags"];
+		up_write_dqopt_dqptr_sem[label="up_write_dqopt_dqptr_sem"];
+		up_inode_i_sem[label="up_inode_i_sem"];
+		put_quota_format_fmt[label="put_quota_format_fmt"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_vfs_quota_on{
+		label="int vfs_quota_on(struct super_block *sb, int type, int format_id, char *path)";
+		set_error_path_lookup_path_LOOKUP_FOLLOW_nd[label="set_error_path_lookup_path_LOOKUP_FOLLOW_nd"];
+		error_small_0[label="error_small_0"];
+		return_error[label="return_error"];
+		set_error_security_quota_on_nd_dentry[label="set_error_security_quota_on_nd_dentry"];
+		error_true[label="error_true"];
+		goto_out_path[label="goto_out_path"];
+		nd_mnt_mnt_sb_not_eq_sb[label="nd_mnt_mnt_sb_not_eq_sb"];
+		set_error_EXDEV[label="set_error_EXDEV"];
+		set_error_vfs_quota_on_inode_nd_dentry_d_inode_type_format_id[label="set_error_vfs_quota_on_inode_nd_dentry_d_inode_type_format_id"];
+		error_false[label="error_false"];
+		set_sb_dqopt_sb_mnt_type_mntget_nd_mnt[label="set_sb_dqopt_sb_mnt_type_mntget_nd_mnt"];
+		path_release_nd[label="path_release_nd"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_vfs_quota_on_mount{
+		label="int vfs_quota_on_mount(int type, int format_id, struct dentry *dentry)";
+		set_error_security_quota_on_dentry[label="set_error_security_quota_on_dentry"];
+		error_true[label="error_true"];
+		return_error[label="return_error"];
+		return_vfs_quota_on_inode_dentry_d_inode_type_format_id[label="return_vfs_quota_on_inode_dentry_d_inode_type_format_id"];
+	}
+
+	subgraph cluster_do_get_dqblk{
+		label="static void do_get_dqblk(struct dquot *dquot, struct if_dqblk *di)";
+		set_dm_dquot_dq_dpb[label="set_dm_dquot_dq_dpb"];
+		lock_dq_data_lock[label="lock_dq_data_lock"];
+		set_di_dqb_bhardlimit_dm_dqb_bhardlimit[label="set_di_dqb_bhardlimit_dm_dqb_bhardlimit"];
+		set_di_dqb_bsoftlimit_dm_dqb_bsoftlimit[label="set_di_dqb_bsoftlimit_dm_dqb_bsoftlimit"];
+		set_di_dqb_curspave_dm_dqb_curspace[label="set_di_dqb_curspave_dm_dqb_curspace"];
+		set_di_dqb_ihardlimit_dm_dqb_ihardlimit[label="set_di_dqb_ihardlimit_dm_dqb_ihardlimit"];
+		set_di_dqb_isoftlimit_dm_dqb_isoftlimit[label="set_di_dqb_isoftlimit_dm_dqb_isoftlimit"];
+		set_di_dqb_curinodes_dm_dqb_curinodes[label="set_di_dqb_curinodes_dm_dqb_curinodes"];
+		set_di_dqb_btime_dm_dqb_btime[label="set_di_dqb_btime_dm_dqb_btime"];
+		set_di_dqb_itime_dm_dqb_time[label="set_di_dqb_itime_dm_dqb_time"];
+		set_di_dqb_valid_QIF_ALL[label="set_di_dqb_valid_QIF_ALL"];
+		unlock_dq_data_lock[label="unlock_dq_data_lock"];
+	}
+
+	subgraph cluster_vfs_get_dqblk{
+		label="int vfs_get_dqblk(struct super_block *sb, int type, qid_t id, struct if_dqblk *di)";
+		down_sb_dqopt_sb_dqonoff_sem[label="down_sb_dqopt_sb_dqonoff_sem"];
+		set_dquot_dqget_sb_id_type_false[label="set_dquot_dqget_sb_id_type_false"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_ESRCH[label="return_ESRCH"];
+		do_get_dqblk_dquot_di[label="do_get_dqblk_dquot_di"];
+		dqput_dquot[label="dqput_dquot"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_do_set_dqblk{
+		label="static void do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)";
+		set_dm_dquot_dq_dqb[label="set_dm_dquot_dq_dqb"];
+		lock_dq_data_lock[label="lock_dq_data_lock"];
+		di_dqb_valid_QIF_SPACE_set[label="di_dqb_valid_QIF_SPACE_set"];
+		dm_dqb_curspace_di_dqb_curspace[label="dm_dqb_curspace_di_dqb_curspace"];
+		set_check_blim_1[label="set_check_blim_1"];
+		di_dqb_valid_QIF_BLIMITS_set[label="di_dqb_valid_QIF_BLIMITS_set"];
+		set_dm_dqb_bsoftlimit_di_dqb_bsoftlimit[label="set_dm_dqb_bsoftlimit_di_dqb_bsoftlimit"];
+		set_dm_dqb_bhardlimit_di_dqb_bhardlimit[label="set_dm_dqb_bhardlimit_di_dqb_bhardlimit"];
+		set_check_blim_1[label="set_check_blim_1"];
+		di_dqb_valid_QIF_INODES_set[label="di_dqb_valid_QIF_INODES_set"];
+		set_dm_dqb_curinode_di_dqb_curinodes[label="set_dm_dqb_curinode_di_dqb_curinodes"];
+		set_check_ilim_1[label="set_check_ilim_1"];
+		di_dqb_valid_QIF_ILIMITS_set[label="di_dqb_valid_QIF_ILIMITS_set"];
+		set_dm_dqb_isoftlimit_di_dqb_isoftlimit[label="set_dm_dqb_isoftlimit_di_dqb_isoftlimit"];
+		set_dm_dqb_ihardlimit_di_dqb_ihardlimit[label="set_dm_dqb_ihardlimit_di_dqb_ihardlimit"];
+		set_check_ilim_1[label="set_check_ilim_1"];
+		di_dqb_valid_QIF_BTIME_set[label="di_dqb_valid_QIF_BTIME_set"];
+		set_dm_dqb_btime_di_dqb_bitme[label="set_dm_dqb_btime_di_dqb_bitme"];
+		di_dqb_valid_QIF_ITIME_set[label="di_dqb_valid_QIF_ITIME_set"];
+		set_dm_dqb_itime_di_dqb_itime[label="set_dm_dqb_itime_di_dqb_itime"];
+		check_blim_true[label="check_blim_true"];
+		dm_dqb_bsoftlimit_false_or_toqb_dm_dqb_curspace_small_dm_dqb_bsoftlimit[label="dm_dqb_bsoftlimit_false_or_toqb_dm_dqb_curspace_small_dm_dqb_bsoftlimit"];
+		set_dm_dqb_btime_0[label="set_dm_dqb_btime_0"];
+		clear_bit_DQ_BLKS_B_dquot_dq_flags[label="clear_bit_DQ_BLKS_B_dquot_dq_flags"];
+		di_dqb_valid_QIF_BTIME_clear[label="di_dqb_valid_QIF_BTIME_clear"];
+		set_dm_dqb_btime_get_seconds_add_sb_dqopt_dquot_dq_sb_info_dquot_dq_type_dqi_bfrace[label="set_dm_dqb_btime_get_seconds_add_sb_dqopt_dquot_dq_sb_info_dquot_dq_type_dqi_bfrace"];
+		check_ilim_true[label="check_ilim_true"];
+		dm_dqb_isoftlimit_false_or_dm_dqb_curindes_small_dm_dqb_isoftlimit[label="dm_dqb_isoftlimit_false_or_dm_dqb_curindes_small_dm_dqb_isoftlimit"];
+		set_dm_dqb_itime_0[label="set_dm_dqb_itime_0"];
+		clar_bit_DQ_INODES_B_dquot_dq_flags[label="clar_bit_DQ_INODES_B_dquot_dq_flags"];
+		di_dqb_valid_QIF_ITIME_clear[label="di_dqb_valid_QIF_ITIME_clear"];
+		ste_dm_dqb_itime_get_secondes_add_sb_dqopt_dquot_dq_sb_info_dquot_dq_type_dqi_igrace[label="ste_dm_dqb_itime_get_secondes_add_sb_dqopt_dquot_dq_sb_info_dquot_dq_type_dqi_igrace"];
+		dm_dqb_bhardlimit_true_or_dm_dqb_bsoftlimit_true_or_dm_dqb_ihardlimit_true_or_dm_dqb_isoftlimit_true[label="dm_dqb_bhardlimit_true_or_dm_dqb_bsoftlimit_true_or_dm_dqb_ihardlimit_true_or_dm_dqb_isoftlimit_true"];
+		clear_bit_DQ_FAKE_B_dquot_dq_flags[label="clear_bit_DQ_FAKE_B_dquot_dq_flags"];
+		set_bit_DQ_FAKE_B_dquot_dq_flags[label="set_bit_DQ_FAKE_B_dquot_dq_flags"];
+		unlock_dq_data_lock[label="unlock_dq_data_lock"];
+		mark_dquot_dirty_dquot[label="mark_dquot_dirty_dquot"];
+	}
+
+	subgraph cluster_vfs_set_dqblk{
+		label="int vfs_set_dqblk(struct super_block *sb, int type, qid_t id, struct if_dqblk *di)";
+		down_sb_dqopt_sb_dqonoff_sem[label="down_sb_dqopt_sb_dqonoff_sem"];
+		ste_dquot_dqget_sb_id_type_false[label="ste_dquot_dqget_sb_id_type_false"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_ESRCH[label="return_ESRCH"];
+		do_set_dqblk_dquot_di[label="do_set_dqblk_dquot_di"];
+		dqput_dquot[label="dqput_dquot"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_vfs_get_dqinfo{
+		label="int vfs_get_dqinfo(struct super_block *sb, int type, struct if_dqinfo *ii)";
+		down_sb_dqopt_sb_dqonoff_sem[label="down_sb_dqopt_sb_dqonoff_sem"];
+		sb_has_quota_enabled_sb_type_false[label="sb_has_quota_enabled_sb_type_false"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_ESRCH[label="return_ESRCH"];
+		set_mi_sb_dqopt_sb_info_add_type[label="set_mi_sb_dqopt_sb_info_add_type"];
+		lock_dq_data_lock[label="lock_dq_data_lock"];
+		set_ii_dqi_bgrace_mi_dqi_bgrace[label="set_ii_dqi_bgrace_mi_dqi_bgrace"];
+		set_ii_dqi_igrace_mi_dqi_igrace[label="set_ii_dqi_igrace_mi_dqi_igrace"];
+		set_ii_dqi_flags_mi_dpi_flags_and_DQF_MASK[label="set_ii_dqi_flags_mi_dpi_flags_and_DQF_MASK"];
+		set_ii_dqi_valid_IIF_ALL[label="set_ii_dqi_valid_IIF_ALL"];
+		unlock_dq_data_lock[label="unlock_dq_data_lock"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_vfs_set_dqinfo{
+		label="int vfs_set_dqinfo(struct super_block *sb, int type, struct if_dqinfo *ii)";
+		down_sb_dqopt_sb_dqonoff_sem[label="down_sb_dqopt_sb_dqonoff_sem"];
+		sb_has_quota_enable_sb_type_false[label="sb_has_quota_enable_sb_type_false"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_ESRCH[label="return_ESRCH"];
+		set_mi_sb_dqopt_sb_info_add_type[label="set_mi_sb_dqopt_sb_info_add_type"];
+		lock_dq_data_lock[label="lock_dq_data_lock"];
+		ii_dqi_valid_IIF_BGRACE_set[label="ii_dqi_valid_IIF_BGRACE_set"];
+		set_mi_dqi_bgrace_ii_dqi_bgrace[label="set_mi_dqi_bgrace_ii_dqi_bgrace"];
+		ii_dqi_valid_IIF_IGRACE_set[label="ii_dqi_valid_IIF_IGRACE_set"];
+		set_mi_dqi_igrace_ii_dqi_igrace[label="set_mi_dqi_igrace_ii_dqi_igrace"];
+		ii_dqi_valid_IIF_FLAGS_set[label="ii_dqi_valid_IIF_FLAGS_set"];
+		set_mi_dqi_flags_mi_dqi_flags_clear_DQF_MASK_or_ii_dqi_flags_and_DQF_MASK[label="set_mi_dqi_flags_mi_dqi_flags_clear_DQF_MASK_or_ii_dqi_flags_and_DQF_MASK"];
+		unlock_dq_data_lock[label="unlock_dq_data_lock"];
+		mark_info_dirty_sb_type[label="mark_info_dirty_sb_type"];
+		sb_dq_op_write_info_sb_type[label="sb_dq_op_write_info_sb_type"];
+		up_sb_dqopt_sb_dqonoff_sem[label="up_sb_dqopt_sb_dqonoff_sem"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_dquot_init{
+		label="static int __init dquot_init(void)";
+		register_sysctl_table_sys_table_0[label="register_sysctl_table_sys_table_0"];
+		set_dquot_cachep_kmem_cache_create_dquot[label="set_dquot_cachep_kmem_cache_create_dquot"];
+		set_order_0[label="set_order_0"];
+		set_dquot_hash___get_free_pages_GFP_ATOMIC_order[label="set_dquot_hash___get_free_pages_GFP_ATOMIC_order"];
+		set_nr_hash_1_left_move_order_multi_PAGE_SIZE_div_sizeof_struct_hlist_head[label="set_nr_hash_1_left_move_order_multi_PAGE_SIZE_div_sizeof_struct_hlist_head"];
+		set_dq_hash_bits_0[label="set_dq_hash_bits_0"];
+		inc_dq_hash_bits[label="inc_dq_hash_bits"];
+		nr_hash_right_dq_hash_bits[label="nr_hash_right_dq_hash_bits"];
+		dec_dq_hash_bits[label="dec_dq_hash_bits"];
+		set_hash_1_left_move_dq_hash_bits[label="set_hash_1_left_move_dq_hash_bits"];
+		set_dq_hash_mask_nr_hash_sub_1[label="set_dq_hash_mask_nr_hash_sub_1"];
+		for_i_nr_hash[label="for_i_nr_hash"];
+		INIT_HLIST_HEAD_dquot_hash_add_i[label="INIT_HLIST_HEAD_dquot_hash_add_i"];
+		set_shrinker_DEFAULT_SEEKS_shrink_dqcache_memory[label="set_shrinker_DEFAULT_SEEKS_shrink_dqcache_memory"];
+		return_0[label="return_0"];
+	}
+
 	
 }
