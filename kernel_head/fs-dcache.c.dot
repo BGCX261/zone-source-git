@@ -149,4 +149,370 @@ digraph dcache_c{
 		unlock_dcache_lock[label="unlock_dcache_lock"];
 	}
 
+        subgraph cluster_prune_one_dentry{
+                label="static inline void prune_one_dentry(struct dentry * dentry)
+";
+                __d_drop_dentry[label="__d_drop_dentry"];
+                list_del_dentry_d_child[label="list_del_dentry_d_child"];
+                dec_dentry_stat_nr_dentry[label="dec_dentry_stat_nr_dentry"];
+                dentry_iput_dentry[label="dentry_iput_dentry"];
+                set_parent_dentry_d_parent[label="set_parent_dentry_d_parent"];
+                d_free_dentry[label="d_free_dentry"];
+                parent_not_eq_dentry[label="parent_not_eq_dentry"];
+                dput_parent[label="dput_parent"];
+                lock_dcache_lock[label="lock_dcache_lock"];
+        }
+
+        subgraph cluster_prune_dcache{
+                label="static void prune_dcache(int count)
+";
+                lock_dcache_lock[label="lock_dcache_lock"];
+                for_count[label="for_count"];
+                cond_resched_lock_dcache_lock[label="cond_resched_lock_dcache_lock"];
+                set_tmp_dentry_unused_prev[label="set_tmp_dentry_unused_prev"];
+                tmp_eq_dentry_unused[label="tmp_eq_dentry_unused"];
+                list_del_init_tmp[label="list_del_init_tmp"];
+                prefetch_dentry_unused_prev[label="prefetch_dentry_unused_prev"];
+                dec_dentry_stat_nr_unused[label="dec_dentry_stat_nr_unused"];
+                set_dentry_list_entry_tmp_struct_dentry_d_lru[label="set_dentry_list_entry_tmp_struct_dentry_d_lru"];
+                lock_dentry_d_lock[label="lock_dentry_d_lock"];
+                atomic_read_dentry_d_count_true[label="atomic_read_dentry_d_count_true"];
+                unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+                dentry_d_flags_DCACHE_REFERENCED_set[label="dentry_d_flags_DCACHE_REFERENCED_set"];
+                dentry_d_flags_clear_DCACHE_PEFERENCED[label="dentry_d_flags_clear_DCACHE_PEFERENCED"];
+                list_add_dentry_d_lru_dentry_unused[label="list_add_dentry_d_lru_dentry_unused"];
+                inc_dentry_stat_nr_unused[label="inc_dentry_stat_nr_unused"];
+                unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+                prune_one_dentry_dentry[label="prune_one_dentry_dentry"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+        }
+
+        subgraph cluster_shrink_dcache_sb{
+                label="void shrink_dcache_sb(struct super_block * sb)
+";
+                lock_dcache_lock[label="lock_dcache_lock"];
+                set_next_dentry_unused_next[label="set_next_dentry_unused_next"];
+                next_not_eq_dentry_unused[label="next_not_eq_dentry_unused"];
+                set_tmp_next[label="set_tmp_next"];
+                set_next_tmp_next[label="set_next_tmp_next"];
+                set_dentry_list_entry_tmp_struct_dentry_d_lru[label="set_dentry_list_entry_tmp_struct_dentry_d_lru"];
+                dentry_d_sb_not_eq_sb[label="dentry_d_sb_not_eq_sb"];
+                list_del_tmp[label="list_del_tmp"];
+                list_add_tmp_dentry_unused[label="list_add_tmp_dentry_unused"];
+                set_next_dentry_unused_next[label="set_next_dentry_unused_next"];
+                next_not_eq_dentry_unused[label="next_not_eq_dentry_unused"];
+                set_tmp_next[label="set_tmp_next"];
+                set_next_tmp_next[label="set_next_tmp_next"];
+                set_dentry_list_entry_struct_dentry_d_lru[label="set_dentry_list_entry_struct_dentry_d_lru"];
+                dentry_d_sb_not_eq_sb[label="dentry_d_sb_not_eq_sb"];
+                dec_dentry_stat_nr_unused[label="dec_dentry_stat_nr_unused"];
+                list_del_init_tmp[label="list_del_init_tmp"];
+                lock_dentry_d_lock[label="lock_dentry_d_lock"];
+                atomic_read_dentry_d_count_true[label="atomic_read_dentry_d_count_true"];
+                unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+                prune_one_dentry_dentry[label="prune_one_dentry_dentry"];
+                goto_repeat[label="goto_repeat"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+        }
+
+        subgraph cluster_have_submounts{
+                label="int have_submounts(struct dentry *parent)
+";
+                set_this_parent_parent[label="set_this_parent_parent"];
+                lock_dcache_lock[label="lock_dcache_lock"];
+                d_mountpoint_parent_true[label="d_mountpoint_parent_true"];
+                goto_positive[label="goto_positive"];
+                set_next_this_parent_d_subdirs_next[label="set_next_this_parent_d_subdirs_next"];
+                next_this_parent_d_subdirs[label="next_this_parent_d_subdirs"];
+                set_tmp_next[label="set_tmp_next"];
+                set_dentry_list_entry_tmp_struct_dentry_d_child[label="set_dentry_list_entry_tmp_struct_dentry_d_child"];
+                set_next_tmp_next[label="set_next_tmp_next"];
+                d_mountpoint_dentry_true[label="d_mountpoint_dentry_true"];
+                goto_positive[label="goto_positive"];
+                list_empty_dentry_d_subdirs_false[label="list_empty_dentry_d_subdirs_false"];
+                set_this_parent_dentry[label="set_this_parent_dentry"];
+                goto_repeat[label="goto_repeat"];
+                this_parent_not_eq_parent[label="this_parent_not_eq_parent"];
+                set_next_this_parent_d_child_next[label="set_next_this_parent_d_child_next"];
+                set_this_parent_this_parent_d_parent[label="set_this_parent_this_parent_d_parent"];
+                goto_resume[label="goto_resume"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                return_0[label="return_0"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_select_parent{
+                label="static int select_parent(struct dentry * parent)
+";
+                set_this_parent_parent[label="set_this_parent_parent"];
+                lock_dcache_lock[label="lock_dcache_lock"];
+                set_next_this_parent_d_subdirs_next[label="set_next_this_parent_d_subdirs_next"];
+                next_not_eq_this_parent_d_subdirs[label="next_not_eq_this_parent_d_subdirs"];
+                set_tmp_next[label="set_tmp_next"];
+                set_dentry_list_entry_tmp_struct_dentry_d_child[label="set_dentry_list_entry_tmp_struct_dentry_d_child"];
+                set_next_tmp_next[label="set_next_tmp_next"];
+                list_empty_dentry_d_lru_false[label="list_empty_dentry_d_lru_false"];
+                dec_dentry_stat_nr_unused[label="dec_dentry_stat_nr_unused"];
+                list_del_init_dentry_d_lru[label="list_del_init_dentry_d_lru"];
+                atomic_read_dentry_d_count_false[label="atomic_read_dentry_d_count_false"];
+                list_add_dentry_d_lru_dentry_unused_prev[label="list_add_dentry_d_lru_dentry_unused_prev"];
+                inc_dentry_stat_nr_unused[label="inc_dentry_stat_nr_unused"];
+                inc_found[label="inc_found"];
+                found_true_need_resched_true[label="found_true_need_resched_true"];
+                goto_out[label="goto_out"];
+                list_empty_dentry_d_subdirs_false[label="list_empty_dentry_d_subdirs_false"];
+                set_this_parent_dentry[label="set_this_parent_dentry"];
+                goto_repeat[label="goto_repeat"];
+                this_parent_not_eq_parent[label="this_parent_not_eq_parent"];
+                set_next_this_parent_d_child_next[label="set_next_this_parent_d_child_next"];
+                set_this_parent_this_parent_d_parent[label="set_this_parent_this_parent_d_parent"];
+                goto_resume[label="goto_resume"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                return_found[label="return_found"];
+        }
+
+        subgraph cluster_shrink_dcache_parent{
+                label="void shrink_dcache_parent(struct dentry * parent)
+";
+                set_found_select_parent_parent_not_eq_0[label="set_found_select_parent_parent_not_eq_0"];
+                prune_dcache_found[label="prune_dcache_found"];
+        }
+
+        subgraph cluster_shrink_dcache_anon{
+                label="void shrink_dcache_anon(struct hlist_head *head)
+";
+                set_found_0[label="set_found_0"];
+                lock_dcache_lock[label="lock_dcache_lock"];
+                hlist_for_each_lp_head[label="hlist_for_each_lp_head"];
+                set_this_hlist_entry_lp_struct_dentry_d_hash[label="set_this_hlist_entry_lp_struct_dentry_d_hash"];
+                list_empty_this_d_lru_false[label="list_empty_this_d_lru_false"];
+                dec_dentry_stat_nr_unused[label="dec_dentry_stat_nr_unused"];
+                list_del_init_this_d_lru[label="list_del_init_this_d_lru"];
+                atomic_read_this_d_count_false[label="atomic_read_this_d_count_false"];
+                list_add_tail_this_d_lru_dentry_unused[label="list_add_tail_this_d_lru_dentry_unused"];
+                inc_dentry_stat_nr_unused[label="inc_dentry_stat_nr_unused"];
+                inc_found[label="inc_found"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                prune_dcache_found[label="prune_dcache_found"];
+                found_true[label="found_true"];
+        }
+
+        subgraph cluster_shrink_dcache_memory{
+                label="static int shrink_dcache_memory(int nr, unsigned int gfp_mask)
+";
+                nr_true[label="nr_true"];
+                gfp_mask___GFP_FS_clear[label="gfp_mask___GFP_FS_clear"];
+                return_neg1[label="return_neg1"];
+                prune_dcache_nr[label="prune_dcache_nr"];
+                return_dentry_stat_nr_unused_div_100_multi_sysctl_vsf_cache_pressure[label="return_dentry_stat_nr_unused_div_100_multi_sysctl_vsf_cache_pressure"];
+        }
+
+        subgraph cluster_*d_alloc{
+                label="struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+";
+                set_dentry_kmem_cache_alloc_dentry_cache_GFP_KERNEL[label="set_dentry_kmem_cache_alloc_dentry_cache_GFP_KERNEL"];
+                name_len_great_DNAME_INLINE_LEN_sub_1[label="name_len_great_DNAME_INLINE_LEN_sub_1"];
+                set_dname_kmalloc[label="set_dname_kmalloc"];
+                set_dname_dentry_d_iname[label="set_dname_dentry_d_iname"];
+                set_dentry_d_name_name_dname[label="set_dentry_d_name_name_dname"];
+                set_dentry_d_name_len_name_len[label="set_dentry_d_name_len_name_len"];
+                set_dentry_d_name_hash_name_hash[label="set_dentry_d_name_hash_name_hash"];
+                memcpy_dname_name_name[label="memcpy_dname_name_name"];
+                set_dname_name_len_0[label="set_dname_name_len_0"];
+                atomic_set_dentry_d_count_1[label="atomic_set_dentry_d_count_1"];
+                set_dentry_d_flags_DCACHE_UNHASHED[label="set_dentry_d_flags_DCACHE_UNHASHED"];
+                lock_init_dentry_d_lock[label="lock_init_dentry_d_lock"];
+                clear_dentry_d_inode[label="clear_dentry_d_inode"];
+                clear_dentry_d_parent[label="clear_dentry_d_parent"];
+                clear_dentry_d_sb[label="clear_dentry_d_sb"];
+                clear_dentry_d_op[label="clear_dentry_d_op"];
+                clear_dentry_d_fsdata[label="clear_dentry_d_fsdata"];
+                set_dentry_d_mounted_0[label="set_dentry_d_mounted_0"];
+                clear_dentry_d_cookie[label="clear_dentry_d_cookie"];
+                INIT_HLIST_NODE_dentry_d_hash[label="INIT_HLIST_NODE_dentry_d_hash"];
+                INIT_LIST_HEAD_dentry_d_lru[label="INIT_LIST_HEAD_dentry_d_lru"];
+                INIT_LIST_HEAD_dentry_d_subdirs[label="INIT_LIST_HEAD_dentry_d_subdirs"];
+                INIT_LIST_HEAD_dentry_d_alias[label="INIT_LIST_HEAD_dentry_d_alias"];
+                parent_true[label="parent_true"];
+                set_dentry_d_parent_dget_parent[label="set_dentry_d_parent_dget_parent"];
+                set_dentry_d_sb_parent_d_sb[label="set_dentry_d_sb_parent_d_sb"];
+                INIT_LIST_HEAD_dentry_d_child[label="INIT_LIST_HEAD_dentry_d_child"];
+                lock_dcache_lock[label="lock_dcache_lock"];
+                parent_true[label="parent_true"];
+                list_add_dentry_d_child_parent_d_subidrs[label="list_add_dentry_d_child_parent_d_subidrs"];
+                inc_dentry_stat_nr_dentry[label="inc_dentry_stat_nr_dentry"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                return_dentry[label="return_dentry"];
+        }
+
+        subgraph cluster_*d_alloc_name{
+                label="struct dentry *d_alloc_name(struct dentry *parent, const char *name)
+";
+                set_q_name_name[label="set_q_name_name"];
+                set_q_len_strlen_name[label="set_q_len_strlen_name"];
+                set_q_hash_full_name_hash_q_name_q_len[label="set_q_hash_full_name_hash_q_name_q_len"];
+                return_d_alloc_parentt_q[label="return_d_alloc_parentt_q"];
+        }
+
+        subgraph cluster_d_instantiate{
+                label="void d_instantiate(struct dentry *entry, struct inode * inode)
+";
+                lock_dcache_lock[label="lock_dcache_lock"];
+                inode_true[label="inode_true"];
+                list_add_entry_d_alias_inode_i_dentry[label="list_add_entry_d_alias_inode_i_dentry"];
+                set_entry_d_inode_inode[label="set_entry_d_inode_inode"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                security_d_instantiate_entry_inode[label="security_d_instantiate_entry_inode"];
+        }
+
+        subgraph cluster_*d_instantiate_unique{
+                label="struct dentry *d_instantiate_unique(struct dentry *entry, struct inode *inode)
+";
+                set_len_entry_d_name_len[label="set_len_entry_d_name_len"];
+                set_name_entry_d_name_name[label="set_name_entry_d_name_name"];
+                set_hash_entry_d_name_hash[label="set_hash_entry_d_name_hash"];
+                lock_dcache_lock[label="lock_dcache_lock"];
+                inode_false[label="inode_false"];
+                goto_do_negative[label="goto_do_negative"];
+                list_for_each_entry_alias_inode_i_dentry_d_alias[label="list_for_each_entry_alias_inode_i_dentry_d_alias"];
+                set_qstr_alias_d_name[label="set_qstr_alias_d_name"];
+                qstr_hash_not_eq_hash[label="qstr_hash_not_eq_hash"];
+                alias_d_parent_not_eq_entry_d_parent[label="alias_d_parent_not_eq_entry_d_parent"];
+                qstr_len_not_eq_len[label="qstr_len_not_eq_len"];
+                memcpy_qstr_name_name_true[label="memcpy_qstr_name_name_true"];
+                dget_locked_alias[label="dget_locked_alias"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                return_alias[label="return_alias"];
+                list_add_entry_d_alias_inode_i_dentry[label="list_add_entry_d_alias_inode_i_dentry"];
+                set_entry_d_inode_inode[label="set_entry_d_inode_inode"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                security_d_instantiate_entry_inode[label="security_d_instantiate_entry_inode"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_d_alloc_root{
+                label="struct dentry * d_alloc_root(struct inode * root_inode)
+";
+                set_root_inode_ture[label="set_root_inode_ture"];
+                set_name_name_slash_len_1[label="set_name_name_slash_len_1"];
+                set_res_d_alloc_NULL_name[label="set_res_d_alloc_NULL_name"];
+                res_true[label="res_true"];
+                set_res_d_sb_root_inode_i_sb[label="set_res_d_sb_root_inode_i_sb"];
+                set_res_d_parent_res[label="set_res_d_parent_res"];
+                d_instantiate_res_root_inode[label="d_instantiate_res_root_inode"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_*d_hash{
+                label="static inline struct hlist_head *d_hash(struct dentry *parent,
+					unsigned long hash)
+";
+                hash_self_add_parent_xor_GOLDEN_RATIO_PRIME_div_L1_CACHE_BYTES[label="hash_self_add_parent_xor_GOLDEN_RATIO_PRIME_div_L1_CACHE_BYTES"];
+                set_hash_hash_xor_hash_xor_GOLDEN_RATIO_PRIME_right_move_D_HASHBITS[label="set_hash_hash_xor_hash_xor_GOLDEN_RATIO_PRIME_right_move_D_HASHBITS"];
+                return_dentry_hashtable_add_hash_D_HASHMASK_set[label="return_dentry_hashtable_add_hash_D_HASHMASK_set"];
+        }
+
+        subgraph cluster_d_alloc_anon{
+                label="struct dentry * d_alloc_anon(struct inode *inode)
+";
+                set_anonstring_name_null[label="set_anonstring_name_null"];
+                set_res_d_find_alias_inode_true[label="set_res_d_find_alias_inode_true"];
+                iput_inode[label="iput_inode"];
+                return_res[label="return_res"];
+                set_tmp_d_alloc_NULL_anonstring[label="set_tmp_d_alloc_NULL_anonstring"];
+                tmp_false[label="tmp_false"];
+                return_NULL[label="return_NULL"];
+                set_tmp_d_parent_tmp[label="set_tmp_d_parent_tmp"];
+                lock_dcache_lock[label="lock_dcache_lock"];
+                set_res___d_find_alias_inode_0[label="set_res___d_find_alias_inode_0"];
+                res_false[label="res_false"];
+                set_res_tmp[label="set_res_tmp"];
+                clear_tmp[label="clear_tmp"];
+                lock_res_d_lock[label="lock_res_d_lock"];
+                set_res_d_sb_inode_i_sb[label="set_res_d_sb_inode_i_sb"];
+                set_res_d_parent_res[label="set_res_d_parent_res"];
+                set_res_d_inode_inode[label="set_res_d_inode_inode"];
+                res_d_flags_self_or_DCACHE_DISCONNECTED[label="res_d_flags_self_or_DCACHE_DISCONNECTED"];
+                res_d_flags_clear_DCACHE_UNHASHED[label="res_d_flags_clear_DCACHE_UNHASHED"];
+                list_add_res_d_alias_inode_i_dentry[label="list_add_res_d_alias_inode_i_dentry"];
+                hlist_add_head_res_d_hash_inode_i_sb_s_anon[label="hlist_add_head_res_d_hash_inode_i_sb_s_anon"];
+                unlock_res_d_lock[label="unlock_res_d_lock"];
+                clear_inode[label="clear_inode"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                inode_true[label="inode_true"];
+                iput_indoe[label="iput_indoe"];
+                tmp_true[label="tmp_true"];
+                dput_tmp[label="dput_tmp"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_*d_splice_alias{
+                label="struct dentry *d_splice_alias(struct inode *inode, struct dentry *dentry)
+";
+                inode_true[label="inode_true"];
+                lock_dcace_lock[label="lock_dcace_lock"];
+                set_new___d_find_alias_inode_1[label="set_new___d_find_alias_inode_1"];
+                new_true[label="new_true"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                security_d_instantiate_new_inode[label="security_d_instantiate_new_inode"];
+                d_rehash_dentry[label="d_rehash_dentry"];
+                d_move_new_dentry[label="d_move_new_dentry"];
+                iput_inode[label="iput_inode"];
+                list_add_dentry_d_alias_inode_i_dentry[label="list_add_dentry_d_alias_inode_i_dentry"];
+                set_dentry_d_inode_inode[label="set_dentry_d_inode_inode"];
+                unlock_dcache_lock[label="unlock_dcache_lock"];
+                security_d_instantiate_dentry_inode[label="security_d_instantiate_dentry_inode"];
+                d_rehash_dentry[label="d_rehash_dentry"];
+                d_add_dentry_inode[label="d_add_dentry_inode"];
+                return_new[label="return_new"];
+        }
+
+        subgraph cluster_d_lookup{
+                label="struct dentry * d_lookup(struct dentry * parent, struct qstr * name)
+";
+                set_seq_read_seqbegin_rename_lock[label="set_seq_read_seqbegin_rename_lock"];
+                set_dentry___d_lookup_parent_name[label="set_dentry___d_lookup_parent_name"];
+                dentry_true[label="dentry_true"];
+                read_seqretry_rename_lock_seq_true[label="read_seqretry_rename_lock_seq_true"];
+                return_dentry[label="return_dentry"];
+        }
+
+        subgraph cluster___d_lookup{
+                label="struct dentry * __d_lookup(struct dentry * parent, struct qstr * name)
+";
+                set_len_name_len[label="set_len_name_len"];
+                set_hash_name_hash[label="set_hash_name_hash"];
+                set_str_name_name[label="set_str_name_name"];
+                set_head_d_hash_parent_hash[label="set_head_d_hash_parent_hash"];
+                rcu_read_lock[label="rcu_read_lock"];
+                hlist_for_each_rcu_node_head[label="hlist_for_each_rcu_node_head"];
+                set_dentry_hlist_entry_node_struct_dentry_d_hash[label="set_dentry_hlist_entry_node_struct_dentry_d_hash"];
+                dentry_d_name_hash_not_eq_hash[label="dentry_d_name_hash_not_eq_hash"];
+                dentry_d_parent_not_eq_parent[label="dentry_d_parent_not_eq_parent"];
+                lock_dentry_d_lock[label="lock_dentry_d_lock"];
+                dentry_d_parent_not_eq_parent[label="dentry_d_parent_not_eq_parent"];
+                goto_next[label="goto_next"];
+                set_qstr_dentry_d_name[label="set_qstr_dentry_d_name"];
+                parent_d_opp_true_and_parent_d_op_d_compare_true[label="parent_d_opp_true_and_parent_d_op_d_compare_true"];
+                parent_d_op_d_compare_parent_qstr_name_true[label="parent_d_op_d_compare_parent_qstr_name_true"];
+                goto_next[label="goto_next"];
+                qstr_len_not_eq_len[label="qstr_len_not_eq_len"];
+                goto_next[label="goto_next"];
+                memcmp_qstr_name_str_true[label="memcmp_qstr_name_str_true"];
+                goto_next[label="goto_next"];
+                d_unhashed_dentry_false[label="d_unhashed_dentry_false"];
+                atomic_inc_dentry_d_count[label="atomic_inc_dentry_d_count"];
+                set_found_dentry[label="set_found_dentry"];
+                unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+                rcu_read_unlock[label="rcu_read_unlock"];
+                return_found[label="return_found"];
+        }
+
+        subgraph cluster_d_validate{
+                label="int d_validate(struct dentry *dentry, struct dentry *dparent)
+";
+                
+        }
+
 }
