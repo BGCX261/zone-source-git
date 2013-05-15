@@ -1,0 +1,152 @@
+digraph dcache_c{
+	subgraph cluster_d_callback{
+		label="static void d_callback(struct rcu_head *head)";
+		set_dentry_container_of_head_struct_dentry_d_rcu[label="set_dentry_container_of_head_struct_dentry_d_rcu"];
+		dname_external_dentry_true[label="dname_external_dentry_true"];
+		kfree_dentry_d_name_name[label="kfree_dentry_d_name_name"];
+		kmem_cache_free_dentry_cache_dentry[label="kmem_cache_free_dentry_cache_dentry"];
+	}
+
+	subgraph cluster_d_free{
+		label="static void d_free(struct dentry *dentry)";
+		dentry_d_op_true_and_dentry_d_op_d_release_true[label="dentry_d_op_true_and_dentry_d_op_d_release_true"];
+		dentry_d_op_d_release_dentry[label="dentry_d_op_d_release_dentry"];
+		call_rcu_dentry_d_rcu_d_callback[label="call_rcu_dentry_d_rcu_d_callback"];
+	}
+
+	subgraph cluster_dentry_iput{
+		label="static inline void dentry_iput(struct dentry * dentry)";
+		set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+		inode_true[label="inode_true"];
+		clear_dentry_d_inode[label="clear_dentry_d_inode"];
+		list_del_init_dentry_d_alias[label="list_del_init_dentry_d_alias"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		dentry_d_op_true_dentry_d_op_d_iput_true[label="dentry_d_op_true_dentry_d_op_d_iput_true"];
+		dentry_d_op_d_iput_dentry_inode[label="dentry_d_op_d_iput_dentry_inode"];
+		iput_inode[label="iput_inode"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+	}
+
+	subgraph cluster_dput{
+		label="void dput(struct dentry *dentry)";
+		atomic_read_dentry_d_count_eq_1[label="atomic_read_dentry_d_count_eq_1"];
+		might_sleep[label="might_sleep"];
+		atomic_dec_and_lock_dentry_d_count_dcache_lock_false[label="atomic_dec_and_lock_dentry_d_count_dcache_lock_false"];
+		return[label="return"];
+		lock_dentry_d_lock[label="lock_dentry_d_lock"];
+		atomic_read_dentry_d_count_true[label="atomic_read_dentry_d_count_true"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		return[label="return"];
+		dentry_d_op_true_and_dentry_d_op_d_delete_true[label="dentry_d_op_true_and_dentry_d_op_d_delete_true"];
+		dentry_d_op_d_delete_dentry[label="dentry_d_op_d_delete_dentry"];
+		goto_unhash_it[label="goto_unhash_it"];
+		d_unhashed_dentry_true[label="d_unhashed_dentry_true"];
+		goto_kill_it[label="goto_kill_it"];
+		list_empty_dentry_d_lru_true[label="list_empty_dentry_d_lru_true"];
+		dentry_d_flags_self_or_DCACHE_PERFERENCED[label="dentry_d_flags_self_or_DCACHE_PERFERENCED"];
+		list_add_dentry_d_lru_dentry_unused[label="list_add_dentry_d_lru_dentry_unused"];
+		inc_dentry_stat_nr_unused[label="inc_dentry_stat_nr_unused"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		return[label="return"];
+		__d_drop_dentry[label="__d_drop_dentry"];
+		list_empty_dentry_d_lru_false[label="list_empty_dentry_d_lru_false"];
+		list_del_dentry_d_lru[label="list_del_dentry_d_lru"];
+		dec_dentry_stat_nr_unused[label="dec_dentry_stat_nr_unused"];
+		list_del_dentry_d_child[label="list_del_dentry_d_child"];
+		dec_dentry_stat_nr_dentry[label="dec_dentry_stat_nr_dentry"];
+		dentry_inpu_dentry[label="dentry_inpu_dentry"];
+		set_parent_dentry_d_parent[label="set_parent_dentry_d_parent"];
+		d_free_dentry[label="d_free_dentry"];
+		dentry_eq_parent[label="dentry_eq_parent"];
+		return[label="return"];
+		set_dentry_parent[label="set_dentry_parent"];
+		goto_repeat[label="goto_repeat"];
+	}
+
+	subgraph cluster_d_invalidate{
+		label="int d_invalidate(struct dentry * dentry)";
+		lock_dcache_lock[label="lock_dcache_lock"];
+		d_unhashed_dentry_true[label="d_unhashed_dentry_true"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		return_0[label="return_0"];
+		list_empty_dentry_d_subdirs_false[label="list_empty_dentry_d_subdirs_false"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		shrink_dcache_parent_dentry[label="shrink_dcache_parent_dentry"];
+		lock_dcache_lock[label="lock_dcache_lock"];
+		lock_dentry_d_lock[label="lock_dentry_d_lock"];
+		atomic_read_dentry_d_count_great_1[label="atomic_read_dentry_d_count_great_1"];
+		dentry_d_inode_true_and_S_ISDIR_dentry_d_inode_i_mode_true[label="dentry_d_inode_true_and_S_ISDIR_dentry_d_inode_i_mode_true"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		return_EBUSY[label="return_EBUSY"];
+		__d_drop_dentry[label="__d_drop_dentry"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster___dget_locked{
+		label="static inline struct dentry * __dget_locked(struct dentry *dentry)";
+		atomic_inc_dentry_d_count[label="atomic_inc_dentry_d_count"];
+		list_empty_dentry_d_lru_false[label="list_empty_dentry_d_lru_false"];
+		dec_dentry_stat_nr_unused[label="dec_dentry_stat_nr_unused"];
+		list_del_init_dentry_d_lru[label="list_del_init_dentry_d_lru"];
+		return_dentry[label="return_dentry"];
+	}
+
+	subgraph cluster_dget_locked{
+		label="struct dentry * dget_locked(struct dentry *dentry)";
+		return___dget_locked_dentry[label="return___dget_locked_dentry"];
+	}
+
+	subgraph cluster___d_find_alias{
+		label="static struct dentry * __d_find_alias(struct inode *inode, int want_discon)";
+		set_head_inode_i_dentry[label="set_head_inode_i_dentry"];
+		set_next_inode_i_dentry_next[label="set_next_inode_i_dentry_next"];
+		next_not_eq_head[label="next_not_eq_head"];
+		set_tmp_next[label="set_tmp_next"];
+		set_next_tmp_next[label="set_next_tmp_next"];
+		set_alias_list_entry_tmp_struct_dentry_d_alias[label="set_alias_list_entry_tmp_struct_dentry_d_alias"];
+		S_ISDIR_inode_i_mode_true_or_d_unhashed_alias_false[label="S_ISDIR_inode_i_mode_true_or_d_unhashed_alias_false"];
+		alias_d_flags_DCACHE_DISCONNECTED_set[label="alias_d_flags_DCACHE_DISCONNECTED_set"];
+		set_discon_alias_alias[label="set_discon_alias_alias"];
+		want_discon_false[label="want_discon_false"];
+		__dget_locked_alias[label="__dget_locked_alias"];
+		return_alias[label="return_alias"];
+		discon_alias_true[label="discon_alias_true"];
+		__dget_locked_discon_alias[label="__dget_locked_discon_alias"];
+		return_discon_alias[label="return_discon_alias"];
+	}
+
+	subgraph cluster_d_find_alias{
+		label="struct dentry * d_find_alias(struct inode *inode)";
+		lock_dcache_lock[label="lock_dcache_lock"];
+		set_de___d_find_alias_inode_0[label="set_de___d_find_alias_inode_0"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		return_de[label="return_de"];
+	}
+
+	subgraph cluster_d_prune_aliases{
+		label="void d_prune_aliases(struct inode *inode)";
+		set_head_inode_i_dentry[label="set_head_inode_i_dentry"];
+		lock_dcache_lock[label="lock_dcache_lock"];
+		set_tmp_head[label="set_tmp_head"];
+		set_tmp_tmp_next_not_eq_head[label="set_tmp_tmp_next_not_eq_head"];
+		set_dentry_list_entry_tmp_stuct_dentry_d_alias[label="set_dentry_list_entry_tmp_stuct_dentry_d_alias"];
+		lock_dentry_d_lock[label="lock_dentry_d_lock"];
+		atomic_read_dentry_d_count_false[label="atomic_read_dentry_d_count_false"];
+		__dget_locked_dentry[label="__dget_locked_dentry"];
+		__d_drop_dentry[label="__d_drop_dentry"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+		dput_dentry[label="dput_dentry"];
+		goto_restart[label="goto_restart"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		unlock_dcache_lock[label="unlock_dcache_lock"];
+	}
+
+}
