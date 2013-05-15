@@ -1,0 +1,12 @@
+digraph eventpoll_c{
+	subgraph cluster_ep_poll_safewake_init{
+		label="static void ep_poll_safewake_init(struct poll_safewake *psw)";
+		INIT_LIST_HEAD_psw_wake_task_list[label="INIT_LIST_HEAD_psw_wake_task_list"];
+		lock_init_psw_lock[label="lock_init_psw_lock"];
+	}
+
+	subgraph cluster_ep_poll_safewake{
+		label="static void ep_poll_safewake(struct poll_safewake *psw, wait_queue_head_t *wq)";
+		
+	}
+}
