@@ -1,0 +1,6 @@
+digraph namespace_c{
+	subgraph cluster_hash{
+		label="static inline unsigned long hash(struct vfsmount *mnt, struct dentry *dentry)";
+		
+	}
+}
