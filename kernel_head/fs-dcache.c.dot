@@ -512,7 +512,288 @@ digraph dcache_c{
         subgraph cluster_d_validate{
                 label="int d_validate(struct dentry *dentry, struct dentry *dparent)
 ";
-                
+                kmem_ptr_validate_dentry_cache_dentry_false[label="kmem_ptr_validate_dentry_cache_dentry_false"];
+				goto_out[label="goto_out"];
+				dentry_d_parent_not_eq_dparent[label="dentry_d_parent_not_eq_dparent"];
+				goto_out[label="goto_out"];
+				lock_dcache_lock[label="lock_dcache_lock"];
+				set_base_d_hash_dparent_dentry_d_name_hash[label="set_base_d_hash_dparent_dentry_d_name_hash"];
+				hlist_for_each_lhp_base[label="hlist_for_each_lhp_base"];
+				dentry_eq_hlist_entry_lhp_struct_dentry_d_hash[label="dentry_eq_hlist_entry_lhp_struct_dentry_d_hash"];
+				__dget_locked_dentry[label="__dget_locked_dentry"];
+				unlock_dcache_lock[label="unlock_dcache_lock"];
+				return_1[label="return_1"];
+				unlock_dcache_lock[label="unlock_dcache_lock"];
+				return_0[label="return_0"];
         }
 
+		subgraph cluster_d_delete{
+			label="void d_delete(struct dentry * dentry)";
+			lock_dcache_lock[label="lock_dcache_lock"];
+			lock_dentry_d_lock[label="lock_dentry_d_lock"];
+			atomic_read_dentry_d_count_eq_1[label="atomic_read_dentry_d_count_eq_1"];
+			dentry_iput_dentry[label="dentry_iput_dentry"];
+			return[label="return"];
+			d_unhashed_dentry_false[label="d_unhashed_dentry_false"];
+			__d_drop_dentry[label="__d_drop_dentry"];
+			unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+			unlock_dcache_lock[label="unlock_dcache_lock"];
+		}
+
+		subgraph cluster___d_rehash{
+			label="static void __d_rehash(struct dentry * entry, struct hlist_head *list)";
+			entry_d_flags_clear_DCACHE_UNHASHED[label="entry_d_flags_clear_DCACHE_UNHASHED"];
+			hlist_add_head_rcu_entry_d_hash_list[label="hlist_add_head_rcu_entry_d_hash_list"];
+		}
+
+		subgraph cluster_d_rehash{
+			label="void d_rehash(struct dentry * entry)";
+			set_list_d_hash_entry_d_parent_etnry_d_name_hash[label="set_list_d_hash_entry_d_parent_etnry_d_name_hash"];
+			lock_dcache_lock[label="lock_dcache_lock"];
+			lock_entry_d_lock[label="lock_entry_d_lock"];
+			__d_rehash_entry_list[label="__d_rehash_entry_list"];
+			unlock_entry_d_lock[label="unlock_entry_d_lock"];
+			unlock_dcache_lock[label="unlock_dcache_lock"];
+		}
+
+		subgraph cluster_switch_names{
+			label="static void switch_names(struct dentry *dentry, struct dentry *target)";
+			dname_external_target_true[label="dname_external_target_true"];
+			dname_external_dentry_true[label="dname_external_dentry_true"];
+			do_switch_target_d_name_name_dentry_d_name_name[label="do_switch_target_d_name_name_dentry_d_name_name"];
+			set_dentry_d_name_name_target_d_name_name[label="set_dentry_d_name_name_target_d_name_name"];
+			set_target_d_name_name_target_d_iname[label="set_target_d_name_name_target_d_iname"];
+			dname_external_dentry_true[label="dname_external_dentry_true"];
+			memcpy_dentry_d_iname_target_d_name_name[label="memcpy_dentry_d_iname_target_d_name_name"];
+			set_target_d_name_name_dentry_d_name_name[label="set_target_d_name_name_dentry_d_name_name"];
+			set_dentry_d_name_name_dentry_d_iname[label="set_dentry_d_name_name_dentry_d_iname"];
+			memcpy_dentry_d_iname_target_d_name_name[label="memcpy_dentry_d_iname_target_d_name_name"];
+		}
+
+		subgraph cluster_d_move{
+			label="void d_move(struct dentry * dentry, struct dentry * target)";
+			lock_dcache_lock[label="lock_dcache_lock"];
+			write_seqlock_rename_lock[label="write_seqlock_rename_lock"];
+			target_small_dentry[label="target_small_dentry"];
+			lock_target_d_lock[label="lock_target_d_lock"];
+			lock_dentry_d_lock[label="lock_dentry_d_lock"];
+			lock_dentry_d_lock[label="lock_dentry_d_lock"];
+			lock_target_d_lock[label="lock_target_d_lock"];
+			dentry_d_flags_DCACHE_UNHASHED_set[label="dentry_d_flags_DCACHE_UNHASHED_set"];
+			goto_already_unhashed[label="goto_already_unhashed"];
+			hlist_del_rcu_dentry_d_hash[label="hlist_del_rcu_dentry_d_hash"];
+			set_list_d_hash_target_d_parent_target_d_name_hash[label="set_list_d_hash_target_d_parent_target_d_name_hash"];
+			__d_rehash_deentry_list[label="__d_rehash_deentry_list"];
+			__d_drop_target[label="__d_drop_target"];
+			list_del_dentry_d_child[label="list_del_dentry_d_child"];
+			list_del_target_d_child[label="list_del_target_d_child"];
+			switch_names_dentry_target[label="switch_names_dentry_target"];
+			do_switch_dentry_d_name_len_target_d_name_len[label="do_switch_dentry_d_name_len_target_d_name_len"];
+			do_switch_dentry_d_name_hash_target_d_name_hash[label="do_switch_dentry_d_name_hash_target_d_name_hash"];
+			IS_ROOT_dentry_true[label="IS_ROOT_dentry_true"];
+			set_dentry_d_parent_target_d_parent[label="set_dentry_d_parent_target_d_parent"];
+			set_target_d_parent_target[label="set_target_d_parent_target"];
+			INIT_LIST_HEAD_target_d_child[label="INIT_LIST_HEAD_target_d_child"];
+			do_switch_dentry_d_parent_target_d_parent[label="do_switch_dentry_d_parent_target_d_parent"];
+			list_add_target_d_child_target_d_parent_d_subdirs[label="list_add_target_d_child_target_d_parent_d_subdirs"];
+			list_add_dentry_d_child_dentry_d_parent_d_subdirs[label="list_add_dentry_d_child_dentry_d_parent_d_subdirs"];
+			unlock_target_d_lock[label="unlock_target_d_lock"];
+			unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+			write_sequnlock_rename_lock[label="write_sequnlock_rename_lock"];
+			unlock_dcache_lock[label="unlock_dcache_lock"];
+		}
+
+		subgraph cluster___d_path{
+			label="static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
+			struct dentry *root, struct vfsmount *rootmnt,
+			char *buffer, int buflen)";
+			set_end_buffer_buflen[label="set_end_buffer_buflen"];
+			dec_end_char_EOF[label="dec_end_char_EOF"];
+			dec_buflen[label="dec_buflen"];
+			IS_ROOT_dentry_false_and_d_unhashed_dentry_true[label="IS_ROOT_dentry_false_and_d_unhashed_dentry_true"];
+			buflen_self_sub_10[label="buflen_self_sub_10"];
+			end_self_sub_10[label="end_self_sub_10"];
+			buflen_small_0[label="buflen_small_0"];
+			goto_Elong[label="goto_Elong"];
+			memcpy_end_char_deleted[label="memcpy_end_char_deleted"];
+			buflen_small_1[label="buflen_small_1"];
+			goto_Elong[label="goto_Elong"];
+			set_retval_end_sub_1[label="set_retval_end_sub_1"];
+			set_retval_slash[label="set_retval_slash"];
+			dead_for[label="dead_for"];
+			dentry_eq_root_and_vfsmnt_eq_rootmnt[label="dentry_eq_root_and_vfsmnt_eq_rootmnt"];
+			dentry_eq_vfsmnt_mnt_root_or_IS_ROOT_dentry_true[label="dentry_eq_vfsmnt_mnt_root_or_IS_ROOT_dentry_true"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			vfsmnt_mnt_parent_eq_vfsmnt[label="vfsmnt_mnt_parent_eq_vfsmnt"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			goto_global_root[label="goto_global_root"];
+			set_dentry_vfsmnt_mnt_mountpoint[label="set_dentry_vfsmnt_mnt_mountpoint"];
+			set_vfsmnt_vfsmnt_mnt_parent[label="set_vfsmnt_vfsmnt_mnt_parent"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			set_parent_dentry_d_parent[label="set_parent_dentry_d_parent"];
+			prefetch_parent[label="prefetch_parent"];
+			set_namelen_dentry_d_name_len[label="set_namelen_dentry_d_name_len"];
+			buflen_self_sub_namelen_add_1[label="buflen_self_sub_namelen_add_1"];
+			buflen_small_0[label="buflen_small_0"];
+			goto_Elong[label="goto_Elong"];
+			end_self_sub_namelen[label="end_self_sub_namelen"];
+			memcpy_end_detnry_d_name_name[label="memcpy_end_detnry_d_name_name"];
+			dec_end_slash[label="dec_end_slash"];
+			set_retval_end[label="set_retval_end"];
+			set_dentry_parent[label="set_dentry_parent"];
+			return_retval[label="return_retval"];
+			set_namelen_dentry_d_name_len[label="set_namelen_dentry_d_name_len"];
+			buflen_self_sub_namelen[label="buflen_self_sub_namelen"];
+			buflen_small_0[label="buflen_small_0"];
+			goto_Elong[label="goto_Elong"];
+			retval_self_sub_namelen_sub_1[label="retval_self_sub_namelen_sub_1"];
+			memcpy_retval_dentry_d_name_name[label="memcpy_retval_dentry_d_name_name"];
+			return_retval[label="return_retval"];
+			return_ERR_PTR_ENAMETOOLONG[label="return_ERR_PTR_ENAMETOOLONG"];
+		}
+
+		subgraph cluster_d_path{
+			label="char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
+				char *buf, int buflen)";
+			read_lock_current_fs_lock[label="read_lock_current_fs_lock"];
+			set_rootmnt_mntget_current_fs_rootmnt[label="set_rootmnt_mntget_current_fs_rootmnt"];
+			set_root_dget_current_fs_root[label="set_root_dget_current_fs_root"];
+			read_unlock_current_fs_lock[label="read_unlock_current_fs_lock"];
+			lock_dcache_lock[label="lock_dcache_lock"];
+			set_res___d_path_dentry_vfsmnt_root_rootmnt_buf_buflen[label="set_res___d_path_dentry_vfsmnt_root_rootmnt_buf_buflen"];
+			unlock_dcache_lock[label="unlock_dcache_lock"];
+			dput_root[label="dput_root"];
+			mntput_rootmnt[label="mntput_rootmnt"];
+			return_res[label="return_res"];
+		}
+
+		subgraph cluster_sys_getcwd{
+			label="asmlinkage long sys_getcwd(char __user *buf, unsigned long size)";
+			set_page___get_free_page_GFP_USER[label="set_page___get_free_page_GFP_USER"];
+			read_lock_current_fs_lock[label="read_lock_current_fs_lock"];
+			set_pwdmnt_mntget_current_fs_pwdmnt[label="set_pwdmnt_mntget_current_fs_pwdmnt"];
+			set_pwd_dget_current_fs_pwd[label="set_pwd_dget_current_fs_pwd"];
+			set_rootmnt_mntget_current_fs_rootmnt[label="set_rootmnt_mntget_current_fs_rootmnt"];
+			set_root_dget_current_fs_root[label="set_root_dget_current_fs_root"];
+			read_unlock_current_fs_lock[label="read_unlock_current_fs_lock"];
+			set_error_ENOENT[label="set_error_ENOENT"];
+			lock_dcache_lock[label="lock_dcache_lock"];
+			pwd_d_parent_eq_pwd_or_d_unhashed_pwd_false[label="pwd_d_parent_eq_pwd_or_d_unhashed_pwd_false"];
+			set_cwd___d_path_pwd_pwdmnt_root_rootmnt_page_PAGE_SIZE[label="set_cwd___d_path_pwd_pwdmnt_root_rootmnt_page_PAGE_SIZE"];
+			unlock_dcache_lock[label="unlock_dcache_lock"];
+			set_error_PTR_ERR_cwd[label="set_error_PTR_ERR_cwd"];
+			IS_ERR_cwd_true[label="IS_ERR_cwd_true"];
+			goto_out[label="goto_out"];
+			set_error_ERANGE[label="set_error_ERANGE"];
+			set_len_PAGE_SIZE_add_page_sub_cwd[label="set_len_PAGE_SIZE_add_page_sub_cwd"];
+			len_not_great_size[label="len_not_great_size"];
+			set_error_len[label="set_error_len"];
+			copy_to_user_buf_cwd_len[label="copy_to_user_buf_cwd_len"];
+			set_error_EFAULT[label="set_error_EFAULT"];
+			unlock_dcache_lock[label="unlock_dcache_lock"];
+			dput_pwd[label="dput_pwd"];
+			mntput_pwdmnt[label="mntput_pwdmnt"];
+			dput_root[label="dput_root"];
+			mntput_rootmnt[label="mntput_rootmnt"];
+			free_page_page[label="free_page_page"];
+			return_error[label="return_error"];
+		}
+
+		subgraph cluster_is_subdir{
+			label="int is_subdir(struct dentry * new_dentry, struct dentry * old_dentry)";
+			set_saved_new_dentry[label="set_saved_new_dentry"];
+			rcu_read_lock[label="rcu_read_lock"];
+			set_new_dentry_saved[label="set_new_dentry_saved"];
+			set_result_0[label="set_result_0"];
+			set_eq_read_seqbegin_rename_lock[label="set_eq_read_seqbegin_rename_lock"];
+			dead_for[label="dead_for"];
+			new_dentry_old_dentry[label="new_dentry_old_dentry"];
+			set_parent_new_dentry_d_parent[label="set_parent_new_dentry_d_parent"];
+			parent_eq_new_dentry[label="parent_eq_new_dentry"];
+			set_new_dentry_parent[label="set_new_dentry_parent"];
+			set_result_1[label="set_result_1"];
+			read_seqretry_rename_lock_seq_true[label="read_seqretry_rename_lock_seq_true"];
+			rcu_read_unlock[label="rcu_read_unlock"];
+			return_result[label="return_result"];
+		}
+
+		subgraph cluster_d_genocide{
+			label="void d_genocide(struct dentry *root)";
+			set_this_parent_root[label="set_this_parent_root"];
+			lock_dcache_lock[label="lock_dcache_lock"];
+			set_next_this_parent_d_subdirs_next[label="set_next_this_parent_d_subdirs_next"];
+			next_not_eq_this_parent_d_subdirs[label="next_not_eq_this_parent_d_subdirs"];
+			set_tmp_next[label="set_tmp_next"];
+			set_dentry_list_entry_tmp_struct_dentry_d_child[label="set_dentry_list_entry_tmp_struct_dentry_d_child"];
+			set_next_tmp_next[label="set_next_tmp_next"];
+			d_unhashed_dentry_true_or_dentry_d_inode_false[label="d_unhashed_dentry_true_or_dentry_d_inode_false"];
+			list_empty_dentry_d_subdirs_false[label="list_empty_dentry_d_subdirs_false"];
+			this_parent_dentry[label="this_parent_dentry"];
+			goto_repeat[label="goto_repeat"];
+			atomic_dec_dentry_d_count[label="atomic_dec_dentry_d_count"];
+			this_parent_not_eq_root[label="this_parent_not_eq_root"];
+			set_next_this_parent_d_child_next[label="set_next_this_parent_d_child_next"];
+			atomic_dec_this_parent_d_count[label="atomic_dec_this_parent_d_count"];
+			set_this_parent_this_parent_d_parent[label="set_this_parent_this_parent_d_parent"];
+			goto_resume[label="goto_resume"];
+			unlock_dcache_lock[label="unlock_dcache_lock"];
+		}
+
+		subgraph cluster_find_inode_number{
+			label="ino_t find_inode_number(struct dentry *dir, struct qstr *name)";
+			set_name_hash_full_name_hash_name_name_name_len[label="set_name_hash_full_name_hash_name_name_name_len"];
+			dir_d_op_true_and_dir_d_op_d_hash_true[label="dir_d_op_true_and_dir_d_op_d_hash_true"];
+			dir_d_op_d_hash_dir_name_not_eq_0[label="dir_d_op_d_hash_dir_name_not_eq_0"];
+			goto_out[label="goto_out"];
+			set_dentry_d_lookup_dir_name[label="set_dentry_d_lookup_dir_name"];
+			dentry_true[label="dentry_true"];
+			dentry_d_inode_true[label="dentry_d_inode_true"];
+			set_ino_dentry_d_inode_i_ino[label="set_ino_dentry_d_inode_i_ino"];
+			dput_dentry[label="dput_dentry"];
+			return_ino[label="return_ino"];
+		}
+
+		subgraph cluster_set_dhash_entries{
+			label="static int __init set_dhash_entries(char *str)";
+			set_dhash_entries_simple_strtoul_str_str_0[label="set_dhash_entries_simple_strtoul_str_str_0"];
+			return_1[label="return_1"];
+		}
+
+		subgraph cluster_dcache_init_early{
+			label="static void __init dcache_init_early(void)";
+			set_dentry_hashtable_alloc_large_system_hash_Dentry_cache[label="set_dentry_hashtable_alloc_large_system_hash_Dentry_cache"];
+			for_loop_1_left_move_d_hash_shift[label="for_loop_1_left_move_d_hash_shift"];
+			INIT_HLIST_HEAD_dentry_hashtable_loop[label="INIT_HLIST_HEAD_dentry_hashtable_loop"];
+		}
+
+		subgraph cluster_dcache_init{
+			label="static void __init dcache_init(unsigned long mempages)";
+			set_dentry_cache_kmem_cache_create_dentry_cache[label="set_dentry_cache_kmem_cache_create_dentry_cache"];
+			set_shrinker_DEFUALT_SEEKS_shrink_dcache_memory[label="set_shrinker_DEFUALT_SEEKS_shrink_dcache_memory"];
+			hashdist_false[label="hashdist_false"];
+			return[label="return"];
+			set_dentry_hashtable_alloc_large_system_hash_Dentry_cache[label="set_dentry_hashtable_alloc_large_system_hash_Dentry_cache"];
+			for_loop_1_left_move_d_hash_shift[label="for_loop_1_left_move_d_hash_shift"];
+			INIT_HLIST_HEAD_dentry_hashtable_loop[label="INIT_HLIST_HEAD_dentry_hashtable_loop"];
+		}
+
+		subgraph cluster_vfs_caches_init_early{
+			label="void __init vfs_caches_init_early(void)";
+			dcache_init_early[label="dcache_init_early"];
+			inode_init_early[label="inode_init_early"];
+		}
+
+		subgraph cluster_vfs_caches_init{
+			label="void __init vfs_caches_init(unsigned long mempages)";
+			set_reserve_min_mempages_sub_nr_free_pages_multi_3_div_2_mempages_sub_1[label="set_reserve_min_mempages_sub_nr_free_pages_multi_3_div_2_mempages_sub_1"];
+			mempages_self_sub_reserve[label="mempages_self_sub_reserve"];
+			set_name_cachep_kmem_cache_create_names_cache[label="set_name_cachep_kmem_cache_create_names_cache"];
+			set_filp_cachep_kmem_cache_create_filp[label="set_filp_cachep_kmem_cache_create_filp"];
+			dcache_init_mempages[label="dcache_init_mempages"];
+			inode_init_mempages[label="inode_init_mempages"];
+			files_init_mempages[label="files_init_mempages"];
+			mnt_init_mempages[label="mnt_init_mempages"];
+			bdev_cache_init[label="bdev_cache_init"];
+			chrdev_init[label="chrdev_init"];
+		}
 }
