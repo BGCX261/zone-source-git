@@ -380,7 +380,477 @@ lives_below_in_same_fs(struct dentry *d, struct dentry *dentry)
                 return_err[label="return_err"];
         }
 
-        
+		subgraph cluster_do_remount{
+			label="static int do_remount(struct nameidata *nd, int flags, int mnt_flags,
+		      void *data)";
+			set_sb_nd_mnt_mnt_sb[label="set_sb_nd_mnt_mnt_sb"];
+			capable_CAP_SYS_ADMIN_false[label="capable_CAP_SYS_ADMIN_false"];
+			return_EPERM[label="return_EPERM"];
+			check_mnt_nd_mnt_false[label="check_mnt_nd_mnt_false"];
+			return_EINVAL[label="return_EINVAL"];
+			nd_dentry_not_eq_nd_mnt_mnt_root[label="nd_dentry_not_eq_nd_mnt_mnt_root"];
+			return_EINVAL[label="return_EINVAL"];
+			down_write_sb_s_umount[label="down_write_sb_s_umount"];
+			set_err_do_remount_sb_sb_flags_data_0[label="set_err_do_remount_sb_sb_flags_data_0"];
+			err_false[label="err_false"];
+			set_nd_mnt_mnt_flags_mnt_flags[label="set_nd_mnt_mnt_flags_mnt_flags"];
+			up_write_sb_s_umount[label="up_write_sb_s_umount"];
+			err_flase[label="err_flase"];
+			security_sb_post_remount_nd_mnt_flags_data[label="security_sb_post_remount_nd_mnt_flags_data"];
+			return_err[label="return_err"];
+		}
 
-        
+		subgraph cluster_do_move_mount{
+			label="static int do_move_mount(struct nameidata *nd, char *old_name)";
+			capable_CAP_SYS_ADMIN_false[label="capable_CAP_SYS_ADMIN_false"];
+			return_EPERM[label="return_EPERM"];
+			old_name_false_or_old_name_false[label="old_name_false_or_old_name_false"];
+			return_EINVAL[label="return_EINVAL"];
+			set_err_path_lookup_old_name_LOOKUP_FOLLOW_old_nd[label="set_err_path_lookup_old_name_LOOKUP_FOLLOW_old_nd"];
+			err_true[label="err_true"];
+			return_error[label="return_error"];
+			down_write_current_namespace_sem[label="down_write_current_namespace_sem"];
+			d_mountpoint_nd_dentry_true_follow_down_nd_mnt_nd_dentry_true[label="d_mountpoint_nd_dentry_true_follow_down_nd_mnt_nd_dentry_true"];
+			set_err_EINVAL[label="set_err_EINVAL"];
+			check_mnt_nd_mnt_false_or_check_mnt_old_nd_mnt_false[label="check_mnt_nd_mnt_false_or_check_mnt_old_nd_mnt_false"];
+			goto_out[label="goto_out"];
+			set_ENOENT[label="set_ENOENT"];
+			down_nd_dentry_d_inode_i_sem[label="down_nd_dentry_d_inode_i_sem"];
+			IS_DEADDIR_nd_dentry_d_inode_true[label="IS_DEADDIR_nd_dentry_d_inode_true"];
+			goto_out1[label="goto_out1"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			IS_ROOT_nd_dentry_false_nad_d_unhashed_nd_dentry_true[label="IS_ROOT_nd_dentry_false_nad_d_unhashed_nd_dentry_true"];
+			goto_out2[label="goto_out2"];
+			set_err_EINVAL[label="set_err_EINVAL"];
+			old_nd_dentry_not_eq_old_nd_mnt_mnt_root[label="old_nd_dentry_not_eq_old_nd_mnt_mnt_root"];
+			goto_out2[label="goto_out2"];
+			old_nd_mnt_eq_old_nd_mnt_mnt_parent[label="old_nd_mnt_eq_old_nd_mnt_mnt_parent"];
+			goto_out2[label="goto_out2"];
+			S_ISDIR_nd_dentry_d_inode_i_mode_not_eq_S_ISDIR_old_nd_dentry_d_inode_i_mode[label="S_ISDIR_nd_dentry_d_inode_i_mode_not_eq_S_ISDIR_old_nd_dentry_d_inode_i_mode"];
+			goto_out2[label="goto_out2"];
+			set_er_ELOOP[label="set_er_ELOOP"];
+			for_p_nd_mnt_p_mnt_parent[label="for_p_nd_mnt_p_mnt_parent"];
+			p_eq_old_nd_mnt[label="p_eq_old_nd_mnt"];
+			goto_out2[label="goto_out2"];
+			set_err_0[label="set_err_0"];
+			detach_mnt_old_nd_mnt_parent_nd[label="detach_mnt_old_nd_mnt_parent_nd"];
+			attach_mnt_old_nd_mnt_nd[label="attach_mnt_old_nd_mnt_nd"];
+			list_del_init_old_nd_mnt_mnt_fslink[label="list_del_init_old_nd_mnt_mnt_fslink"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			up_nd_dentry_d_inode_i_sem[label="up_nd_dentry_d_inode_i_sem"];
+			up_write_current_namespace_sem[label="up_write_current_namespace_sem"];
+			err_false[label="err_false"];
+			path_release_parent_nd[label="path_release_parent_nd"];
+			path_release_old_nd[label="path_release_old_nd"];
+			return_err[label="return_err"];
+		}
+
+		subgraph cluster_do_new_mount{
+			label="static int do_new_mount(struct nameidata *nd, char *type, int flags,
+			int mnt_flags, char *name, void *data)";
+			type_false_or_memchr_type_0_PAGE_SIZE_false[label="type_false_or_memchr_type_0_PAGE_SIZE_false"];
+			return_EINVAL[label="return_EINVAL"];
+			capable_CAP_SYS_ADMIN_false[label="capable_CAP_SYS_ADMIN_false"];
+			return_EPERM[label="return_EPERM"];
+			set_mnt_do_kern_mount_type_flags_name_data[label="set_mnt_do_kern_mount_type_flags_name_data"];
+			IS_ERR_mnt_true[label="IS_ERR_mnt_true"];
+			return_PTR_ERR_mnt[label="return_PTR_ERR_mnt"];
+			return_do_add_mount_mnt_nd_mnt_flags_NULL[label="return_do_add_mount_mnt_nd_mnt_flags_NULL"];
+		}
+
+		subgraph cluster_do_add_mount{
+			label="int do_add_mount(struct vfsmount *newmnt, struct nameidata *nd,
+		 int mnt_flags, struct list_head *fslist)";
+			down_write_current_namespace_sem[label="down_write_current_namespace_sem"];
+			d_mountpoint_nd_dentry_true_and_follow_down_nd_mnt_nd_dentry_true[label="d_mountpoint_nd_dentry_true_and_follow_down_nd_mnt_nd_dentry_true"];
+			set_err_EINVAL[label="set_err_EINVAL"];
+			check_mnt_nd_mnt_false[label="check_mnt_nd_mnt_false"];
+			goto_unlock[label="goto_unlock"];
+			set_err_EBUSY[label="set_err_EBUSY"];
+			nd_mnt_mnt_sb_eq_newmnt_mnt_sb_and_nd_mnt_mnt_root_eq_nd_detnry[label="nd_mnt_mnt_sb_eq_newmnt_mnt_sb_and_nd_mnt_mnt_root_eq_nd_detnry"];
+			goto_unlock[label="goto_unlock"];
+			set_err_EINVAL[label="set_err_EINVAL"];
+			S_ISLNK_newmnt_mnt_root_d_inode_i_mode_true[label="S_ISLNK_newmnt_mnt_root_d_inode_i_mode_true"];
+			goto_unlock[label="goto_unlock"];
+			set_newmnt_mnt_flags_mnt_flags[label="set_newmnt_mnt_flags_mnt_flags"];
+			set_err_graft_tree_newmnt_nd[label="set_err_graft_tree_newmnt_nd"];
+			err_eq_0[label="err_eq_0"];
+			fslist_true[label="fslist_true"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			list_add_tail_newmnt_mnt_fslink_fslist[label="list_add_tail_newmnt_mnt_fslink_fslist"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			up_write_current_namespace_sem[label="up_write_current_namespace_sem"];
+			mntput_newmnt[label="mntput_newmnt"];
+			return_err[label="return_err"];
+		}
+
+		subgraph cluster_mark_mounts_for_expiry{
+			label="void mark_mounts_for_expiry(struct list_head *mounts)";
+			LIST_HEAD_graveyard[label="LIST_HEAD_graveyard"];
+			list_empty_mounts_true[label="list_empty_mounts_true"];
+			return[label="return"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			list_for_each_entry_safe_mnt_next_mounts_mnt_fslink[label="list_for_each_entry_safe_mnt_next_mounts_mnt_fslink"];
+			xchg_mnt_mnt_expiry_mark_1_false_or_atomic_read_mnt_mnt_count_not_eq_1[label="xchg_mnt_mnt_expiry_mark_1_false_or_atomic_read_mnt_mnt_count_not_eq_1"];
+			mntget_mnt[label="mntget_mnt"];
+			list_move_mnt_mnt_fslink_graveyard[label="list_move_mnt_mnt_fslink_graveyard"];
+			list_empty_graveyard_false[label="list_empty_graveyard_false"];
+			set_mnt_list_entry_graveyard_next_struct_vfsmount_mnt_fslink[label="set_mnt_list_entry_graveyard_next_struct_vfsmount_mnt_fslink"];
+			list_del_init_mnt_mnt_fslink[label="list_del_init_mnt_mnt_fslink"];
+			set_namespace_mnt_mnt_namespace[label="set_namespace_mnt_mnt_namespace"];
+			namespace_false_or_atomic_read_namespace_count_not_great_0[label="namespace_false_or_atomic_read_namespace_count_not_great_0"];
+			get_namespace_namespace[label="get_namespace_namespace"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			down_write_namespace_sem[label="down_write_namespace_sem"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			atomic_read_mnt_mnt_count_eq_2[label="atomic_read_mnt_mnt_count_eq_2"];
+			list_del_init_mnt_mnt_list[label="list_del_init_mnt_mnt_list"];
+			list_del_init_mnt_mnt_child[label="list_del_init_mnt_mnt_child"];
+			list_del_init_mnt_mnt_hash[label="list_del_init_mnt_mnt_hash"];
+			dec_mnt_mnt_mountpoint_d_mounted[label="dec_mnt_mnt_mountpoint_d_mounted"];
+			set_xdentry_mnt_mnt_mountpoint[label="set_xdentry_mnt_mnt_mountpoint"];
+			set_mnt_mnt_mountpoint_mnt_mnt_root[label="set_mnt_mnt_mountpoint_mnt_mnt_root"];
+			set_xdmnt_mnt_mnt_parent[label="set_xdmnt_mnt_mnt_parent"];
+			set_mnt_mnt_parent_mnt[label="set_mnt_mnt_parent_mnt"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			mntput_xdmnt[label="mntput_xdmnt"];
+			dput_xdentry[label="dput_xdentry"];
+			atomic_read_mnt_mnt_sb_s_active_eq_1[label="atomic_read_mnt_mnt_sb_s_active_eq_1"];
+			lock_kernel[label="lock_kernel"];
+			DQUOT_OFF_mnt_mnt_sb[label="DQUOT_OFF_mnt_mnt_sb"];
+			acct_auto_close_mnt_mnt_sb[label="acct_auto_close_mnt_mnt_sb"];
+			unlock_kernel[label="unlock_kernel"];
+			mntput_mnt[label="mntput_mnt"];
+			list_add_tail_mnt_mnt_fslink_mounts[label="list_add_tail_mnt_mnt_fslink_mounts"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			up_write_namespace_sem[label="up_write_namespace_sem"];
+			mntput_mnt[label="mntput_mnt"];
+			put_namespace_namespace[label="put_namespace_namespace"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+		}
+
+		subgraph cluster_long
+			exact_copy_from_user{
+			label="static long
+exact_copy_from_user(void *to, const void __user *from, unsigned long n)";
+			set_f_from[label="set_f_from"];
+			n_true[label="n_true"];
+			__get_user_c_f_true[label="__get_user_c_f_true"];
+			memset_t_0_n[label="memset_t_0_n"];
+			set_t_inc_c[label="set_t_inc_c"];
+			inc_f[label="inc_f"];
+			dec_n[label="dec_n"];
+			return_n[label="return_n"];
+		}
+
+		subgraph cluster_copy_mount_options{
+			label="int copy_mount_options(const void __user *data, unsigned long *where)";
+			set_where_0[label="set_where_0"];
+			set_page___get_free_page_GFP_KERNEL[label="set_page___get_free_page_GFP_KERNEL"];
+			set_size_TASK_SIZE_sub_data[label="set_size_TASK_SIZE_sub_data"];
+			size_great_PAGE_SIZE[label="size_great_PAGE_SIZE"];
+			set_size_PAGE_SIZE[label="set_size_PAGE_SIZE"];
+			set_i_size_sub_exact_copy_from_user_page_data_size[label="set_i_size_sub_exact_copy_from_user_page_data_size"];
+			i_false[label="i_false"];
+			free_page_page[label="free_page_page"];
+			return_EFAULT[label="return_EFAULT"];
+			i_not_eq_PAGE_SIZE[label="i_not_eq_PAGE_SIZE"];
+			memset_page_add_i_0[label="memset_page_add_i_0"];
+			set_where_page[label="set_where_page"];
+			return_0[label="return_0"];
+		}
+
+		subgraph cluster_do_mount{
+			label="long do_mount(char * dev_name, char * dir_name, char *type_page,
+		  unsigned long flags, void *data_page)";
+			flags_and_MS_MGC_MSK_eq_MS_MGC_VAL[label="flags_and_MS_MGC_MSK_eq_MS_MGC_VAL"];
+			flags_MS_MGC_MSK_clear[label="flags_MS_MGC_MSK_clear"];
+			dir_name_false_or_dir_name_false_or_memchr_dir_name_0_false[label="dir_name_false_or_dir_name_false_or_memchr_dir_name_0_false"];
+			return_EINVAL[label="return_EINVAL"];
+			dev_name_true_and_memchr_dev_name_0_false[label="dev_name_true_and_memchr_dev_name_0_false"];
+			return_EINVAL[label="return_EINVAL"];
+			data_page_true[label="data_page_true"];
+			set_data_page_PAGE_SIZE_sub_1_0[label="set_data_page_PAGE_SIZE_sub_1_0"];
+			flags_MS_NOSUID_set[label="flags_MS_NOSUID_set"];
+			mnt_flags_self_or_MNT_NOSUID[label="mnt_flags_self_or_MNT_NOSUID"];
+			flags_MS_NODEV_set[label="flags_MS_NODEV_set"];
+			mnt_flags_self_or_MNT_NODEV[label="mnt_flags_self_or_MNT_NODEV"];
+			flags_MS_NOEXEC_set[label="flags_MS_NOEXEC_set"];
+			mnt_flags_self_or_MNT_NOEXEC[label="mnt_flags_self_or_MNT_NOEXEC"];
+			flags_clear_MS_NOSUID_MS_NOEXEC_MS_NODEV_MS_ACTIVE[label="flags_clear_MS_NOSUID_MS_NOEXEC_MS_NODEV_MS_ACTIVE"];
+			set_retval_path_lookup_dir_name_LOOKUP_FOLLOW_nd[label="set_retval_path_lookup_dir_name_LOOKUP_FOLLOW_nd"];
+			retval_true[label="retval_true"];
+			return_retval[label="return_retval"];
+			set_retval_security_sb_mount_dev_name_nd_type_page_flags_data_page[label="set_retval_security_sb_mount_dev_name_nd_type_page_flags_data_page"];
+			retval_true[label="retval_true"];
+			goto_dput_out[label="goto_dput_out"];
+			flags_MS_REMOUNT_set[label="flags_MS_REMOUNT_set"];
+			set_retval_do_remount_nd_flags_clear_MS_REMOUT_mnt_flags_data_page[label="set_retval_do_remount_nd_flags_clear_MS_REMOUT_mnt_flags_data_page"];
+			flags_MS_BIND_set[label="flags_MS_BIND_set"];
+			set_retval_do_loopback_nd_dev_name_flags_MS_REC_set[label="set_retval_do_loopback_nd_dev_name_flags_MS_REC_set"];
+			flags_MS_MOVE_set[label="flags_MS_MOVE_set"];
+			set_retval_do_move_mount_nd_dev_name[label="set_retval_do_move_mount_nd_dev_name"];
+			set_retval_do_new_mount_nd_type_page_flags_mnt_flags_dev_name_data_page[label="set_retval_do_new_mount_nd_type_page_flags_mnt_flags_dev_name_data_page"];
+			path_release_nd[label="path_release_nd"];
+			return_retval[label="return_retval"];
+		}
+
+		subgraph cluster_copy_namespace{
+			label="int copy_namespace(int flags, struct task_struct *tsk)";
+			set_namespace_tsk_namespace[label="set_namespace_tsk_namespace"];
+			set_fs_tsk_fs[label="set_fs_tsk_fs"];
+			get_namespace_namespace[label="get_namespace_namespace"];
+			flags_CLONE_NEWNS_clear[label="flags_CLONE_NEWNS_clear"];
+			return_0[label="return_0"];
+			capable_CAP_SYS_ADMIN_false[label="capable_CAP_SYS_ADMIN_false"];
+			put_namespace_namespace[label="put_namespace_namespace"];
+			return_EPERM[label="return_EPERM"];
+			set_new_ns_kmalloc[label="set_new_ns_kmalloc"];
+			new_ns_false[label="new_ns_false"];
+			goto_out[label="goto_out"];
+			atomic_set_new_ns_count_1[label="atomic_set_new_ns_count_1"];
+			init_rwsem_new_ns_sem[label="init_rwsem_new_ns_sem"];
+			INIT_LIST_HEAD_new_ns_list[label="INIT_LIST_HEAD_new_ns_list"];
+			down_write_tsk_namespace_sem[label="down_write_tsk_namespace_sem"];
+			set_new_ns_root_copy_tree_namespace_root_namespace_root_mnt_root[label="set_new_ns_root_copy_tree_namespace_root_namespace_root_mnt_root"];
+			new_ns_root_false[label="new_ns_root_false"];
+			up_write_tsk_namespace_sem[label="up_write_tsk_namespace_sem"];
+			kfree_new_ns[label="kfree_new_ns"];
+			goto_out[label="goto_out"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			list_add_tail_new_ns_list_new_ns_root_mnt_list[label="list_add_tail_new_ns_list_new_ns_root_mnt_list"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			set_p_namespace_root[label="set_p_namespace_root"];
+			set_q_new_ns_root[label="set_q_new_ns_root"];
+			p_true[label="p_true"];
+			set_q_mnt_namespace_new_ns[label="set_q_mnt_namespace_new_ns"];
+			fs_true[label="fs_true"];
+			p_eq_fs_rootmnt[label="p_eq_fs_rootmnt"];
+			set_rootmnt_p[label="set_rootmnt_p"];
+			set_fs_rootmnt_mntget_q[label="set_fs_rootmnt_mntget_q"];
+			p_eq_fs_pwdmnt[label="p_eq_fs_pwdmnt"];
+			set_pwdmnt_p[label="set_pwdmnt_p"];
+			set_fs_pwdmnt_mntget_q[label="set_fs_pwdmnt_mntget_q"];
+			p_eq_fs_altrootmnt[label="p_eq_fs_altrootmnt"];
+			set_altrootmnt_p[label="set_altrootmnt_p"];
+			set_fs_altrootmnt_mntget_q[label="set_fs_altrootmnt_mntget_q"];
+			set_p_next_mnt_p_namespace_root[label="set_p_next_mnt_p_namespace_root"];
+			set_q_next_mnt_q_new_ns_root[label="set_q_next_mnt_q_new_ns_root"];
+			up_write_tsk_namespace_sem[label="up_write_tsk_namespace_sem"];
+			set_tsk_namespace_new_ns[label="set_tsk_namespace_new_ns"];
+			rootmnt_true[label="rootmnt_true"];
+			mntput_rootmnt[label="mntput_rootmnt"];
+			pwdmnt_true[label="pwdmnt_true"];
+			mntput_pwdmnt[label="mntput_pwdmnt"];
+			altrootmnt_true[label="altrootmnt_true"];
+			mntput_altrootmnt[label="mntput_altrootmnt"];
+			put_namespace_namespace[label="put_namespace_namespace"];
+			return_0[label="return_0"];
+			put_namespace_namespace[label="put_namespace_namespace"];
+			return_0[label="return_0"];
+			put_namespace_namespace[label="put_namespace_namespace"];
+			return_ENOMEM[label="return_ENOMEM"];
+		}
+
+		subgraph cluster_sys_mount{
+			label="asmlinkage long sys_mount(char __user * dev_name, char __user * dir_name,
+			  char __user * type, unsigned long flags,
+			  void __user * data)";
+			set_retval_copy_mount_options_type_type_page[label="set_retval_copy_mount_options_type_type_page"];
+			retval_small_0[label="retval_small_0"];
+			return_retval[label="return_retval"];
+			set_dir_page_getname_dir_name[label="set_dir_page_getname_dir_name"];
+			set_retval_PTR_ERR_dir_page[label="set_retval_PTR_ERR_dir_page"];
+			IS_ERR_dir_page_true[label="IS_ERR_dir_page_true"];
+			goto_out1[label="goto_out1"];
+			set_retval_copy_mount_options_dev_name_dev_page[label="set_retval_copy_mount_options_dev_name_dev_page"];
+			retval_small_0[label="retval_small_0"];
+			goto_out2[label="goto_out2"];
+			set_retval_copy_mount_options_data_data_page[label="set_retval_copy_mount_options_data_data_page"];
+			retval_small_0[label="retval_small_0"];
+			goto_out3[label="goto_out3"];
+			lock_kernel[label="lock_kernel"];
+			set_retval_do_mount_dev_page_dir_page_type_page_flags_data_page[label="set_retval_do_mount_dev_page_dir_page_type_page_flags_data_page"];
+			unlock_kernel[label="unlock_kernel"];
+			free_page_data_page[label="free_page_data_page"];
+			free_page_dev_page[label="free_page_dev_page"];
+			putname_dir_page[label="putname_dir_page"];
+			free_page_type_page[label="free_page_type_page"];
+			return_retval[label="return_retval"];
+		}
+
+		subgraph cluster_set_fs_root{
+			label="void set_fs_root(struct fs_struct *fs, struct vfsmount *mnt,
+		 struct dentry *dentry)";
+			write_lock_fs_lock[label="write_lock_fs_lock"];
+			set_old_root_fs_root[label="set_old_root_fs_root"];
+			set_old_rootmnt_fs_rootmnt[label="set_old_rootmnt_fs_rootmnt"];
+			set_fs_rootmnt_mntget_mnt[label="set_fs_rootmnt_mntget_mnt"];
+			set_fs_root_dget_dentry[label="set_fs_root_dget_dentry"];
+			write_unlock_fs_lock[label="write_unlock_fs_lock"];
+			old_root_true[label="old_root_true"];
+			dput_old_root[label="dput_old_root"];
+			mntput_old_rootmnt[label="mntput_old_rootmnt"];
+		}
+
+		subgraph cluster_set_fs_pwd{
+			label="void set_fs_pwd(struct fs_struct *fs, struct vfsmount *mnt,
+		struct dentry *dentry)";
+			write_lock_fs_lock[label="write_lock_fs_lock"];
+			set_old_pwd_fs_pwd[label="set_old_pwd_fs_pwd"];
+			set_old_pwdmnt_fs_pwdmnt[label="set_old_pwdmnt_fs_pwdmnt"];
+			set_fs_pwdmnt_mntget_mnt[label="set_fs_pwdmnt_mntget_mnt"];
+			set_fs_pwd_dget_dentry[label="set_fs_pwd_dget_dentry"];
+			write_unlock_fs_lock[label="write_unlock_fs_lock"];
+			old_pwd_true[label="old_pwd_true"];
+			dput_old_pwd[label="dput_old_pwd"];
+			mntput_old_pwdmnt[label="mntput_old_pwdmnt"];
+		}
+
+		subgraph cluster_chroot_fs_refs{
+			label="static void chroot_fs_refs(struct nameidata *old_nd, struct nameidata *new_nd)";
+			read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+			do_each_thread_g_p[label="do_each_thread_g_p"];
+			task_lock_p[label="task_lock_p"];
+			set_fs_p_fs[label="set_fs_p_fs"];
+			fs_true[label="fs_true"];
+			atomic_inc_fs_count[label="atomic_inc_fs_count"];
+			task_unlock_p[label="task_unlock_p"];
+			fs_root_eq_old_nd_dentry_and_fs_rootmnt_eq_old_nd_mnt[label="fs_root_eq_old_nd_dentry_and_fs_rootmnt_eq_old_nd_mnt"];
+			set_fs_root_fs_new_nd_mnt_new_nd_dentry[label="set_fs_root_fs_new_nd_mnt_new_nd_dentry"];
+			fs_pwd_eq_old_nd_dentry_and_fs_pwdmnt_eq_old_nd_mnt[label="fs_pwd_eq_old_nd_dentry_and_fs_pwdmnt_eq_old_nd_mnt"];
+			set_fs_pwd_fs_new_nd_mnt_new_nd_dentry[label="set_fs_pwd_fs_new_nd_mnt_new_nd_dentry"];
+			put_fs_struct_fs[label="put_fs_struct_fs"];
+			task_unlock_p[label="task_unlock_p"];
+			while_each_thread_g_p[label="while_each_thread_g_p"];
+			read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+		}
+
+		subgraph cluster_sys_pivot_root{
+			label="asmlinkage long sys_pivot_root(const char __user *new_root, const char __user *put_old)";
+			capable_CAP_SYS_ADMIN_false[label="capable_CAP_SYS_ADMIN_false"];
+			return_EPERM[label="return_EPERM"];
+			lock_kernel[label="lock_kernel"];
+			set_error___user_walk_new_root_LOOKUP_FOLLOW_LOOKUP_DIRECTORY_new_nd[label="set_error___user_walk_new_root_LOOKUP_FOLLOW_LOOKUP_DIRECTORY_new_nd"];
+			error_true[label="error_true"];
+			goto_out0[label="goto_out0"];
+			set_error_EINVAL[label="set_error_EINVAL"];
+			check_mnt_new_nd_mnt_false[label="check_mnt_new_nd_mnt_false"];
+			goto_out1[label="goto_out1"];
+			set_error___user_walk_put_old_LOOUP_FOLLOW_LOOKUP_DIRECTORY_old_nd[label="set_error___user_walk_put_old_LOOUP_FOLLOW_LOOKUP_DIRECTORY_old_nd"];
+			error_true[label="error_true"];
+			goto_out1[label="goto_out1"];
+			set_error_security_sb_pivotroot_old_nd_new_nd[label="set_error_security_sb_pivotroot_old_nd_new_nd"];
+			error_true[label="error_true"];
+			path_release_old_nd[label="path_release_old_nd"];
+			goto_out1[label="goto_out1"];
+			read_lock_current_fs_lock[label="read_lock_current_fs_lock"];
+			set_user_nd_mnt_dget_current_fs_root[label="set_user_nd_mnt_dget_current_fs_root"];
+			read_unlock_current_fs_lock[label="read_unlock_current_fs_lock"];
+			down_write_current_namespace_sem[label="down_write_current_namespace_sem"];
+			down_old_nd_dentry_d_inode_i_sem[label="down_old_nd_dentry_d_inode_i_sem"];
+			set_err_EINVAL[label="set_err_EINVAL"];
+			check_mnt_user_nd_mnt_false[label="check_mnt_user_nd_mnt_false"];
+			goto_out2[label="goto_out2"];
+			set_error_ENOENT[label="set_error_ENOENT"];
+			IS_DEADDIR_new_nd_dentry_d_inode_true[label="IS_DEADDIR_new_nd_dentry_d_inode_true"];
+			goto_out2[label="goto_out2"];
+			d_unhashed_new_nd_dentry_true_IS_ROOT_new_nd_dentry_false[label="d_unhashed_new_nd_dentry_true_IS_ROOT_new_nd_dentry_false"];
+			d_unhashed_old_nd_dentry_true_and_IS_ROOT_old_nd_dentry_false[label="d_unhashed_old_nd_dentry_true_and_IS_ROOT_old_nd_dentry_false"];
+			goto_out2[label="goto_out2"];
+			set_error_EBUSY[label="set_error_EBUSY"];
+			new_nd_mnt_eq_user_nd_mnt_or_old_nd_mnt_eq_user_nd_mnt[label="new_nd_mnt_eq_user_nd_mnt_or_old_nd_mnt_eq_user_nd_mnt"];
+			goto_out2[label="goto_out2"];
+			set_error_EINVAL[label="set_error_EINVAL"];
+			user_nd_mnt_mnt_root_not_eq_user_nd_dentry[label="user_nd_mnt_mnt_root_not_eq_user_nd_dentry"];
+			goto_out2[label="goto_out2"];
+			new_nd_mnt_mnt_root_not_eq_new_nd_dentry[label="new_nd_mnt_mnt_root_not_eq_new_nd_dentry"];
+			goto_out2[label="goto_out2"];
+			set_tmp_old_nd_mnt[label="set_tmp_old_nd_mnt"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			tmp_not_eq_new_nd_mnt[label="tmp_not_eq_new_nd_mnt"];
+			dead_for[label="dead_for"];
+			tmp_mnt_parent_eq_tmp[label="tmp_mnt_parent_eq_tmp"];
+			goto_out3[label="goto_out3"];
+			tmp_mnt_parent_eq_new_nd_mnt[label="tmp_mnt_parent_eq_new_nd_mnt"];
+			set_tmp_tmp_mnt_parent[label="set_tmp_tmp_mnt_parent"];
+			is_subdir_tmp_mnt_mountpoint_new_nd_dentry_false[label="is_subdir_tmp_mnt_mountpoint_new_nd_dentry_false"];
+			goto_out3[label="goto_out3"];
+			is_subdir_old_nd_dentry_new_nd_dentry_false[label="is_subdir_old_nd_dentry_new_nd_dentry_false"];
+			goto_out3[label="goto_out3"];
+			detach_mnt_new_nd_mnt_parent_nd[label="detach_mnt_new_nd_mnt_parent_nd"];
+			detach_mnt_user_nd_mnt_root_parent[label="detach_mnt_user_nd_mnt_root_parent"];
+			detach_mnt_user_nd_mnt_old_nd[label="detach_mnt_user_nd_mnt_old_nd"];
+			detach_mnt_new_nd_mnt_root_parent[label="detach_mnt_new_nd_mnt_root_parent"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			chroot_fs_refs_user_nd_new_nd[label="chroot_fs_refs_user_nd_new_nd"];
+			security_sb_post_pivotroot_user_nd_new_nd[label="security_sb_post_pivotroot_user_nd_new_nd"];
+			set_error_0[label="set_error_0"];
+			path_release_root-parent[label="path_release_root-parent"];
+			path_release_parent_nd[label="path_release_parent_nd"];
+			up_old_nd_dentry_d_inode_i_sem[label="up_old_nd_dentry_d_inode_i_sem"];
+			up_write_current_namespace_sem[label="up_write_current_namespace_sem"];
+			path_release_user_nd[label="path_release_user_nd"];
+			path_release_old_nd[label="path_release_old_nd"];
+			path_release_new_nd[label="path_release_new_nd"];
+			unlock_kernel[label="unlock_kernel"];
+			return_error[label="return_error"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			goto_out2[label="goto_out2"];
+		}
+
+		subgraph cluster_init_mount_tree{
+			label="static void __init init_mount_tree(void)";
+			set_namespace_kmalloc[label="set_namespace_kmalloc"];
+			atomic_set_namespace_count_1[label="atomic_set_namespace_count_1"];
+			INIT_LIST_HEAD_namespace_list[label="INIT_LIST_HEAD_namespace_list"];
+			init_rwsem_namespace_sem[label="init_rwsem_namespace_sem"];
+			list_add_mnt_mnt_list_namespace_list[label="list_add_mnt_mnt_list_namespace_list"];
+			set_namespace_root_mnt[label="set_namespace_root_mnt"];
+			set_mnt_mnt_namespace_namespace[label="set_mnt_mnt_namespace_namespace"];
+			set_init_task_namespace_namespace[label="set_init_task_namespace_namespace"];
+			read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+			do_each_thread_g_p[label="do_each_thread_g_p"];
+			get_namespace_namespace[label="get_namespace_namespace"];
+			set_p_namespace_nemaspace[label="set_p_namespace_nemaspace"];
+			while_each_thread_g_p[label="while_each_thread_g_p"];
+			read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+			set_fs_pwd_current_fs_namespace_root_namespace_root_mnt_root[label="set_fs_pwd_current_fs_namespace_root_namespace_root_mnt_root"];
+			set_fs_root_current_fs_namespace_root_namespace_root_mnt_root[label="set_fs_root_current_fs_namespace_root_namespace_root_mnt_root"];
+		}
+
+		subgraph cluster_mnt_init{
+			label="void __init mnt_init(unsigned long mempages)";
+			set_mnt_cache_kmem_cache_create[label="set_mnt_cache_kmem_cache_create"];
+			set_mount_hashtable___get_free_page[label="set_mount_hashtable___get_free_page"];
+			set_nr_hash_PAGE_SIZE_div_sizeof_struct_list_head[label="set_nr_hash_PAGE_SIZE_div_sizeof_struct_list_head"];
+			set_hash_bits_0[label="set_hash_bits_0"];
+			inc_hash_bits[label="inc_hash_bits"];
+			nr_hash_right_move_hash_bits_not_eq_0[label="nr_hash_right_move_hash_bits_not_eq_0"];
+			dec_hash_bits[label="dec_hash_bits"];
+			set_nr_hash_1_left_move_hash_bits[label="set_nr_hash_1_left_move_hash_bits"];
+			set_hash_mask_nr_hash_sub_1[label="set_hash_mask_nr_hash_sub_1"];
+			set_d_mount_hashtable[label="set_d_mount_hashtable"];
+			set_i_nr_hash[label="set_i_nr_hash"];
+			INIT_LIST_HEAD_d[label="INIT_LIST_HEAD_d"];
+			inc_d[label="inc_d"];
+			dec_i[label="dec_i"];
+			while_i[label="while_i"];
+			sysfs_init[label="sysfs_init"];
+			init_rootfs[label="init_rootfs"];
+			init_mount_tree[label="init_mount_tree"];
+		}
+
+		subgraph cluster___put_namespace{
+			label="void __put_namespace(struct namespace *namespace)";
+			down_write_namespace_sem[label="down_write_namespace_sem"];
+			lock_vfsmount_lock[label="lock_vfsmount_lock"];
+			list_for_each_entry_mnt_namespace_list_mnt_list[label="list_for_each_entry_mnt_namespace_list_mnt_list"];
+			clear_mnt_mnt_namespace[label="clear_mnt_mnt_namespace"];
+			unmount_tree_namespaces_root[label="unmount_tree_namespaces_root"];
+			unlock_vfsmount_lock[label="unlock_vfsmount_lock"];
+			up_write_namespace_sem[label="up_write_namespace_sem"];
+			kfree_namespace[label="kfree_namespace"];
+		}
 }

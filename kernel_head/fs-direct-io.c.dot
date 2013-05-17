@@ -1,0 +1,548 @@
+digraph direct_io_c{
+	subgraph cluster_dio_pages_present{
+		label="static inline unsigned dio_pages_present(struct dio *dio)";
+		return_dio_tail_sub_dio_head[label="return_dio_tail_sub_dio_head"];
+	}
+
+	subgraph cluster_dio_refill_pages{
+		label="static int dio_refill_pages(struct dio *dio)";
+		set_nr_pages_min_dio_total_pages_sub_dio_curr_page_DIO_PAGES[label="set_nr_pages_min_dio_total_pages_sub_dio_curr_page_DIO_PAGES"];
+		down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+		set_ret_get_user_page_current_current_mm_dio_current_user_address_nr_pages_dio_rw_eq_READ_0_dio_pages_0_NULL[label="set_ret_get_user_page_current_current_mm_dio_current_user_address_nr_pages_dio_rw_eq_READ_0_dio_pages_0_NULL"];
+		up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+		ret_small_0_and_dio_blocks_available_true_and_dio_rw_eq_WRITE[label="ret_small_0_and_dio_blocks_available_true_and_dio_rw_eq_WRITE"];
+		dio_page_errors_eq_0[label="dio_page_errors_eq_0"];
+		set_dio_page_errors_ret[label="set_dio_page_errors_ret"];
+		set_dio_pages_0_ZERO_PAGE_dio_curr_user_address[label="set_dio_pages_0_ZERO_PAGE_dio_curr_user_address"];
+		set_dio_head_0[label="set_dio_head_0"];
+		set_dio_tail_1[label="set_dio_tail_1"];
+		set_ret_0[label="set_ret_0"];
+		goto_out[label="goto_out"];
+		ret_not_small_0[label="ret_not_small_0"];
+		dio_current_user_address_self_add_ret_multi_PAGE_SIZE[label="dio_current_user_address_self_add_ret_multi_PAGE_SIZE"];
+		dio_curr_page_self_add_ret[label="dio_curr_page_self_add_ret"];
+		set_dio_head_0[label="set_dio_head_0"];
+		set_dio_tail_ret[label="set_dio_tail_ret"];
+		set_ret_0[label="set_ret_0"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_*dio_get_page{
+		label="static struct page *dio_get_page(struct dio *dio)";
+		dio_pages_present_dio_eq_0[label="dio_pages_present_dio_eq_0"];
+		set_ret_dio_refill_pages_dio[label="set_ret_dio_refill_pages_dio"];
+		ret_true[label="ret_true"];
+		return_ERR_PTR_ret[label="return_ERR_PTR_ret"];
+		return_dio_pages_dio_head_inc[label="return_dio_pages_dio_head_inc"];
+	}
+
+	subgraph cluster_dio_complete{
+		label="static void dio_complete(struct dio *dio, loff_t offset, ssize_t bytes)";
+		dio_end_io_true_and_dio_result_true[label="dio_end_io_true_and_dio_result_true"];
+		dio_end_io_dio_inode_offset_bytes_dio_map_bh_b_private[label="dio_end_io_dio_inode_offset_bytes_dio_map_bh_b_private"];
+		dio_lock_type_eq_DIO_LOCKING[label="dio_lock_type_eq_DIO_LOCKING"];
+		up_read_dio_inode_i_alloc_sem[label="up_read_dio_inode_i_alloc_sem"];
+	}
+
+	subgraph cluster_finished_one_bio{
+		label="static void finished_one_bio(struct dio *dio)";
+		lock_dio_dio_lock[label="lock_dio_dio_lock"];
+		dio_bio_count_eq_1[label="dio_bio_count_eq_1"];
+		dio_is_async_true[label="dio_is_async_true"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		set_transferred_dio_result[label="set_transferred_dio_result"];
+		set_offset_dio_iocb_ki_pos[label="set_offset_dio_iocb_ki_pos"];
+		dio_rw_eq_READ_and_offset_add_transferred_great_dio_i_size[label="dio_rw_eq_READ_and_offset_add_transferred_great_dio_i_size"];
+		set_transferred_dio_i_size_sub_offset[label="set_transferred_dio_i_size_sub_offset"];
+		dio_complete_dio_offset_transferred[label="dio_complete_dio_offset_transferred"];
+		dio_result_eq_dio_size_or_dio_rw_eq_READ_and_dio_result_true[label="dio_result_eq_dio_size_or_dio_rw_eq_READ_and_dio_result_true"];
+		aio_complete_dio_iocb_transferred_0[label="aio_complete_dio_iocb_transferred_0"];
+		kfree_dio[label="kfree_dio"];
+		return[label="return"];
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		dec_dio_bio_count[label="dec_dio_bio_count"];
+		dio_waiter_true[label="dio_waiter_true"];
+		wake_up_process_dio_waiter[label="wake_up_process_dio_waiter"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		return[label="return"];
+		dec_dio_bio_count[label="dec_dio_bio_count"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+	}
+
+	subgraph cluster_dio_bio_end_aio{
+		label="static int dio_bio_end_aio(struct bio *bio, unsigned int bytes_done, int error)";
+		set_dio_bio_bi_private[label="set_dio_bio_bi_private"];
+		bio_bi_size_true[label="bio_bi_size_true"];
+		return_1[label="return_1"];
+		dio_bio_complete_dio_bio[label="dio_bio_complete_dio_bio"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_dio_bio_end_io{
+		label="static int dio_bio_end_io(struct bio *bio, unsigned int bytes_done, int error)";
+		set_dio_bio_bi_private[label="set_dio_bio_bi_private"];
+		bio_bi_size_true[label="bio_bi_size_true"];
+		return_1[label="return_1"];
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		set_bio_bi_private_dio_bio_list[label="set_bio_bi_private_dio_bio_list"];
+		set_dio_bio_list_bio[label="set_dio_bio_list_bio"];
+		dec_dio_bios_in_flight[label="dec_dio_bios_in_flight"];
+		dio_waiter_true_and_dio_bios_in_flight_eq_0[label="dio_waiter_true_and_dio_bios_in_flight_eq_0"];
+		wake_up_process_dio_waiter[label="wake_up_process_dio_waiter"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_dio_bio_alloc{
+		label="static int dio_bio_alloc(struct dio *dio, struct block_device *bdev,
+		sector_t first_sector, int nr_vecs)";
+		set_bio_bio_alloc[label="set_bio_bio_alloc"];
+		bio_eq_NULL[label="bio_eq_NULL"];
+		return_ENOMEM[label="return_ENOMEM"];
+		set_bio_bi_bdev_bdev[label="set_bio_bi_bdev_bdev"];
+		set_bio_bi_sector_first_sector[label="set_bio_bi_sector_first_sector"];
+		dio_is_async_true[label="dio_is_async_true"];
+		set_bio_bi_end_io_dio_bio_end_aio[label="set_bio_bi_end_io_dio_bio_end_aio"];
+		set_bio_bi_end_io_dio_bio_end_io[label="set_bio_bi_end_io_dio_bio_end_io"];
+		set_dio_bio_bio[label="set_dio_bio_bio"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_dio_bio_submit{
+		label="static void dio_bio_submit(struct dio *dio)";
+		set_bio_dio_bio[label="set_bio_dio_bio"];
+		set_bio_bi_private_dio[label="set_bio_bi_private_dio"];
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		inc_dio_bio_count[label="inc_dio_bio_count"];
+		inc_dio_bios_in_flight[label="inc_dio_bios_in_flight"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		dio_is_async_true_and_dio_rw_eq_READ[label="dio_is_async_true_and_dio_rw_eq_READ"];
+		bio_set_pages_dirty_bio[label="bio_set_pages_dirty_bio"];
+		submit_bio_dio_rw_bio[label="submit_bio_dio_rw_bio"];
+		clear_dio_bio[label="clear_dio_bio"];
+		set_dio_boundary_0[label="set_dio_boundary_0"];
+	}
+
+	subgraph cluster_dio_cleanup{
+		label="static void dio_cleanup(struct dio *dio)";
+		dio_pages_present_dio_true[label="dio_pages_present_dio_true"];
+		page_cache_releaes_dio_get_page_dio[label="page_cache_releaes_dio_get_page_dio"];
+	}
+
+	subgraph cluster_*dio_await_one{
+		label="static struct bio *dio_await_one(struct dio *dio)";
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		dio_bio_list_eq_NULL[label="dio_bio_list_eq_NULL"];
+		set_current_state_TASK_UNINTERRUPTIBLE[label="set_current_state_TASK_UNINTERRUPTIBLE"];
+		dio_bio_list_eq_NULL[label="dio_bio_list_eq_NULL"];
+		set_dio_waiter_current[label="set_dio_waiter_current"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		blk_run_address_space_dio_inode_i_mapping[label="blk_run_address_space_dio_inode_i_mapping"];
+		io_schedule[label="io_schedule"];
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		clear_dio_waiter[label="clear_dio_waiter"];
+		set_current_state_TASK_RUNNING[label="set_current_state_TASK_RUNNING"];
+		set_bio_dio_bio_list[label="set_bio_dio_bio_list"];
+		set_dio_bio_list_bio_bi_private[label="set_dio_bio_list_bio_bi_private"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		return_bio[label="return_bio"];
+	}
+
+	subgraph cluster_dio_bio_complete{
+		label="static int dio_bio_complete(struct dio *dio, struct bio *bio)";
+		set_uptodate_test_bit_BIO_UPTODATE_bio_bi_flags[label="set_uptodate_test_bit_BIO_UPTODATE_bio_bi_flags"];
+		set_bvec_bio_bi_io_vec[label="set_bvec_bio_bi_io_vec"];
+		uptodate_false[label="uptodate_false"];
+		set_dio_result_EIO[label="set_dio_result_EIO"];
+		dio_is_async_true_and_dio_rw_eq_READ[label="dio_is_async_true_and_dio_rw_eq_READ"];
+		bio_check_pages_dirty_bio[label="bio_check_pages_dirty_bio"];
+		for_page_on_bio_bi_vcnt[label="for_page_on_bio_bi_vcnt"];
+		set_page_bvec_page_on_bv_page[label="set_page_bvec_page_on_bv_page"];
+		dio_rw_eq_READ_and_PageCompound_page_false[label="dio_rw_eq_READ_and_PageCompound_page_false"];
+		set_page_dirty_lock_page[label="set_page_dirty_lock_page"];
+		page_cache_release_page[label="page_cache_release_page"];
+		bio_put_bio[label="bio_put_bio"];
+		finished_one_bio_dio[label="finished_one_bio_dio"];
+		return_0_or_EIO_decide_uptodate[label="return_0_or_EIO_decide_uptodate"];
+	}
+
+	subgraph cluster_dio_await_completion{
+		label="static int dio_await_completion(struct dio *dio)";
+		dio_bio_true[label="dio_bio_true"];
+		dio_bio_submit_dio[label="dio_bio_submit_dio"];
+		dio_bio_count_true[label="dio_bio_count_true"];
+		set_bio_dio_await_one_dio[label="set_bio_dio_await_one_dio"];
+		set_ret2_dio_bio_complete_dio_bio[label="set_ret2_dio_bio_complete_dio_bio"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_ret2[label="set_ret_ret2"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_dio_bio_reap{
+		label="static int dio_bio_reap(struct dio *dio)";
+		dio_reap_count_inc_not_small_64[label="dio_reap_count_inc_not_small_64"];
+		dio_bio_list_true[label="dio_bio_list_true"];
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		set_bio_dio_bio_list[label="set_bio_dio_bio_list"];
+		set_dio_bio_list_bio_bi_private[label="set_dio_bio_list_bio_bi_private"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		set_ret2_dio_bio_complete_dio_bio[label="set_ret2_dio_bio_complete_dio_bio"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_ret2[label="set_ret_ret2"];
+		set_dio_reap_counter_0[label="set_dio_reap_counter_0"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_get_more_blocks{
+		label="static int get_more_blocks(struct dio *dio)";
+		set_map_bh_dio_map_bh[label="set_map_bh_dio_map_bh"];
+		set_ret_dio_page_errors[label="set_ret_dio_page_errors"];
+		ret_eq_0[label="ret_eq_0"];
+		set_map_bh_b_state_0[label="set_map_bh_b_state_0"];
+		set_map_bh_b_size_0[label="set_map_bh_b_size_0"];
+		set_fs_startblk_dio_block_in_file_right_move_dio_blkfactor[label="set_fs_startblk_dio_block_in_file_right_move_dio_blkfactor"];
+		set_dio_count_dio_final_block_in_request_sub_dio_block_in_file[label="set_dio_count_dio_final_block_in_request_sub_dio_block_in_file"];
+		set_fs_count_dio_count_right_move_dio_blkfactor[label="set_fs_count_dio_count_right_move_dio_blkfactor"];
+		set_blkmask_1_left_move_dio_blkfactor[label="set_blkmask_1_left_move_dio_blkfactor"];
+		dio_count_and_blkmask_true[label="dio_count_and_blkmask_true"];
+		inc_fs_count[label="inc_fs_count"];
+		set_create_dio_rw_eq_WRITE[label="set_create_dio_rw_eq_WRITE"];
+		dio_lock_type_eq_DIO_LOCKING[label="dio_lock_type_eq_DIO_LOCKING"];
+		dio_block_in_file_small_i_size_read_dio_inode_right_move_dio_blkbits[label="dio_block_in_file_small_i_size_read_dio_inode_right_move_dio_blkbits"];
+		set_create_0[label="set_create_0"];
+		dio_lock_type_eq_DIO_NO_LOCKING[label="dio_lock_type_eq_DIO_NO_LOCKING"];
+		set_create_0[label="set_create_0"];
+		set_ret_dio_get_blocks_dio_inode_fs_startblk_fs_count_map_bh_create[label="set_ret_dio_get_blocks_dio_inode_fs_startblk_fs_count_map_bh_create"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_dio_new_bio{
+		label="static int dio_new_bio(struct dio *dio, sector_t start_sector)";
+		set_ret_dio_bio_reap_dio[label="set_ret_dio_bio_reap_dio"];
+		ret_true[label="ret_true"];
+		goto_out[label="goto_out"];
+		set_sector_start_sector_left_move_dio_blkbits_sub_9[label="set_sector_start_sector_left_move_dio_blkbits_sub_9"];
+		set_nr_pages_min_dio_pages_in_io_bio_get_nr_vecs_dio_map_bh_b_bdev[label="set_nr_pages_min_dio_pages_in_io_bio_get_nr_vecs_dio_map_bh_b_bdev"];
+		set_ret_dio_bio_alloc_dio_dio_map_bh_b_bdev_sector_nr_pages[label="set_ret_dio_bio_alloc_dio_dio_map_bh_b_bdev_sector_nr_pages"];
+		set_dio_boundary_0[label="set_dio_boundary_0"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_dio_bio_add_page{
+		label="static int dio_bio_add_page(struct dio *dio)";
+		set_ret_bio_add_page_dio_bio_dio_cur_page_dio_cur_page_len_dio_cur_page_offset[label="set_ret_bio_add_page_dio_bio_dio_cur_page_dio_cur_page_len_dio_cur_page_offset"];
+		ret_eq_dio_cur_page_len[label="ret_eq_dio_cur_page_len"];
+		dio_cur_page_len_add_dio_cur_page_offset_eq_PAGE_SIZE[label="dio_cur_page_len_add_dio_cur_page_offset_eq_PAGE_SIZE"];
+		dec_dio_pages_in_io[label="dec_dio_pages_in_io"];
+		page_cache_get_dio_cur_page[label="page_cache_get_dio_cur_page"];
+		set_dio_final_block_in_bio_dio_cur_page_block_add_dio_cur_page_len_right_move_dio_blkbits[label="set_dio_final_block_in_bio_dio_cur_page_block_add_dio_cur_page_len_right_move_dio_blkbits"];
+		set_ret_0[label="set_ret_0"];
+		set_ret_1[label="set_ret_1"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_dio_send_cur_page{
+		label="static int dio_send_cur_page(struct dio *dio)";
+		dio_bio_true[label="dio_bio_true"];
+		dio_final_block_in_bio_not_eq_dio_cur_page_block[label="dio_final_block_in_bio_not_eq_dio_cur_page_block"];
+		dio_bio_submit_dio[label="dio_bio_submit_dio"];
+		dio_boundary_true[label="dio_boundary_true"];
+		dio_bio_submit_dio[label="dio_bio_submit_dio"];
+		dio_bio_eq_NULL[label="dio_bio_eq_NULL"];
+		set_ret_dio_new_bio_dio_dio_cur_page_block[label="set_ret_dio_new_bio_dio_dio_cur_page_block"];
+		ret_true[label="ret_true"];
+		goto_out[label="goto_out"];
+		dio_bio_add_page_dio_not_eq_0[label="dio_bio_add_page_dio_not_eq_0"];
+		dio_bio_submit_dio[label="dio_bio_submit_dio"];
+		set_ret_dio_new_bio_dio_dio_cur_page_block[label="set_ret_dio_new_bio_dio_dio_cur_page_block"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_dio_bio_add_page_dio[label="set_ret_dio_bio_add_page_dio"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_submit_page_section{
+		label="static int submit_page_section(struct dio *dio, struct page *page,
+		unsigned offset, unsigned len, sector_t blocknr)";
+		dio_cur_page_eq_page_and_dio_cur_page_offset_add_dio_cur_page_len_eq_offset_and_dio_cur_page_block_add_dio_cur_page_len_right_move_dio_blkbits_eq_blocknr[label="dio_cur_page_eq_page_and_dio_cur_page_offset_add_dio_cur_page_len_eq_offset_and_dio_cur_page_block_add_dio_cur_page_len_right_move_dio_blkbits_eq_blocknr"];
+		dio_cur_page_len_self_add_len[label="dio_cur_page_len_self_add_len"];
+		dio_boundary_true[label="dio_boundary_true"];
+		set_ret_dio_send_cur_page_dio[label="set_ret_dio_send_cur_page_dio"];
+		page_cache_release_dio_cur_page[label="page_cache_release_dio_cur_page"];
+		set_dio_cur_page_NULL[label="set_dio_cur_page_NULL"];
+		goto_out[label="goto_out"];
+		dio_cur_page_true[label="dio_cur_page_true"];
+		set_ret_dio_send_cur_page_dio[label="set_ret_dio_send_cur_page_dio"];
+		page_cache_release_dio_cur_page[label="page_cache_release_dio_cur_page"];
+		set_dio_cur_page_NULL[label="set_dio_cur_page_NULL"];
+		ret_true[label="ret_true"];
+		goto_out[label="goto_out"];
+		page_cache_get_page[label="page_cache_get_page"];
+		set_dio_cur_page_page[label="set_dio_cur_page_page"];
+		set_dio_cur_page_offset_offset[label="set_dio_cur_page_offset_offset"];
+		set_dio_cur_page_len_len[label="set_dio_cur_page_len_len"];
+		set_dio_cur_page_block_blocknr[label="set_dio_cur_page_block_blocknr"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_clean_blockdev_aliases{
+		label="static void clean_blockdev_aliases(struct dio *dio)";
+		set_nblocks_dio_map_bh_b_size_right_move_dio_inode_i_blkbits[label="set_nblocks_dio_map_bh_b_size_right_move_dio_inode_i_blkbits"];
+		for_i_nblocks[label="for_i_nblocks"];
+		unmap_underlying_metadata_dio_map_bh_b_bdev_dio_map_bh_b_blocknr_add_i[label="unmap_underlying_metadata_dio_map_bh_b_bdev_dio_map_bh_b_blocknr_add_i"];
+	}
+
+	subgraph cluster_dio_zero_block{
+		label="static void dio_zero_block(struct dio *dio, int end)";
+		set_dio_start_zero_done_1[label="set_dio_start_zero_done_1"];
+		dio_blkfactor_false_or_buffer_new_dio_map_bh_false[label="dio_blkfactor_false_or_buffer_new_dio_map_bh_false"];
+		return[label="return"];
+		set_dio_blocks_per_fs_block_1_left_move_dio_blkfactor[label="set_dio_blocks_per_fs_block_1_left_move_dio_blkfactor"];
+		set_this_chunk_blocks_dio_block_in_file_and_dio_blocks_per_fs_block_sub_1[label="set_this_chunk_blocks_dio_block_in_file_and_dio_blocks_per_fs_block_sub_1"];
+		this_chunk_blocks_false[label="this_chunk_blocks_false"];
+		return[label="return"];
+		end_true[label="end_true"];
+		set_this_chunk_blocks_dio_blocks_per_fs_block_sub_this_chunk_blocks[label="set_this_chunk_blocks_dio_blocks_per_fs_block_sub_this_chunk_blocks"];
+		set_this_chunk_bytes_this_chunk_blocks_left_move_dio_blkbits[label="set_this_chunk_bytes_this_chunk_blocks_left_move_dio_blkbits"];
+		set_page_ZERO_PAGE_dio_curr_user_address[label="set_page_ZERO_PAGE_dio_curr_user_address"];
+		submit_page_section_dio_page_0_this_chunk_bytes_dio_next_block_for_io_true[label="submit_page_section_dio_page_0_this_chunk_bytes_dio_next_block_for_io_true"];
+		return[label="return"];
+		dio_next_block_for_io_self_add_this_chunk_blocks[label="dio_next_block_for_io_self_add_this_chunk_blocks"];
+	}
+
+	subgraph cluster_do_direct_IO{
+		label="static int do_direct_IO(struct dio *dio)";
+		set_blkbits_dio_blkbits[label="set_blkbits_dio_blkbits"];
+		set_blocks_per_page_PAGE_SIZE_right_move_blkbits[label="set_blocks_per_page_PAGE_SIZE_right_move_blkbits"];
+		set_map_bh_dio_map_bh[label="set_map_bh_dio_map_bh"];
+		set_block_in_page_dio_first_block_in_page[label="set_block_in_page_dio_first_block_in_page"];
+		dio_block_in_file_small_dio_final_block_in_request[label="dio_block_in_file_small_dio_final_block_in_request"];
+		set_page_dio_get_page_dio[label="set_page_dio_get_page_dio"];
+		IS_ERR_page_true[label="IS_ERR_page_true"];
+		set_ret_PTR_ERR_page[label="set_ret_PTR_ERR_page"];
+		goto_out[label="goto_out"];
+		block_in_page_small_blocks_per_page[label="block_in_page_small_blocks_per_page"];
+		set_offset_in_page_block_in_page_left_move_blkbits[label="set_offset_in_page_block_in_page_left_move_blkbits"];
+		dio_blocks_available_eq_0[label="dio_blocks_available_eq_0"];
+		set_ret_get_more_blocks_dio[label="set_ret_get_more_blocks_dio"];
+		ret_true[label="ret_true"];
+		page_cache_release_page[label="page_cache_release_page"];
+		got_out[label="got_out"];
+		buffer_mapped_map_bh_false[label="buffer_mapped_map_bh_false"];
+		goto_do_holes[label="goto_do_holes"];
+		set_dio_blocks_available_map_bh_b_size_right_move_dio_blkbits[label="set_dio_blocks_available_map_bh_b_size_right_move_dio_blkbits"];
+		set_dio_next_block_for_io_map_bh_b_blocknr_left_move_do_blkfactor[label="set_dio_next_block_for_io_map_bh_b_blocknr_left_move_do_blkfactor"];
+		buffer_new_map_bh_true[label="buffer_new_map_bh_true"];
+		clean_blockdev_aliases_dio[label="clean_blockdev_aliases_dio"];
+		dio_blkfactor_false[label="dio_blkfactor_false"];
+		goto_do_holes[label="goto_do_holes"];
+		set_blkmask_1_left_move_dio_blkfactor_sub_1[label="set_blkmask_1_left_move_dio_blkfactor_sub_1"];
+		set_dio_remainder_dio_block_in_file_and_blkmask[label="set_dio_remainder_dio_block_in_file_and_blkmask"];
+		buffer_new_map_bh_false[label="buffer_new_map_bh_false"];
+		dio_next_block_for_io_self_add_dio_remainder[label="dio_next_block_for_io_self_add_dio_remainder"];
+		dio_blocks_available_self_sub_dio_remainder[label="dio_blocks_available_self_sub_dio_remainder"];
+		buffer_mapped_map_bh_false[label="buffer_mapped_map_bh_false"];
+		dio_rw_eq_WRITE[label="dio_rw_eq_WRITE"];
+		page_cache_release_page[label="page_cache_release_page"];
+		return_ENOTBLK[label="return_ENOTBLK"];
+		dio_block_in_file_not_small_i_size_read_dio_inode_left_move_blkbits[label="dio_block_in_file_not_small_i_size_read_dio_inode_left_move_blkbits"];
+		page_cache_release_page[label="page_cache_release_page"];
+		goto_out[label="goto_out"];
+		set_kaddr_kmap_atomic_page_KM_USER0[label="set_kaddr_kmap_atomic_page_KM_USER0"];
+		memset_kaddr_add_block_in_page_left_move_blkbits_0_1_left_move_blkbits[label="memset_kaddr_add_block_in_page_left_move_blkbits_0_1_left_move_blkbits"];
+		flush_dcache_page_page[label="flush_dcache_page_page"];
+		kunmap_atomic_kaddr_KM_USER0[label="kunmap_atomic_kaddr_KM_USER0"];
+		inc_dio_block_in_file[label="inc_dio_block_in_file"];
+		inc_block_in_page[label="inc_block_in_page"];
+		goto_next_block[label="goto_next_block"];
+		dio_blkfactor_true_and_dio_start_zero_done_false[label="dio_blkfactor_true_and_dio_start_zero_done_false"];
+		dio_zero_block_dio_0[label="dio_zero_block_dio_0"];
+		set_this_chunk_blocks_dio_blocks_available[label="set_this_chunk_blocks_dio_blocks_available"];
+		set_u_PAGE_SIZE_sub_offset_in_page_right_move_blkbits[label="set_u_PAGE_SIZE_sub_offset_in_page_right_move_blkbits"];
+		this_chunk_blocks_great_u[label="this_chunk_blocks_great_u"];
+		set_this_chunk_blocs_u[label="set_this_chunk_blocs_u"];
+		set_u_dio_final_block_in_request_sub_dio_block_in_file[label="set_u_dio_final_block_in_request_sub_dio_block_in_file"];
+		this_chunk_blocks_great_u[label="this_chunk_blocks_great_u"];
+		set_this_chunk_blocks_u[label="set_this_chunk_blocks_u"];
+		set_this_chunk_bytes_this_cunk_blocks_left_move_blkbits[label="set_this_chunk_bytes_this_cunk_blocks_left_move_blkbits"];
+		set_dio_boundary_buffer_boundary_map_bh[label="set_dio_boundary_buffer_boundary_map_bh"];
+		set_ret_submit_page_section_dio_page_offset_in_page_this_chunk_bytes_dio_next_block_for_io[label="set_ret_submit_page_section_dio_page_offset_in_page_this_chunk_bytes_dio_next_block_for_io"];
+		ret_true[label="ret_true"];
+		page_cache_release_page[label="page_cache_release_page"];
+		goto_out[label="goto_out"];
+		dio_next_block_for_io_self_add_this_chunk_blocks[label="dio_next_block_for_io_self_add_this_chunk_blocks"];
+		dio_block_in_file_self_add_this_chunk_blocks[label="dio_block_in_file_self_add_this_chunk_blocks"];
+		dio_blocks_available_self_sub_this_chunk_blocks[label="dio_blocks_available_self_sub_this_chunk_blocks"];
+		dio_block_in_file_great_dio_final_block_in_request[label="dio_block_in_file_great_dio_final_block_in_request"];
+		BUG[label="BUG"];
+		dio_block_in_file_dio_final_block_in_request[label="dio_block_in_file_dio_final_block_in_request"];
+		page_cache_release_page[label="page_cache_release_page"];
+		set_block_in_page_0[label="set_block_in_page_0"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_direct_io_worker{
+		label="static ssize_t direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode, const struct iovec *iov, loff_t offset, unsigned long nr_segs,unsigned blkbits, get_blocks_t get_blocks, dio_iodone_t end_io,struct dio *dio)";
+		clear_dio_bio[label="clear_dio_bio"];
+		set_dio_inode_inode[label="set_dio_inode_inode"];
+		set_dio_rw_rw[label="set_dio_rw_rw"];
+		set_dio_blkbits_blkbits[label="set_dio_blkbits_blkbits"];
+		set_dio_blkfactor_inode_i_blkbits_sub_blkbits[label="set_dio_blkfactor_inode_i_blkbits_sub_blkbits"];
+		set_dio_start_zero_done_0[label="set_dio_start_zero_done_0"];
+		set_dio_size_0[label="set_dio_size_0"];
+		set_dio_block_in_file_offset_right_move_blkbits[label="set_dio_block_in_file_offset_right_move_blkbits"];
+		set_dio_blocks_available_0[label="set_dio_blocks_available_0"];
+		clear_dio_cur_page[label="clear_dio_cur_page"];
+		set_dio_boundary_0[label="set_dio_boundary_0"];
+		set_dio_reap_counter_0[label="set_dio_reap_counter_0"];
+		set_dio_get_blocks_get_blocks[label="set_dio_get_blocks_get_blocks"];
+		set_dio_end_io_end_io[label="set_dio_end_io_end_io"];
+		clear_dio_map_bh_b_private[label="clear_dio_map_bh_b_private"];
+		set_dio_final_block_in_bio_neg1[label="set_dio_final_block_in_bio_neg1"];
+		set_dio_next_block_for_io_neg1[label="set_dio_next_block_for_io_neg1"];
+		set_dio_page_errors_0[label="set_dio_page_errors_0"];
+		set_dio_result_0[label="set_dio_result_0"];
+		set_dio_iocb_iocb[label="set_dio_iocb_iocb"];
+		set_dio_i_size_i_size_read_inode[label="set_dio_i_size_i_size_read_inode"];
+		set_dio_bio_count_1[label="set_dio_bio_count_1"];
+		set_dio_bios_in_flight_0[label="set_dio_bios_in_flight_0"];
+		lock_init_dio_bio_lock[label="lock_init_dio_bio_lock"];
+		clear_dio_bio_list[label="clear_dio_bio_list"];
+		clear_dio_waiter[label="clear_dio_waiter"];
+		dio_blkfactor_true[label="dio_blkfactor_true"];
+		set_dio_pages_in_io_2[label="set_dio_pages_in_io_2"];
+		set_dio_pages_in_io_0[label="set_dio_pages_in_io_0"];
+		for_seg_nr_segs[label="for_seg_nr_segs"];
+		set_user_addr_iov_seg_iov_base[label="set_user_addr_iov_seg_iov_base"];
+		dio_pages_in_io_self_add_user_addr_io_seg_iov_len_add_PAGE_SIZE_sub_1_div_PAGE_SIZE_sub_user_addr_div_PAGE_SIZE[label="dio_pages_in_io_self_add_user_addr_io_seg_iov_len_add_PAGE_SIZE_sub_1_div_PAGE_SIZE_sub_user_addr_div_PAGE_SIZE"];
+		for_seg_nr_segs[label="for_seg_nr_segs"];
+		set_user_addr_iov_seg_iov_base[label="set_user_addr_iov_seg_iov_base"];
+		dio_size_self_add_bytes_iov_seg_iov_len[label="dio_size_self_add_bytes_iov_seg_iov_len"];
+		set_dio_first_block_in_page_user_addr_clear_PAGE_MASK_right_move_blkbits[label="set_dio_first_block_in_page_user_addr_clear_PAGE_MASK_right_move_blkbits"];
+		set_dio_final_block_in_request_dio_block_in_file_add_bytes_right_move_blkbites[label="set_dio_final_block_in_request_dio_block_in_file_add_bytes_right_move_blkbites"];
+		set_dio_head_0[label="set_dio_head_0"];
+		set_dio_tail_0[label="set_dio_tail_0"];
+		set_dio_curr_page_0[label="set_dio_curr_page_0"];
+		set_dio_total_pages_0[label="set_dio_total_pages_0"];
+		user_addr_and_PAGE_SIZE_sub_1_true[label="user_addr_and_PAGE_SIZE_sub_1_true"];
+		inc_dio_total_page[label="inc_dio_total_page"];
+		bytes_self_sub_PAGE_SIZE_sub_user_addr_and_PAGE_SIZE_sub_1[label="bytes_self_sub_PAGE_SIZE_sub_user_addr_and_PAGE_SIZE_sub_1"];
+		dio_total_page_self_bytes_add_PAGE_SIZE_sub_1_div_PAGE_SIZE[label="dio_total_page_self_bytes_add_PAGE_SIZE_sub_1_div_PAGE_SIZE"];
+		set_dio_curr_user_address_user_addr[label="set_dio_curr_user_address_user_addr"];
+		set_ret_do_direct_IO_dio[label="set_ret_do_direct_IO_dio"];
+		dio_result_self_add_iov_seg_iov_len_sub_dio_final_block_in_request_dio_block_in_file_left_move_blkbits[label="dio_result_self_add_iov_seg_iov_len_sub_dio_final_block_in_request_dio_block_in_file_left_move_blkbits"];
+		set_ret[label="set_ret"];
+		dio_clearnup_dio[label="dio_clearnup_dio"];
+		ret_eq_ENOTBLK_and_rw_WRITE[label="ret_eq_ENOTBLK_and_rw_WRITE"];
+		set_ret_0[label="set_ret_0"];
+		dio_zero_block_dio_1[label="dio_zero_block_dio_1"];
+		dio_cur_page_true[label="dio_cur_page_true"];
+		set_ret2_dio_send_cur_page_dio[label="set_ret2_dio_send_cur_page_dio"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_rets[label="set_ret_rets"];
+		page_cache_release_dio_cur_page[label="page_cache_release_dio_cur_page"];
+		clear_dio_cur_page[label="clear_dio_cur_page"];
+		dio_bio_true[label="dio_bio_true"];
+		dio_bio_submit_dio[label="dio_bio_submit_dio"];
+		dio_cleanup_dio[label="dio_cleanup_dio"];
+		rw_eq_READ_and_dio_lock_type_eq_DIO_LOCKING[label="rw_eq_READ_and_dio_lock_type_eq_DIO_LOCKING"];
+		up_dio_inode_i_sem[label="up_dio_inode_i_sem"];
+		dio_is_async_true[label="dio_is_async_true"];
+		dio_result_small_dio_size_and_rw_eq_WRITE[label="dio_result_small_dio_size_and_rw_eq_WRITE"];
+		set_dio_waiter_current[label="set_dio_waiter_current"];
+		set_should_wait_1[label="set_should_wait_1"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_dio_result[label="set_ret_dio_result"];
+		finished_one_bio_dio[label="finished_one_bio_dio"];
+		blk_run_address_space_inode_i_mapping[label="blk_run_address_space_inode_i_mapping"];
+		should_wait_true[label="should_wait_true"];
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		set_current_state_TASK_UNINTERRUPTIBLE[label="set_current_state_TASK_UNINTERRUPTIBLE"];
+		dio_bio_count_true[label="dio_bio_count_true"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		io_schedule[label="io_schedule"];
+		lock_dio_bio_lock[label="lock_dio_bio_lock"];
+		set_current_state_TASK_UNINTERRUPTIBLE[label="set_current_state_TASK_UNINTERRUPTIBLE"];
+		unlock_dio_bio_lock[label="unlock_dio_bio_lock"];
+		set_current_state_TASK_RUNNING[label="set_current_state_TASK_RUNNING"];
+		kfree_dio[label="kfree_dio"];
+		set_transferred_0[label="set_transferred_0"];
+		finished_one_bio_dio[label="finished_one_bio_dio"];
+		set_rets_dio_await_completion_dio[label="set_rets_dio_await_completion_dio"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_ret2[label="set_ret_ret2"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_dio_page_errors[label="set_ret_dio_page_errors"];
+		dio_result_true[label="dio_result_true"];
+		set_i_size_i_size_read_inode[label="set_i_size_i_size_read_inode"];
+		set_transferred_dio_result[label="set_transferred_dio_result"];
+		rw_eq_READ_and_offset_add_transferred_great_i_size[label="rw_eq_READ_and_offset_add_transferred_great_i_size"];
+		set_transferred_i_size_sub_offset[label="set_transferred_i_size_sub_offset"];
+		dio_complete_dio_offset_tranfserred[label="dio_complete_dio_offset_tranfserred"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_transferred[label="set_ret_transferred"];
+		is_sync_kiocb_iocb_false_and_rw_wq_WRITE_and_ret_not_small_0_and_dio_result_eq_dio_size[label="is_sync_kiocb_iocb_false_and_rw_wq_WRITE_and_ret_not_small_0_and_dio_result_eq_dio_size"];
+		aio_complete_iocb_ret_0[label="aio_complete_iocb_ret_0"];
+		kfree_dio[label="kfree_dio"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster___blockdev_direct_IO{
+		label="ssize_t __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+	struct block_device *bdev, const struct iovec *iov, loff_t offset, 
+	unsigned long nr_segs, get_blocks_t get_blocks, dio_iodone_t end_io,
+	int dio_lock_type)";
+		set_blkbits_inode_i_blkbits[label="set_blkbits_inode_i_blkbits"];
+		set_blocksize_mask_1_left_move_blkbits_sub_1[label="set_blocksize_mask_1_left_move_blkbits_sub_1"];
+		set_end_offset[label="set_end_offset"];
+		set_reader_with_isem_rw_eq_READ_and_dio_lock_type_eq_DIO_OWN_LOCKING[label="set_reader_with_isem_rw_eq_READ_and_dio_lock_type_eq_DIO_OWN_LOCKING"];
+		rw_WRITE_set[label="rw_WRITE_set"];
+		current_flags_self_or_PF_SYNCWRITE[label="current_flags_self_or_PF_SYNCWRITE"];
+		bdev_true[label="bdev_true"];
+		set_bdev_blkbits_blksize_bits_bdev_hardsect_size_bdev[label="set_bdev_blkbits_blksize_bits_bdev_hardsect_size_bdev"];
+		offset_and_blocksize_mask_true[label="offset_and_blocksize_mask_true"];
+		bdev_true[label="bdev_true"];
+		set_blkbits_bdev_blkbits[label="set_blkbits_bdev_blkbits"];
+		set_blocksize_mask_1_left_move_blkbits_sub_1[label="set_blocksize_mask_1_left_move_blkbits_sub_1"];
+		offset_and_blocksize_mask_true[label="offset_and_blocksize_mask_true"];
+		goto_out[label="goto_out"];
+		for_seg_nr_segs[label="for_seg_nr_segs"];
+		set_addr_iov_seg_iov_base[label="set_addr_iov_seg_iov_base"];
+		set_size_iov_seg_iov_len[label="set_size_iov_seg_iov_len"];
+		end_self_add_size[label="end_self_add_size"];
+		addr_and_blocksize_mask_true_size_and_blocksize_mask_true[label="addr_and_blocksize_mask_true_size_and_blocksize_mask_true"];
+		bdev_true[label="bdev_true"];
+		set_blkbits_bdev_blkbits[label="set_blkbits_bdev_blkbits"];
+		set_blocksize_mask_1_left_move_blkbits_sub_1[label="set_blocksize_mask_1_left_move_blkbits_sub_1"];
+		addr_and_blocksize_mask_true_or_size_and_blocksize_mask_true[label="addr_and_blocksize_mask_true_or_size_and_blocksize_mask_true"];
+		goto_out[label="goto_out"];
+		set_dio_kmalloc[label="set_dio_kmalloc"];
+		set_retval_ENOMEM[label="set_retval_ENOMEM"];
+		dio_false[label="dio_false"];
+		goto_out[label="goto_out"];
+		set_dio_lock_type_dio_lock_type[label="set_dio_lock_type_dio_lock_type"];
+		dio_lock_type_not_eq_DIO_NO_lOCKING[label="dio_lock_type_not_eq_DIO_NO_lOCKING"];
+		rw_eq_READ_and_end_great_offset[label="rw_eq_READ_and_end_great_offset"];
+		set_mapping_iocb_ki_filp_f_mapping[label="set_mapping_iocb_ki_filp_f_mapping"];
+		dio_lock_type_not_eq_DIO_OWN_LOCKING[label="dio_lock_type_not_eq_DIO_OWN_LOCKING"];
+		down_inode_i_sem[label="down_inode_i_sem"];
+		set_reader_with_isem_1[label="set_reader_with_isem_1"];
+		set_retval_filemap_write_and_wait_range_mapping_offset_end_sub_1[label="set_retval_filemap_write_and_wait_range_mapping_offset_end_sub_1"];
+		retval_true[label="retval_true"];
+		kfree_dio[label="kfree_dio"];
+		goto_out[label="goto_out"];
+		dio_lock_type_eq_DIO_OWN_LOCKING[label="dio_lock_type_eq_DIO_OWN_LOCKING"];
+		up_inode_i_sem[label="up_inode_i_sem"];
+		set_reader_with_isem_0[label="set_reader_with_isem_0"];
+		dio_lock_type_eq_DIO_LOCKING[label="dio_lock_type_eq_DIO_LOCKING"];
+		down_read_inode_i_alloc_sem[label="down_read_inode_i_alloc_sem"];
+		set_dio_is_async_is_sync_kiocb_iocb_false_and_rw_eq_WRITE_and_end_great_i_size_read_inode_false[label="set_dio_is_async_is_sync_kiocb_iocb_false_and_rw_eq_WRITE_and_end_great_i_size_read_inode_false"];
+		set_retval_direct_io_worker_rw_iocb_inode_iov_offset_nr_segs_blkbits_get_blocks_end_io_dio[label="set_retval_direct_io_worker_rw_iocb_inode_iov_offset_nr_segs_blkbits_get_blocks_end_io_dio"];
+		rw_eq_READ_and_dio_lock_type_eq_DIO_LOCKING[label="rw_eq_READ_and_dio_lock_type_eq_DIO_LOCKING"];
+		set_reader_with_isem_0[label="set_reader_with_isem_0"];
+		reader_with_isem_true[label="reader_with_isem_true"];
+		up_inode_i_sem[label="up_inode_i_sem"];
+		rw_and_WRITE_set[label="rw_and_WRITE_set"];
+		clear_current_flags_PF_SYNCWRITE[label="clear_current_flags_PF_SYNCWRITE"];
+		return_retval[label="return_retval"];
+	}
+}
