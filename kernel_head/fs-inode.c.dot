@@ -1,0 +1,337 @@
+digraph inode_c{
+	subgraph cluster_*alloc_inode{
+		label="static struct inode *alloc_inode(struct super_block *sb)";
+		sb_s_op_alloc_inode_true[label="sb_s_op_alloc_inode_true"];
+		set_inode_sb_s_op_alloc_inode_sb[label="set_inode_sb_s_op_alloc_inode_sb"];
+		set_inode_kmem_cache_alloc_inode_cachep[label="set_inode_kmem_cache_alloc_inode_cachep"];
+		inode_true[label="inode_true"];
+		set_mapping_inode_i_data[label="set_mapping_inode_i_data"];
+		set_inode_i_sb_sb[label="set_inode_i_sb_sb"];
+		set_inode_i_blkbits_sb_s_blocksize_bits[label="set_inode_i_blkbits_sb_s_blocksize_bits"];
+		set_inode_i_flags_0[label="set_inode_i_flags_0"];
+		atomic_set_inode_i_count_1[label="atomic_set_inode_i_count_1"];
+		set_inode_i_op_empty_iops[label="set_inode_i_op_empty_iops"];
+		set_inode_i_fop_empty_fops[label="set_inode_i_fop_empty_fops"];
+		set_inode_i_nlink_1[label="set_inode_i_nlink_1"];
+		atomic_set_inode_i_writecount_0[label="atomic_set_inode_i_writecount_0"];
+		set_inode_i_size_0[label="set_inode_i_size_0"];
+		set_indoe_i_blocks_0[label="set_indoe_i_blocks_0"];
+		set_inode_i_bytes_0[label="set_inode_i_bytes_0"];
+		set_inode_i_generation_0[label="set_inode_i_generation_0"];
+		CONFIG_QUOTA[label="CONFIG_QUOTA"];
+		memset_inode_i_dquot_0[label="memset_inode_i_dquot_0"];
+		clear_inode_i_pipe[label="clear_inode_i_pipe"];
+		clear_inode_i_bdev[label="clear_inode_i_bdev"];
+		set_inode_i_rdev_0[label="set_inode_i_rdev_0"];
+		clear_inode_i_security[label="clear_inode_i_security"];
+		security_inode_alloc_inode_true[label="security_inode_alloc_inode_true"];
+		inode_i_sb_s_op_destroy_inode_true[label="inode_i_sb_s_op_destroy_inode_true"];
+		inode_i_sb_s_op_destry_inode_inode[label="inode_i_sb_s_op_destry_inode_inode"];
+		kmem_cache_free_inode_cachep_inde[label="kmem_cache_free_inode_cachep_inde"];
+		return_NULL[label="return_NULL"];
+		set_mapping_a_ops_empty_aops[label="set_mapping_a_ops_empty_aops"];
+		set_mapping_host_inode[label="set_mapping_host_inode"];
+		set_mapping_flags_0[label="set_mapping_flags_0"];
+		mapping_set_gfp_mask_mapping_GFP_HIGHUSER[label="mapping_set_gfp_mask_mapping_GFP_HIGHUSER"];
+		clear_mapping_assoc_mapping[label="clear_mapping_assoc_mapping"];
+		set_mapping_backing_dev_info_default_backing_dev_info[label="set_mapping_backing_dev_info_default_backing_dev_info"];
+		sb_s_bdev_true[label="sb_s_bdev_true"];
+		set_bdi_sb_s_bdev_bd_inode_backing_dev_info[label="set_bdi_sb_s_bdev_bd_inode_backing_dev_info"];
+		bdi_false[label="bdi_false"];
+		set_bdi_sb_s_bdev_bd_inode_i_mapping_backing_dev_info[label="set_bdi_sb_s_bdev_bd_inode_i_mapping_backing_dev_info"];
+		set_mapping_backing_dev_info_bdi[label="set_mapping_backing_dev_info_bdi"];
+		memset_inode_u_0[label="memset_inode_u_0"];
+		set_inode_i_mapping_mapping[label="set_inode_i_mapping_mapping"];
+		return_inode[label="return_inode"];
+	}
+
+	subgraph cluster_destroy_inode{
+		label="void destroy_inode(struct inode *inode) ";
+		inode_has_buffers_inode_true[label="inode_has_buffers_inode_true"];
+		BUG[label="BUG"];
+		security_inode_free_inode[label="security_inode_free_inode"];
+		inode_i_sb_s_op_destroy_inode_true[label="inode_i_sb_s_op_destroy_inode_true"];
+		inode_i_sb_s_op_destroy_inode_inode[label="inode_i_sb_s_op_destroy_inode_inode"];
+		kmem_cache_free_inode_cachep_inode[label="kmem_cache_free_inode_cachep_inode"];
+	}
+
+	subgraph cluster_inode_init_once{
+		label="void inode_init_once(struct inode *inode)";
+		memset_inode_0[label="memset_inode_0"];
+		INIT_HLIST_NODE_inode_i_hash[label="INIT_HLIST_NODE_inode_i_hash"];
+		INIT_LIST_HEAD_inode_i_dentry[label="INIT_LIST_HEAD_inode_i_dentry"];
+		INIT_LIST_HEAD_inode_i_devices[label="INIT_LIST_HEAD_inode_i_devices"];
+		sema_init_inode_i_sem_1[label="sema_init_inode_i_sem_1"];
+		init_rwsem_inode_i_alloc_sem[label="init_rwsem_inode_i_alloc_sem"];
+		INIT_RADIX_TREE_inode_i_data_page_tree_GFP_ATOMIC[label="INIT_RADIX_TREE_inode_i_data_page_tree_GFP_ATOMIC"];
+		rwlock_init_inode_i_data_tree_lock[label="rwlock_init_inode_i_data_tree_lock"];
+		lock_init_inode_i_data_i_mmap_lock[label="lock_init_inode_i_data_i_mmap_lock"];
+		INIT_LIST_HEAD_inode_i_data_private_list[label="INIT_LIST_HEAD_inode_i_data_private_list"];
+		lock_init_inode_i_data_private_lock[label="lock_init_inode_i_data_private_lock"];
+		INIT_RAW_PRIO_TREE_ROOT_inode_i_data_i_mmap[label="INIT_RAW_PRIO_TREE_ROOT_inode_i_data_i_mmap"];
+		INIT_LIST_HEAD_inode_i_data_i_mmap_nonlinear[label="INIT_LIST_HEAD_inode_i_data_i_mmap_nonlinear"];
+		lock_init_inode_i_lock[label="lock_init_inode_i_lock"];
+		i_size_ordered_init_inode[label="i_size_ordered_init_inode"];
+	}
+
+	subgraph cluster_init_once{
+		label="static void init_once(void * foo, kmem_cache_t * cachep, unsigned long flags)";
+		set_inode_foo[label="set_inode_foo"];
+		flags_SLAB_CTOR_CONSTRUCTOR_set_except_SLAB_CTOR_VERIFY[label="flags_SLAB_CTOR_CONSTRUCTOR_set_except_SLAB_CTOR_VERIFY"];
+		inode_init_onec_inode[label="inode_init_onec_inode"];
+	}
+
+	subgraph cluster___iget{
+		label="void __iget(struct inode * inode)";
+		atomic_read_inode_i_count_true[label="atomic_read_inode_i_count_true"];
+		atomic_inc_inode_i_count[label="atomic_inc_inode_i_count"];
+		return[label="return"];
+		atomic_inc_inode_i_count[label="atomic_inc_inode_i_count"];
+		inode_i_state_I_DIRTY_I_LOCK_clear[label="inode_i_state_I_DIRTY_I_LOCK_clear"];
+		list_move_inode_i_list_inode_i_use[label="list_move_inode_i_list_inode_i_use"];
+		dec_inodes_stat_nr_unused[label="dec_inodes_stat_nr_unused"];
+	}
+
+	subgraph cluster_clear_inode{
+		label="void clear_inode(struct inode *inode)";
+		might_sleep[label="might_sleep"];
+		invalidate_inode_buffers_inode[label="invalidate_inode_buffers_inode"];
+		inode_i_data_nrpages_true[label="inode_i_data_nrpages_true"];
+		BUG[label="BUG"];
+		inode_i_state_I_FREEING_clear[label="inode_i_state_I_FREEING_clear"];
+		BUG[label="BUG"];
+		inode_i_state_I_CLEAR_set[label="inode_i_state_I_CLEAR_set"];
+		BUG[label="BUG"];
+		wait_on_inode_inode[label="wait_on_inode_inode"];
+		DQUOT_DROP_inode[label="DQUOT_DROP_inode"];
+		inode_i_sb_true_inode_i_sb_s_op_clear_inode_true[label="inode_i_sb_true_inode_i_sb_s_op_clear_inode_true"];
+		inode_i_sb_s_op_clear_inode_inode[label="inode_i_sb_s_op_clear_inode_inode"];
+		inode_i_bdev_true[label="inode_i_bdev_true"];
+		bd_forget_inode[label="bd_forget_inode"];
+		inode_i_cdev_true[label="inode_i_cdev_true"];
+		cd_forget_inode[label="cd_forget_inode"];
+		set_inode_i_state_I_CLEAR[label="set_inode_i_state_I_CLEAR"];
+	}
+
+	subgraph cluster_dispose_list{
+		label="static void dispose_list(struct list_head *head)";
+		list_empty_head_false[label="list_empty_head_false"];
+		set_inode_list_entry_head_next_struct_inode_i_list[label="set_inode_list_entry_head_next_struct_inode_i_list"];
+		list_del_inode_i_list[label="list_del_inode_i_list"];
+		inode_i_data_nrpages_true[label="inode_i_data_nrpages_true"];
+		truncate_inode_pages_inode_i_data_0[label="truncate_inode_pages_inode_i_data_0"];
+		clear_inode_inode[label="clear_inode_inode"];
+		destroy_inode_inode[label="destroy_inode_inode"];
+		inc_nr_disposed[label="inc_nr_disposed"];
+		lock_inode_lock[label="lock_inode_lock"];
+		inodes_stat_nr_inodes_self_sub_nr_disposed[label="inodes_stat_nr_inodes_self_sub_nr_disposed"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+	}
+
+	subgraph cluster_invalidate_list{
+		label="static int invalidate_list(struct list_head *head, struct list_head *dispose)";
+		set_next_head_next[label="set_next_head_next"];
+		dead_for[label="dead_for"];
+		set_tmp_next[label="set_tmp_next"];
+		cond_resched_lock_inode_lock[label="cond_resched_lock_inode_lock"];
+		set_next_next_next[label="set_next_next_next"];
+		tmp_eq_head[label="tmp_eq_head"];
+		set_inode_list_entry_tmp_struct_inode_i_sb_list[label="set_inode_list_entry_tmp_struct_inode_i_sb_list"];
+		invalidate_inode_buffers_inode[label="invalidate_inode_buffers_inode"];
+		atomic_read_inode_i_hash_false[label="atomic_read_inode_i_hash_false"];
+		hlist_del_init_inode_i_hash[label="hlist_del_init_inode_i_hash"];
+		list_del_inode_i_sb_list[label="list_del_inode_i_sb_list"];
+		list_move_inode_i_list_dispose[label="list_move_inode_i_list_dispose"];
+		inode_i_state_self_or_I_FREEING[label="inode_i_state_self_or_I_FREEING"];
+		inc_count[label="inc_count"];
+		set_busy_1[label="set_busy_1"];
+		inode_stat_nr_unused_self_sub_count[label="inode_stat_nr_unused_self_sub_count"];
+		return_busy[label="return_busy"];
+	}
+
+	subgraph cluster_invalidate_inodes{
+		label="int invalidate_inodes(struct super_block * sb)";
+		LIST_HEAD_throw_away[label="LIST_HEAD_throw_away"];
+		down_iprune_sem[label="down_iprune_sem"];
+		lock_inode_lock[label="lock_inode_lock"];
+		set_busy_invalidate_list_sb_s_inodes_throw_away[label="set_busy_invalidate_list_sb_s_inodes_throw_away"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		dispose_list_throw_away[label="dispose_list_throw_away"];
+		up_iprune_sem[label="up_iprune_sem"];
+		return_busy[label="return_busy"];
+	}
+
+	subgraph cluster___invalidate_device{
+		label="int __invalidate_device(struct block_device *bdev)";
+		set_sb_get_super_bdev[label="set_sb_get_super_bdev"];
+		sb_true[label="sb_true"];
+		shrink_dcache_sb_sb[label="shrink_dcache_sb_sb"];
+		set_res_invalidate_inodes_sb[label="set_res_invalidate_inodes_sb"];
+		drop_super_sb[label="drop_super_sb"];
+		invalidate_bdev_0[label="invalidate_bdev_0"];
+		return_res[label="return_res"];
+	}
+
+	subgraph cluster_can_unuse{
+		label="static int can_unuse(struct inode *inode)";
+		inode_i_state_true[label="inode_i_state_true"];
+		return_0[label="return_0"];
+		inode_has_buffers_inode_true[label="inode_has_buffers_inode_true"];
+		return_0[label="return_0"];
+		atomic_read_inode_i_count_true[label="atomic_read_inode_i_count_true"];
+		return_0[label="return_0"];
+		inode_i_data_nrpages_true[label="inode_i_data_nrpages_true"];
+		return_0[label="return_0"];
+		return_1[label="return_1"];
+	}
+
+	subgraph cluster_prune_icache{
+		label="static void prune_icache(int nr_to_scan)";
+		LIST_HEAD_freeable[label="LIST_HEAD_freeable"];
+		down_iprune_sem[label="down_iprune_sem"];
+		lock_inode_lock[label="lock_inode_lock"];
+		for_nr_scanned_nr_to_scan[label="for_nr_scanned_nr_to_scan"];
+		list_empty_inode_unused_true[label="list_empty_inode_unused_true"];
+		set_inode_list_entry_inode_unused_prev_struct_inode_i_list[label="set_inode_list_entry_inode_unused_prev_struct_inode_i_list"];
+		inode_i_state_true_or_atomic_read_inode_i_count_true[label="inode_i_state_true_or_atomic_read_inode_i_count_true"];
+		list_move_inode_i_list_inode_unused[label="list_move_inode_i_list_inode_unused"];
+		inode_hash_buffers_inode_true_inode_i_data_nrpages_true[label="inode_hash_buffers_inode_true_inode_i_data_nrpages_true"];
+		__iget_inode[label="__iget_inode"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		remove_inode_buffers_inode_true[label="remove_inode_buffers_inode_true"];
+		reap_self_add_invalidate_inode_pages_inode_i_data[label="reap_self_add_invalidate_inode_pages_inode_i_data"];
+		iput_inode[label="iput_inode"];
+		lock_inode_lock[label="lock_inode_lock"];
+		inode_not_eq_list_entry_inode_unused_next_struct_inode_i_list[label="inode_not_eq_list_entry_inode_unused_next_struct_inode_i_list"];
+		can_unuse_inode_false[label="can_unuse_inode_false"];
+		hlist_del_init_inode_i_hash[label="hlist_del_init_inode_i_hash"];
+		list_del_init_inode_i_sb_list[label="list_del_init_inode_i_sb_list"];
+		list_move_inode_i_list_freeable[label="list_move_inode_i_list_freeable"];
+		inode_i_state_self_or_I_FREEING[label="inode_i_state_self_or_I_FREEING"];
+		inc_nr_pruned[label="inc_nr_pruned"];
+		inodes_stat_nr_unused_self_sub_nr_pruned[label="inodes_stat_nr_unused_self_sub_nr_pruned"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		dispose_list_freeable[label="dispose_list_freeable"];
+		up_iprune_sem[label="up_iprune_sem"];
+		current_is_kswapd_true[label="current_is_kswapd_true"];
+		mod_page_state_kswapd_inodesteal_reap[label="mod_page_state_kswapd_inodesteal_reap"];
+		mod_page_state_pginodesteal_reap[label="mod_page_state_pginodesteal_reap"];
+	}
+
+	subgraph cluster_shrink_icache_memory{
+		label="static int shrink_icache_memory(int nr, unsigned int gfp_mask)";
+		nr_true[label="nr_true"];
+		gfp_mask___GFP_FS_false[label="gfp_mask___GFP_FS_false"];
+		return_neg1[label="return_neg1"];
+		prune_icache_nr[label="prune_icache_nr"];
+		return_inodes_stat_nr_unused_div_100_multi_sysctl_vfs_cache_pressure[label="return_inodes_stat_nr_unused_div_100_multi_sysctl_vfs_cache_pressure"];
+	}
+
+	subgraph cluster_find_inode{
+		label="static struct inode * find_inode(struct super_block * sb, struct hlist_head *head, int (*test)(struct inode *, void *), void *data)";
+		hlist_for_each_node_head[label="hlist_for_each_node_head"];
+		set_inode_hlist_entry_node_struct_inode_i_hash[label="set_inode_hlist_entry_node_struct_inode_i_hash"];
+		inode_i_sb_not_eq_sb[label="inode_i_sb_not_eq_sb"];
+		test_inode_data_false[label="test_inode_data_false"];
+		inode_i_state_I_FREEING_or_I_CLEAR_set[label="inode_i_state_I_FREEING_or_I_CLEAR_set"];
+		__wait_on_freeing_inode_inode[label="__wait_on_freeing_inode_inode"];
+		goto_repeat[label="goto_repeat"];
+		return_inode_or_NULL_decide_node[label="return_inode_or_NULL_decide_node"];
+	}
+
+	subgraph cluster_find_inode_fast{
+		label="static struct inode * find_inode_fast(struct super_block * sb, struct hlist_head *head, unsigned long ino)";
+		set_inode_NULL[label="set_inode_NULL"];
+		hlist_for_each_node_head[label="hlist_for_each_node_head"];
+		set_inode_hlist_entry_node_struct_inode_i_hash[label="set_inode_hlist_entry_node_struct_inode_i_hash"];
+		inode_i_ino_not_eq_ino[label="inode_i_ino_not_eq_ino"];
+		inode_i_sb_not_eq_sb[label="inode_i_sb_not_eq_sb"];
+		inode_i_state_I_FREEING_or_I_CLEAR_set[label="inode_i_state_I_FREEING_or_I_CLEAR_set"];
+		__wait_on_freeing_inode_inode[label="__wait_on_freeing_inode_inode"];
+		goto_repeat[label="goto_repeat"];
+		return_inode_or_NULL_decide_node[label="return_inode_or_NULL_decide_node"];
+	}
+
+	subgraph cluster_*new_inode{
+		label="struct inode *new_inode(struct super_block *sb)";
+		lock_prefetch_inode_lock[label="lock_prefetch_inode_lock"];
+		set_inode_alloc_inode_sb[label="set_inode_alloc_inode_sb"];
+		inode_true[label="inode_true"];
+		lock_inode_lock[label="lock_inode_lock"];
+		inc_inodes_stat_nr_inodes[label="inc_inodes_stat_nr_inodes"];
+		list_add_inode_i_list_inode_in_use[label="list_add_inode_i_list_inode_in_use"];
+		list_add_inode_i_sb_list_sb_s_inodes[label="list_add_inode_i_sb_list_sb_s_inodes"];
+		set_inode_i_ino_inc_last_ino[label="set_inode_i_ino_inc_last_ino"];
+		set_inode_i_state_0[label="set_inode_i_state_0"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		return_inode[label="return_inode"];
+	}
+
+	subgraph cluster_unlock_new_inode{
+		label="void unlock_new_inode(struct inode *inode)";
+		inode_i_state_clear_I_LOCK_or_I_NEW[label="inode_i_state_clear_I_LOCK_or_I_NEW"];
+		wake_up_inode_inode[label="wake_up_inode_inode"];
+	}
+
+	subgraph cluster_get_new_inode{
+		label="static struct inode * get_new_inode(struct super_block *sb, struct hlist_head *head, int (*test)(struct inode *, void *), int (*set)(struct inode *, void *), void *data)";
+		set_inode_alloc_inode_sb[label="set_inode_alloc_inode_sb"];
+		inode_true[label="inode_true"];
+		lock_inode_lock[label="lock_inode_lock"];
+		set_old_find_inode_sb_head_test_data[label="set_old_find_inode_sb_head_test_data"];
+		old_false[label="old_false"];
+		set_inode_data_true[label="set_inode_data_true"];
+		goto_set_failed[label="goto_set_failed"];
+		inc_inodes_stat_nr_inodes[label="inc_inodes_stat_nr_inodes"];
+		list_add_inode_i_list_inode_in_use[label="list_add_inode_i_list_inode_in_use"];
+		list_add_inode_i_sb_list_sb_s_inodes[label="list_add_inode_i_sb_list_sb_s_inodes"];
+		hlist_add_head_inode_i_hash_head[label="hlist_add_head_inode_i_hash_head"];
+		set_inode_i_state_I_LOCK_oI_NEW[label="set_inode_i_state_I_LOCK_oI_NEW"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		return_inode[label="return_inode"];
+		__iget_old[label="__iget_old"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		destroy_inode_inode[label="destroy_inode_inode"];
+		set_inode_old[label="set_inode_old"];
+		wait_on_inode_inode[label="wait_on_inode_inode"];
+		return_inode[label="return_inode"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		destroy_inode_inode[label="destroy_inode_inode"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_get_new_inode_fast{
+		label="static struct inode * get_new_inode_fast(struct super_block *sb, struct hlist_head *head, unsigned long ino)";
+		set_inode_alloc_inode_sb[label="set_inode_alloc_inode_sb"];
+		inode_true[label="inode_true"];
+		lock_inode_lock[label="lock_inode_lock"];
+		set_old_find_inode_fast_sb_head_ino[label="set_old_find_inode_fast_sb_head_ino"];
+		old_false[label="old_false"];
+		set_inode_i_ino_ino[label="set_inode_i_ino_ino"];
+		inc_inodes_stat_nr_inodes[label="inc_inodes_stat_nr_inodes"];
+		list_add_inode_i_list_inode_in_use[label="list_add_inode_i_list_inode_in_use"];
+		list_add_inode_i_sb_list_sb_s_inodes[label="list_add_inode_i_sb_list_sb_s_inodes"];
+		hlist_add_head_inode_i_hash_head[label="hlist_add_head_inode_i_hash_head"];
+		set_inode_i_state_I_LOCK_I_NEW[label="set_inode_i_state_I_LOCK_I_NEW"];
+		return_inode[label="return_inode"];
+		__iget_old[label="__iget_old"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		destroy_inode_inode[label="destroy_inode_inode"];
+		set_inode_old[label="set_inode_old"];
+		wait_on_inode_inode[label="wait_on_inode_inode"];
+		return_inode[label="return_inode"];
+	}
+
+	subgraph cluster_hash{
+		label="static inline unsigned long hash(struct super_block *sb, unsigned long hashval)";
+		set_tmp_hashval_multi_sb_xor_GOLDEN_RATIO_PRIME_add_hashval_div_L1_CACHE_BYTES[label="set_tmp_hashval_multi_sb_xor_GOLDEN_RATIO_PRIME_add_hashval_div_L1_CACHE_BYTES"];
+		set_tmp_tmp_xor_tmp_xor_GOLDEN_RATION_PRIME_right_move_I_HASHBITS[label="set_tmp_tmp_xor_tmp_xor_GOLDEN_RATION_PRIME_right_move_I_HASHBITS"];
+		return_tmp_and_I_HASHMASK[label="return_tmp_and_I_HASHMASK"];
+	}
+
+	subgraph cluster_iunique{
+		label="ino_t iunique(struct super_block *sb, ino_t max_reserved)";
+		
+	}
+	
+}
