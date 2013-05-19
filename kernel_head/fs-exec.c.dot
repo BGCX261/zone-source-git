@@ -1,0 +1,736 @@
+digraph exec_c{
+        subgraph cluster_register_binfmt{
+                label="int register_binfmt(struct linux_binfmt * fmt)
+";
+                set_tmp_formats[label="set_tmp_formats"];
+                fmt_false[label="fmt_false"];
+                return_EINVAL[label="return_EINVAL"];
+                fmt_next_true[label="fmt_next_true"];
+                return_EBUSY[label="return_EBUSY"];
+                write_lock_binfmt_lock[label="write_lock_binfmt_lock"];
+                tmp_true[label="tmp_true"];
+                fmt_eq_tmp[label="fmt_eq_tmp"];
+                write_unlock_binfmt_lock[label="write_unlock_binfmt_lock"];
+                return_EBUSY[label="return_EBUSY"];
+                set_tmp_tmp_next[label="set_tmp_tmp_next"];
+                set_fmt_next_formats[label="set_fmt_next_formats"];
+                set_formats_fmt[label="set_formats_fmt"];
+                write_unlock_binfmt_lock[label="write_unlock_binfmt_lock"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_unregister_binfmt{
+                label="int unregister_binfmt(struct linux_binfmt * fmt)
+";
+                set_tmp_formats[label="set_tmp_formats"];
+                write_lock_binfmt_lock[label="write_lock_binfmt_lock"];
+                tmp_true[label="tmp_true"];
+                fmt_eq_tmp[label="fmt_eq_tmp"];
+                set_tmp_fmt_next[label="set_tmp_fmt_next"];
+                write_unlock_binfmt_lock[label="write_unlock_binfmt_lock"];
+                return_0[label="return_0"];
+                set_tmp_tmp_next[label="set_tmp_tmp_next"];
+                write_unlock_binfmt_lock[label="write_unlock_binfmt_lock"];
+                return_EINVAL[label="return_EINVAL"];
+        }
+
+        subgraph cluster_put_binfmt{
+                label="static inline void put_binfmt(struct linux_binfmt * fmt)
+";
+                module_put_fmt_module[label="module_put_fmt_module"];
+        }
+
+        subgraph cluster_sys_uselib{
+                label="asmlinkage long sys_uselib(const char __user * library)
+";
+                set_nd_intent_open_flags_FMODE_READ[label="set_nd_intent_open_flags_FMODE_READ"];
+                set_error___user_walk_library_LOOKUP_FOLLOW_LOOKUP_OPEN_nd[label="set_error___user_walk_library_LOOKUP_FOLLOW_LOOKUP_OPEN_nd"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                S_ISREG_nd_dentry_d_inode_i_mode_false[label="S_ISREG_nd_dentry_d_inode_i_mode_false"];
+                goto_exit[label="goto_exit"];
+                set_error_permission_nd_dentry_d_inode_MAY_READ_MAY_EXEC_nd[label="set_error_permission_nd_dentry_d_inode_MAY_READ_MAY_EXEC_nd"];
+                error_true[label="error_true"];
+                goto_exit[label="goto_exit"];
+                set_file_dentry_open_nd_dentry_nd_mnt_O_RDONLY[label="set_file_dentry_open_nd_dentry_nd_mnt_O_RDONLY"];
+                set_error_PTR_ERR_file[label="set_error_PTR_ERR_file"];
+                IS_ERR_file_true[label="IS_ERR_file_true"];
+                goto_out[label="goto_out"];
+                set_error_ENOEXEC[label="set_error_ENOEXEC"];
+                file_f_op_true[label="file_f_op_true"];
+                read_lock_binfmt_lock[label="read_lock_binfmt_lock"];
+                for_fmt_formats_fmt_next[label="for_fmt_formats_fmt_next"];
+                fmt_load_shlib_false[label="fmt_load_shlib_false"];
+                try_module_get_fmt_module_false[label="try_module_get_fmt_module_false"];
+                read_unlock_binfmt_lock[label="read_unlock_binfmt_lock"];
+                set_error_fmt_load_shlib_file[label="set_error_fmt_load_shlib_file"];
+                read_lock_binfmt_lock[label="read_lock_binfmt_lock"];
+                put_binfmt_fmt[label="put_binfmt_fmt"];
+                error_not_eq_ENOEXEC[label="error_not_eq_ENOEXEC"];
+                read_unlock_binfmt_lock[label="read_unlock_binfmt_lock"];
+                fput_file[label="fput_file"];
+                return_error[label="return_error"];
+                path_release_nd[label="path_release_nd"];
+                goto_out[label="goto_out"];
+        }
+
+        subgraph cluster_count{
+                label="static int count(char __user * __user * argv, int max)
+";
+                argv_not_eq_NULL[label="argv_not_eq_NULL"];
+                dead_for[label="dead_for"];
+                get_user_p_argv_true[label="get_user_p_argv_true"];
+                return_FAULT[label="return_FAULT"];
+                p_false[label="p_false"];
+                inc_argv[label="inc_argv"];
+                inc_i_great_max[label="inc_i_great_max"];
+                return_E2BIG[label="return_E2BIG"];
+                cond_resched[label="cond_resched"];
+                return_i[label="return_i"];
+        }
+
+        subgraph cluster_copy_strings{
+                label="static int copy_strings(int argc, char __user * __user * argv,
+			struct linux_binprm *bprm)
+";
+                argc_dec_great_0[label="argc_dec_great_0"];
+                get_user_str_argv_add_argc_true_or_set_len_strnlen_user_str_bprm_p_false[label="get_user_str_argv_add_argc_true_or_set_len_strnlen_user_str_bprm_p_false"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                goto_out[label="goto_out"];
+                bprm_p_small_len[label="bprm_p_small_len"];
+                set_ret_E2BIG[label="set_ret_E2BIG"];
+                goto_out[label="goto_out"];
+                bprm_p_self_sub_len[label="bprm_p_self_sub_len"];
+                set_pos_bprm_p[label="set_pos_bprm_p"];
+                len_great_0[label="len_great_0"];
+                set_offset_pos_mod_PAGE_SIZE[label="set_offset_pos_mod_PAGE_SIZE"];
+                set_i_pos_div_PAGE_SIZE[label="set_i_pos_div_PAGE_SIZE"];
+                set_page_bprm_page_i[label="set_page_bprm_page_i"];
+                set_new_0[label="set_new_0"];
+                page_false[label="page_false"];
+                set_page_alloc_page_GFP_HIGHUSER[label="set_page_alloc_page_GFP_HIGHUSER"];
+                set_bprm_page_i_page[label="set_bprm_page_i_page"];
+                page_false[label="page_false"];
+                set_ret_ENOMEM[label="set_ret_ENOMEM"];
+                goto_out[label="goto_out"];
+                set_new_1[label="set_new_1"];
+                page_not_eq_kmapped_page[label="page_not_eq_kmapped_page"];
+                kmapped_page_true[label="kmapped_page_true"];
+                kunmap_kmapped_page[label="kunmap_kmapped_page"];
+                set_kmapped_page_page[label="set_kmapped_page_page"];
+                set_kaddr_kmap_kmapped_page[label="set_kaddr_kmap_kmapped_page"];
+                new_true_and_offset_true[label="new_true_and_offset_true"];
+                memset_kaddr_0[label="memset_kaddr_0"];
+                bytes_to_copy_PAGE_SIZE_sub_offset[label="bytes_to_copy_PAGE_SIZE_sub_offset"];
+                bytes_to_copy_great_len[label="bytes_to_copy_great_len"];
+                set_bytes_to_copy_len[label="set_bytes_to_copy_len"];
+                new_true[label="new_true"];
+                memset_kaddr_add_offset_len_0[label="memset_kaddr_add_offset_len_0"];
+                set_err_copy_from_user_kaddr_add_offset_str_bytes_to_copy[label="set_err_copy_from_user_kaddr_add_offset_str_bytes_to_copy"];
+                err_true[label="err_true"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                goto_out[label="goto_out"];
+                pos_self_add_bytes_to_copy[label="pos_self_add_bytes_to_copy"];
+                str_self_add_bytes_to_copy[label="str_self_add_bytes_to_copy"];
+                len_self_sub_bytes_to_copy[label="len_self_sub_bytes_to_copy"];
+                set_ret_0[label="set_ret_0"];
+                kmapped_page_true[label="kmapped_page_true"];
+                kunmap_kmapped_page[label="kunmap_kmapped_page"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_copy_strings_kernel{
+                label="int copy_strings_kernel(int argc,char ** argv, struct linux_binprm *bprm)
+";
+                set_oldfs_get_fs[label="set_oldfs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_r_copy_strings_argc_argv_bprm[label="set_r_copy_strings_argc_argv_bprm"];
+                set_fs_oldfs[label="set_fs_oldfs"];
+                return_r[label="return_r"];
+        }
+
+        subgraph cluster_install_arg_page{
+                label="void install_arg_page(struct vm_area_struct *vma,
+			struct page *page, unsigned long address)
+";
+                CONFIG_MMU[label="CONFIG_MMU"];
+                set_mm_vma_vm_mm[label="set_mm_vma_vm_mm"];
+                anon_vma_prepare_vma_true[label="anon_vma_prepare_vma_true"];
+                goto_out_sig[label="goto_out_sig"];
+                flush_dcache_page_page[label="flush_dcache_page_page"];
+                set_pgd_pgd_offset_mm_address[label="set_pgd_pgd_offset_mm_address"];
+                lock_mm_page_table_lock[label="lock_mm_page_table_lock"];
+                set_pud_pud_alloc_mm_pgd_address[label="set_pud_pud_alloc_mm_pgd_address"];
+                pud_false[label="pud_false"];
+                goto_out[label="goto_out"];
+                set_pmd_pmd_alloc_mm_pud_address[label="set_pmd_pmd_alloc_mm_pud_address"];
+                pmd_false[label="pmd_false"];
+                goto_out[label="goto_out"];
+                set_pte_pte_alloc_map_mm_pmd_address[label="set_pte_pte_alloc_map_mm_pmd_address"];
+                pte_fales[label="pte_fales"];
+                goto_out[label="goto_out"];
+                pte_none_pte_false[label="pte_none_pte_false"];
+                pte_unmap_pte[label="pte_unmap_pte"];
+                goto_out[label="goto_out"];
+                inc_mm_counter_mm_rss[label="inc_mm_counter_mm_rss"];
+                lru_cache_add_active_page[label="lru_cache_add_active_page"];
+                set_pte_at_mm_address_pte_pte_mkdirty_pte_mkwrite_mk_pte_page_vma_vm_page_prot[label="set_pte_at_mm_address_pte_pte_mkdirty_pte_mkwrite_mk_pte_page_vma_vm_page_prot"];
+                page_add_anon_rmap_page_vma_address[label="page_add_anon_rmap_page_vma_address"];
+                pte_unmap_pte[label="pte_unmap_pte"];
+                unlock_mm_page_table_lock[label="unlock_mm_page_table_lock"];
+                return[label="return"];
+                unlock_mm_page_table_lock[label="unlock_mm_page_table_lock"];
+                __free_page_page[label="__free_page_page"];
+                force_sig_SIGKILL_currentt[label="force_sig_SIGKILL_currentt"];
+        }
+
+        subgraph cluster_free_arg_pages{
+                label="static inline void free_arg_pages(struct linux_binprm *bprm)
+";
+                for_i_MAX_ARG_PAGES[label="for_i_MAX_ARG_PAGES"];
+                bprm_page_i_true[label="bprm_page_i_true"];
+                __free_page_bprm_page_i[label="__free_page_bprm_page_i"];
+                clear_bprm_page_i[label="clear_bprm_page_i"];
+        }
+
+        subgraph cluster_*open_exec{
+                label="struct file *open_exec(const char *name)
+";
+                set_nd_intent_open_flags_FMODE_READ[label="set_nd_intent_open_flags_FMODE_READ"];
+                set_err_path_lookup_name_LOOKUP_FOLLOW_LOOKUP_OPEN_nd[label="set_err_path_lookup_name_LOOKUP_FOLLOW_LOOKUP_OPEN_nd"];
+                set_file_ERR_PTR_err[label="set_file_ERR_PTR_err"];
+                err_false[label="err_false"];
+                set_inode_nd_dentry_d_inode[label="set_inode_nd_dentry_d_inode"];
+                set_file_ERR_PTR_EACCES[label="set_file_ERR_PTR_EACCES"];
+                nd_mnt_mnt_flags_MNT_NOEXEC_clear_and_S_ISREG_inode_i_mode_true[label="nd_mnt_mnt_flags_MNT_NOEXEC_clear_and_S_ISREG_inode_i_mode_true"];
+                set_err_permission_inode_MAY_EXEC_nd[label="set_err_permission_inode_MAY_EXEC_nd"];
+                err_false_and_inode_i_mode_and_0111_false[label="err_false_and_inode_i_mode_and_0111_false"];
+                set_err_EACCES[label="set_err_EACCES"];
+                set_file_ERR_PTR_err[label="set_file_ERR_PTR_err"];
+                err_false[label="err_false"];
+                set_file_dentry_open_nd_dentry_nd_mnt_O_RDONLY[label="set_file_dentry_open_nd_dentry_nd_mnt_O_RDONLY"];
+                IS_ERR_file_false[label="IS_ERR_file_false"];
+                set_err_deny_write_access_file[label="set_err_deny_write_access_file"];
+                err_true[label="err_true"];
+                fput_file[label="fput_file"];
+                set_file_ERR_PTR_err[label="set_file_ERR_PTR_err"];
+                return_file[label="return_file"];
+                path_release_nd[label="path_release_nd"];
+                goto_out[label="goto_out"];
+        }
+
+        subgraph cluster_kernel_read{
+                label="int kernel_read(struct file *file, unsigned long offset,
+	char *addr, unsigned long count)
+";
+                set_pos_offset[label="set_pos_offset"];
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                set_fs_get_ds[label="set_fs_get_ds"];
+                set_result_vfs_read_file_addr_count_pos[label="set_result_vfs_read_file_addr_count_pos"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                return_result[label="return_result"];
+        }
+
+        subgraph cluster_exec_mmap{
+                label="static int exec_mmap(struct mm_struct *mm)
+";
+                set_tsk_current[label="set_tsk_current"];
+                set_old_mm_current_mm[label="set_old_mm_current_mm"];
+                mm_release_tsk_old_mm[label="mm_release_tsk_old_mm"];
+                old_mm_true[label="old_mm_true"];
+                down_read_old_mm_mmap_sem[label="down_read_old_mm_mmap_sem"];
+                old_mm_core_waiters_true[label="old_mm_core_waiters_true"];
+                up_read_old_mm_mmap_sem[label="up_read_old_mm_mmap_sem"];
+                return_EINTR[label="return_EINTR"];
+                task_lock_tsk[label="task_lock_tsk"];
+                set_active_mm_tsk_active_mm[label="set_active_mm_tsk_active_mm"];
+                set_tsk_mm_mm[label="set_tsk_mm_mm"];
+                set_tsk_active_mm_mm[label="set_tsk_active_mm_mm"];
+                activate_mm_active_mm_mm[label="activate_mm_active_mm_mm"];
+                task_unlock_tsk[label="task_unlock_tsk"];
+                arch_pick_mmap_layout_mm[label="arch_pick_mmap_layout_mm"];
+                old_mm_true[label="old_mm_true"];
+                up_read_old_mm_mmap_sem[label="up_read_old_mm_mmap_sem"];
+                active_mm_not_eq_old_mm[label="active_mm_not_eq_old_mm"];
+                BUG[label="BUG"];
+                mmput_old_mm[label="mmput_old_mm"];
+                return_0[label="return_0"];
+                mmdrop_active_mm[label="mmdrop_active_mm"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_de_thread{
+                label="static inline int de_thread(struct task_struct *tsk)
+";
+                set_sig_tsk_signal[label="set_sig_tsk_signal"];
+                set_oldsighand_tsk_sighand[label="set_oldsighand_tsk_sighand"];
+                set_lock_oldsighand_siglock[label="set_lock_oldsighand_siglock"];
+                atomic_read_oldsighand_count_not_great_1[label="atomic_read_oldsighand_count_not_great_1"];
+                exit_itimers_sig[label="exit_itimers_sig"];
+                return_0[label="return_0"];
+                set_newsighand_kmem_cache_alloc_sighand_cachep_GFP_KERNEL[label="set_newsighand_kmem_cache_alloc_sighand_cachep_GFP_KERNEL"];
+                newsighand_false[label="newsighand_false"];
+                return_ENOMEM[label="return_ENOMEM"];
+                thread_group_empty_current_true[label="thread_group_empty_current_true"];
+                goto_no_thread_group[label="goto_no_thread_group"];
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                lock_lock[label="lock_lock"];
+                sig_flags_SIGNAL_GROUP_EXIT_set[label="sig_flags_SIGNAL_GROUP_EXIT_set"];
+                unlock_lock[label="unlock_lock"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                kmem_cache_free_sighand_cachep_newsighand[label="kmem_cache_free_sighand_cachep_newsighand"];
+                return_EAGAIN[label="return_EAGAIN"];
+                zap_other_threads_current[label="zap_other_threads_current"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                set_count_2[label="set_count_2"];
+                thread_group_leader_current_true[label="thread_group_leader_current_true"];
+                set_count_1[label="set_count_1"];
+                atomic_read_sig_count_great_count[label="atomic_read_sig_count_great_count"];
+                set_sig_group_exit_task_current[label="set_sig_group_exit_task_current"];
+                set_sig_notify_count_count[label="set_sig_notify_count_count"];
+                __set_current_state_TASK_UNINTERRUPTIBLE[label="__set_current_state_TASK_UNINTERRUPTIBLE"];
+                unlock_lock[label="unlock_lock"];
+                schedule[label="schedule"];
+                lock_lock[label="lock_lock"];
+                clear_sig_group_exit_task[label="clear_sig_group_exit_task"];
+                set_sig_notify_count_0[label="set_sig_notify_count_0"];
+                unlock_lock[label="unlock_lock"];
+                thread_group_leader_current_false[label="thread_group_leader_current_false"];
+                set_leader_current_group_leader[label="set_leader_current_group_leader"];
+                leader_exit_state_not_eq_EXIT_ZOMBIE[label="leader_exit_state_not_eq_EXIT_ZOMBIE"];
+                yield[label="yield"];
+                lock_leader_proc_lock[label="lock_leader_proc_lock"];
+                lock_current_proc_lock[label="lock_current_proc_lock"];
+                set_proc_dentry1_proc_pid_unhash_current[label="set_proc_dentry1_proc_pid_unhash_current"];
+                set_proc_dentry2_proc_pid_unhash_leader[label="set_proc_dentry2_proc_pid_unhash_leader"];
+                write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+                leader_tgid_not_eq_current_tgid[label="leader_tgid_not_eq_current_tgid"];
+                BUG[label="BUG"];
+                current_pid_eq_current_tgid[label="current_pid_eq_current_tgid"];
+                BUG[label="BUG"];
+                set_ptrace_leader_ptrace[label="set_ptrace_leader_ptrace"];
+                set_parent_leader_parent[label="set_parent_leader_parent"];
+                ptrace_true_and_parent_eq_current[label="ptrace_true_and_parent_eq_current"];
+                set_ptrace_0[label="set_ptrace_0"];
+                ptrace_unlink_current[label="ptrace_unlink_current"];
+                ptrace_unlink_leader[label="ptrace_unlink_leader"];
+                remove_parent_current[label="remove_parent_current"];
+                remove_parent_leader[label="remove_parent_leader"];
+                switch_exec_pids_leader_current[label="switch_exec_pids_leader_current"];
+                set_current_parent_current_real_parent_leader_real_parent[label="set_current_parent_current_real_parent_leader_real_parent"];
+                sets_leader_parent_leader_real_parent_child_reaper[label="sets_leader_parent_leader_real_parent_child_reaper"];
+                set_current_group_leader_current[label="set_current_group_leader_current"];
+                set_leader_group_leader_leader[label="set_leader_group_leader_leader"];
+                add_parent_current_current_parent[label="add_parent_current_current_parent"];
+                add_parent_leader_leader_parent[label="add_parent_leader_leader_parent"];
+                ptrace_true[label="ptrace_true"];
+                set_current_ptrace_ptrace[label="set_current_ptrace_ptrace"];
+                __ptrace_link_current_parent[label="__ptrace_link_current_parent"];
+                list_del_current_tasks[label="list_del_current_tasks"];
+                list_add_tail_current_tasks_init_task_tasks[label="list_add_tail_current_tasks_init_task_tasks"];
+                current_exit_signal_SIGCHLD[label="current_exit_signal_SIGCHLD"];
+                set_exit_state_leader_exit_state[label="set_exit_state_leader_exit_state"];
+                write_unlock_tasklist_lock[label="write_unlock_tasklist_lock"];
+                unlock_leader_proce_lock[label="unlock_leader_proce_lock"];
+                unlock_current_proc_lock[label="unlock_current_proc_lock"];
+                proc_pid_flush_proc_dentry1[label="proc_pid_flush_proc_dentry1"];
+                proc_pid_flush_proc_dentry2[label="proc_pid_flush_proc_dentry2"];
+                exit_state_not_eq_EXIT_ZOMBIE[label="exit_state_not_eq_EXIT_ZOMBIE"];
+                BUG[label="BUG"];
+                release_task_leader[label="release_task_leader"];
+                set_sig_flags_0[label="set_sig_flags_0"];
+                exit_itimers_sig[label="exit_itimers_sig"];
+                atomic_read_oldsighand_count_eq_1[label="atomic_read_oldsighand_count_eq_1"];
+                kmem_cache_free_sighand_cachep_newsighand[label="kmem_cache_free_sighand_cachep_newsighand"];
+                lock_init_newsighand_siglock[label="lock_init_newsighand_siglock"];
+                atomic_set_newsighand_count_1[label="atomic_set_newsighand_count_1"];
+                memcpy_newsighand_action_oldsighand_action[label="memcpy_newsighand_action_oldsighand_action"];
+                write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+                lock_oldsighand_siglock[label="lock_oldsighand_siglock"];
+                lock_newsighand_siglock[label="lock_newsighand_siglock"];
+                set_current_sighand_newsighand[label="set_current_sighand_newsighand"];
+                recalc_sigpending[label="recalc_sigpending"];
+                unlock_newsighand_siglock[label="unlock_newsighand_siglock"];
+                unlock_oldsighand_siglock[label="unlock_oldsighand_siglock"];
+                write_unlock_tasklist_lock[label="write_unlock_tasklist_lock"];
+                atomic_dec_and_test_oldsighand_count_true[label="atomic_dec_and_test_oldsighand_count_true"];
+                kmem_cache_free_sighand_cachep_oldsighand[label="kmem_cache_free_sighand_cachep_oldsighand"];
+                thread_group_empty_current_false[label="thread_group_empty_current_false"];
+                BUG[label="BUG"];
+                thread_group_leader_current_false[label="thread_group_leader_current_false"];
+                BUG[label="BUG"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_flush_old_files{
+                label="static inline void flush_old_files(struct files_struct * files)
+";
+                set_j_neg1[label="set_j_neg1"];
+                lock_file_file_lock[label="lock_file_file_lock"];
+                dead_for[label="dead_for"];
+                inc_j[label="inc_j"];
+                set_i_j_multi_NFDBITS[label="set_i_j_multi_NFDBITS"];
+                i_not_small_files_max_fds_or_i_not_small_files_max_fdset[label="i_not_small_files_max_fds_or_i_not_small_files_max_fdset"];
+                set_set_files_close_on_exec_fds_bits_j[label="set_set_files_close_on_exec_fds_bits_j"];
+                set_false[label="set_false"];
+                set_files_close_on_exec_fds_bits_j_0[label="set_files_close_on_exec_fds_bits_j_0"];
+                unlock_files_file_lock[label="unlock_files_file_lock"];
+                for_i_set_set_self_right_move_1[label="for_i_set_set_self_right_move_1"];
+                set_and_1_true[label="set_and_1_true"];
+                sys_close_i[label="sys_close_i"];
+                lock_files_file_lock[label="lock_files_file_lock"];
+                unlock_files_file_lock[label="unlock_files_file_lock"];
+        }
+
+        subgraph cluster_get_task_comm{
+                label="void get_task_comm(char *buf, struct task_struct *tsk)
+";
+                task_lock_tsk[label="task_lock_tsk"];
+                strncpy_buf_tsk_comm[label="strncpy_buf_tsk_comm"];
+                task_unlock_tsk[label="task_unlock_tsk"];
+        }
+
+        subgraph cluster_set_task_comm{
+                label="void set_task_comm(struct task_struct *tsk, char *buf)
+";
+                task_lock_tsk[label="task_lock_tsk"];
+                strlcpy_tsk_comm_buf[label="strlcpy_tsk_comm_buf"];
+                task_unlock_tsk[label="task_unlock_tsk"];
+        }
+
+        subgraph cluster_flush_old_exec{
+                label="int flush_old_exec(struct linux_binprm * bprm)
+";
+                set_retval_d_thread_current[label="set_retval_d_thread_current"];
+                retval_true[label="retval_true"];
+                goto_out[label="goto_out"];
+                set_files_current_files[label="set_files_current_files"];
+                set_retval_unshare_files[label="set_retval_unshare_files"];
+                retval_true[label="retval_true"];
+                goto_out[label="goto_out"];
+                set_retval_exec_mmap_bprm_mm[label="set_retval_exec_mmap_bprm_mm"];
+                retval_true[label="retval_true"];
+                goto_mmap_failed[label="goto_mmap_failed"];
+                clear_bprm_mm[label="clear_bprm_mm"];
+                steal_locks_files[label="steal_locks_files"];
+                put_files_struct_files[label="put_files_struct_files"];
+                set_current_sas_ss_sp_current_sas_ss_size_0[label="set_current_sas_ss_sp_current_sas_ss_size_0"];
+                current_euid_eq_current_uid_and_current_egid_eq_current_gid[label="current_euid_eq_current_uid_and_current_egid_eq_current_gid"];
+                set_current_mm_dumpable_1[label="set_current_mm_dumpable_1"];
+                set_name_bprm_filename[label="set_name_bprm_filename"];
+                for_i_set_ch_name_inc_not_wq_char_null[label="for_i_set_ch_name_inc_not_wq_char_null"];
+                ch_eq_slash[label="ch_eq_slash"];
+                set_i_0[label="set_i_0"];
+                i_small_sizeoftcomm_sub_1[label="i_small_sizeoftcomm_sub_1"];
+                tcomm_i_inc_sh[label="tcomm_i_inc_sh"];
+                set_tcommm_i_char_null[label="set_tcommm_i_char_null"];
+                set_task_comm_current_tcomm[label="set_task_comm_current_tcomm"];
+                current_flags_clear_PF_RANDOMIZE[label="current_flags_clear_PF_RANDOMIZE"];
+                flush_thread[label="flush_thread"];
+                bprm_e_uid_not_eq_current_euid_or_bprm_e_gid_not_eq_current_egid_or_permission_bprm_file_f_dentry_d_inode_MAY_READ_NULL_true_or_bprm_interp_flags_BINPRM_FLAGS_ENFORCE_NONDUMP_set[label="bprm_e_uid_not_eq_current_euid_or_bprm_e_gid_not_eq_current_egid_or_permission_bprm_file_f_dentry_d_inode_MAY_READ_NULL_true_or_bprm_interp_flags_BINPRM_FLAGS_ENFORCE_NONDUMP_set"];
+                suid_keys_current[label="suid_keys_current"];
+                set_current_mm_dumpable_0[label="set_current_mm_dumpable_0"];
+                inc_current_self_exec_id[label="inc_current_self_exec_id"];
+                flush_signal_handlers_current_0[label="flush_signal_handlers_current_0"];
+                flush_old_files_current_files[label="flush_old_files_current_files"];
+                return_0[label="return_0"];
+                put_files_struct_current_files[label="put_files_struct_current_files"];
+                set_current_files_files[label="set_current_files_files"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_prepare_binprm{
+                label="int prepare_binprm(struct linux_binprm *bprm)
+";
+                set_inode_bprm_file_f_dentry_d_inode[label="set_inode_bprm_file_f_dentry_d_inode"];
+                set_mode_inode_i_mode[label="set_mode_inode_i_mode"];
+                mode_and_0111_false[label="mode_and_0111_false"];
+                return_EACCES[label="return_EACCES"];
+                bprm_file_f_op_eq_NULL[label="bprm_file_f_op_eq_NULL"];
+                return_EACCES[label="return_EACCES"];
+                set_bprm_e_uid_current_euid[label="set_bprm_e_uid_current_euid"];
+                set_bprm_e_gid_current_egid[label="set_bprm_e_gid_current_egid"];[label="set_bprm_e_gid_current_egid[label="set_bprm_e_gid_current_egid"];"];
+                bprm_file_f_vfsmnt_mnt_flags_MNT_NOSUID_clear[label="bprm_file_f_vfsmnt_mnt_flags_MNT_NOSUID_clear"];
+                mode_S_ISUID_set[label="mode_S_ISUID_set"];
+                current_personality_clear_PER_CLEAR_ON_SETID[label="current_personality_clear_PER_CLEAR_ON_SETID"];
+                set_bprm_e_uid_inode_i_uid[label="set_bprm_e_uid_inode_i_uid"];
+                mode_S_ISGID_and_S_IXGRP_set[label="mode_S_ISGID_and_S_IXGRP_set"];
+                current_personality_clear_PER_CLEAR_ON_SETID[label="current_personality_clear_PER_CLEAR_ON_SETID"];
+                set_bprm_e_gid_inode_i_gid[label="set_bprm_e_gid_inode_i_gid"];
+                set_rertval_security_bprm_set_bprm[label="set_rertval_security_bprm_set_bprm"];
+                retval_true[label="retval_true"];
+                return_retval[label="return_retval"];
+                memset_bprm_buf_0[label="memset_bprm_buf_0"];
+                return_kernel_read_bprm_file_0_bprm_buf__BINPRM_BUF_SIZE[label="return_kernel_read_bprm_file_0_bprm_buf__BINPRM_BUF_SIZE"];
+        }
+
+        subgraph cluster_unsafe_exec{
+                label="static inline int unsafe_exec(struct task_struct *p)
+";
+                p_ptrace_PT_PTRACED_set[label="p_ptrace_PT_PTRACED_set"];
+                p_ptrace_PT_PTRACE_CAP_set[label="p_ptrace_PT_PTRACE_CAP_set"];
+                unsafe_self_or_LSM_UNSAFE_PTRACE_CAP[label="unsafe_self_or_LSM_UNSAFE_PTRACE_CAP"];
+                unsafe_self_or_LSM_UNSAFE_PTRACE[label="unsafe_self_or_LSM_UNSAFE_PTRACE"];
+                atomic_read_p_fs_count_great_1_or_atomic_read_p_files_count_great_1_or_atomic_read_p_sighand_count_great_1[label="atomic_read_p_fs_count_great_1_or_atomic_read_p_files_count_great_1_or_atomic_read_p_sighand_count_great_1"];
+                unsafe_self_or_LSM_UNSAFE_SHARE[label="unsafe_self_or_LSM_UNSAFE_SHARE"];
+                return_unsafe[label="return_unsafe"];
+        }
+
+        subgraph cluster_compute_creds{
+                label="void compute_creds(struct linux_binprm *bprm)
+";
+                bprm_e_uid_not_eq_current_uid[label="bprm_e_uid_not_eq_current_uid"];
+                suid_keys_current[label="suid_keys_current"];
+                exec_keys_current[label="exec_keys_current"];
+                task_lock_current[label="task_lock_current"];
+                set_unsafe_unsafe_exec_current[label="set_unsafe_unsafe_exec_current"];
+                security_bprm_apply_creds_bprm_unsafe[label="security_bprm_apply_creds_bprm_unsafe"];
+                task_unlock_current[label="task_unlock_current"];
+                security_bprm_post_apply_creds_bprm[label="security_bprm_post_apply_creds_bprm"];
+        }
+
+        subgraph cluster_remove_arg_zero{
+                label="void remove_arg_zero(struct linux_binprm *bprm)
+";
+                bprm_argc_true[label="bprm_argc_true"];
+                set_offset_bprm_p_mod_PAGE_SIZE[label="set_offset_bprm_p_mod_PAGE_SIZE"];
+                goto_inside[label="goto_inside"];
+                inc_bprm_p_inc_kaddr_offset_[label="inc_bprm_p_inc_kaddr_offset_"];
+                offset_not_eq_PAGE_SIZE[label="offset_not_eq_PAGE_SIZE"];
+                set_offset_0[label="set_offset_0"];
+                kunmap_atomic_kaddr_KM_USER0[label="kunmap_atomic_kaddr_KM_USER0"];
+                set_page_bprm_page_bprm_p_div_PAGE_SIZE[label="set_page_bprm_page_bprm_p_div_PAGE_SIZE"];
+                set_kaddr_kmap_atomic_page_KM_USER0[label="set_kaddr_kmap_atomic_page_KM_USER0"];
+                kunmap_atomic_kaddr_KM_USER0[label="kunmap_atomic_kaddr_KM_USER0"];
+                dec_bprm_argc[label="dec_bprm_argc"];
+        }
+
+        subgraph cluster_search_binary_handler{
+                label="int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
+";
+                __alpha__[label="__alpha__"];
+                set_eh_bprm_buf[label="set_eh_bprm_buf"];
+                bprm_loader_false_and_eh_fh_f_magic_eq_0x183_and_eh_fh_f_flags_and_0x3000_eq_0x3000[label="bprm_loader_false_and_eh_fh_f_magic_eq_0x183_and_eh_fh_f_flags_and_0x3000_eq_0x3000"];
+                allow_write_access_bprm_file[label="allow_write_access_bprm_file"];
+                fput_bprm_file[label="fput_bprm_file"];
+                clear_bprm_file[label="clear_bprm_file"];
+                set_loader_PAGE_SIZE_multi_MAX_ARG_PAGES_sub_sizeof_void[label="set_loader_PAGE_SIZE_multi_MAX_ARG_PAGES_sub_sizeof_void"];
+                set_file_open_exec_sbin_loader[label="set_file_open_exec_sbin_loader"];
+                set_retval_PTR_ERR_file[label="set_retval_PTR_ERR_file"];
+                IS_ERR_file_true[label="IS_ERR_file_true"];
+                return_retval[label="return_retval"];
+                set_bprm_sh_bang_eh_ah_entry_small_0x100000000UL[label="set_bprm_sh_bang_eh_ah_entry_small_0x100000000UL"];
+                set_bprm_file_file[label="set_bprm_file_file"];
+                bprm_loader_loader[label="bprm_loader_loader"];
+                set_retval_prepare_binprm_bprm[label="set_retval_prepare_binprm_bprm"];
+                retval_small_0[label="retval_small_0"];
+                return_retval[label="return_retval"];
+                set_retval_security_bprm_check_bprm[label="set_retval_security_bprm_check_bprm"];
+                retval_true[label="retval_true"];
+                return_retval[label="return_retval"];[label="return_retval[label="return_retval"];"];
+                set_fs_USER_DS[label="set_fs_USER_DS"];
+                set_retval_ENOENT[label="set_retval_ENOENT"];
+                for_try[label="for_try"];
+                read_lock_binfmt_lock[label="read_lock_binfmt_lock"];
+                for_fmt_fmt_next[label="for_fmt_fmt_next"];
+                set_fn_fmt_load_binary[label="set_fn_fmt_load_binary"];
+                fn_false[label="fn_false"];
+                try_module_get_fmt_module_false[label="try_module_get_fmt_module_false"];
+                read_unlock_binfmt_lock[label="read_unlock_binfmt_lock"];
+                set_retval_fn_bprm_regs[label="set_retval_fn_bprm_regs"];
+                retval_not_small_0[label="retval_not_small_0"];
+                put_binfmt_fmt[label="put_binfmt_fmt"];
+                allow_write_access_bprm_file[label="allow_write_access_bprm_file"];
+                bprm_file_true[label="bprm_file_true"];
+                fput_bprm_file[label="fput_bprm_file"];
+                clear_bprm_file[label="clear_bprm_file"];
+                set_current_did_exec_1[label="set_current_did_exec_1"];
+                return_retval[label="return_retval"];
+                read_lock_binfmt_lock[label="read_lock_binfmt_lock"];
+                put_binfmt_fmt[label="put_binfmt_fmt"];
+                retval_not_ENOEXEC_or_bprm_mm_eq_NULL[label="retval_not_ENOEXEC_or_bprm_mm_eq_NULL"];
+                bprm_file_false[label="bprm_file_false"];
+                read_unlock_binfmt_lock[label="read_unlock_binfmt_lock"];
+                return_retval[label="return_retval"];
+                read_unlock_binfmt_lock[label="read_unlock_binfmt_lock"];
+                retval_not_eq_ENOEXEC_or_bprm_mm_eq_NULL[label="retval_not_eq_ENOEXEC_or_bprm_mm_eq_NULL"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_do_execve{
+                label="int do_execve(char * filename,
+	char __user *__user *argv,
+	char __user *__user *envp,
+	struct pt_regs * regs)
+";
+                set_retval_ENOMEM[label="set_retval_ENOMEM"];
+                set_bprm_kmalloc[label="set_bprm_kmalloc"];
+                bprm_false[label="bprm_false"];
+                goto_out_ret[label="goto_out_ret"];
+                memset_bprm_0[label="memset_bprm_0"];
+                set_file_openn_exec_filename[label="set_file_openn_exec_filename"];
+                set_retval_PTR_ERR_file[label="set_retval_PTR_ERR_file"];
+                IS_ERR_file_true[label="IS_ERR_file_true"];
+                goto_out_kfree[label="goto_out_kfree"];
+                sched_exec[label="sched_exec"];
+                set_bprm_p_PAGE_SIZE_multi_MAX_ARG_PAGES_sub_sizeof_void[label="set_bprm_p_PAGE_SIZE_multi_MAX_ARG_PAGES_sub_sizeof_void"];
+                set_bprm_file_file[label="set_bprm_file_file"];
+                set_bprm_filename_filename[label="set_bprm_filename_filename"];
+                set_bprm_interp_filename[label="set_bprm_interp_filename"];
+                set_bprm_mm_mm_alloc[label="set_bprm_mm_mm_alloc"];
+                set_retval_ENOMEM[label="set_retval_ENOMEM"];
+                bprm_mm_false[label="bprm_mm_false"];
+                goto_out_file[label="goto_out_file"];
+                set_retval_init_new_context_current_bprm_mm[label="set_retval_init_new_context_current_bprm_mm"];
+                retval_small_0[label="retval_small_0"];
+                goto_out_mm[label="goto_out_mm"];
+                set_bprm_argc_count_bprm_p_div_sizeof_void[label="set_bprm_argc_count_bprm_p_div_sizeof_void"];
+                set_retval_bprm_argc_small_0[label="set_retval_bprm_argc_small_0"];
+                goto_out_mm[label="goto_out_mm"];
+                set_bprm_envc_count_envp_bprm_p_div_sizeof_void[label="set_bprm_envc_count_envp_bprm_p_div_sizeof_void"];
+                set_retval_bprm_envc_small_0[label="set_retval_bprm_envc_small_0"];
+                goto_out_mm[label="goto_out_mm"];
+                set_retval_security_bprm_alloc_bprm[label="set_retval_security_bprm_alloc_bprm"];
+                retval_true[label="retval_true"];
+                goto_out[label="goto_out"];
+                set_retval_prepare_binprm_bprm[label="set_retval_prepare_binprm_bprm"];
+                retval_small_0[label="retval_small_0"];
+                goto_out[label="goto_out"];
+                set_retval_copy_strings_kernel_1_bprm_filename_bprm[label="set_retval_copy_strings_kernel_1_bprm_filename_bprm"];
+                retval_small_0[label="retval_small_0"];
+                goto_out[label="goto_out"];
+                set_bprm_exec_bprm_p[label="set_bprm_exec_bprm_p"];
+                set_retval_copy_strings_bprm_envc_envp_bprm[label="set_retval_copy_strings_bprm_envc_envp_bprm"];
+                retval_small_0[label="retval_small_0"];
+                goto_out[label="goto_out"];
+                set_retval_copy_strings_bprm_argc_argv_bprm[label="set_retval_copy_strings_bprm_argc_argv_bprm"];
+                retval_small_0[label="retval_small_0"];
+                goto_out[label="goto_out"];
+                set_retval_search_binary_handler_bprm_regs[label="set_retval_search_binary_handler_bprm_regs"];
+                retval_not_small_0[label="retval_not_small_0"];
+                free_arg_pages_bprm[label="free_arg_pages_bprm"];
+                security_bprm_free_bprm[label="security_bprm_free_bprm"];
+                acct_update_integrals_current[label="acct_update_integrals_current"];
+                update_mem_hiwater_current[label="update_mem_hiwater_current"];
+                kfree_bprm[label="kfree_bprm"];
+                return_retval[label="return_retval"];
+                for_i_MAX_ARG_PAGES[label="for_i_MAX_ARG_PAGES"];
+                set_page_bprm_page_i[label="set_page_bprm_page_i"];
+                page_true[label="page_true"];
+                __free_page_page[label="__free_page_page"];
+                bprm_security_true[label="bprm_security_true"];
+                security_bprm_free_bprm[label="security_bprm_free_bprm"];
+                bprm_mm_true[label="bprm_mm_true"];
+                mmdrop_bprm_mm[label="mmdrop_bprm_mm"];
+                bprm_file_true[label="bprm_file_true"];
+                allow_write_access_bprm_file[label="allow_write_access_bprm_file"];
+                fput_bprm_file[label="fput_bprm_file"];
+                kfree_bprm[label="kfree_bprm"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_set_binfmt{
+                label="int set_binfmt(struct linux_binfmt *new)
+";
+                set_old_current_binfmt[label="set_old_current_binfmt"];
+                new_true[label="new_true"];
+                try_module_get_new_module_false[label="try_module_get_new_module_false"];
+                return_neg1[label="return_neg1"];
+                set_current_binfmt_new[label="set_current_binfmt_new"];
+                old_true[label="old_true"];
+                module_put_old_module[label="module_put_old_module"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_zap_threads{
+                label="static void zap_threads (struct mm_struct *mm)
+";
+                set_tsk_current[label="set_tsk_current"];
+                set_vfork_done_tsk_vfork_done[label="set_vfork_done_tsk_vfork_done"];
+                vfork_done_true[label="vfork_done_true"];
+                clear_tsk_vfork_done[label="clear_tsk_vfork_done"];
+                complete_vfork_done[label="complete_vfork_done"];
+                read_lock_tasklist_lock[label="read_lock_tasklist_lock"];
+                do_each_thread_g_p[label="do_each_thread_g_p"];
+                mm_eq_p_mm_and_p_not_eq_tsk[label="mm_eq_p_mm_and_p_not_eq_tsk"];
+                force_sig_specific_SIGKILL_p[label="force_sig_specific_SIGKILL_p"];
+                inc_mm_core_waiters[label="inc_mm_core_waiters"];
+                p_ptrace_true_and_p_parent_mm_eq_mm[label="p_ptrace_true_and_p_parent_mm_eq_mm"];
+                set_traced_1[label="set_traced_1"];
+                while_each_thread_g_p[label="while_each_thread_g_p"];
+                read_unlock_tasklist_lock[label="read_unlock_tasklist_lock"];
+                traced_true[label="traced_true"];
+                write_lock_tasklist_lock[label="write_lock_tasklist_lock"];
+                do_each_thread_g_p[label="do_each_thread_g_p"];
+                mm_eq_p_mm_and_p_not_eq_tsk_and_p_ptrace_true_and_p_parent_mm_eq_mm[label="mm_eq_p_mm_and_p_not_eq_tsk_and_p_ptrace_true_and_p_parent_mm_eq_mm"];
+                __ptrace_unlink_p[label="__ptrace_unlink_p"];
+                while_each_thread_g_p[label="while_each_thread_g_p"];
+                write_unlock_tasklist_lock[label="write_unlock_tasklist_lock"];
+        }
+
+        subgraph cluster_coredump_wait{
+                label="static void coredump_wait(struct mm_struct *mm)
+";
+                DECLARE_COMPLETION_startup_done[label="DECLARE_COMPLETION_startup_done"];
+                inc_mm_core_waiters[label="inc_mm_core_waiters"];
+                set_mm_core_startup_done_startup_done[label="set_mm_core_startup_done_startup_done"];
+                yield[label="yield"];
+                zap_threads_mm[label="zap_threads_mm"];
+                dec_mm_core_waiters_true[label="dec_mm_core_waiters_true"];
+                up_write_mm_mmap_sem[label="up_write_mm_mmap_sem"];
+                wait_for_completion_startup_done[label="wait_for_completion_startup_done"];
+                up_write_mm_mmap_sem[label="up_write_mm_mmap_sem"];
+        }
+
+        subgraph cluster_do_coredump{
+                label="int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+";
+                set_mm_current_mm[label="set_mm_current_mm"];
+                set_binfmt_current_binfmt[label="set_binfmt_current_binfmt"];
+                binfmt_false_or_binfmt_core_dump[label="binfmt_false_or_binfmt_core_dump"];
+                goto_fail[label="goto_fail"];
+                down_write_mm_mmap_sem[label="down_write_mm_mmap_sem"];
+                mm_dumpable_false[label="mm_dumpable_false"];
+                up_write_mm_mmap_sem[label="up_write_mm_mmap_sem"];
+                goto_fail[label="goto_fail"];
+                set_mm_dumpable_0[label="set_mm_dumpable_0"];
+                init_completion_mm_core_done[label="init_completion_mm_core_done"];
+                lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
+                set_current_signal_flags_SIGNAL_GROUP_EXIT[label="set_current_signal_flags_SIGNAL_GROUP_EXIT"];
+                set_current_signal_group_exit_code_exit_code[label="set_current_signal_group_exit_code_exit_code"];
+                unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+                coredump_wait_mm[label="coredump_wait_mm"];
+                set_current_signal_group_stop_count_0[label="set_current_signal_group_stop_count_0"];
+                clear_thread_flag_TIF_SSIGPENDING[label="clear_thread_flag_TIF_SSIGPENDING"];
+                current_signal_rlim_RLIMIT_CORE_rlim_cur_small_binfmt_min_coredump[label="current_signal_rlim_RLIMIT_CORE_rlim_cur_small_binfmt_min_coredump"];
+                goto_fail_unlock[label="goto_fail_unlock"];
+                lock_kernel[label="lock_kernel"];
+                format_corename_corename_core_pattern_signr[label="format_corename_corename_core_pattern_signr"];
+                unlock_kernel[label="unlock_kernel"];
+                set_file_filp_open_corename_O_CREAT_2_O_NOFOLLOW_O_LARGEFILE_0600[label="set_file_filp_open_corename_O_CREAT_2_O_NOFOLLOW_O_LARGEFILE_0600"];
+                IS_ERR_file_true[label="IS_ERR_file_true"];
+                goto_fila_unlock[label="goto_fila_unlock"];
+                set_inode_file_f_dentry_d_inode[label="set_inode_file_f_dentry_d_inode"];
+                inode_i_nlink_great_1[label="inode_i_nlink_great_1"];
+                goto_close_fail[label="goto_close_fail"];
+                d_unhashed_file_f_dentry_true[label="d_unhashed_file_f_dentry_true"];
+                goto_close_fail[label="goto_close_fail"];
+                S_ISREG_inode_imode_false[label="S_ISREG_inode_imode_false"];
+                goto_close_fail[label="goto_close_fail"];
+                file_f_op_false[label="file_f_op_false"];
+                goto_close_fail[label="goto_close_fail"];
+                file_f_op_false[label="file_f_op_false"];
+                goto_close_fail[label="goto_close_fail"];
+                file_f_op_write_false[label="file_f_op_write_false"];
+                goto_close_fail[label="goto_close_fail"];
+                do_truncate_file_f_dentry_0_not_eq_0[label="do_truncate_file_f_dentry_0_not_eq_0"];
+                goto_close_fail[label="goto_close_fail"];
+                set_retval_binfmt_core_dump_signr_regs_file[label="set_retval_binfmt_core_dump_signr_regs_file"];
+                retval_true[label="retval_true"];
+                current_signal_group_exit_code_self_or_0x80[label="current_signal_group_exit_code_self_or_0x80"];
+                filp_close_file_NULL[label="filp_close_file_NULL"];
+                complete_all_mm_core_doen[label="complete_all_mm_core_doen"];
+                return_retval[label="return_retval"];
+        }
+}

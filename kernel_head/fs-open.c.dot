@@ -1,0 +1,297 @@
+digraph open_c{
+        subgraph cluster_vfs_statfs{
+                label="int vfs_statfs(struct super_block *sb, struct kstatfs *buf)
+";
+                set_retval_ENODEV[label="set_retval_ENODEV"];
+                sb_true[label="sb_true"];
+                set_retval_ENOSYS[label="set_retval_ENOSYS"];
+                sb_s_op_statfs_true[label="sb_s_op_statfs_true"];
+                memset_buf_0[label="memset_buf_0"];
+                set_retval_security_sb_statfs_sb[label="set_retval_security_sb_statfs_sb"];
+                retval_true[label="retval_true"];
+                return_retval[label="return_retval"];
+                set_retval_sb_s_op_statfs_sb_buf[label="set_retval_sb_s_op_statfs_sb_buf"];
+                retval_eq_0_and_buf_frsize_eq_0[label="retval_eq_0_and_buf_frsize_eq_0"];
+                set_buf_f_frsize_buf_f_bsize[label="set_buf_f_frsize_buf_f_bsize"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_vfs_statfs_native{
+                label="static int vfs_statfs_native(struct super_block *sb, struct statfs *buf)
+";
+                set_retval_vfs_statfs_sb_st[label="set_retval_vfs_statfs_sb_st"];
+                retval_true[label="retval_true"];
+                return_retval[label="return_retval"];
+                sizeof_buf_eq_sizeof_st[label="sizeof_buf_eq_sizeof_st"];
+                memcpy_buf_st[label="memcpy_buf_st"];
+                sizeof_buf_f_blocks_eq_4[label="sizeof_buf_f_blocks_eq_4"];
+                st_f_blocks_or_st_f_bfree_or_st_f_bavail_and_0xffffffff00000000ULL_true[label="st_f_blocks_or_st_f_bfree_or_st_f_bavail_and_0xffffffff00000000ULL_true"];
+                return_EOVERFLOW[label="return_EOVERFLOW"];
+                st_f_files_not_eq_neg1_and_st_f_files_and_0xffffffff00000000ULL_true[label="st_f_files_not_eq_neg1_and_st_f_files_and_0xffffffff00000000ULL_true"];
+                return_EOVERFLOW[label="return_EOVERFLOW"];
+                st_f_ffree_not_eq_neg1_and_st_f_ffree_and_0xffffffff00000000ULL_true[label="st_f_ffree_not_eq_neg1_and_st_f_ffree_and_0xffffffff00000000ULL_true"];
+                return_EOVERFLOW[label="return_EOVERFLOW"];
+                set_buf_f_type_st_f_type[label="set_buf_f_type_st_f_type"];
+                set_buf_f_bsize_st_f_bsize[label="set_buf_f_bsize_st_f_bsize"];
+                set_buf_f_blocks_st_f_blocks[label="set_buf_f_blocks_st_f_blocks"];
+                set_buf_f_bfree_st_f_bfree[label="set_buf_f_bfree_st_f_bfree"];
+                set_buf_f_bavail_st_f_bavail[label="set_buf_f_bavail_st_f_bavail"];
+                set_buf_f_files_st_f_files[label="set_buf_f_files_st_f_files"];
+                set_buf_f_ffree_st_f_ffree[label="set_buf_f_ffree_st_f_ffree"];
+                set_buf_f_fsid_st_f_fsid[label="set_buf_f_fsid_st_f_fsid"];
+                set_buf_f_namelen_st_f_namelen[label="set_buf_f_namelen_st_f_namelen"];
+                set_buf_f_frsize_st_ff_frsize[label="set_buf_f_frsize_st_ff_frsize"];
+                memset_buf_f_spare_0[label="memset_buf_f_spare_0"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_vfs_statfs64{
+                label="static int vfs_statfs64(struct super_block *sb, struct statfs64 *buf)
+";
+                set_retval_vfs_statfs_sb_st[label="set_retval_vfs_statfs_sb_st"];
+                retval_true[label="retval_true"];
+                return_retval[label="return_retval"];
+                sizeof_buf_eq_sizeof_st[label="sizeof_buf_eq_sizeof_st"];
+                memcpy_buf_st[label="memcpy_buf_st"];
+                set_buf_f_type_st_f_type[label="set_buf_f_type_st_f_type"];
+                set_buf_f_bsize_st_f_bsize[label="set_buf_f_bsize_st_f_bsize"];
+                set_buf_f_blocks_st_f_blocks[label="set_buf_f_blocks_st_f_blocks"];
+                set_buf_f_bfree_st_f_bfree[label="set_buf_f_bfree_st_f_bfree"];
+                set_buf_f_bavail_st_f_bavail[label="set_buf_f_bavail_st_f_bavail"];
+                set_buf_f_files_st_f_files[label="set_buf_f_files_st_f_files"];
+                set_buf_f_ffree_st_f_ffree[label="set_buf_f_ffree_st_f_ffree"];
+                set_buf_f_fsid_st_f_fsid[label="set_buf_f_fsid_st_f_fsid"];
+                set_buf_f_namelen_st_f_namelen[label="set_buf_f_namelen_st_f_namelen"];
+                set_buf_f_frsize_st_ff_frsize[label="set_buf_f_frsize_st_ff_frsize"];
+                memset_buf_f_spare_0[label="memset_buf_f_spare_0"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sys_statfs{
+                label="asmlinkage long sys_statfs(const char __user * path, struct statfs __user * buf)
+";
+                set_error_user_path_walk_path_nd[label="set_error_user_path_walk_path_nd"];
+                error_false[label="error_false"];
+                set_error_vfs_statfs_native_nd_dentry_d_inode_i_sb_tmp[label="set_error_vfs_statfs_native_nd_dentry_d_inode_i_sb_tmp"];
+                error_false_and_copy_to_user_buf_tmp_true[label="error_false_and_copy_to_user_buf_tmp_true"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_statfs64{
+                label="asmlinkage long sys_statfs64(const char __user *path, size_t sz, struct statfs64 __user *buf)
+";
+                set_error_user_path_walk_path_nd[label="set_error_user_path_walk_path_nd"];
+                error_false[label="error_false"];
+                set_error_vfs_statfs64_nd_dentry_d_inode_i_sb_tmp[label="set_error_vfs_statfs64_nd_dentry_d_inode_i_sb_tmp"];
+                error_false_and_copy_to_user_buf_tmp_true[label="error_false_and_copy_to_user_buf_tmp_true"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_fstatfs{
+                label="asmlinkage long sys_fstatfs(unsigned int fd, struct statfs __user * buf)
+";
+                set_error_EBADF[label="set_error_EBADF"];
+                set_file_fget_fd[label="set_file_fget_fd"];
+                file_false[label="file_false"];
+                goto_out[label="goto_out"];
+                set_error_vfs_statfs_native_file_f_dentry_d_inode_i_sb_tmp[label="set_error_vfs_statfs_native_file_f_dentry_d_inode_i_sb_tmp"];
+                error_false_and_copy_to_user_buf_tmp_true[label="error_false_and_copy_to_user_buf_tmp_true"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                fput_file[label="fput_file"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_fstatfs64{
+                label="asmlinkage long sys_fstatfs64(unsigned int fd, size_t sz, struct statfs64 __user *buf)
+";
+                set_error_EBADF[label="set_error_EBADF"];
+                set_file_fget_fd[label="set_file_fget_fd"];
+                file_false[label="file_false"];
+                goto_out[label="goto_out"];
+                set_error_vfs_statfs64_file_f_dentry_d_inode_i_sb_tmp[label="set_error_vfs_statfs64_file_f_dentry_d_inode_i_sb_tmp"];
+                error_false_and_copy_to_user_buf_tmp_true[label="error_false_and_copy_to_user_buf_tmp_true"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                fput_file[label="fput_file"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_do_truncate{
+                label="int do_truncate(struct dentry *dentry, loff_t length)
+";
+                length_small_0[label="length_small_0"];
+                return_EINVAL[label="return_EINVAL"];
+                set_newattrs_ia_size_length[label="set_newattrs_ia_size_length"];
+                set_newattrs_ia_valid_ATTR_SIZE_ATTR_CTIME[label="set_newattrs_ia_valid_ATTR_SIZE_ATTR_CTIME"];
+                down_dentry_d_inode_i_sem[label="down_dentry_d_inode_i_sem"];
+                set_err_notify_change_dentry_newattrs[label="set_err_notify_change_dentry_newattrs"];
+                up_dentry_d_inode_i_sem[label="up_dentry_d_inode_i_sem"];
+                return_err[label="return_err"];
+        }
+
+        subgraph cluster_do_sys_truncate{
+                label="static inline long do_sys_truncate(const char __user * path, loff_t length)
+";
+                set_error_EINVAL[label="set_error_EINVAL"];
+                length_small_0[label="length_small_0"];
+                goto_out[label="goto_out"];
+                set_error_user_path_walk_path_nd[label="set_error_user_path_walk_path_nd"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_inode_nd_dentry_d_inode[label="set_inode_nd_dentry_d_inode"];
+                set_error_EISDIR[label="set_error_EISDIR"];
+                S_ISDIR_inode_i_mode_true[label="S_ISDIR_inode_i_mode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                S_ISREG_inode_i_mode_false[label="S_ISREG_inode_i_mode_false"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_permission_inode_MAY_WRITE_nd[label="set_error_permission_inode_MAY_WRITE_nd"];
+                error_true[label="error_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_EROFS[label="set_error_EROFS"];
+                IS_RDONLY_inode_true[label="IS_RDONLY_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_EPERM[label="set_error_EPERM"];
+                IS_IMMUTABLE_inode_true_or_IS_APPEND_inode_true[label="IS_IMMUTABLE_inode_true_or_IS_APPEND_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_break_lease_inode_FMODE_WRITE[label="set_error_break_lease_inode_FMODE_WRITE"];
+                error_true[label="error_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_get_write_access_inode[label="set_error_get_write_access_inode"];
+                error_true[label="error_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_locks_verify_truncate_inode_NULL_length[label="set_error_locks_verify_truncate_inode_NULL_length"];
+                error_false[label="error_false"];
+                DQUOT_INIT_inode[label="DQUOT_INIT_inode"];
+                set_error_do_truncate_nd_dentry_length[label="set_error_do_truncate_nd_dentry_length"];
+                put_write_access_inode[label="put_write_access_inode"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_truncate{
+                label="asmlinkage long sys_truncate(const char __user * path, unsigned long length)
+";
+                return_do_sys_truncate_path_length[label="return_do_sys_truncate_path_length"];
+        }
+
+        subgraph cluster_do_sys_ftruncate{
+                label="static inline long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
+";
+                set_error_EINVAL[label="set_error_EINVAL"];
+                length_small_0[label="length_small_0"];
+                goto_out[label="goto_out"];
+                set_error_EBADF[label="set_error_EBADF"];
+                set_file_fget_fd[label="set_file_fget_fd"];
+                file_false[label="file_false"];
+                goto_out[label="goto_out"];
+                file_f_flags_O_LARGEFILE_set[label="file_f_flags_O_LARGEFILE_set"];
+                set_small_0[label="set_small_0"];
+                set_dentry_file_f_dentry[label="set_dentry_file_f_dentry"];
+                set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                S_ISREG_inode_i_mode_false_or_file_f_mode_FMODE_WRITE_clear[label="S_ISREG_inode_i_mode_false_or_file_f_mode_FMODE_WRITE_clear"];
+                goto_out_putf[label="goto_out_putf"];
+                set_error_EINVAL[label="set_error_EINVAL"];
+                small_true_and_length_great_MAX_NOLFS[label="small_true_and_length_great_MAX_NOLFS"];
+                goto_out_putf[label="goto_out_putf"];
+                set_error_EPERM[label="set_error_EPERM"];
+                IS_APPEND_inode_true[label="IS_APPEND_inode_true"];
+                goto_out_putf[label="goto_out_putf"];
+                set_error_locks_verify_truncate_inode_file_length[label="set_error_locks_verify_truncate_inode_file_length"];
+                error_false[label="error_false"];
+                set_error_do_tracateee_dentry_length[label="set_error_do_tracateee_dentry_length"];
+                fput_file[label="fput_file"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_ftruncate{
+                label="asmlinkage long sys_ftruncate(unsigned int fd, unsigned long length)
+";
+                return_do_sys_ftruncate_fd_length_1[label="return_do_sys_ftruncate_fd_length_1"];
+        }
+
+        subgraph cluster_sys_truncate64{
+                label="asmlinkage long sys_truncate64(const char __user * path, loff_t length)
+";
+                return_do_sys_truncate_path_length[label="return_do_sys_truncate_path_length"];
+        }
+
+        subgraph cluster_sys_ftruncate64{
+                label="asmlinkage long sys_ftruncate64(unsigned int fd, loff_t length)
+";
+                return_do_sys_ftruncate_fd_length_0[label="return_do_sys_ftruncate_fd_length_0"];
+        }
+
+        subgraph cluster_sys_utime{
+                label="asmlinkage long sys_utime(char __user * filename, struct utimbuf __user * times)
+";
+                set_error_user_path_walk_filename_nd[label="set_error_user_path_walk_filename_nd"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_inode_nd_dentry_d_inode[label="set_inode_nd_dentry_d_inode"];
+                set_error_EROFS[label="set_error_EROFS"];
+                IS_RDONLY_inode_true[label="IS_RDONLY_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_newattrs_ia_valid_ATTR_CTIME_ATTR_MTIME_ATTR_ATIME[label="set_newattrs_ia_valid_ATTR_CTIME_ATTR_MTIME_ATTR_ATIME"];
+                times_true[label="times_true"];
+                set_error_EPERM[label="set_error_EPERM"];
+                IS_APPEND_inode_true_or_IS_IMMUTABLE_inode_true[label="IS_APPEND_inode_true_or_IS_IMMUTABLE_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_error_get_user_newattrs_ia_atime_tv_sec_times_actime[label="set_error_get_user_newattrs_ia_atime_tv_sec_times_actime"];
+                set_newattrs_ia_atime_tv_nsec_0[label="set_newattrs_ia_atime_tv_nsec_0"];
+                error_false[label="error_false"];
+                set_error_get_user_newattrs_ia_mtime_tv_sec_times_modtime[label="set_error_get_user_newattrs_ia_mtime_tv_sec_times_modtime"];
+                set_newattrs_ia_mtime_tv_nsec_0[label="set_newattrs_ia_mtime_tv_nsec_0"];
+                error_true[label="error_true"];
+                goto_dput_and_not[label="goto_dput_and_not"];
+                newattrs_ia_valid_self_or_ATTR_ATIME_SET_ATTR_MTIME_SET[label="newattrs_ia_valid_self_or_ATTR_ATIME_SET_ATTR_MTIME_SET"];
+                set_error_EACCES[label="set_error_EACCES"];
+                IS_IMMUTABLE_inode_true[label="IS_IMMUTABLE_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                current_fsuid_not_eq_inode_i_uid_and_set_error_permission_inode_MAY_WRITE_nd_not_eq_0[label="current_fsuid_not_eq_inode_i_uid_and_set_error_permission_inode_MAY_WRITE_nd_not_eq_0"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                down_inode_i_sem[label="down_inode_i_sem"];
+                set_error_notify_change_nd_dentry_newattrs[label="set_error_notify_change_nd_dentry_newattrs"];
+                up_inode_i_sem[label="up_inode_i_sem"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_do_utimes{
+                label="long do_utimes(char __user * filename, struct timeval * times)
+";
+                set_error_user_path_walk_filename_nd[label="set_error_user_path_walk_filename_nd"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_inode_nd_dentry_d_inode[label="set_inode_nd_dentry_d_inode"];
+                set_error_EROFS[label="set_error_EROFS"];
+                IS_RDONLY_inode_true[label="IS_RDONLY_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_newattrs_ia_valid_ATTR_CTIME_ATTR_MTIME_ATTR_ATIME[label="set_newattrs_ia_valid_ATTR_CTIME_ATTR_MTIME_ATTR_ATIME"];
+                times_true[label="times_true"];
+                set_error_EPERM[label="set_error_EPERM"];
+                IS_APPEND_inode_true_or_IS_IMMUTABLE_inode_true[label="IS_APPEND_inode_true_or_IS_IMMUTABLE_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                set_newattrs_ia_atime_tv_sec_times_0_tv_sec[label="set_newattrs_ia_atime_tv_sec_times_0_tv_sec"];
+                set_newattrs_ia_atime_tv_nsec_times_0_tv_usec_multi_1000[label="set_newattrs_ia_atime_tv_nsec_times_0_tv_usec_multi_1000"];
+                set_newattrs_ia_mtime_tv_sec_times_1_tv_sec[label="set_newattrs_ia_mtime_tv_sec_times_1_tv_sec"];
+                set_newattrs_ia_mtime_tv_nsec_times_1_tv_usec_multi_1000[label="set_newattrs_ia_mtime_tv_nsec_times_1_tv_usec_multi_1000"];
+                newattrs_ia_valid_self_or_ATTR_ATIME_SET_ATTR_MTIME_SET[label="newattrs_ia_valid_self_or_ATTR_ATIME_SET_ATTR_MTIME_SET"];
+                set_error_EACCES[label="set_error_EACCES"];
+                IS_IMMUTABLE_inode_true[label="IS_IMMUTABLE_inode_true"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                current_fsuid_not_eq_inode_i_uid_and_set_error_permission_inode_MAY_WRITE_nd_not_eq_0[label="current_fsuid_not_eq_inode_i_uid_and_set_error_permission_inode_MAY_WRITE_nd_not_eq_0"];
+                goto_dput_and_out[label="goto_dput_and_out"];
+                down_inode_i_sem[label="down_inode_i_sem"];
+                set_error_notify_change_nd_dentry_newattrs[label="set_error_notify_change_nd_dentry_newattrs"];
+                up_inode_i_sem[label="up_inode_i_sem"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        
+}

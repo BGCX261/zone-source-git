@@ -1,0 +1,565 @@
+digraph bio_c{
+        subgraph cluster_*bvec_alloc_bs{
+                label="static inline struct bio_vec *bvec_alloc_bs(unsigned int __nocast gfp_mask, int nr, unsigned long *idx, struct bio_set *bs)
+";
+                switch_nr[label="switch_nr"];
+                case_1[label="case_1"];
+                set_idx_0[label="set_idx_0"];
+                case_2_to_4[label="case_2_to_4"];
+                set_idx_1[label="set_idx_1"];
+                case_5_to_16[label="case_5_to_16"];
+                set_idx_2[label="set_idx_2"];
+                case_17_to_64[label="case_17_to_64"];
+                set_idx_3[label="set_idx_3"];
+                case_65_to_128[label="case_65_to_128"];
+                set_idx_4[label="set_idx_4"];
+                case_129_to_BIO_MAX_PAGES[label="case_129_to_BIO_MAX_PAGES"];
+                set_idx_5[label="set_idx_5"];
+                default_[label="default_"];
+                return_NULL[label="return_NULL"];
+                set_bp_bvec_slabs_add_idx[label="set_bp_bvec_slabs_add_idx"];
+                set_bvl_mempool_alloc_bs_bvec_pools_idx_gfp_mask[label="set_bvl_mempool_alloc_bs_bvec_pools_idx_gfp_mask"];
+                bvl_true[label="bvl_true"];
+                memset_bvl_0_bp_nr_vecs_multi_sizeof_struct_bio_vec[label="memset_bvl_0_bp_nr_vecs_multi_sizeof_struct_bio_vec"];
+                return_bvl[label="return_bvl"];
+        }
+
+        subgraph cluster_bio_destructor{
+                label="static void bio_destructor(struct bio *bio)
+";
+                set_pool_idx_BIO_POOL_IDX_bio[label="set_pool_idx_BIO_POOL_IDX_bio"];
+                set_bs_bio_bi_set[label="set_bs_bio_bi_set"];
+                mempool_free_bio_bi_io_vec_bs_bvec_pools_pool_idx[label="mempool_free_bio_bi_io_vec_bs_bvec_pools_pool_idx"];
+                mempool_free_bio_bs_bio_pool[label="mempool_free_bio_bs_bio_pool"];
+        }
+
+        subgraph cluster_bio_init{
+                label="inline void bio_init(struct bio *bio)
+";
+                clear_bio_bi_next[label="clear_bio_bi_next"];
+                set_bio_flags_1_left_move_BIO_UPTODATE[label="set_bio_flags_1_left_move_BIO_UPTODATE"];
+                set_bio_bi_rw_0[label="set_bio_bi_rw_0"];
+                set_bio_bi_vcnt_0[label="set_bio_bi_vcnt_0"];
+                set_bio_bi_idx_0[label="set_bio_bi_idx_0"];
+                set_bio_bi_phys_segments_0[label="set_bio_bi_phys_segments_0"];
+                set_bio_bi_hw_segments_0[label="set_bio_bi_hw_segments_0"];
+                set_bio_bi_hw_front_size_0[label="set_bio_bi_hw_front_size_0"];
+                set_bio_bi_hw_back_size_0[label="set_bio_bi_hw_back_size_0"];
+                set_bio_bi_size_0[label="set_bio_bi_size_0"];
+                set_bio_bi_max_vecs_0[label="set_bio_bi_max_vecs_0"];
+                clear_bio_bi_end_io[label="clear_bio_bi_end_io"];
+                atomic_set_bio_bi_cnt_1[label="atomic_set_bio_bi_cnt_1"];
+                clear_bio_bi_private[label="clear_bio_bi_private"];
+        }
+
+        subgraph cluster_*bio_alloc_bioset{
+                label="struct bio *bio_alloc_bioset(unsigned int __nocast gfp_mask, int nr_iovecs, struct bio_set *bs)
+";
+                set_bio_mempool_alloc_bs_bio_pool_gfp_mask[label="set_bio_mempool_alloc_bs_bio_pool_gfp_mask"];
+                bio_true[label="bio_true"];
+                clear_bvl[label="clear_bvl"];
+                bio_init_bio[label="bio_init_bio"];
+                nr_iovecs_true[label="nr_iovecs_true"];
+                set_bvl_bvec_alloc_bs_gfp_mask_nr_iovecs_idx_bs[label="set_bvl_bvec_alloc_bs_gfp_mask_nr_iovecs_idx_bs"];
+                bvl_false[label="bvl_false"];
+                mempool_free_bio_bs_bio_pool[label="mempool_free_bio_bs_bio_pool"];
+                clear_bio[label="clear_bio"];
+                goto_out[label="goto_out"];
+                bio_bi_flags_self_or_idx_left_move_BIO_POOL_OFFSET[label="bio_bi_flags_self_or_idx_left_move_BIO_POOL_OFFSET"];
+                set_bio_bi_max_vecs_bvec_slabs_idx_nr_vecs[label="set_bio_bi_max_vecs_bvec_slabs_idx_nr_vecs"];
+                set_bio_bi_io_vec_bvl[label="set_bio_bi_io_vec_bvl"];
+                set_bio_bi_destructor_bio_destructor[label="set_bio_bi_destructor_bio_destructor"];
+                set_bio_bi_set_bs[label="set_bio_bi_set_bs"];
+                return_bio[label="return_bio"];
+        }
+
+        subgraph cluster_*bio_alloc{
+                label="struct bio *bio_alloc(unsigned int __nocast gfp_mask, int nr_iovecs)
+";
+                return_bio_alloc_bioset_gfp_mask_nr_iovecs_fs_bio_set[label="return_bio_alloc_bioset_gfp_mask_nr_iovecs_fs_bio_set"];
+        }
+
+        subgraph cluster_zero_fill_bio{
+                label="void zero_fill_bio(struct bio *bio)
+";
+                bio_for_each_segment_bv_bio_i[label="bio_for_each_segment_bv_bio_i"];
+                set_data_bvec_kmap_irq_bv_flags[label="set_data_bvec_kmap_irq_bv_flags"];
+                memset_data_0[label="memset_data_0"];
+                flush_dcache_page_bv_bv_page[label="flush_dcache_page_bv_bv_page"];
+                bvec_kunmap_irq_data_flags[label="bvec_kunmap_irq_data_flags"];
+        }
+
+        subgraph cluster_bio_put{
+                label="void bio_put(struct bio *bio)
+";
+                atomic_dec_and_test_bio_bi_cnt_true[label="atomic_dec_and_test_bio_bi_cnt_true"];
+                clear_bio_bi_next[label="clear_bio_bi_next"];
+                bio_bi_destructor_bio[label="bio_bi_destructor_bio"];
+        }
+
+        subgraph cluster_bio_phys_segments{
+                label="inline int bio_phys_segments(request_queue_t *q, struct bio *bio)
+";
+                bio_flagged_bio_BIO_SEG_VALID_false[label="bio_flagged_bio_BIO_SEG_VALID_false"];
+                blk_recount_segments_q_bio[label="blk_recount_segments_q_bio"];
+                return_bio_bi_phys_segments[label="return_bio_bi_phys_segments"];
+        }
+
+        subgraph cluster_bio_hw_segments{
+                label="inline int bio_hw_segments(request_queue_t *q, struct bio *bio)
+";
+                bio_flagged_bio_BIO_SEG_VALID_false[label="bio_flagged_bio_BIO_SEG_VALID_false"];
+                blk_recount_segments_q_bio[label="blk_recount_segments_q_bio"];
+                return_bio_bi_hw_segments[label="return_bio_bi_hw_segments"];
+        }
+
+        subgraph cluster___bio_clone{
+                label="inline void __bio_clone(struct bio *bio, struct bio *bio_src)
+";
+                set_q_bdev_get_queue_bio_src_bi_bdev[label="set_q_bdev_get_queue_bio_src_bi_bdev"];
+                memcpy_bio_bi_io_vec_bio_src_bi_max_vecs_multi_sizeof_struct_bio_vec[label="memcpy_bio_bi_io_vec_bio_src_bi_max_vecs_multi_sizeof_struct_bio_vec"];
+                set_bio_bi_sector_bio_src_bi_sector[label="set_bio_bi_sector_bio_src_bi_sector"];
+                set_bio_bi_bdev_bio_src_bi_bdev[label="set_bio_bi_bdev_bio_src_bi_bdev"];
+                bio_bi_flags_self_or_1_left_move_BIO_CLONED[label="bio_bi_flags_self_or_1_left_move_BIO_CLONED"];
+                set_bio_bi_rw_bio_src_bi_rw[label="set_bio_bi_rw_bio_src_bi_rw"];
+                set_bio_bi_vcnt_bio_src_bi_vcnt[label="set_bio_bi_vcnt_bio_src_bi_vcnt"];
+                set_bio_bi_size_bio_src_bi_size[label="set_bio_bi_size_bio_src_bi_size"];
+                bio_phys_segments_q_bio[label="bio_phys_segments_q_bio"];
+                bio_hw_segments_q_bio[label="bio_hw_segments_q_bio"];
+        }
+
+        subgraph cluster_*bio_clone{
+                label="struct bio *bio_clone(struct bio *bio, unsigned int __nocast gfp_mask)
+";
+                set_b_bio_alloc_bioset_gfp_mask_bio_bi_max_vecs_fs_bio_set[label="set_b_bio_alloc_bioset_gfp_mask_bio_bi_max_vecs_fs_bio_set"];
+                b_true[label="b_true"];
+                __bio_clone_b_bio[label="__bio_clone_b_bio"];
+                return_b[label="return_b"];
+        }
+
+        subgraph cluster_bio_get_nr_vecs{
+                label="int bio_get_nr_vecs(struct block_device *bdev)
+";
+                set_q_bdev_get_queue_bdev[label="set_q_bdev_get_queue_bdev"];
+                set_nr_pages_q_max_sectors_left_move_9_add_PAGE_SIZE_sub_1_ritght_move_PAGE_SHIFT[label="set_nr_pages_q_max_sectors_left_move_9_add_PAGE_SIZE_sub_1_ritght_move_PAGE_SHIFT"];
+                nr_pages_great_q_max_phys_segments[label="nr_pages_great_q_max_phys_segments"];
+                set_nr_pages_q_max_phys_segments[label="set_nr_pages_q_max_phys_segments"];
+                nr_pages_geat_q_max_hw_segments[label="nr_pages_geat_q_max_hw_segments"];
+                set_nr_pages_q_max_hw_segments[label="set_nr_pages_q_max_hw_segments"];
+                return_nr_pages[label="return_nr_pages"];
+        }
+
+        subgraph cluster___bio_add_page{
+                label="static int __bio_add_page(request_queue_t *q, struct bio *bio, struct page
+			  *page, unsigned int len, unsigned int offset)
+";
+                bio_flagged_bio_BIO_CLONED_true[label="bio_flagged_bio_BIO_CLONED_true"];
+                return_0[label="return_0"];
+                bio_bi_vcnt_not_small_bio_bi_max_vecs[label="bio_bi_vcnt_not_small_bio_bi_max_vecs"];
+                return_0[label="return_0"];
+                bio_bi_size_add_len_right_move_0_great_q_max_sectors[label="bio_bi_size_add_len_right_move_0_great_q_max_sectors"];
+                return_0[label="return_0"];
+                bio_bi_phys_segments_not_small_q_max_phys_segments_or_bio_bi_hw_segments_not_small_q_max_hw_segments_BIOVEC_VIRT_OVVERSIZE_bio_bi_size_true[label="bio_bi_phys_segments_not_small_q_max_phys_segments_or_bio_bi_hw_segments_not_small_q_max_hw_segments_BIOVEC_VIRT_OVVERSIZE_bio_bi_size_true"];
+                retried_segments_true[label="retried_segments_true"];
+                return_0[label="return_0"];
+                set_retried_segments_1[label="set_retried_segments_1"];
+                blk_recount_segments_q_bio[label="blk_recount_segments_q_bio"];
+                set_bvec_bio_bi_io_vec_bio_bi_vcnt[label="set_bvec_bio_bi_io_vec_bio_bi_vcnt"];
+                set_bvec_bv_page_page[label="set_bvec_bv_page_page"];
+                set_bvec_bv_len_len[label="set_bvec_bv_len_len"];
+                set_bvec_bv_offset_offset[label="set_bvec_bv_offset_offset"];
+                q_merge_bvec_fn_true[label="q_merge_bvec_fn_true"];
+                q_merge_bvec_fn_q_bio_bvec_small_len[label="q_merge_bvec_fn_q_bio_bvec_small_len"];
+                clear_bvec_bv_page[label="clear_bvec_bv_page"];
+                set_bvec_bv_len_0[label="set_bvec_bv_len_0"];
+                set_bvec_bv_offset_0[label="set_bvec_bv_offset_0"];
+                return_0[label="return_0"];
+                bio_bi_vcnt_true_and_BIOVEC_PHYS_MERGEABLE_bvec_sub_1_bvec_true_or_BIOVEC_VIRT_MERGEABLE_bvec_sub_1_bvec_true[label="bio_bi_vcnt_true_and_BIOVEC_PHYS_MERGEABLE_bvec_sub_1_bvec_true_or_BIOVEC_VIRT_MERGEABLE_bvec_sub_1_bvec_true"];
+                bio_bi_flags_clear_1_rigth_move_BIO_SEG_VALID[label="bio_bi_flags_clear_1_rigth_move_BIO_SEG_VALID"];
+                inc_bio_bi_vcnt[label="inc_bio_bi_vcnt"];
+                inc_bio_bi_phys_segments[label="inc_bio_bi_phys_segments"];
+                inc_bio_bi_hw_segments[label="inc_bio_bi_hw_segments"];
+                bio_bi_size_self_add_len[label="bio_bi_size_self_add_len"];
+                return_len[label="return_len"];
+        }
+
+        subgraph cluster_bio_add_page{
+                label="int bio_add_page(struct bio *bio, struct page *page, unsigned int len,
+		 unsigned int offset)
+";
+                return___bio_add_page_bdev_get_queue_bio_bi_bdev_bio_page_len_offset[label="return___bio_add_page_bdev_get_queue_bio_bi_bdev_bio_page_len_offset"];
+        }
+
+        subgraph cluster_bio_set_map_data{
+                label="subgraph cluster_static void bio_set_map_data(struct bio_map_data *bmd, struct bio *bio)
+";
+                memcpy_bmd_iovecs_bio_bi_io_vec_sizeof_struct_bio_vec_multi_bio_bi_vcnt[label="memcpy_bmd_iovecs_bio_bi_io_vec_sizeof_struct_bio_vec_multi_bio_bi_vcnt"];
+                set_bio_bi_private_bmd[label="set_bio_bi_private_bmd"];
+        }
+
+        subgraph cluster_bio_free_map_data{
+                label="static void bio_free_map_data(struct bio_map_data *bmd)
+";
+                kfree_bmd_iovecs[label="kfree_bmd_iovecs"];
+                kfree_bmd[label="kfree_bmd"];
+        }
+
+        subgraph cluster_*bio_alloc_map_data{
+                label="static struct bio_map_data *bio_alloc_map_data(int nr_segs)
+";
+                set_bmd_kmalloc[label="set_bmd_kmalloc"];
+                set_bmd_iovecs_kmalloc[label="set_bmd_iovecs_kmalloc"];
+                bmd_iovecs_true[label="bmd_iovecs_true"];
+                return_bmd[label="return_bmd"];
+                kfree_bmd[label="kfree_bmd"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_bio_uncopy_user{
+                label="int bio_uncopy_user(struct bio *bio)
+";
+                set_bmd_bio_bi_private[label="set_bmd_bio_bi_private"];
+                set_read_bio_data_dir_bio_eq_READ[label="set_read_bio_data_dir_bio_eq_READ"];
+                __bio_for_each_segment_bvec_bio_i_0[label="__bio_for_each_segment_bvec_bio_i_0"];
+                set_addr_page_address_bvec_bv_page[label="set_addr_page_address_bvec_bv_page"];
+                set_len_bmd_iovecs_i_bv_len[label="set_len_bmd_iovecs_i_bv_len"];
+                read_true_and_ret_false_copy_to_user_bmd_userptr_addr_len_true[label="read_true_and_ret_false_copy_to_user_bmd_userptr_addr_len_true"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                __free_page_bvec_bv_page[label="__free_page_bvec_bv_page"];
+                bmd_userptr_self_add_len[label="bmd_userptr_self_add_len"];
+                bio_free_map_data_bmd[label="bio_free_map_data_bmd"];
+                bio_put_bio[label="bio_put_bio"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_*bio_copy_user{
+                label="struct bio *bio_copy_user(request_queue_t *q, unsigned long uaddr,
+			  unsigned int len, int write_to_vm)
+";
+                set_end_uaddr_add_len_add_PAGE_SIZE_sub_1_right_move_PAGE_SHIFT[label="set_end_uaddr_add_len_add_PAGE_SIZE_sub_1_right_move_PAGE_SHIFT"];
+                set_start_uaddr_right_move_PAGE_SHIFT[label="set_start_uaddr_right_move_PAGE_SHIFT"];
+                set_bmd_bio_alloc_map_data_end_sub_start[label="set_bmd_bio_alloc_map_data_end_sub_start"];
+                set_bmd_userptr_uaddr[label="set_bmd_userptr_uaddr"];
+                set_ret_ENOMEM[label="set_ret_ENOMEM"];
+                set_bio_bio_alloc[label="set_bio_bio_alloc"];
+                bio_false[label="bio_false"];
+                goto_out_bmd[label="goto_out_bmd"];
+                bio_bi_rw_self_or_rever_write_to_vm_left_move_BIO_RW[label="bio_bi_rw_self_or_rever_write_to_vm_left_move_BIO_RW"];
+                set_ret_0[label="set_ret_0"];
+                len_true[label="len_true"];
+                set_bytes_PAGE_SIZE[label="set_bytes_PAGE_SIZE"];
+                bytes_great_len[label="bytes_great_len"];
+                set_bytes_len[label="set_bytes_len"];
+                set_page_alloc_page_q_bounce_gfp_or_GFP_KERNEL[label="set_page_alloc_page_q_bounce_gfp_or_GFP_KERNEL"];
+                page_false[label="page_false"];
+                set_ret_ENOMEM[label="set_ret_ENOMEM"];
+                __bio_add_page_q_bio_page_bytes_0_small_bytes[label="__bio_add_page_q_bio_page_bytes_0_small_bytes"];
+                set_ret_EINVAL[label="set_ret_EINVAL"];
+                len_self_sub_bytes[label="len_self_sub_bytes"];
+                ret_true[label="ret_true"];
+                goto_cleanup[label="goto_cleanup"];
+                write_to_vm_false[label="write_to_vm_false"];
+                set_p_uaddr[label="set_p_uaddr"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                bio_for_each_segment_bvec_bio_i[label="bio_for_each_segment_bvec_bio_i"];
+                set_addr_page_address_bvec_bv_page[label="set_addr_page_address_bvec_bv_page"];
+                copy_from_user_addr_p_bvec_bv_len[label="copy_from_user_addr_p_bvec_bv_len"];
+                p_self_add_bvec_bv_len[label="p_self_add_bvec_bv_len"];
+                bio_set_map_data_bmd_bio[label="bio_set_map_data_bmd_bio"];
+                return_bio[label="return_bio"];
+                bio_for_each_segment_bvec_bio_i[label="bio_for_each_segment_bvec_bio_i"];
+                __free_page_bvec_bv_page[label="__free_page_bvec_bv_page"];
+                bio_put_bio[label="bio_put_bio"];
+                bio_free_map_data_bmd[label="bio_free_map_data_bmd"];
+                return_ERR_PTR_ret[label="return_ERR_PTR_ret"];
+        }
+
+        subgraph cluster_*__bio_map_user{
+                label="static struct bio *__bio_map_user(request_queue_t *q, struct block_device *bdev,
+				  unsigned long uaddr, unsigned int len,
+				  int write_to_vm)
+";
+                set_end_uaddr_add_len_add_PAGE_SIZE_sub_1_rigth_move_PAGE_SHIFT[label="set_end_uaddr_add_len_add_PAGE_SIZE_sub_1_rigth_move_PAGE_SHIFT"];
+                set_start_uaddr_right_move_PAGE_SHIFT[label="set_start_uaddr_right_move_PAGE_SHIFT"];
+                set_nr_pages_end_sub_start[label="set_nr_pages_end_sub_start"];
+                uaddr_and_queue_dma_alignment_q_true_or_len_and_queue_dma_alignment_q_true[label="uaddr_and_queue_dma_alignment_q_true_or_len_and_queue_dma_alignment_q_true"];
+                return_ERR_PTR_EINVAL[label="return_ERR_PTR_EINVAL"];
+                set_bio_bio_alloc_GFP[label="set_bio_bio_alloc_GFP"];
+                set_ret_ENOMEM[label="set_ret_ENOMEM"];
+                set_pages_kmalloc[label="set_pages_kmalloc"];
+                down_read_current_mm_mmap_sem[label="down_read_current_mm_mmap_sem"];
+                set_ret_get_user_pages_current_current_mm_uaddr_nr_pages_write_to_vm_0_pages_NULL[label="set_ret_get_user_pages_current_current_mm_uaddr_nr_pages_write_to_vm_0_pages_NULL"];
+                up_read_current_mm_mmap_sem[label="up_read_current_mm_mmap_sem"];
+                ret_small_nr_pages[label="ret_small_nr_pages"];
+                goto_out[label="goto_out"];
+                set_bio_bi_bdev_bdev[label="set_bio_bi_bdev_bdev"];
+                set_offset_uaddr_clear_PAGE_MASK[label="set_offset_uaddr_clear_PAGE_MASK"];
+                for_i_nr_pages[label="for_i_nr_pages"];
+                set_bytes_PAGE_SIZE_sub_offset[label="set_bytes_PAGE_SIZE_sub_offset"];
+                len_not_great_0[label="len_not_great_0"];
+                bytes_great_len[label="bytes_great_len"];
+                set_bytes_len[label="set_bytes_len"];
+                __bio_add_page_q_bio_pages_i_bytes_offset_small_bytes[label="__bio_add_page_q_bio_pages_i_bytes_offset_small_bytes"];
+                len_self_sub_bytes[label="len_self_sub_bytes"];
+                set_offset_0[label="set_offset_0"];
+                i_small_nr_pages[label="i_small_nr_pages"];
+                page_cache_release_pages_i_inc[label="page_cache_release_pages_i_inc"];
+                kfree_pages[label="kfree_pages"];
+                write_to_vm_false[label="write_to_vm_false"];
+                bio_bi_rw_self_or_1_left_move_BIO_RW[label="bio_bi_rw_self_or_1_left_move_BIO_RW"];
+                bio_bi_flags_self_or_1_left_move_BIO_USER_MAPPED[label="bio_bi_flags_self_or_1_left_move_BIO_USER_MAPPED"];
+                return_bio[label="return_bio"];
+                kfree_pages[label="kfree_pages"];
+                bio_put_bio[label="bio_put_bio"];
+                return_ERR_PTR_ret[label="return_ERR_PTR_ret"];
+        }
+
+        subgraph cluster_*bio_map_user{
+                label="struct bio *bio_map_user(request_queue_t *q, struct block_device *bdev,
+			 unsigned long uaddr, unsigned int len, int write_to_vm)
+";
+                set_bio___bio_map_user_q_bdev_uaddr_len_write_to_vm[label="set_bio___bio_map_user_q_bdev_uaddr_len_write_to_vm"];
+                IS_ERR_bio_true[label="IS_ERR_bio_true"];
+                return_bio[label="return_bio"];
+                bio_get_bio[label="bio_get_bio"];
+                bio_bi_size_not_eq_len[label="bio_bi_size_not_eq_len"];
+                return_bio[label="return_bio"];
+                bio_endio_bio_bio_bi_size_0[label="bio_endio_bio_bio_bi_size_0"];
+                bio_unmap_user_bio[label="bio_unmap_user_bio"];
+                return_ERR_PTR_EINVAL[label="return_ERR_PTR_EINVAL"];
+        }
+
+        subgraph cluster___bio_unmap_user{
+                label="static void __bio_unmap_user(struct bio *bio)
+";
+                __bio_for_each_segment_bvec_bio_i_0[label="__bio_for_each_segment_bvec_bio_i_0"];
+                bio_data_dir_bio_eq_READ[label="bio_data_dir_bio_eq_READ"];
+                set_page_dirty_lock_bvec_bv_page[label="set_page_dirty_lock_bvec_bv_page"];
+                page_cache_release_bvec_bv_page[label="page_cache_release_bvec_bv_page"];
+                bio_put_bio[label="bio_put_bio"];
+        }
+
+        subgraph cluster_bio_unmap_user{
+                label="void bio_unmap_user(struct bio *bio)
+";
+                __bio_unmap_user_bio[label="__bio_unmap_user_bio"];
+                bio_put_bio[label="bio_put_bio"];
+        }
+
+        subgraph cluster_bio_set_pages_dirty{
+                label="void bio_set_pages_dirty(struct bio *bio)
+";
+                set_bvec_bio_bi_io_vec[label="set_bvec_bio_bi_io_vec"];
+                for_i_bio_vi_vcnt[label="for_i_bio_vi_vcnt"];
+                set_page_bvec_i_bv_page[label="set_page_bvec_i_bv_page"];
+                page_true_and_PageCompound_page_false[label="page_true_and_PageCompound_page_false"];
+                set_page_dirty_lock_page[label="set_page_dirty_lock_page"];
+        }
+
+        subgraph cluster_bio_release_pages{
+                label="static void bio_release_pages(struct bio *bio)
+";
+                set_bvec_bio_bi_io_vec[label="set_bvec_bio_bi_io_vec"];
+                for_i_bio_bi_vcnt[label="for_i_bio_bi_vcnt"];
+                set_page_bvec_i_bv_page[label="set_page_bvec_i_bv_page"];
+                page_true[label="page_true"];
+                put_page_page[label="put_page_page"];
+        }
+
+        subgraph cluster_bio_dirty_fn{
+                label="static void bio_dirty_fn(void *data)
+";
+                lock_bio_dirty_lock[label="lock_bio_dirty_lock"];
+                set_bio_bio_drity_list[label="set_bio_bio_drity_list"];
+                clear_bio_dirty_list[label="clear_bio_dirty_list"];
+                unlock_bio_dirty_lock[label="unlock_bio_dirty_lock"];
+                bio_true[label="bio_true"];
+                set_next_bio_bi_private[label="set_next_bio_bi_private"];
+                bio_set_pages_dirty_bio[label="bio_set_pages_dirty_bio"];
+                bio_release_pages_bio[label="bio_release_pages_bio"];
+                bio_put_bio[label="bio_put_bio"];
+                set_bio_next[label="set_bio_next"];
+        }
+
+        subgraph cluster_bio_check_pages_dirty{
+                label="void bio_check_pages_dirty(struct bio *bio)
+";
+                set_bvec_bio_bi_io_vec[label="set_bvec_bio_bi_io_vec"];
+                for_i_bio_bi_vcnt[label="for_i_bio_bi_vcnt"];
+                set_page_bvec_i_bv_page[label="set_page_bvec_i_bv_page"];
+                PageDirty_page_true_or_PageCompound_page_true[label="PageDirty_page_true_or_PageCompound_page_true"];
+                page_cache_release_page[label="page_cache_release_page"];
+                clear_bvec_i_bv_page[label="clear_bvec_i_bv_page"];
+                inc_nr_clear_pages[label="inc_nr_clear_pages"];
+                nr_clean_pages_true[label="nr_clean_pages_true"];
+                lock_bio_dirty_lock[label="lock_bio_dirty_lock"];
+                set_bio_bi_private_bio_dirty_list[label="set_bio_bi_private_bio_dirty_list"];
+                set_bio_dirty_list_bio[label="set_bio_dirty_list_bio"];
+                unlock_bio_dirty_lock[label="unlock_bio_dirty_lock"];
+                schedule_work_bio_dirty_work[label="schedule_work_bio_dirty_work"];
+                bio_put_bio[label="bio_put_bio"];
+        }
+
+        subgraph cluster_bio_endio{
+                label="void bio_endio(struct bio *bio, unsigned int bytes_done, int error)
+";
+                error_true[label="error_true"];
+                clear_bit_BIO_UPTODATE_bio_bi_flags[label="clear_bit_BIO_UPTODATE_bio_bi_flags"];
+                bytes_done_great_bio_bi_size[label="bytes_done_great_bio_bi_size"];
+                set_bytes_done_bio_bi_size[label="set_bytes_done_bio_bi_size"];
+                set_bio_bi_size_self_sub_bytes_done[label="set_bio_bi_size_self_sub_bytes_done"];
+                bio_bi_sector_self_add_bytes_done_right_move_9[label="bio_bi_sector_self_add_bytes_done_right_move_9"];
+                bio_bi_end_io_true[label="bio_bi_end_io_true"];
+                bio_bi_end_io_bio_bytes_done_error[label="bio_bi_end_io_bio_bytes_done_error"];
+        }
+
+        subgraph cluster_bio_pair_release{
+                label="void bio_pair_release(struct bio_pair *bp)
+";
+                atomic_dec_and_test_bp_cnt_true[label="atomic_dec_and_test_bp_cnt_true"];
+                set_master_bp_bio1_bi_private[label="set_master_bp_bio1_bi_private"];
+                bio_endio_master_master_bi_size_bp_error[label="bio_endio_master_master_bi_size_bp_error"];
+                mempool_free_bp_bp_bio2_bi_private[label="mempool_free_bp_bp_bio2_bi_private"];
+        }
+
+        subgraph cluster_bio_pair_end_1{
+                label="static int bio_pair_end_1(struct bio * bi, unsigned int done, int err)
+";
+                set_bp_container_of_bi_struct_bio_pair_bio1[label="set_bp_container_of_bi_struct_bio_pair_bio1"];
+                err_true[label="err_true"];
+                set_bp_error_err[label="set_bp_error_err"];
+                bi_bi_size_true[label="bi_bi_size_true"];
+                return_1[label="return_1"];
+                bio_pair_release_bp[label="bio_pair_release_bp"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_bio_pair_end_2{
+                label="static int bio_pair_end_2(struct bio * bi, unsigned int done, int err)
+";
+                set_bp_container_of_bi_struct_bio_pair_bio2[label="set_bp_container_of_bi_struct_bio_pair_bio2"];
+                err_true[label="err_true"];
+                set_bp_error_err[label="set_bp_error_err"];
+                bi_bi_size_true[label="bi_bi_size_true"];
+                return_1[label="return_1"];
+                bio_pair_release_bp[label="bio_pair_release_bp"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_*bio_split{
+                label="struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
+";
+                set_bp_mempool_alloc_pool_GFP_NOIO[label="set_bp_mempool_alloc_pool_GFP_NOIO"];
+                atomic_set_bp_cnt_3[label="atomic_set_bp_cnt_3"];
+                set_bp_error_0[label="set_bp_error_0"];
+                set_bp_bio1_bi[label="set_bp_bio1_bi"];
+                set_bp_bio2_bi[label="set_bp_bio2_bi"];
+                bp_bio2_bi_sector_self_add_first_sectors[label="bp_bio2_bi_sector_self_add_first_sectors"];
+                bp_bio2_bi_size_self_sub_first_sectors_left_move_9[label="bp_bio2_bi_size_self_sub_first_sectors_left_move_9"];
+                set_bp_bio1_bi_size_first_sectors_left_move_9[label="set_bp_bio1_bi_size_first_sectors_left_move_9"];
+                set_bp_bv1_bi_bi_io_vec_0[label="set_bp_bv1_bi_bi_io_vec_0"];
+                set_bp_bv2_bi_bi_io_vec_0[label="set_bp_bv2_bi_bi_io_vec_0"];
+                bp_bv2_bv_offset_self_add_first_sectors_left_move_9[label="bp_bv2_bv_offset_self_add_first_sectors_left_move_9"];
+                bp_bv2_bv_len_self_sub_first_sector_left_move_9[label="bp_bv2_bv_len_self_sub_first_sector_left_move_9"];
+                set_bp_bv1_bv_len_first_sectors_left_move_9[label="set_bp_bv1_bv_len_first_sectors_left_move_9"];
+                set_bp_bio1_bi_io_vec_bp_bv1[label="set_bp_bio1_bi_io_vec_bp_bv1"];
+                set_bp_bio2_bi_io_vec_bp_bv2[label="set_bp_bio2_bi_io_vec_bp_bv2"];
+                set_bp_bio1_bi_end_io_bio_pair_end_1[label="set_bp_bio1_bi_end_io_bio_pair_end_1"];
+                set_bp_bio2_bi_end_io_bio_pair_end_2[label="set_bp_bio2_bi_end_io_bio_pair_end_2"];
+                set_bp_bio1_bi_private_bi[label="set_bp_bio1_bi_private_bi"];
+                set_bp_bio2_bi_private_pool[label="set_bp_bio2_bi_private_pool"];
+                return_bp[label="return_bp"];
+        }
+
+        subgraph cluster_*bio_pair_alloc{
+                label="static void *bio_pair_alloc(unsigned int __nocast gfp_flags, void *data)
+";
+                return_kmalloc[label="return_kmalloc"];
+        }
+
+        subgraph cluster_bio_pair_free{
+                label="static void bio_pair_free(void *bp, void *data)
+";
+                kfree_bp[label="kfree_bp"];
+        }
+
+        subgraph cluster_biovec_create_pools{
+                label="static int biovec_create_pools(struct bio_set *bs, int pool_entries, int scale)
+";
+                for_i_BIOVEC_NR_POOLS[label="for_i_BIOVEC_NR_POOLS"];
+                set_bp_bvec_slabs_add_i[label="set_bp_bvec_slabs_add_i"];
+                set_bvp_bs_bvec_pools_add_i[label="set_bvp_bs_bvec_pools_add_i"];
+                i_not_small_scale[label="i_not_small_scale"];
+                pool_entries_self_right_move_1[label="pool_entries_self_right_move_1"];
+                set_bvp_mempool_create_pool_entries_mempool_alloc_slab_mempool_free_slab_bp_slab[label="set_bvp_mempool_create_pool_entries_mempool_alloc_slab_mempool_free_slab_bp_slab"];
+                bvp_false[label="bvp_false"];
+                return_ENOMEM[label="return_ENOMEM"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_biovec_free_pools{
+                label="static void biovec_free_pools(struct bio_set *bs)
+";
+                for_i_BIOVEC_NR_POOLS[label="for_i_BIOVEC_NR_POOLS"];
+                set_bvp_bs_bvec_pools_i[label="set_bvp_bs_bvec_pools_i"];
+                bvp_true[label="bvp_true"];
+                mempool_destroy_bvp[label="mempool_destroy_bvp"];
+        }
+
+        subgraph cluster_bioset_free{
+                label="void bioset_free(struct bio_set *bs)
+";
+                bs_bio_pool_true[label="bs_bio_pool_true"];
+                mempool_destroy_bs_bio_pool[label="mempool_destroy_bs_bio_pool"];
+                biovec_free_pools_bs[label="biovec_free_pools_bs"];
+                kfree_bs[label="kfree_bs"];
+        }
+
+        subgraph cluster_*bioset_create{
+                label="struct bio_set *bioset_create(int bio_pool_size, int bvec_pool_size, int scale)
+";
+                set_bs_kmalloc[label="set_bs_kmalloc"];
+                memset_bs_0[label="memset_bs_0"];
+                set_bs_bio_pool_mempool_create_bio_pool_size_mempool_alloc_slab_mempool_free_slab_bio_slab[label="set_bs_bio_pool_mempool_create_bio_pool_size_mempool_alloc_slab_mempool_free_slab_bio_slab"];
+                bs_bio_pool_false[label="bs_bio_pool_false"];
+                goto_bad[label="goto_bad"];
+                biovec_create_pools_bs_bvec_pool_size_scale_false[label="biovec_create_pools_bs_bvec_pool_size_scale_false"];
+                return_bs[label="return_bs"];
+                bioset_free_bs[label="bioset_free_bs"];
+                return_NULL[label="return_NULL"];
+        }
+
+        subgraph cluster_biovec_init_slabs{
+                label="static void __init biovec_init_slabs(void)
+";
+                for_i_BIOVEC_NR_POOLS[label="for_i_BIOVEC_NR_POOLS"];
+                set_bvs_bvec_slabs_add_i[label="set_bvs_bvec_slabs_add_i"];
+                set_size_bvs_nr_vecs_mulit_sizeof_struct_bio_vec[label="set_size_bvs_nr_vecs_mulit_sizeof_struct_bio_vec"];
+                set_bvs_slab_kmem_cache_create_bvs_name_size_0_SLAB_HWCACHE_ALIGN_SLAB_PANIC_NULL_NULL[label="set_bvs_slab_kmem_cache_create_bvs_name_size_0_SLAB_HWCACHE_ALIGN_SLAB_PANIC_NULL_NULL"];
+        }
+
+        subgraph cluster_init_bio{
+                label="static int __init init_bio(void)
+";
+                set_scale_BIOVEC_NR_POOLS[label="set_scale_BIOVEC_NR_POOLS"];
+                set_bio_slab_kmem_cache_create_bio[label="set_bio_slab_kmem_cache_create_bio"];
+                biovec_init_slabs[label="biovec_init_slabs"];
+                set_megabytes_nr_free_pages_right_move_20_sub_PAGE_SHIFT[label="set_megabytes_nr_free_pages_right_move_20_sub_PAGE_SHIFT"];
+                megabytes_not_great_16[label="megabytes_not_great_16"];
+                set_scale_0[label="set_scale_0"];
+                megabytes_not_great_32[label="megabytes_not_great_32"];
+                set_scale_1[label="set_scale_1"];
+                megabytes_not_great_64[label="megabytes_not_great_64"];
+                set_scale_2[label="set_scale_2"];
+                megabytes_not_great_96[label="megabytes_not_great_96"];
+                set_scale_3[label="set_scale_3"];
+                megabytes_not_great_128[label="megabytes_not_great_128"];
+                set_scale_4[label="set_scale_4"];
+                set_bvec_pool_entries_megabytes_multi_2[label="set_bvec_pool_entries_megabytes_multi_2"];
+                bvec_pool_entries_great_256[label="bvec_pool_entries_great_256"];
+                set_bvec_pool_entries_256[label="set_bvec_pool_entries_256"];
+                set_fs_bio_set_bioset_create_BIO_POOL_SIZE_bvec_pool_entries_scale[label="set_fs_bio_set_bioset_create_BIO_POOL_SIZE_bvec_pool_entries_scale"];
+                set_bio_split_pool_mempool_create_BIO_SPLIT_ENTRIES_bio_pair_alloc_bio_pair_free_NULL[label="set_bio_split_pool_mempool_create_BIO_SPLIT_ENTRIES_bio_pair_alloc_bio_pair_free_NULL"];
+                return_0[label="return_0"];
+        }
+}
