@@ -1,0 +1,281 @@
+digraph mbcache_c{
+	subgraph cluster___mb_cache_entry_is_hashed{
+		label="static inline int __mb_cache_entry_is_hashed(struct mb_cache_entry *ce)";
+		return_list_empty_ce_e_block_list_false[label="return_list_empty_ce_e_block_list_false"];
+	}
+
+	subgraph cluster___mb_cache_entry_unhash{
+		label="static inline void __mb_cache_entry_unhash(struct mb_cache_entry *ce)";
+		__mb_cache_entry_is_hashed_ce_true[label="__mb_cache_entry_is_hashed_ce_true"];
+		list_del_init_ce_e_block_list[label="list_del_init_ce_e_block_list"];
+		for_n_mb_cache_indexes_ce_e_cache[label="for_n_mb_cache_indexes_ce_e_cache"];
+		list_del_ce_e_indexes_n_o_list[label="list_del_ce_e_indexes_n_o_list"];
+	}
+
+	subgraph cluster_void
+		__mb_cache_entry_forget{
+		label="static inline void
+__mb_cache_entry_forget(struct mb_cache_entry *ce, int gfp_mask)";
+		set_cache_ce_e_cache[label="set_cache_ce_e_cache"];
+		mb_assert_rever_ce_e_used_or_ce_e_queued[label="mb_assert_rever_ce_e_used_or_ce_e_queued"];
+		cache_c_op_free_true_and_cache_c_op_free_ce_gfp_mask_true[label="cache_c_op_free_true_and_cache_c_op_free_ce_gfp_mask_true"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		list_add_ce_e_lru_list_mb_cache_lru_list[label="list_add_ce_e_lru_list_mb_cache_lru_list"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		kmem_cache_free_cache_c_entry_cache_ce[label="kmem_cache_free_cache_c_entry_cache_ce"];
+		atomic_dec_cache_c_entry_count[label="atomic_dec_cache_c_entry_count"];
+	}
+
+	subgraph cluster___mb_cache_entry_release_unlock{
+		label="static inline void __mb_cache_entry_release_unlock(struct mb_cache_entry *ce)";
+		ce_e_queued_true[label="ce_e_queued_true"];
+		wake_up_all_mb_cache_queue[label="wake_up_all_mb_cache_queue"];
+		ce_e_used_not_small_MB_CACHE_WRITER[label="ce_e_used_not_small_MB_CACHE_WRITER"];
+		ce_e_used_self_sub_MB_CACHE_WRITE[label="ce_e_used_self_sub_MB_CACHE_WRITE"];
+		dec_ce_e_used[label="dec_ce_e_used"];
+		rever_ce_e_used_true_or_ce_e_queued_ture[label="rever_ce_e_used_true_or_ce_e_queued_ture"];
+		__mb_cache_entry_is_hashed_ce_false[label="__mb_cache_entry_is_hashed_ce_false"];
+		goto_forget[label="goto_forget"];
+		mb_assert_list_empty_ce_e_lru_list[label="mb_assert_list_empty_ce_e_lru_list"];
+		list_add_tail_ce_e_lru_list_mb_cache_lru_list[label="list_add_tail_ce_e_lru_list_mb_cache_lru_list"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		return[label="return"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		__mb_cache_entry_forget_ce_GFP_KERNEL[label="__mb_cache_entry_forget_ce_GFP_KERNEL"];
+	}
+
+	subgraph cluster_mb_cache_shrink_fn{
+		label="static int mb_cache_shrink_fn(int nr_to_scan, unsigned int gfp_mask)";
+		LIST_HEAD_free_list[label="LIST_HEAD_free_list"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		list_for_each_l_mb_cache_list[label="list_for_each_l_mb_cache_list"];
+		set_cache_list_entry_l_struct_mb_cache_c_cache_list[label="set_cache_list_entry_l_struct_mb_cache_c_cache_list"];
+		count_self_add_atomic_read_cache_c_entry_count[label="count_self_add_atomic_read_cache_c_entry_count"];
+		nr_to_scan_eq_0[label="nr_to_scan_eq_0"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		goto_out[label="goto_out"];
+		nr_to_scan_dec_true_and_list_empty_mb_cache_lru_list_false[label="nr_to_scan_dec_true_and_list_empty_mb_cache_lru_list_false"];
+		set_ce_list_entry_mb_cache_lru_list_next_struct_mb_cache_entry_e_lru_list[label="set_ce_list_entry_mb_cache_lru_list_next_struct_mb_cache_entry_e_lru_list"];
+		list_move_tail_ce_e_lru_list_free_list[label="list_move_tail_ce_e_lru_list_free_list"];
+		__mb_cache_entry_unhash_ce[label="__mb_cache_entry_unhash_ce"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		list_for_each_safe_l_ltmp_free_list[label="list_for_each_safe_l_ltmp_free_list"];
+		__mb_cache_entry_forget_list_entry_l_struct_mb_cache_entry_e_lru_list_gfp_mask[label="__mb_cache_entry_forget_list_entry_l_struct_mb_cache_entry_e_lru_list_gfp_mask"];
+		return_count_div_100_multi_sysctl_vfs_cache_perssure[label="return_count_div_100_multi_sysctl_vfs_cache_perssure"];
+	}
+
+	subgraph cluster_mb_cache_create{
+		label="struct mb_cache * mb_cache_create(const char *name, struct mb_cache_op *cache_op, size_t entry_size, int indexes_count, int bucket_bits)";
+		set_bucket_count_1_buck_left_move_bucket_this[label="set_bucket_count_1_buck_left_move_bucket_this"];
+		entry_size_small_sizeof_strut_mb_cache_entry_add_indexes_count_multi_sizeof_struct_mb_cache_entry_0_e_indexes_0[label="entry_size_small_sizeof_strut_mb_cache_entry_add_indexes_count_multi_sizeof_struct_mb_cache_entry_0_e_indexes_0"];
+		return_NULL[label="return_NULL"];
+		set_cache_kmalloc[label="set_cache_kmalloc"];
+		cache_false[label="cache_false"];
+		goto_fail[label="goto_fail"];
+		set_cache_c_name_name[label="set_cache_c_name_name"];
+		clear_cache_c_op_free[label="clear_cache_c_op_free"];
+		cache_op_true[label="cache_op_true"];
+		set_cache_c_op_free_cache_op_free[label="set_cache_c_op_free_cache_op_free"];
+		atomic_set_cache_c_entry_count_0[label="atomic_set_cache_c_entry_count_0"];
+		set_cache_c_bucket_bits_bucket_bits[label="set_cache_c_bucket_bits_bucket_bits"];
+		MB_CACHE_INDEXES_COUNT[label="MB_CACHE_INDEXES_COUNT"];
+		set_mb_assert_indexes_count_eq_MB_CACHE_INDEXES_COUNT[label="set_mb_assert_indexes_count_eq_MB_CACHE_INDEXES_COUNT"];
+		set_cache_c_indexes_count_indexes_count[label="set_cache_c_indexes_count_indexes_count"];
+		set_count_c_block_hash_kmalloc[label="set_count_c_block_hash_kmalloc"];
+		cache_c_block_hash_false[label="cache_c_block_hash_false"];
+		goto_fail[label="goto_fail"];
+		for_n_bucket_count[label="for_n_bucket_count"];
+		INIT_LIST_HEAD_cache_c_block_hash_n[label="INIT_LIST_HEAD_cache_c_block_hash_n"];
+		for_m_indexes_count[label="for_m_indexes_count"];
+		set_cache_c_indexes_hash_m_kmalloc[label="set_cache_c_indexes_hash_m_kmalloc"];
+		cache_c_indexes_hash_m_false[label="cache_c_indexes_hash_m_false"];
+		goto_fail[label="goto_fail"];
+		for_n_bucket_count[label="for_n_bucket_count"];
+		INIT_LIST_HEAD_cache_c_indexes_hash_m_n[label="INIT_LIST_HEAD_cache_c_indexes_hash_m_n"];
+		set_cache_c_entry_cache_kmem_cache_create_name_entry_size_0_SLAB_RECLAIM_ACCOUNT_NULL_NULL[label="set_cache_c_entry_cache_kmem_cache_create_name_entry_size_0_SLAB_RECLAIM_ACCOUNT_NULL_NULL"];
+		cache_c_entry_cache_false[label="cache_c_entry_cache_false"];
+		goto_fail[label="goto_fail"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		list_add_cache_c_cache_list_mb_cache_list[label="list_add_cache_c_cache_list_mb_cache_list"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		return_cache[label="return_cache"];
+		cache_true[label="cache_true"];
+		dec_m_not_small_0[label="dec_m_not_small_0"];
+		kfree_cache_c_indexes_hash_m[label="kfree_cache_c_indexes_hash_m"];
+		cache_c_block_hash_true[label="cache_c_block_hash_true"];
+		kfree_cache_c_block_hash[label="kfree_cache_c_block_hash"];
+		kfree_cache[label="kfree_cache"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_mb_cache_shrink{
+		label="void mb_cache_shrink(struct mb_cache *cache, struct block_device *bdev)";
+		LIST_HEAD_free_list[label="LIST_HEAD_free_list"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		list_for_each_safe_l_ltmp_mb_cache_lru_list[label="list_for_each_safe_l_ltmp_mb_cache_lru_list"];
+		set_ce_list_entry_l_struct_mb_cache_entry_e_lru_list[label="set_ce_list_entry_l_struct_mb_cache_entry_e_lru_list"];
+		ce_e_bdev_eq_bdev[label="ce_e_bdev_eq_bdev"];
+		list_move_tail_ce_e_lru_list_free_list[label="list_move_tail_ce_e_lru_list_free_list"];
+		__mb_cache_entry_unhash_ce[label="__mb_cache_entry_unhash_ce"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		list_for_each_safe_l_ltmp_free_list[label="list_for_each_safe_l_ltmp_free_list"];
+		__mb_cache_entry_forget_list_entry_l_struct_mb_cache_entry_e_lru_list_GFP_KERNEL[label="__mb_cache_entry_forget_list_entry_l_struct_mb_cache_entry_e_lru_list_GFP_KERNEL"];
+	}
+
+	subgraph cluster_mb_cache_destroy{
+		label="void mb_cache_destroy(struct mb_cache *cache)";
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		list_for_each_safe_l_ltmp_mb_cache_lru_list[label="list_for_each_safe_l_ltmp_mb_cache_lru_list"];
+		set_ce_list_entry_l_struct_mb_cache_entry_e_lru_list[label="set_ce_list_entry_l_struct_mb_cache_entry_e_lru_list"];
+		ce_e_cache_eq_cache[label="ce_e_cache_eq_cache"];
+		list_move_tail_ce_e_lru_list_free_list[label="list_move_tail_ce_e_lru_list_free_list"];
+		__mb_cache_entry_unhash_ce[label="__mb_cache_entry_unhash_ce"];
+		list_del_cache_c_cache_list[label="list_del_cache_c_cache_list"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		list_for_each_safe_l_ltmp_free_list[label="list_for_each_safe_l_ltmp_free_list"];
+		__mb_cache_entry_forget_list_entry_l_struct_mb_cache_entry_e_lru_list_GFP_KERNEL[label="__mb_cache_entry_forget_list_entry_l_struct_mb_cache_entry_e_lru_list_GFP_KERNEL"];
+		atomic_read_cache_c_entry_count_great_0[label="atomic_read_cache_c_entry_count_great_0"];
+		mb_error[label="mb_error"];
+		kmem_cache_destroy_cache_c_entry_cache[label="kmem_cache_destroy_cache_c_entry_cache"];
+		for_n_mb_cache_indexes_cache[label="for_n_mb_cache_indexes_cache"];
+		kfree_cache_c_indexes_hash_n[label="kfree_cache_c_indexes_hash_n"];
+		kfree_cache_c_block_hash[label="kfree_cache_c_block_hash"];
+		kfree_cache[label="kfree_cache"];
+	}
+
+	subgraph cluster_mb_cache_entry_alloc{
+		label="struct mb_cache_entry *mb_cache_entry_alloc(struct mb_cache *cache)";
+		atomic_inc_cache_c_entry_count[label="atomic_inc_cache_c_entry_count"];
+		set_ce_kmem_cache_alloc_cache_c_entry_cache[label="set_ce_kmem_cache_alloc_cache_c_entry_cache"];
+		ce_true[label="ce_true"];
+		INIT_LIST_HEAD_ce_e_lru_list[label="INIT_LIST_HEAD_ce_e_lru_list"];
+		INIT_LIST_HEAD_ce_e_block_list[label="INIT_LIST_HEAD_ce_e_block_list"];
+		set_ce_e_cache_cache[label="set_ce_e_cache_cache"];
+		set_ce_e_used_1_add_MB_CACHE_WRITER[label="set_ce_e_used_1_add_MB_CACHE_WRITER"];
+		set_ce_e_queued_0[label="set_ce_e_queued_0"];
+		return_ce[label="return_ce"];
+	}
+
+	subgraph cluster_mb_cache_entry_insert{
+		label="int mb_cache_entry_insert(struct mb_cache_entry *ce, struct block_device *bdev, sector_t block, unsigned int keys[])";
+		set_cache_ce_e_cache[label="set_cache_ce_e_cache"];
+		set_bucket_hash_long_bdev_add_block_and_0xffffffff_cache_c_bucket_bits[label="set_bucket_hash_long_bdev_add_block_and_0xffffffff_cache_c_bucket_bits"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		list_for_each_prev_l_cache_c_block_hash_bucket[label="list_for_each_prev_l_cache_c_block_hash_bucket"];
+		set_ce_list_entry_l_struct_mb_cache_entry_e_block_list[label="set_ce_list_entry_l_struct_mb_cache_entry_e_block_list"];
+		ce_e_bdev_eq_bdev_and_ce_e_block_eq_block[label="ce_e_bdev_eq_bdev_and_ce_e_block_eq_block"];
+		goto_out[label="goto_out"];
+		__mb_cache_entry_unhash_ce[label="__mb_cache_entry_unhash_ce"];
+		set_ce_e_bdev_bdev[label="set_ce_e_bdev_bdev"];
+		set_ce_e_block_block[label="set_ce_e_block_block"];
+		list_add_ce_e_block_list_cache_c_block_hash_bucket[label="list_add_ce_e_block_list_cache_c_block_hash_bucket"];
+		for_n_mb_cache_indexes_cache[label="for_n_mb_cache_indexes_cache"];
+		set_ce_e_indexes_n_o_key_keys_n[label="set_ce_e_indexes_n_o_key_keys_n"];
+		set_bucket_hash_long_keys_n_cache_c_bucket_bits[label="set_bucket_hash_long_keys_n_cache_c_bucket_bits"];
+		list_add_ce_e_indexes_n_o_list_cache_c_indexes_hash_n_bucket[label="list_add_ce_e_indexes_n_o_list_cache_c_indexes_hash_n_bucket"];
+		set_error_0[label="set_error_0"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_mb_cache_entry_release{
+		label="void mb_cache_entry_release(struct mb_cache_entry *ce)";
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		__mb_cache_entry_release_unlock_ce[label="__mb_cache_entry_release_unlock_ce"];
+	}
+
+	subgraph cluster_mb_cache_entry_free{
+		label="void mb_cache_entry_free(struct mb_cache_entry *ce)";
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		mb_assert_list_empty_ce_e_lru_list[label="mb_assert_list_empty_ce_e_lru_list"];
+		__mb_cache_entry_unhash_ce[label="__mb_cache_entry_unhash_ce"];
+		__mb_cache_entry_release_unlock_ce[label="__mb_cache_entry_release_unlock_ce"];
+	}
+
+	subgraph cluster_mb_cache_entry_get{
+		label="struct mb_cache_entry *mb_cache_entry_get(struct mb_cache *cache, struct block_device *bdev,sector_t block)";
+		set_bucket_hash_long_bdev_add_block_and_0xffffffff_cache_c_bucket_bits[label="set_bucket_hash_long_bdev_add_block_and_0xffffffff_cache_c_bucket_bits"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		list_for_each_l_cache_c_block_hash_buchet[label="list_for_each_l_cache_c_block_hash_buchet"];
+		set_ce_list_entry_l_struct_mb_cache_entry_e_block_list[label="set_ce_list_entry_l_struct_mb_cache_entry_e_block_list"];
+		ce_e_bdev_eq_bdev_and_ce_e_block_eq_block[label="ce_e_bdev_eq_bdev_and_ce_e_block_eq_block"];
+		DEFINE_WAIT_wait[label="DEFINE_WAIT_wait"];
+		list_empty_ce_e_lru_list_false[label="list_empty_ce_e_lru_list_false"];
+		list_del_init_ce_e_lru_list[label="list_del_init_ce_e_lru_list"];
+		ce_e_used_great_0[label="ce_e_used_great_0"];
+		inc_ce_e_queued[label="inc_ce_e_queued"];
+		prepare_to_wait_mb_cache_queue_wait_TASK_UNINTERRUPTIBLE[label="prepare_to_wait_mb_cache_queue_wait_TASK_UNINTERRUPTIBLE"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		schedule[label="schedule"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		dec_ce_e_queued[label="dec_ce_e_queued"];
+		finish_wait_mb_cache_queue_wait[label="finish_wait_mb_cache_queue_wait"];
+		ce_e_used_self_add_1_add_MB_CACHE_WRITER[label="ce_e_used_self_add_1_add_MB_CACHE_WRITER"];
+		__mb_cache_entry_is_hashed_ce_false[label="__mb_cache_entry_is_hashed_ce_false"];
+		__mb_cache_entry_release_unlock_c[label="__mb_cache_entry_release_unlock_c"];
+		return_NULL[label="return_NULL"];
+		goto_cleanup[label="goto_cleanup"];
+		clear_ce[label="clear_ce"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		return_ce[label="return_ce"];
+	}
+
+	subgraph cluster___mb_cache_entry_find{
+		label="static struct mb_cache_entry *__mb_cache_entry_find(struct list_head *l, struct list_head *head, int index, struct block_device *bdev, unsigned int key)";
+		l_not_eq_head[label="l_not_eq_head"];
+		set_ce_list_entry_l_struct_mb_cache_entry_e_indexes_index_o_list[label="set_ce_list_entry_l_struct_mb_cache_entry_e_indexes_index_o_list"];
+		ce_e_bdev_eq_bdev_and_ce_e_indexes_index_o_key_eq_key[label="ce_e_bdev_eq_bdev_and_ce_e_indexes_index_o_key_eq_key"];
+		DEFINE_WAIT_wait[label="DEFINE_WAIT_wait"];
+		list_empty_ce_e_lru_list_false[label="list_empty_ce_e_lru_list_false"];
+		list_del_init_ce_e_lru_list[label="list_del_init_ce_e_lru_list"];
+		inc_ce_e_used[label="inc_ce_e_used"];
+		ce_e_used_not_small_MB_CACHE_WRITER[label="ce_e_used_not_small_MB_CACHE_WRITER"];
+		inc_ce_e_queued[label="inc_ce_e_queued"];
+		prepare_to_wait_mb_cache_queue_wait_TASK_UNINTERRUPTIBLE[label="prepare_to_wait_mb_cache_queue_wait_TASK_UNINTERRUPTIBLE"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		schedule[label="schedule"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		dec_ce_e_queued[label="dec_ce_e_queued"];
+		finish_wait_mb_cache_queue_wait[label="finish_wait_mb_cache_queue_wait"];
+		__mb_cache_entry_is_hashed_ce_false[label="__mb_cache_entry_is_hashed_ce_false"];
+		__mb_cache_entry_release_unlock_ce[label="__mb_cache_entry_release_unlock_ce"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		return_ERR_PTR_EAGAIN[label="return_ERR_PTR_EAGAIN"];
+		return_ce[label="return_ce"];
+		set_l_l_next[label="set_l_l_next"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_mb_cache_entry_find_first{
+		label="struct mb_cache_entry *mb_cache_entry_find_first(struct mb_cache *cache, int index,struct block_device *bdev, unsigned int key)";
+		set_bucket_hash_long_key_cache_c_bucket_bits[label="set_bucket_hash_long_key_cache_c_bucket_bits"];
+		mb_assert_index_small_mb_cache_indexes_cache[label="mb_assert_index_small_mb_cache_indexes_cache"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		set_l_cache_c_indexes_hash_index_bucket_next[label="set_l_cache_c_indexes_hash_index_bucket_next"];
+		set_ce___mb_cache_entry_find_l_cache_c_indexes_hash_index_bucket_index_bdev_key[label="set_ce___mb_cache_entry_find_l_cache_c_indexes_hash_index_bucket_index_bdev_key"];
+		unlock_mb_cache_spinlock[label="unlock_mb_cache_spinlock"];
+		return_ce[label="return_ce"];
+	}
+
+	subgraph cluster_mb_cache_entry_find_next{
+		label="struct mb_cache_entry *mb_cache_entry_find_next(struct mb_cache_entry *prev, int index,struct block_device *bdev, unsigned int key)";
+		set_cache_prev_e_cache[label="set_cache_prev_e_cache"];
+		set_bucket_hash_long_key_cache_c_bucket_bits[label="set_bucket_hash_long_key_cache_c_bucket_bits"];
+		mb_assert_index_small_mb_cache_indexes_cache[label="mb_assert_index_small_mb_cache_indexes_cache"];
+		lock_mb_cache_spinlock[label="lock_mb_cache_spinlock"];
+		set_l_prev_e_indexes_index_o_list_next[label="set_l_prev_e_indexes_index_o_list_next"];
+		set_ce___mb_cache_entry_find_l_cache_c_indexes_hash_index_bucket_index_bdev_key[label="set_ce___mb_cache_entry_find_l_cache_c_indexes_hash_index_bucket_index_bdev_key"];
+		__mb_cache_entry_release_unlock_prev[label="__mb_cache_entry_release_unlock_prev"];
+	}
+
+	subgraph cluster_init_mbcache{
+		label="static int __init init_mbcache(void)";
+		set_mb_shrinker_set_shrinker_DEFAULT_SEEKS_mb_cache_shrink_fn[label="set_mb_shrinker_set_shrinker_DEFAULT_SEEKS_mb_cache_shrink_fn"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_exit_mbcache{
+		label="static void __exit exit_mbcache(void)";
+		remove_shrinker_mb_shrinker[label="remove_shrinker_mb_shrinker"];
+	}
+}

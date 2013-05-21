@@ -1,0 +1,470 @@
+digraph pipe_c{
+	subgraph cluster_pipe_wait{
+		label="void pipe_wait(struct inode * inode)";
+		DEFINE_WAIT_wait[label="DEFINE_WAIT_wait"];
+		prepare_to_wait_PIPE_WAIT_inode_wait_TASK_INTERRUPTIBLE[label="prepare_to_wait_PIPE_WAIT_inode_wait_TASK_INTERRUPTIBLE"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		schedule[label="schedule"];
+		finish_wait_PIPE_WAIT_inode_wait[label="finish_wait_PIPE_WAIT_inode_wait"];
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+	}
+
+	subgraph cluster_pipe_iov_copy_from_user{
+		label="static inline int pipe_iov_copy_from_user(void *to, struct iovec *iov, unsigned long len)";
+		len_great_0[label="len_great_0"];
+		iov_iov_len_false[label="iov_iov_len_false"];
+		inc_iov[label="inc_iov"];
+		set_copy_min_t_unsigned_long_len_iov_iov_len[label="set_copy_min_t_unsigned_long_len_iov_iov_len"];
+		return_EFAULT[label="return_EFAULT"];
+		to_self_add_copy[label="to_self_add_copy"];
+		len_self_sub_copy[label="len_self_sub_copy"];
+		iov_iov_base_self_add_copy[label="iov_iov_base_self_add_copy"];
+		iov_iov_len_self_sub_copy[label="iov_iov_len_self_sub_copy"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pipe_iov_copy_to_user{
+		label="static inline int pipe_iov_copy_to_user(struct iovec *iov, const void *from, unsigned long len)";
+		len_great_0[label="len_great_0"];
+		iov_iov_len_false[label="iov_iov_len_false"];
+		inc_iov[label="inc_iov"];
+		set_copy_min_t_unsigned_long_len_iov_iov_len[label="set_copy_min_t_unsigned_long_len_iov_iov_len"];
+		copy_to_user_iov_iov_base_from_copy[label="copy_to_user_iov_iov_base_from_copy"];
+		from_self_add_copy[label="from_self_add_copy"];
+		len_self_sub_copy[label="len_self_sub_copy"];
+		iov_iov_base_self_add_copy[label="iov_iov_base_self_add_copy"];
+		iov_vio_len_self_sub_copy[label="iov_vio_len_self_sub_copy"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_anon_pipe_buf_release{
+		label="static void anon_pipe_buf_release(struct pipe_inode_info *info, struct pipe_buffer *buf)";
+		set_page_buf_page[label="set_page_buf_page"];
+		info_tmp_page_true[label="info_tmp_page_true"];
+		__free_page_page[label="__free_page_page"];
+		return[label="return"];
+		set_info_tmp_page_page[label="set_info_tmp_page_page"];
+	}
+
+	subgraph cluster_*anon_pipe_buf_map{
+		label="static void *anon_pipe_buf_map(struct file *file, struct pipe_inode_info *info, struct pipe_buffer *buf)";
+		return_kmap_buf_page[label="return_kmap_buf_page"];
+	}
+
+	subgraph cluster_anon_pipe_buf_unmap{
+		label="static void anon_pipe_buf_unmap(struct pipe_inode_info *info, struct pipe_buffer *buf)";
+		kunmap_buf_page[label="kunmap_buf_page"];
+	}
+
+	subgraph cluster_pipe_readv{
+		label="static ssize_t pipe_readv(struct file *filp, const struct iovec *_iov,unsigned long nr_segs, loff_t *ppos)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		set_iov__iov[label="set_iov__iov"];
+		set_total_len_iov_length_iov_nr_segs[label="set_total_len_iov_length_iov_nr_segs"];
+		total_len_eq_0[label="total_len_eq_0"];
+		return_0[label="return_0"];
+		set_do_wakeup_0[label="set_do_wakeup_0"];
+		set_ret_0[label="set_ret_0"];
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		set_info_inode_i_pipe[label="set_info_inode_i_pipe"];
+		dead_for[label="dead_for"];
+		set_bufs_info_nrbufs[label="set_bufs_info_nrbufs"];
+		bufs_true[label="bufs_true"];
+		set_curbuf_info_curbuf[label="set_curbuf_info_curbuf"];
+		set_buf_info_bufs_add_curbuf[label="set_buf_info_bufs_add_curbuf"];
+		set_ops_buf_ops[label="set_ops_buf_ops"];
+		set_chars_buf_len[label="set_chars_buf_len"];
+		chars_great_total_len[label="chars_great_total_len"];
+		set_chars_total_len[label="set_chars_total_len"];
+		set_addr_ops_map_filp_info_buf[label="set_addr_ops_map_filp_info_buf"];
+		set_error_pipe_iov_copy_to_user_iov_addr_add_buf_offset_chars[label="set_error_pipe_iov_copy_to_user_iov_addr_add_buf_offset_chars"];
+		ops_unmap_info_buf[label="ops_unmap_info_buf"];
+		error_true[label="error_true"];
+		ret_false_set_ret_EFAULT[label="ret_false_set_ret_EFAULT"];
+		ret_self_add_chars[label="ret_self_add_chars"];
+		buf_offset_self_add_chars[label="buf_offset_self_add_chars"];
+		buf_len_self_sub_chars[label="buf_len_self_sub_chars"];
+		buf_len_false[label="buf_len_false"];
+		clear_buf_ops[label="clear_buf_ops"];
+		ops_release_info_buf[label="ops_release_info_buf"];
+		set_curbuf_curbuf_add_1_and_PIPE_BUFFERS_sub_1[label="set_curbuf_curbuf_add_1_and_PIPE_BUFFERS_sub_1"];
+		set_info_curbuf_curbuf[label="set_info_curbuf_curbuf"];
+		set_info_nrbufs_dec_bufs[label="set_info_nrbufs_dec_bufs"];
+		set_do_wakeup_1[label="set_do_wakeup_1"];
+		total_len_self_sub_chars[label="total_len_self_sub_chars"];
+		total_len_false[label="total_len_false"];
+		bufs_true[label="bufs_true"];
+		PIPE_WRITERS_inode_false[label="PIPE_WRITERS_inode_false"];
+		PIPE_WAITING_WRITERS_inode_false[label="PIPE_WAITING_WRITERS_inode_false"];
+		ret_true[label="ret_true"];
+		filp_f_flags_O_NONBLOCK_set[label="filp_f_flags_O_NONBLOCK_set"];
+		set_ret_EAGAIN[label="set_ret_EAGAIN"];
+		signal_pending_current_true[label="signal_pending_current_true"];
+		ret_false[label="ret_false"];
+		set_ret_ERESTARTSYS[label="set_ret_ERESTARTSYS"];
+		do_wakeup_true[label="do_wakeup_true"];
+		wake_up_interruptible_sync_PIPE_WAIT_inode[label="wake_up_interruptible_sync_PIPE_WAIT_inode"];
+		kill_fasync_PIPE_FASYNC_WRITERS_inode_SIGIO_POLL_OUT[label="kill_fasync_PIPE_FASYNC_WRITERS_inode_SIGIO_POLL_OUT"];
+		pipe_wait_inode[label="pipe_wait_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		do_wakeup_true[label="do_wakeup_true"];
+		wake_up_interruptible_PIPE_WAIT_inode[label="wake_up_interruptible_PIPE_WAIT_inode"];
+		kill_fasync_PIPE_FASYNC_WRITERS_inode_SIGIO_POLL_OUT[label="kill_fasync_PIPE_FASYNC_WRITERS_inode_SIGIO_POLL_OUT"];
+		ret_great_0[label="ret_great_0"];
+		file_accessed_filp[label="file_accessed_filp"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_pipe_read{
+		label="static ssize_t pipe_read(struct file *filp, char __user *buf, size_t count, loff_t *ppos)";
+		set_iov_iov_base_buf_iov_len_count[label="set_iov_iov_base_buf_iov_len_count"];
+		return_pipe_readv_filp_iov_1_ppos[label="return_pipe_readv_filp_iov_1_ppos"];
+	}
+
+	subgraph cluster_pipe_writev{
+		label="static ssize_t pipe_writev(struct file *filp, const struct iovec *_iov, unsigned long nr_segs, loff_t *ppos)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		set_iov__iov[label="set_iov__iov"];
+		set_total_len_iov_length_iov_nr_segs[label="set_total_len_iov_length_iov_nr_segs"];
+		total_len_eq_0[label="total_len_eq_0"];
+		return_0[label="return_0"];
+		set_do_wakeup_0[label="set_do_wakeup_0"];
+		set_ret_0[label="set_ret_0"];
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		set_info_inode_i_pipe[label="set_info_inode_i_pipe"];
+		PIPE_READERS_inode_false[label="PIPE_READERS_inode_false"];
+		send_sig_SIGPIPE_current_[label="send_sig_SIGPIPE_current_"];
+		set_ret_EPIPE[label="set_ret_EPIPE"];
+		goto_out[label="goto_out"];
+		set_chars_total_len_and_PAGE_SIZE_sub_1[label="set_chars_total_len_and_PAGE_SIZE_sub_1"];
+		info_nrbufs_true_chars_not_eq_0[label="info_nrbufs_true_chars_not_eq_0"];
+		set_lastbuf_info_info_curbuf_add_info_nrbufs_sub_1_and_PIPE_BUFFERS_sub_1[label="set_lastbuf_info_info_curbuf_add_info_nrbufs_sub_1_and_PIPE_BUFFERS_sub_1"];
+		set_buf_info_bufs_add_lastbuf[label="set_buf_info_bufs_add_lastbuf"];
+		set_ops_buf_ops[label="set_ops_buf_ops"];
+		set_offset_buf_offset_add_buf_len[label="set_offset_buf_offset_add_buf_len"];
+		ops_can_merge_true_and_offset_add_chars_not_great_PAGE_SIZE[label="ops_can_merge_true_and_offset_add_chars_not_great_PAGE_SIZE"];
+		set_addr_ops_map_filp_info_buf[label="set_addr_ops_map_filp_info_buf"];
+		set_error_pipe_iov_copy_from_user_offset_add_addr_iov_chars[label="set_error_pipe_iov_copy_from_user_offset_add_addr_iov_chars"];
+		ops_unmap_info_buf[label="ops_unmap_info_buf"];
+		set_ret_error[label="set_ret_error"];
+		set_do_wakeup_1[label="set_do_wakeup_1"];
+		error_true[label="error_true"];
+		goto_out[label="goto_out"];
+		buf_len_self_add_chars[label="buf_len_self_add_chars"];
+		total_len_self_sub_chars[label="total_len_self_sub_chars"];
+		set_ret_chars[label="set_ret_chars"];
+		total_len_false[label="total_len_false"];
+		goto_out[label="goto_out"];
+		dead_for[label="dead_for"];
+		PIPE_READERS_inode_false[label="PIPE_READERS_inode_false"];
+		send_sig_SIGPIPE_current_0[label="send_sig_SIGPIPE_current_0"];
+		ret_false[label="ret_false"];
+		set_ret_EPIPE[label="set_ret_EPIPE"];
+		set_bufs_info_nrbufs[label="set_bufs_info_nrbufs"];
+		bufs_small_PIPE_BUFFERS[label="bufs_small_PIPE_BUFFERS"];
+		set_newbuf_info_curbuf_add_bufs_and_PIPE_BUFFERS_sub_1[label="set_newbuf_info_curbuf_add_bufs_and_PIPE_BUFFERS_sub_1"];
+		set_buf_info_bufs_add_newbuf[label="set_buf_info_bufs_add_newbuf"];
+		set_page_info_tmp_page[label="set_page_info_tmp_page"];
+		page_false[label="page_false"];
+		set_page_alloc_page_GFP_HIGHUSER[label="set_page_alloc_page_GFP_HIGHUSER"];
+		page_false[label="page_false"];
+		set_ret_ret_or_ENOMEM_decide_ret[label="set_ret_ret_or_ENOMEM_decide_ret"];
+		set_info_tmp_page_page[label="set_info_tmp_page_page"];
+		set_do_wakeup_1[label="set_do_wakeup_1"];
+		set_chars_PAGE_SIZE[label="set_chars_PAGE_SIZE"];
+		chars_great_total_len[label="chars_great_total_len"];
+		set_chars_total_len[label="set_chars_total_len"];
+		set_error_pipe_iov_copy_from_user_kmap_page_iov_chars[label="set_error_pipe_iov_copy_from_user_kmap_page_iov_chars"];
+		kunmap_page[label="kunmap_page"];
+		error_true[label="error_true"];
+		ret_false[label="ret_false"];
+		set_ret_EFAULT[label="set_ret_EFAULT"];
+		ret_self_add_chars[label="ret_self_add_chars"];
+		set_buf_page_page[label="set_buf_page_page"];
+		set_buf_ops_anon_pipe_buf_ops[label="set_buf_ops_anon_pipe_buf_ops"];
+		set_buf_offset_0[label="set_buf_offset_0"];
+		set_buf_len_chars[label="set_buf_len_chars"];
+		set_info_nrbufs_inc_bufs[label="set_info_nrbufs_inc_bufs"];
+		clear_info_tmp_page[label="clear_info_tmp_page"];
+		total_len_self_sub_chars[label="total_len_self_sub_chars"];
+		total_len_false[label="total_len_false"];
+		bufs_small_PIPE_BUFFERS[label="bufs_small_PIPE_BUFFERS"];
+		filp_f_flags_O_NONBLOCK_set[label="filp_f_flags_O_NONBLOCK_set"];
+		ret_false[label="ret_false"];
+		set_ret_EAGAIN[label="set_ret_EAGAIN"];
+		signal_pending_current_true[label="signal_pending_current_true"];
+		ret_false[label="ret_false"];
+		set_ret_ERESTARTSYS[label="set_ret_ERESTARTSYS"];
+		do_wakeup_true[label="do_wakeup_true"];
+		wake_up_interruptible_sync_PIPE_WAIT_inode[label="wake_up_interruptible_sync_PIPE_WAIT_inode"];
+		kill_fasync_PIPE_FASYNC_READERS_inode_SIGIO_POLL_IN[label="kill_fasync_PIPE_FASYNC_READERS_inode_SIGIO_POLL_IN"];
+		set_do_wakeup_0[label="set_do_wakeup_0"];
+		inc_PIPE_WAITING_WRITERS_inode[label="inc_PIPE_WAITING_WRITERS_inode"];
+		pipe_wait_inode[label="pipe_wait_inode"];
+		dec_PIPE_WAITING_WRITERS_inode[label="dec_PIPE_WAITING_WRITERS_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		do_wakeup_true[label="do_wakeup_true"];
+		wake_up_interruptible_PIPE_WAIT_inode[label="wake_up_interruptible_PIPE_WAIT_inode"];
+		kill_fasync_PIPE_FASYNC_READERS_inode_SIGIO_POLL_IN[label="kill_fasync_PIPE_FASYNC_READERS_inode_SIGIO_POLL_IN"];
+		ret_small_0[label="ret_small_0"];
+		inode_update_time_inode_1[label="inode_update_time_inode_1"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_pipe_write{
+		label="static ssize_t pipe_write(struct file *filp, const char __user *buf, size_t count, loff_t *ppos)";
+		set_iov_iov_base_buf_iov_len_count[label="set_iov_iov_base_buf_iov_len_count"];
+		return_pipe_writev_filp_iov_1_ppos[label="return_pipe_writev_filp_iov_1_ppos"];
+	}
+
+	subgraph cluster_pipe_ioctl{
+		label="static int pipe_ioctl(struct inode *pino, struct file *filp, unsigned int cmd, unsigned long arg)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		switch_cmd[label="switch_cmd"];
+		case_FIONREAD[label="case_FIONREAD"];
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		set_info_inode_i_pipe[label="set_info_inode_i_pipe"];
+		set_count_0[label="set_count_0"];
+		set_buf_info_curbuf[label="set_buf_info_curbuf"];
+		set_nrbuf_info_nrbufs[label="set_nrbuf_info_nrbufs"];
+		dec_nrbufs_not_small_0[label="dec_nrbufs_not_small_0"];
+		count_self_add_info_bufs_buf_len[label="count_self_add_info_bufs_buf_len"];
+		set_buf_buf_add_1_and_PIPE_BUFFERS_sub_1[label="set_buf_buf_add_1_and_PIPE_BUFFERS_sub_1"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		return_put_user_count_arg[label="return_put_user_count_arg"];
+		default_[label="default_"];
+		return_EINVAL[label="return_EINVAL"];
+	}
+
+	subgraph cluster_pipe_poll{
+		label="static unsigned int pipe_poll(struct file *filp, poll_table *wait)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		set_info_inode_i_pipe[label="set_info_inode_i_pipe"];
+		poll_wait_filp_PIPE_WAIT_inode_wait[label="poll_wait_filp_PIPE_WAIT_inode_wait"];
+		set_nrbuf_info_nr_bufs[label="set_nrbuf_info_nr_bufs"];
+		set_mask_0[label="set_mask_0"];
+		filp_f_mode_FMODE_READ_set[label="filp_f_mode_FMODE_READ_set"];
+		set_mask_POLLIN_POLLRDNORM_or_0_decide_nrbufs_great_0[label="set_mask_POLLIN_POLLRDNORM_or_0_decide_nrbufs_great_0"];
+		PIPE_WRITERS_inode_false_and_filp_f_version_not_eq_PIPE_WCOUNTER_inode[label="PIPE_WRITERS_inode_false_and_filp_f_version_not_eq_PIPE_WCOUNTER_inode"];
+		mask_self_or_POLLHUP[label="mask_self_or_POLLHUP"];
+		filp_fmode_FMODE_WRITE_set[label="filp_fmode_FMODE_WRITE_set"];
+		mask_self_or_POLLOUT_POOLWRNORM_or_0_decide_nrbufs_small_PIPE_BUFFERS[label="mask_self_or_POLLOUT_POOLWRNORM_or_0_decide_nrbufs_small_PIPE_BUFFERS"];
+		PIPE_READERS_inode_false[label="PIPE_READERS_inode_false"];
+		mask_self_or_POLLERR[label="mask_self_or_POLLERR"];
+		return_mask[label="return_mask"];
+	}
+
+	subgraph cluster_pipe_release{
+		label="static int pipe_release(struct inode *inode, int decr, int decw)";
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		PIPE_READERS_inode_self_sub_decr[label="PIPE_READERS_inode_self_sub_decr"];
+		PIPE_WRITERS_inode_self_sub_decw[label="PIPE_WRITERS_inode_self_sub_decw"];
+		PIPE_READERS_inode_false_and_PIPE_WRITERS_inode_false[label="PIPE_READERS_inode_false_and_PIPE_WRITERS_inode_false"];
+		free_pipe_info_inode[label="free_pipe_info_inode"];
+		wake_up_interruptible_PIPE_WAIT_inode[label="wake_up_interruptible_PIPE_WAIT_inode"];
+		kill_fasync_PIPE_FASYNC_READERS_inode_SIGIO_POLL_IN[label="kill_fasync_PIPE_FASYNC_READERS_inode_SIGIO_POLL_IN"];
+		kill_fasync_PIPE_FASYNC_WRITERS_inode_SIGIO_POLL_OUT[label="kill_fasync_PIPE_FASYNC_WRITERS_inode_SIGIO_POLL_OUT"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pipe_read_fasync{
+		label="static int pipe_read_fasync(int fd, struct file *filp, int on)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		set_retval_fasync_helper_fd_filp_on_PIPE_FASYNC_READERS_inode[label="set_retval_fasync_helper_fd_filp_on_PIPE_FASYNC_READERS_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		retval_small_0[label="retval_small_0"];
+		return_retval[label="return_retval"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pipe_write_fasync{
+		label="static int pipe_write_fasync(int fd, struct file *filp, int on)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		set_retval_fasync_helper_fd_filp_on_PIPE_FASYNC_WRITERS_inode[label="set_retval_fasync_helper_fd_filp_on_PIPE_FASYNC_WRITERS_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		retval_small_0[label="retval_small_0"];
+		return_retval[label="return_retval"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pipe_rdwr_fasync{
+		label="static int pipe_rdwr_fasync(int fd, struct file *filp, int on)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		set_retval_fasnc_helper_fd_filp_on_PIPE_FASYNC_READERS_inode[label="set_retval_fasnc_helper_fd_filp_on_PIPE_FASYNC_READERS_inode"];
+		retval_not_small_0[label="retval_not_small_0"];
+		set_retval_fasync_helper_fd_filp_on_PIPE_FASYNC_WRITERS_inode[label="set_retval_fasync_helper_fd_filp_on_PIPE_FASYNC_WRITERS_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		retval_small_0[label="retval_small_0"];
+		return_retval[label="return_retval"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pipe_read_release{
+		label="static int pipe_read_release(struct inode *inode, struct file *filp)";
+		pipe_read_fasync_neg1_filp_0[label="pipe_read_fasync_neg1_filp_0"];
+		return_pipe_release_inode_1_0[label="return_pipe_release_inode_1_0"];
+	}
+
+	subgraph cluster_pipe_write_release{
+		label="static int pipe_write_release(struct inode *inode, struct file *filp)";
+		pipe_write_fasync_neg1_filp_0[label="pipe_write_fasync_neg1_filp_0"];
+		return_pipe_release_inode_0_1[label="return_pipe_release_inode_0_1"];
+	}
+
+	subgraph cluster_pipe_rdwr_release{
+		label="static int pipe_rdwr_release(struct inode *inode, struct file *filp)";
+		pipe_rdwr_fasync_neg1_file_0[label="pipe_rdwr_fasync_neg1_file_0"];
+		set_decr_filp_f_mode_FMODE_READ_not_eq_0[label="set_decr_filp_f_mode_FMODE_READ_not_eq_0"];
+		set_decw_filp_f_mode_FMODE_WRITE_not_eq_0[label="set_decw_filp_f_mode_FMODE_WRITE_not_eq_0"];
+		return_pipe_release_inode_decr_decw[label="return_pipe_release_inode_decr_decw"];
+	}
+
+	subgraph cluster_pipe_read_open{
+		label="static int pipe_read_open(struct inode *inode, struct file *filp)";
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		inc_PIPE_READERS_inode[label="inc_PIPE_READERS_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pipe_write_open{
+		label="static int pipe_write_open(struct inode *inode, struct file *filp)";
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		inc_PIPE_WRITERS_inode[label="inc_PIPE_WRITERS_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_pipe_rdwr_open{
+		label="static int pipe_rdwr_open(struct inode *inode, struct file *filp)";
+		down_PIPE_SEM_inode[label="down_PIPE_SEM_inode"];
+		filp_f_mode_FMDOE_READ_set[label="filp_f_mode_FMDOE_READ_set"];
+		inc_PIPE_READERS_inode[label="inc_PIPE_READERS_inode"];
+		filp_f_mode_FMODE_WRITE_set[label="filp_f_mode_FMODE_WRITE_set"];
+		inc_PIPE_WRITERS_inode[label="inc_PIPE_WRITERS_inode"];
+		up_PIPE_SEM_inode[label="up_PIPE_SEM_inode"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_free_pipe_info{
+		label="void free_pipe_info(struct inode *inode)";
+		set_info_inode_i_pipe[label="set_info_inode_i_pipe"];
+		clear_inode_i_pipe[label="clear_inode_i_pipe"];
+		for_i_PIPE_BUFFERS[label="for_i_PIPE_BUFFERS"];
+		set_buf_info_bufs_add_i[label="set_buf_info_bufs_add_i"];
+		buf_ops_true[label="buf_ops_true"];
+		buf_ops_release_info_buf[label="buf_ops_release_info_buf"];
+		info_tmp_page_true[label="info_tmp_page_true"];
+		__free_page_info_tmp_page[label="__free_page_info_tmp_page"];
+		kfree_info[label="kfree_info"];
+	}
+
+	subgraph cluster_pipe_new{
+		label="struct inode* pipe_new(struct inode* inode)";
+		set_info_kmalloc[label="set_info_kmalloc"];
+		memset_info_0[label="memset_info_0"];
+		set_inode_i_pipe_info[label="set_inode_i_pipe_info"];
+		init_waitqueue_head_PIPE_WAIT_inode[label="init_waitqueue_head_PIPE_WAIT_inode"];
+		set_PIPE_RECOUNTER_inode_PIPE_WCOUNTER_inode_1[label="set_PIPE_RECOUNTER_inode_PIPE_WCOUNTER_inode_1"];
+		return_inode[label="return_inode"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_get_pipe_inode{
+		label="static struct inode * get_pipe_inode(void)";
+		set_inode_new_inode_pipe_mnt_mnt_sb[label="set_inode_new_inode_pipe_mnt_mnt_sb"];
+		inode_false[label="inode_false"];
+		goto_fail_inode[label="goto_fail_inode"];
+		pipe_new_inode_false[label="pipe_new_inode_false"];
+		goto_fail_iput[label="goto_fail_iput"];
+		set_PIPE_READERS_inode_PIPE_WRITERS_inode_1[label="set_PIPE_READERS_inode_PIPE_WRITERS_inode_1"];
+		set_inode_i_fop_rdwr_pipe_fops[label="set_inode_i_fop_rdwr_pipe_fops"];
+		set_inode_i_state_I_DIRTY[label="set_inode_i_state_I_DIRTY"];
+		set_inode_i_mode_S_IFIFO_S_IRUSR_S_IWUSR[label="set_inode_i_mode_S_IFIFO_S_IRUSR_S_IWUSR"];
+		set_inode_i_uid_current_fsuid[label="set_inode_i_uid_current_fsuid"];
+		set_inode_i_gid_current_fsgid[label="set_inode_i_gid_current_fsgid"];
+		set_inode_i_atime_inode_i_mtime_inode_i_ctime_CURRENT_TIME[label="set_inode_i_atime_inode_i_mtime_inode_i_ctime_CURRENT_TIME"];
+		set_inode_i_blksize_PAGE_SIZE[label="set_inode_i_blksize_PAGE_SIZE"];
+		return_inode[label="return_inode"];
+		iput_inode[label="iput_inode"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_do_pipe{
+		label="int do_pipe(int *fd)";
+		set_error_ENFILE[label="set_error_ENFILE"];
+		set_f1_get_empty_filp[label="set_f1_get_empty_filp"];
+		f1_false[label="f1_false"];
+		goto_no_files[label="goto_no_files"];
+		set_f2_get_empty_filp[label="set_f2_get_empty_filp"];
+		f2_false[label="f2_false"];
+		goto_close_f1[label="goto_close_f1"];
+		set_inode_get_pipe_inode[label="set_inode_get_pipe_inode"];
+		inode_false[label="inode_false"];
+		goto_close_f12[label="goto_close_f12"];
+		set_error_get_unused_fd[label="set_error_get_unused_fd"];
+		error_small_0[label="error_small_0"];
+		goto_close_f12_inode[label="goto_close_f12_inode"];
+		set_i_error[label="set_i_error"];
+		set_error_ENOMEM[label="set_error_ENOMEM"];
+		set_this_name_name[label="set_this_name_name"];
+		set_this_len_strlen_name[label="set_this_len_strlen_name"];
+		set_this_hash_inode_i_ino[label="set_this_hash_inode_i_ino"];
+		set_dentry_d_alloc_p;ipe_mnt_mnt_sb_s_root_this[label="ipe_mnt_mnt_sb_s_root_this"];
+		dentry_false[label="dentry_false"];
+		goto_close_f12_inode_i_j[label="goto_close_f12_inode_i_j"];
+		set_dentry_d_op_popefs_dentry_operations[label="set_dentry_d_op_popefs_dentry_operations"];
+		d_add_dentry_inode[label="d_add_dentry_inode"];
+		set_f1_f_vfsmnt_f2_f_vfsmnt_mntget_mntget_pipe_mnt[label="set_f1_f_vfsmnt_f2_f_vfsmnt_mntget_mntget_pipe_mnt"];
+		set_f1_f_dentry_f2_f_dentry_dget_dentry[label="set_f1_f_dentry_f2_f_dentry_dget_dentry"];
+		set_f1_f_mapping_f2_f_mapping_inode_i_mapping[label="set_f1_f_mapping_f2_f_mapping_inode_i_mapping"];
+		set_f1_f_pos_f2_f_pos_0[label="set_f1_f_pos_f2_f_pos_0"];
+		set_f1_f_flags_O_RDONLY[label="set_f1_f_flags_O_RDONLY"];
+		set_f1_f_op_read_pipe_fops[label="set_f1_f_op_read_pipe_fops"];
+		set_f1_f_mode_FMODE_READ[label="set_f1_f_mode_FMODE_READ"];
+		set_f1_f_version_0[label="set_f1_f_version_0"];
+		set_f2_f_flags_O_WRONLY[label="set_f2_f_flags_O_WRONLY"];
+		set_f2_f_op_write_pipe_fops[label="set_f2_f_op_write_pipe_fops"];
+		set_f2_f_mode_FMODE_WRITE[label="set_f2_f_mode_FMODE_WRITE"];
+		set_f2_f_version_0[label="set_f2_f_version_0"];
+		fd_install_i_f1[label="fd_install_i_f1"];
+		fd_instal_j_f2[label="fd_instal_j_f2"];
+		set_fd_0_i[label="set_fd_0_i"];
+		set_fd_1_j[label="set_fd_1_j"];
+		return_0[label="return_0"];
+		put_unused_fd_j[label="put_unused_fd_j"];
+		put_unused_fd_i[label="put_unused_fd_i"];
+		free_pipe_info_inode[label="free_pipe_info_inode"];
+		iput_inode[label="iput_inode"];
+		put_filp_f2[label="put_filp_f2"];
+		put_filp_f1[label="put_filp_f1"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_*pipefs_get_sb{
+		label="static struct super_block *pipefs_get_sb(struct file_system_type *fs_type,
+	int flags, const char *dev_name, void *data)";
+		return_get_sb_pseudo_fs_type_pipe_NULL_PIPEFS_MAGIC[label="return_get_sb_pseudo_fs_type_pipe_NULL_PIPEFS_MAGIC"];
+	}
+
+	subgraph cluster_init_pipe_fs{
+		label="static int __init init_pipe_fs(void)";
+		set_err_register_filesystem_pipe_fs_type[label="set_err_register_filesystem_pipe_fs_type"];
+		err_false[label="err_false"];
+		set_pipe_mnt_kern_mount_pipe_fs_type[label="set_pipe_mnt_kern_mount_pipe_fs_type"];
+		IS_ERR_pipe_mnt_true[label="IS_ERR_pipe_mnt_true"];
+		set_err_PTR_ERR_pipe_mnt[label="set_err_PTR_ERR_pipe_mnt"];
+		unregister_filesystem_pipe_fs_type[label="unregister_filesystem_pipe_fs_type"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_exit_pipe_fs{
+		label="static void __exit exit_pipe_fs(void)";
+		unregister_filesystem_pipe_fs_type[label="unregister_filesystem_pipe_fs_type"];
+		mntput_pipe_mnt[label="mntput_pipe_mnt"];
+	}
+}

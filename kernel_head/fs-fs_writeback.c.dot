@@ -1,0 +1,276 @@
+digraph fs_writeback_c{
+	subgraph cluster___mark_inode_dirty{
+		label="void __mark_inode_dirty(struct inode *inode, int flags)";
+		set_sb_inode_i_sb[label="set_sb_inode_i_sb"];
+		flags_I_DIRTY_SYNC_or_I_DIRTY_DATASYNC_set[label="flags_I_DIRTY_SYNC_or_I_DIRTY_DATASYNC_set"];
+		sb_s_op_dirty_inode_true[label="sb_s_op_dirty_inode_true"];
+		sb_s_op_dirty_inode_inode[label="sb_s_op_dirty_inode_inode"];
+		smp_sb[label="smp_sb"];
+		inode_i_state_and_flags_eq_flags[label="inode_i_state_and_flags_eq_flags"];
+		return[label="return"];
+		block_dump_true[label="block_dump_true"];
+		clear_dentry[label="clear_dentry"];
+		list_empty_inode_i_dentry_false[label="list_empty_inode_i_dentry_false"];
+		set_dentry_list_entry_inode_i_dentry_next_struct_dentry_d_alias[label="set_dentry_list_entry_inode_i_dentry_next_struct_dentry_d_alias"];
+		dentry_true_and_dentry_d_name_name_true[label="dentry_true_and_dentry_d_name_name_true"];
+		set_name_dentry_d_name_name[label="set_name_dentry_d_name_name"];
+		inode_i_ino_true_or_strcmp_inode_i_sb_s_id_bdev_true[label="inode_i_ino_true_or_strcmp_inode_i_sb_s_id_bdev_true"];
+		printk[label="printk"];
+		lock_inode_lock[label="lock_inode_lock"];
+		inode_i_state_and_flags_not_eq_flags[label="inode_i_state_and_flags_not_eq_flags"];
+		set_was_dirty_inode_i_state_I_DIRTY_set[label="set_was_dirty_inode_i_state_I_DIRTY_set"];
+		inode_i_state_self_or_flags[label="inode_i_state_self_or_flags"];
+		inode_i_state_I_LOCK_set[label="inode_i_state_I_LOCK_set"];
+		goto_out[label="goto_out"];
+		S_ISBLK_inode_i_mode_false[label="S_ISBLK_inode_i_mode_false"];
+		hlist_unhashed_inode_i_hash_true[label="hlist_unhashed_inode_i_hash_true"];
+		goto_out[label="goto_out"];
+		inode_i_state_I_FREEING_I_CLEAR_set[label="inode_i_state_I_FREEING_I_CLEAR_set"];
+		goto_out[label="goto_out"];
+		was_dirty_false[label="was_dirty_false"];
+		set_inode_dirtied_when_jiffies[label="set_inode_dirtied_when_jiffies"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+	}
+
+	subgraph cluster_write_inode{
+		label="static int write_inode(struct inode *inode, int sync)";
+		inode_i_sb_s_op_write_inode_true_and_is_bad_inode_inode_false[label="inode_i_sb_s_op_write_inode_true_and_is_bad_inode_inode_false"];
+		return_inode_i_sb_s_op_write_inode_inode_sync[label="return_inode_i_sb_s_op_write_inode_inode_sync"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster___sync_single_inode{
+		label="static int __sync_single_inode(struct inode *inode, struct writeback_control *wbc)";
+		set_mapping_inode_i_mapping[label="set_mapping_inode_i_mapping"];
+		set_sb_inode_i_sb[label="set_sb_inode_i_sb"];
+		set_wait_wbc_sync_mode_WB_SYNC_ALL[label="set_wait_wbc_sync_mode_WB_SYNC_ALL"];
+		set_dirty_inode_i_state_I_DIRTY_set[label="set_dirty_inode_i_state_I_DIRTY_set"];
+		inode_i_state_self_or_I_LOCK[label="inode_i_state_self_or_I_LOCK"];
+		inode_i_state_clear_I_DIRTY[label="inode_i_state_clear_I_DIRTY"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		set_ret_do_writepages_mapping_wbc[label="set_ret_do_writepages_mapping_wbc"];
+		dirty_I_DIRTY_SYNC_I_DIRTY_DATASYNC_set[label="dirty_I_DIRTY_SYNC_I_DIRTY_DATASYNC_set"];
+		set_err_write_inode_inode_wait[label="set_err_write_inode_inode_wait"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_err[label="set_ret_err"];
+		wait_true[label="wait_true"];
+		set_err_filemap_fdatawait_mapping[label="set_err_filemap_fdatawait_mapping"];
+		ret_eq_0[label="ret_eq_0"];
+		set_ret_err[label="set_ret_err"];
+		lock_inode_lock[label="lock_inode_lock"];
+		inode_i_state_clear_I_LOCK[label="inode_i_state_clear_I_LOCK"];
+		inode_i_state_I_FREEING_clear[label="inode_i_state_I_FREEING_clear"];
+		inode_i_state_I_DIRTY_clear_and_mapping_tagged_mapping_PAGECACHE_TAG_DIRTY_true[label="inode_i_state_I_DIRTY_clear_and_mapping_tagged_mapping_PAGECACHE_TAG_DIRTY_true"];
+		wbc_for_kupdate_true[label="wbc_for_kupdate_true"];
+		inode_i_state_self_or_I_DIRTY_PAGES[label="inode_i_state_self_or_I_DIRTY_PAGES"];
+		list_move_tail_inode_i_list_sb_s_dirty[label="list_move_tail_inode_i_list_sb_s_dirty"];
+		inode_i_state_self_or_I_DIRTY_PAGES[label="inode_i_state_self_or_I_DIRTY_PAGES"];
+		set_inode_dirtied_when_jiffies[label="set_inode_dirtied_when_jiffies"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		inode_i_state_I_DIRTY_set[label="inode_i_state_I_DIRTY_set"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		atomic_read_inode_i_count_true[label="atomic_read_inode_i_count_true"];
+		list_move_inode_i_list_inode_i_use[label="list_move_inode_i_list_inode_i_use"];
+		list_move_inode_i_list_inode_unused[label="list_move_inode_i_list_inode_unused"];
+		inc_inodes_stat_nr_unused[label="inc_inodes_stat_nr_unused"];
+		wake_up_inode_inode[label="wake_up_inode_inode"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster__single_inode{
+		label="static int __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)";
+		wbc_sync_mode_not_eq_WB_SYNC_ALL_and_inode_i_state_I_LOCK_set[label="wbc_sync_mode_not_eq_WB_SYNC_ALL_and_inode_i_state_I_LOCK_set"];
+		list_move_inode_i_list_inode_i_sb_s_dirty[label="list_move_inode_i_list_inode_i_sb_s_dirty"];
+		return_0[label="return_0"];
+		inode_i_state_I_LOCK_set[label="inode_i_state_I_LOCK_set"];
+		DEFINE_WAIT_BIT_wq_inode_i_state___I_LOCK[label="DEFINE_WAIT_BIT_wq_inode_i_state___I_LOCK"];
+		set_wqh_bit_waitqueue_inode_i_state___I_LOCK[label="set_wqh_bit_waitqueue_inode_i_state___I_LOCK"];
+		__iget_inode[label="__iget_inode"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		__wait_on_bit_wqh_wq_inode_wait_TASK_UNINTERRUPTIBLE[label="__wait_on_bit_wqh_wq_inode_wait_TASK_UNINTERRUPTIBLE"];
+		iput_inode[label="iput_inode"];
+		lock_inode_lock[label="lock_inode_lock"];
+		inode_i_state_I_LOCK_set[label="inode_i_state_I_LOCK_set"];
+		return___sync_single_inode_inode_wbc[label="return___sync_single_inode_inode_wbc"];
+	}
+
+	subgraph cluster_sync_sb_inodes{
+		label="static void sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)";
+		set_start_jiffies[label="set_start_jiffies"];
+		wbc_for_kupdate_false_or_list_empty_sb_s_io_true[label="wbc_for_kupdate_false_or_list_empty_sb_s_io_true"];
+		list_splice_init_sb_s_dirty_sb_s_io[label="list_splice_init_sb_s_dirty_sb_s_io"];
+		list_empty_sb_s_io_false[label="list_empty_sb_s_io_false"];
+		set_inode_list_entry_sb_s_io_prev_struct_inode_i_list[label="set_inode_list_entry_sb_s_io_prev_struct_inode_i_list"];
+		set_mapping_inode_i_mapping[label="set_mapping_inode_i_mapping"];
+		set_bdi_mapping_backing_dev_info[label="set_bdi_mapping_backing_dev_info"];
+		bdi_cap_writeback_dirty_bdi_false[label="bdi_cap_writeback_dirty_bdi_false"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		sb_eq_blockdev_superblock[label="sb_eq_blockdev_superblock"];
+		wbc_nonblocking_true_and_bdi_write_congested_bdi_true[label="wbc_nonblocking_true_and_bdi_write_congested_bdi_true"];
+		set_wbc_encountered_congestion_1[label="set_wbc_encountered_congestion_1"];
+		sb_not_eq_blockdev_superblock[label="sb_not_eq_blockdev_superblock"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		wbc_bdi_true_and_bdi_not_eq_wbc_bdi[label="wbc_bdi_true_and_bdi_not_eq_wbc_bdi"];
+		sb_not_eq_blockdev_superblock[label="sb_not_eq_blockdev_superblock"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		time_after_inode_dirtied_when_start_true[label="time_after_inode_dirtied_when_start_true"];
+		wbc_older_than_this_true_and_time_after_inode_dirtied_when_wbc_older_than_this_true[label="wbc_older_than_this_true_and_time_after_inode_dirtied_when_wbc_older_than_this_true"];
+		current_is_pdflush_true_and_writeback_acquire_bdi_false[label="current_is_pdflush_true_and_writeback_acquire_bdi_false"];
+		__iget_inode[label="__iget_inode"];
+		set_pages_skipped_wbc_pages_skipped[label="set_pages_skipped_wbc_pages_skipped"];
+		__writeback_single_inode_inode_wbc[label="__writeback_single_inode_inode_wbc"];
+		wbc_sync_mode_eq_WB_SYNC_HOLD[label="wbc_sync_mode_eq_WB_SYNC_HOLD"];
+		set_inode_dirtied_when_jiffies[label="set_inode_dirtied_when_jiffies"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		current_is_pdflush_true[label="current_is_pdflush_true"];
+		writeback_release_bdi[label="writeback_release_bdi"];
+		wbc_pages_skipped_not_eq_pages_skipped[label="wbc_pages_skipped_not_eq_pages_skipped"];
+		list_move_inode_i_list_sb_s_dirty[label="list_move_inode_i_list_sb_s_dirty"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		cond_resched[label="cond_resched"];
+		iput_inode[label="iput_inode"];
+		lock_inode_lock[label="lock_inode_lock"];
+		wbc_nr_to_write_not_great_0[label="wbc_nr_to_write_not_great_0"];
+		return[label="return"];
+	}
+
+	subgraph cluster_writeback_inodes{
+		label="void writeback_inodes(struct writeback_control *wbc)";
+		might_sleep[label="might_sleep"];
+		lock_sb_lock[label="lock_sb_lock"];
+		set_sb_sb_entry_super_blocks_prev[label="set_sb_sb_entry_super_blocks_prev"];
+		for_sb_not_eq_sb_entry_super_blocks_sb_entry_sb_s_list_prev[label="for_sb_not_eq_sb_entry_super_blocks_sb_entry_sb_s_list_prev"];
+		list_empty_sb_s_dirty_false_or_list_empty_sb_s_io_false[label="list_empty_sb_s_dirty_false_or_list_empty_sb_s_io_false"];
+		inc_sb_s_count[label="inc_sb_s_count"];
+		unlock_sb_lock[label="unlock_sb_lock"];
+		down_read_trylock_sb_s_umount_true[label="down_read_trylock_sb_s_umount_true"];
+		sb_s_root_true[label="sb_s_root_true"];
+		lock_inode_lock[label="lock_inode_lock"];
+		sync_sb_inodes_sb_wbc[label="sync_sb_inodes_sb_wbc"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		up_read_sb_s_umount[label="up_read_sb_s_umount"];
+		lock_sb_lock[label="lock_sb_lock"];
+		__put_super_and_need_restart_sb_true[label="__put_super_and_need_restart_sb_true"];
+		goto_restart[label="goto_restart"];
+		wbc_nr_to_write_not_great_0[label="wbc_nr_to_write_not_great_0"];
+		unlock_sb_lock[label="unlock_sb_lock"];
+	}
+
+	subgraph cluster_sync_inodes_sb{
+		label="void sync_inodes_sb(struct super_block *sb, int wait)";
+		set_wbc_sync_mode_WB_SYNC_ALL_or_WB_SYNC_HOLD_decide_wait[label="set_wbc_sync_mode_WB_SYNC_ALL_or_WB_SYNC_HOLD_decide_wait"];
+		set_nr_dirty_read_page_state_nr_dirty[label="set_nr_dirty_read_page_state_nr_dirty"];
+		set_nr_unstable_read_page_state_nr_unstable[label="set_nr_unstable_read_page_state_nr_unstable"];
+		set_wbc_nr_to_write_nr_dirty_add_nr_unstable_add_inodes_stat_nr_inodes_sub_inodes_stat_nr_unused_add_nr_dirty_add_nr_unstable[label="set_wbc_nr_to_write_nr_dirty_add_nr_unstable_add_inodes_stat_nr_inodes_sub_inodes_stat_nr_unused_add_nr_dirty_add_nr_unstable"];
+		wbc_nr_to_write_self_add_wbc_nr_to_write_div_2[label="wbc_nr_to_write_self_add_wbc_nr_to_write_div_2"];
+		lock_inode_lock[label="lock_inode_lock"];
+		sync_sb_inodes_sb_wbc[label="sync_sb_inodes_sb_wbc"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+	}
+
+	subgraph cluster_set_sb_syncing{
+		label="static void set_sb_syncing(int val)";
+		lock_sb_lock[label="lock_sb_lock"];
+		set_sb_sb_entry_super_blocks_prev[label="set_sb_sb_entry_super_blocks_prev"];
+		for_sb_not_eq_sb_entry_super_block_sb_entry_sb_s_list_prev[label="for_sb_not_eq_sb_entry_super_block_sb_entry_sb_s_list_prev"];
+		set_sb_s_syncing_val[label="set_sb_s_syncing_val"];
+		unlock_sb_lock[label="unlock_sb_lock"];
+	}
+
+	subgraph cluster_*get_super_to_sync{
+		label="static struct super_block *get_super_to_sync(void)";
+		lock_sb_lock[label="lock_sb_lock"];
+		set_sb_sb_entry_super_blocks_prev[label="set_sb_sb_entry_super_blocks_prev"];
+		for_sb_sb_entry_super_blocks_sb_entry_sb_s_list_prev[label="for_sb_sb_entry_super_blocks_sb_entry_sb_s_list_prev"];
+		sb_s_syncing_true[label="sb_s_syncing_true"];
+		set_sb_s_syncing_1[label="set_sb_s_syncing_1"];
+		inc_sb_s_count[label="inc_sb_s_count"];
+		unlock_sb_lock[label="unlock_sb_lock"];
+		down_read_sb_s_umount[label="down_read_sb_s_umount"];
+		sb_s_root_false[label="sb_s_root_false"];
+		drop_super_sb[label="drop_super_sb"];
+		goto_restart[label="goto_restart"];
+		return_sb[label="return_sb"];
+		unlock_sb_lock[label="unlock_sb_lock"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_sync_inodes{
+		label="void sync_inodes(int wait)";
+		set_sb_syncing_0[label="set_sb_syncing_0"];
+		set_sb_get_super_to_sync_not_eq_NULL[label="set_sb_get_super_to_sync_not_eq_NULL"];
+		sync_inodes_sb_sb_0[label="sync_inodes_sb_sb_0"];
+		sync_blockdev_sb_s_bdev[label="sync_blockdev_sb_s_bdev"];
+		drop_super_sb[label="drop_super_sb"];
+		wait_true[label="wait_true"];
+		set_sb_syncing_0[label="set_sb_syncing_0"];
+		set_sb_get_super_to_sync_not_eq_NULL[label="set_sb_get_super_to_sync_not_eq_NULL"];
+		sync_inodes_sb_sb_1[label="sync_inodes_sb_sb_1"];
+		sync_blockdev_sb_s_bdev[label="sync_blockdev_sb_s_bdev"];
+		drop_super_sb[label="drop_super_sb"];
+	}
+
+	subgraph cluster_write_inode_now{
+		label="int write_inode_now(struct inode *inode, int sync)";
+		set_wbc_nr_to_write_LONG_MAX_sync_mode_WB_SYNC_ALL[label="set_wbc_nr_to_write_LONG_MAX_sync_mode_WB_SYNC_ALL"];
+		mapping_cap_writeback_dirty_inode_i_mapping_false[label="mapping_cap_writeback_dirty_inode_i_mapping_false"];
+		return_0[label="return_0"];
+		might_sleep[label="might_sleep"];
+		lock_inode_lock[label="lock_inode_lock"];
+		set_ret___writeback_single_inode_inode_wbc[label="set_ret___writeback_single_inode_inode_wbc"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		sync_true[label="sync_true"];
+		wait_on_inode_iode[label="wait_on_inode_iode"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_sync_inode{
+		label="int sync_inode(struct inode *inode, struct writeback_control *wbc)";
+		lock_inode_lock[label="lock_inode_lock"];
+		set_ret___writeback_single_inode_inode_wbc[label="set_ret___writeback_single_inode_inode_wbc"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_generic_osync_inode{
+		label="int generic_osync_inode(struct inode *inode, struct address_space *mapping, int what)";
+		current_flags_self_or_PF_SYNCWRITE[label="current_flags_self_or_PF_SYNCWRITE"];
+		what_OSYNC_DATA_set[label="what_OSYNC_DATA_set"];
+		set_err_filemap_fdatawrite_mapping[label="set_err_filemap_fdatawrite_mapping"];
+		what_OSYNC_METADATA_or_OSYNC_DATA_set[label="what_OSYNC_METADATA_or_OSYNC_DATA_set"];
+		set_err2_sync_mapping_buffers_mapping[label="set_err2_sync_mapping_buffers_mapping"];
+		err_false[label="err_false"];
+		set_err_err2[label="set_err_err2"];
+		what_OSYNC_DATA_set[label="what_OSYNC_DATA_set"];
+		set_err2_filemap_fdatawait_mapping[label="set_err2_filemap_fdatawait_mapping"];
+		err_false[label="err_false"];
+		set_err_err2[label="set_err_err2"];
+		current_flags_clear_PF_SYNCWRITE[label="current_flags_clear_PF_SYNCWRITE"];
+		lock_inode_lock[label="lock_inode_lock"];
+		inode_i_state_I_DIRTY_set_and_what_OSYNC_INODE_set_or_inode_i_state_I_DIRTY_DATASYNC_set[label="inode_i_state_I_DIRTY_set_and_what_OSYNC_INODE_set_or_inode_i_state_I_DIRTY_DATASYNC_set"];
+		set_need_write_inode_now_1[label="set_need_write_inode_now_1"];
+		unlock_inode_lock[label="unlock_inode_lock"];
+		need_write_inode_now_true[label="need_write_inode_now_true"];
+		set_err2_write_inode_now_inode_1[label="set_err2_write_inode_now_inode_1"];
+		err_false[label="err_false"];
+		set_err_err2[label="set_err_err2"];
+		wait_on_inode_inode[label="wait_on_inode_inode"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_writeback_acquire{
+		label="int writeback_acquire(struct backing_dev_info *bdi)";
+		return_test_and_set_bit_BDI_pdflush_bdi_state[label="return_test_and_set_bit_BDI_pdflush_bdi_state"];
+	}
+
+	subgraph cluster_writeback_in_progress{
+		label="int writeback_in_progress(struct backing_dev_info *bdi)";
+		return_test_bit_BDI_pdflush_bdi_state[label="return_test_bit_BDI_pdflush_bdi_state"];
+	}
+
+	subgraph cluster_writeback_release{
+		label="void writeback_release(struct backing_dev_info *bdi)";
+		clear_bit_BDI_pdflush_bdi_state[label="clear_bit_BDI_pdflush_bdi_state"];
+	}
+}
