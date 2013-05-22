@@ -93,6 +93,215 @@ digraph select_c{
 		set_rinp_fds_res_in[label="set_rinp_fds_res_in"];
 		set_routp_fd_res_out[label="set_routp_fd_res_out"];
 		set_rexp_fds_res_ex[label="set_rexp_fds_res_ex"];
-		
+                for_i_n[label="for_i_n"];
+                set_bit_1[label="set_bit_1"];
+                set_res_in_0[label="set_res_in_0"];
+                set_res_out_0[label="set_res_out_0"];
+                set_res_ex_0[label="set_res_ex_0"];
+                clear_f_op[label="clear_f_op"];
+                clear_file[label="clear_file"];
+                set_in_inp_inc[label="set_in_inp_inc"];
+                set_out_outp_inc[label="set_out_outp_inc"];
+                set_ex_exp_inc[label="set_ex_exp_inc"];
+                set_all_bits_in_or_out_or_ex[label="set_all_bits_in_or_out_or_ex"];
+                all_bits_eq_0[label="all_bits_eq_0"];
+                i_self_add___NFDBITS[label="i_self_add___NFDBITS"];
+                for_j___NFDBITS[label="for_j___NFDBITS"];
+                i_not_small_n[label="i_not_small_n"];
+                bit_and_all_bits_false[label="bit_and_all_bits_false"];
+                set_file_fget_i[label="set_file_fget_i"];
+                file_true[label="file_true"];
+                set_f_op_file_f_op[label="set_f_op_file_f_op"];
+                set_mask_DEFAULT_POLLMASK[label="set_mask_DEFAULT_POLLMASK"];
+                f_op_true_f_op_poll_true[label="f_op_true_f_op_poll_true"];
+                set_mask_f_op_poll_file_NULL_or_wait_decide_retval[label="set_mask_f_op_poll_file_NULL_or_wait_decide_retval"];
+                fput_file[label="fput_file"];
+                mask_and_POLLIN_SET_set_and_in_and_bit_true[label="mask_and_POLLIN_SET_set_and_in_and_bit_true"];
+                res_in_self_or_bit[label="res_in_self_or_bit"];
+                retval_inc[label="retval_inc"];
+                mask_POLLOUT_SET_set_and_out_and_bit_true[label="mask_POLLOUT_SET_set_and_out_and_bit_true"];
+                res_out_self_or_bit[label="res_out_self_or_bit"];
+                inc_retval[label="inc_retval"];
+                maks_POLLEX_SET_set_and_ex_and_bit_true[label="maks_POLLEX_SET_set_and_ex_and_bit_true"];
+                res_ex_self_or_bit[label="res_ex_self_or_bit"];
+                inc_retval[label="inc_retval"];
+                cond_resched[label="cond_resched"];
+                res_in_true[label="res_in_true"];
+                set_rinp_res_in[label="set_rinp_res_in"];
+                res_out_true[label="res_out_true"];
+                set_routp_res_out[label="set_routp_res_out"];
+                res_ex_true[label="res_ex_true"];
+                set_rexp_res_ex[label="set_rexp_res_ex"];
+                clear_wait[label="clear_wait"];
+                retval_true_or___timeout_false_or_signal_pending_current_true[label="retval_true_or___timeout_false_or_signal_pending_current_true"];
+                table_error_true[label="table_error_true"];
+                set_retval_table_error[label="set_retval_table_error"];
+                set___timeout_schedule_timeout___timeout[label="set___timeout_schedule_timeout___timeout"];
+                __set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+                poll_freewait_table[label="poll_freewait_table"];
+                set_timeout___timeout[label="set_timeout___timeout"];
+                return_retval[label="return_retval"];
 	}
+
+        subgraph cluster_*select_bits_alloc{
+                label="static void *select_bits_alloc(int size)
+";
+                return_kmalloc[label="return_kmalloc"];
+        }
+
+        subgraph cluster_select_bits_free{
+                label="static void select_bits_free(void *bits, int size)
+";
+                kfree_bits[label="kfree_bits"];
+        }
+
+        subgraph cluster__select{
+                label="asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct timeval __user *tvp)
+";
+                set_timeout_MAX_SCHEDULE_TIMEOUT[label="set_timeout_MAX_SCHEDULE_TIMEOUT"];
+                tvp_true[label="tvp_true"];
+                access_ok_VERIFY_READ_tvp_false_or___get_user_sec_tvp_tv_sec_true_or___get_user_usec_tvp_tv_usec_true[label="access_ok_VERIFY_READ_tvp_false_or___get_user_sec_tvp_tv_sec_true_or___get_user_usec_tvp_tv_usec_true"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                goto_out_nofds[label="goto_out_nofds"];
+                set_ret_EINVAL[label="set_ret_EINVAL"];
+                sec_small_0_or_usec_small_0[label="sec_small_0_or_usec_small_0"];
+                goto_out_nofds[label="goto_out_nofds"];
+                sec_small_MAX_SELECT_SECONDES[label="sec_small_MAX_SELECT_SECONDES"];
+                set_timeout_ROUND_UP_usec_1000000_div_HZ[label="set_timeout_ROUND_UP_usec_1000000_div_HZ"];
+                timeout_self_add_sec_multi_HZ[label="timeout_self_add_sec_multi_HZ"];
+                set_ret_EINVAL[label="set_ret_EINVAL"];
+                n_small_0[label="n_small_0"];
+                goto_out_nofds[label="goto_out_nofds"];
+                set_max_fdset_current_files_max_fdset[label="set_max_fdset_current_files_max_fdset"];
+                n_great_max_fdset[label="n_great_max_fdset"];
+                set_n_max_fdset[label="set_n_max_fdset"];
+                set_ret_ENOMEM[label="set_ret_ENOMEM"];
+                set_size_FDS_BYTES_n[label="set_size_FDS_BYTES_n"];
+                set_bits_select_bits_alloc_size[label="set_bits_select_bits_alloc_size"];
+                bits_false[label="bits_false"];
+                goto_out_nofds[label="goto_out_nofds"];
+                set_fds_in_bits[label="set_fds_in_bits"];
+                set_fds_out_bits_add_size[label="set_fds_out_bits_add_size"];
+                set_fds_ex_bits_add_2_multi_size[label="set_fds_ex_bits_add_2_multi_size"];
+                set_fds_res_in_bits_add_3_multi_size[label="set_fds_res_in_bits_add_3_multi_size"];
+                set_fds_res_out_bits_add_4_multi_size[label="set_fds_res_out_bits_add_4_multi_size"];
+                set_fds_res_ex_bits_add_5_multi_size[label="set_fds_res_ex_bits_add_5_multi_size"];
+                set_ret_get_fd_set_n_inp_fds_in_true_or_set_ret_get_fd_set_n_outp_fds_out_or_set_ret_get_fd_set_n_exp_fds_ex_true[label="set_ret_get_fd_set_n_inp_fds_in_true_or_set_ret_get_fd_set_n_outp_fds_out_or_set_ret_get_fd_set_n_exp_fds_ex_true"];
+                goto_out[label="goto_out"];
+                zero_fd_set_n_fds_res_in[label="zero_fd_set_n_fds_res_in"];
+                zero_fd_set_n_fds_res_out[label="zero_fd_set_n_fds_res_out"];
+                zero_fd_set_n_fds_res_ex[label="zero_fd_set_n_fds_res_ex"];
+                set_ret_do_select_n_fds_timeout[label="set_ret_do_select_n_fds_timeout"];
+                tvp_true_and_current_personality_STICKY_TIMEOUTS_set[label="tvp_true_and_current_personality_STICKY_TIMEOUTS_set"];
+                set_sec_0[label="set_sec_0"];
+                set_usec_0[label="set_usec_0"];
+                timeout_true[label="timeout_true"];
+                set_sec_timeout_div_HZ[label="set_sec_timeout_div_HZ"];
+                set_usec_timeout_mod_HZ[label="set_usec_timeout_mod_HZ"];
+                usec_self_multi_1000000_div_HZ[label="usec_self_multi_1000000_div_HZ"];
+                put_user_sec_tvp_tv_sec[label="put_user_sec_tvp_tv_sec"];
+                put_user_usec_tvp_tv_usec[label="put_user_usec_tvp_tv_usec"];
+                ret_small_0[label="ret_small_0"];
+                goto_out[label="goto_out"];
+                ret_false[label="ret_false"];
+                set_ret_ERESTARTNOHAND[label="set_ret_ERESTARTNOHAND"];
+                signal_pending_current_true[label="signal_pending_current_true"];
+                goto_out[label="goto_out"];
+                set_ret_0[label="set_ret_0"];
+                set_fd_set_n_inp_fds_res_in_true_or_set_fd_set_n_outp_fds_res_out_true_or_set_fd_set_n_exp_fds_res_ex[label="set_fd_set_n_inp_fds_res_in_true_or_set_fd_set_n_outp_fds_res_out_true_or_set_fd_set_n_exp_fds_res_ex"];
+                set_ret_EFAULT[label="set_ret_EFAULT"];
+                select_bits_free_bits_size[label="select_bits_free_bits_size"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_do_pollfd{
+                label="static void do_pollfd(unsigned int num, struct pollfd * fdpage,
+	poll_table ** pwait, int *count)
+";
+                for_i_num[label="for_i_num"];
+                set_mask_0[label="set_mask_0"];
+                set_fdp_fdpage_add_i[label="set_fdp_fdpage_add_i"];
+                set_fd_fdp_fd[label="set_fd_fdp_fd"];
+                fd_not_small_0[label="fd_not_small_0"];
+                set_file_fget_fd[label="set_file_fget_fd"];
+                set_mask_POLLNVAL[label="set_mask_POLLNVAL"];
+                file_not_eq_NULL[label="file_not_eq_NULL"];
+                set_mask_DEFUALT_POLLMASK[label="set_mask_DEFUALT_POLLMASK"];
+                file_f_op_true_and_file_f_op_poll_true[label="file_f_op_true_and_file_f_op_poll_true"];
+                set_mask_file_f_op_poll_file_pwait[label="set_mask_file_f_op_poll_file_pwait"];
+                mask_self_and_fdp_events_or_POLLERR_or_POLLHUP[label="mask_self_and_fdp_events_or_POLLERR_or_POLLHUP"];
+                fput_file[label="fput_file"];
+                mask_true[label="mask_true"];
+                clear_pwait[label="clear_pwait"];
+                inc_count[label="inc_count"];
+                set_fdp_revents_mask[label="set_fdp_revents_mask"];
+        }
+
+        subgraph cluster_do_poll{
+                label="static int do_poll(unsigned int nfds,  struct poll_list *list,
+			struct poll_wqueues *wait, long timeout)
+";
+                set_pt_wait_pt[label="set_pt_wait_pt"];
+                timeout_false[label="timeout_false"];
+                clear_pt[label="clear_pt"];
+                dead_for[label="dead_for"];
+                set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+                set_walk_list[label="set_walk_list"];
+                walk_not_eq_NULL[label="walk_not_eq_NULL"];
+                do_pollfd_walk_len_walk_entries_pt_count[label="do_pollfd_walk_len_walk_entries_pt_count"];
+                set_walk_walk_next[label="set_walk_walk_next"];
+                clear_pt[label="clear_pt"];
+                count_true_or_timeout_false_or_signal_pending_current_true[label="count_true_or_timeout_false_or_signal_pending_current_true"];
+                set_count_wait_error[label="set_count_wait_error"];
+                count_true[label="count_true"];
+                set_timeout_sechdule_timeout_timeout[label="set_timeout_sechdule_timeout_timeout"];
+                __set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+                return_count[label="return_count"];
+        }
+
+        subgraph cluster_sys_poll{
+                label="asmlinkage long sys_poll(struct pollfd __user * ufds, unsigned int nfds, long timeout)
+";
+                nfds_great_current_files_max_fdset_true___and_nfds_great_OPEN_MAX[label="nfds_great_current_files_max_fdset_true___and_nfds_great_OPEN_MAX"];
+                return_EINVAL[label="return_EINVAL"];
+                timeout_true[label="timeout_true"];
+                timeout_small_MAX_SCHEDULE_TIMEOUT_div_HZ[label="timeout_small_MAX_SCHEDULE_TIMEOUT_div_HZ"];
+                set_timout_timeout_multi_HZ_add_999_div_1000_add_1[label="set_timout_timeout_multi_HZ_add_999_div_1000_add_1"];
+                set_timeout_MAX_SCHEDULE_TIMEOUT[label="set_timeout_MAX_SCHEDULE_TIMEOUT"];
+                poll_initwait_table[label="poll_initwait_table"];
+                clear_head[label="clear_head"];
+                clear_walk[label="clear_walk"];
+                set_i_nfds[label="set_i_nfds"];
+                set_err_ENOMEM[label="set_err_ENOMEM"];
+                i_not_eq_0[label="i_not_eq_0"];
+                set_pp_kmalloc[label="set_pp_kmalloc"];
+                pp_eq_NULL[label="pp_eq_NULL"];
+                goto_out_fds[label="goto_out_fds"];
+                clear_pp_next[label="clear_pp_next"];
+                set_pp_len_POLLFD_PER_PAGE_or_i_decide_i_great_POLLFD_PER_PAGE[label="set_pp_len_POLLFD_PER_PAGE_or_i_decide_i_great_POLLFD_PER_PAGE"];
+                head_eq_NULL[label="head_eq_NULL"];
+                set_head_pp[label="set_head_pp"];
+                set_walk_next_pp[label="set_walk_next_pp"];
+                set_walk_pp[label="set_walk_pp"];
+                copy_from_user_pp_entries_ufds_add_nfds_sub_i[label="copy_from_user_pp_entries_ufds_add_nfds_sub_i"];
+                i_self_sub_pp_len[label="i_self_sub_pp_len"];
+                set_fdcount_do_poll_nfds_head_table_timeout[label="set_fdcount_do_poll_nfds_head_table_timeout"];
+                set_walk_head[label="set_walk_head"];
+                set_err_EFAULT[label="set_err_EFAULT"];
+                walk_not_eq_NULL[label="walk_not_eq_NULL"];
+                set_fds_walk_entries[label="set_fds_walk_entries"];
+                for_j_walk_len[label="for_j_walk_len"];
+                __put_user_fds_j_revents_ufds_revents[label="__put_user_fds_j_revents_ufds_revents"];
+                set_walk_walk_next[label="set_walk_walk_next"];
+                set_err_fdcount[label="set_err_fdcount"];
+                fdcount_false_and_signal_pending_current_true[label="fdcount_false_and_signal_pending_current_true"];
+                set_err_EINTR[label="set_err_EINTR"];
+                set_walk_head[label="set_walk_head"];
+                walk_not_eq_NULL[label="walk_not_eq_NULL"];
+                set_pp_walk_next[label="set_pp_walk_next"];
+                kfree_walk[label="kfree_walk"];
+                set_walk_pp[label="set_walk_pp"];
+                poll_freewait_table[label="poll_freewait_table"];
+                return_err[label="return_err"];
+        }
 }

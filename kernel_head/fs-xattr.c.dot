@@ -1,0 +1,40 @@
+digraph xattr_c{
+        subgraph cluster_setxattr{
+                label="static long setxattr(struct dentry *d, char __user *name, void __user *value, size_t size, int flags)
+";
+                clear_kvalue[label="clear_kvalue"];
+                flags_XATTR_CREATE_XATTR_REPLACE_clear[label="flags_XATTR_CREATE_XATTR_REPLACE_clear"];
+                return_EINVAL[label="return_EINVAL"];
+                set_error_strncpy_from_user_kname_name[label="set_error_strncpy_from_user_kname_name"];
+                error_eq_0_or_error_eq_sizeof_kname[label="error_eq_0_or_error_eq_sizeof_kname"];
+                set_error_ERANGE[label="set_error_ERANGE"];
+                error_small_0[label="error_small_0"];
+                return_error[label="return_error"];
+                size_true[label="size_true"];
+                size_great_XATTR_SIZE_MAX[label="size_great_XATTR_SIZE_MAX"];
+                return_E2BIG[label="return_E2BIG"];
+                set_kvalue_kmalloc[label="set_kvalue_kmalloc"];
+                kvalue_false[label="kvalue_false"];
+                return_ENOMEM[label="return_ENOMEM"];
+                copy_from_user_kvalue_value[label="copy_from_user_kvalue_value"];
+                set_error_EOPNOTSUPP[label="set_error_EOPNOTSUPP"];
+                d_d_inode_i_op_true_and_d_d_inode_i_op_setxattr_true[label="d_d_inode_i_op_true_and_d_d_inode_i_op_setxattr_true"];
+                down_d_d_inode_i_sem[label="down_d_d_inode_i_sem"];
+                set_error_security_inode_setxattr_d_kname_kvalue_size_flags[label="set_error_security_inode_setxattr_d_kname_kvalue_size_flags"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_error_d_d_inode_i_op_setxattr_d_kname_kvalue_size_flags[label="set_error_d_d_inode_i_op_setxattr_d_kname_kvalue_size_flags"];
+                error_false[label="error_false"];
+                security_inode_post_setxattr_d_kname_kvalue_size_flags[label="security_inode_post_setxattr_d_kname_kvalue_size_flags"];
+                up_d_d_inode_i_sem[label="up_d_d_inode_i_sem"];
+                kvalue_true[label="kvalue_true"];
+                kfree_kvalue[label="kfree_kvalue"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster__setxattr{
+                label="asmlinkage long sys_setxattr(char __user *path, char __user *name, void __user *value, size_t size, int flags)
+";
+                
+        }
+}
