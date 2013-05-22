@@ -1,0 +1,95 @@
+digraph select_c{
+	subgraph cluster_poll_initwait{
+		label="void poll_initwait(struct poll_wqueues *pwq)";
+		init_pool_funcptr_pwq_pt___pollwait[label="init_pool_funcptr_pwq_pt___pollwait"];
+		set_pwq_error_0[label="set_pwq_error_0"];
+		clear_pwq_table[label="clear_pwq_table"];
+	}
+
+	subgraph cluster_poll_freewait{
+		label="void poll_freewait(struct poll_wqueues *pwq)";
+		set_p_pwq_table[label="set_p_pwq_table"];
+		p_true[label="p_true"];
+		set_entry_p_entry[label="set_entry_p_entry"];
+		dec_entry[label="dec_entry"];
+		remove_wait_queue_entry_wait_address_entry_wait[label="remove_wait_queue_entry_wait_address_entry_wait"];
+		fput_entry_filp[label="fput_entry_filp"];
+		entry_great_p_entries[label="entry_great_p_entries"];
+		set_old_p[label="set_old_p"];
+		set_p_p_next[label="set_p_p_next"];
+		free_page_old[label="free_page_old"];
+	}
+
+	subgraph cluster___pollwait{
+		label="static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+		       poll_table *_p)";
+		set_p_container_of__p_struct_poll_wqueues_pt[label="set_p_container_of__p_struct_poll_wqueues_pt"];
+		set_table_p_table[label="set_table_p_table"];
+		table_false_or_POLL_TABLE_FULL_table_true[label="table_false_or_POLL_TABLE_FULL_table_true"];
+		set_new_table___get_free_page_GFP_KERNEL[label="set_new_table___get_free_page_GFP_KERNEL"];
+		new_table_false[label="new_table_false"];
+		set_p_error_ENOMEM[label="set_p_error_ENOMEM"];
+		__set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+		return[label="return"];
+		set_new_table_entry_new_table_entries[label="set_new_table_entry_new_table_entries"];
+		set_new_table_next_table[label="set_new_table_next_table"];
+		set_p_table_new_table[label="set_p_table_new_table"];
+		set_table_new_table[label="set_table_new_table"];
+		set_entry_table_entry[label="set_entry_table_entry"];
+		set_table_entry_entry_add_1[label="set_table_entry_entry_add_1"];
+		get_file_filp[label="get_file_filp"];
+		set_entry_filp_filp[label="set_entry_filp_filp"];
+		set_entry_wait_address_wait_address[label="set_entry_wait_address_wait_address"];
+		init_waitqueue_entry_entry_wait_current[label="init_waitqueue_entry_entry_wait_current"];
+		add_wait_queue_wait_address_entry_wait[label="add_wait_queue_wait_address_entry_wait"];
+	}
+
+	subgraph cluster_max_select_fd{
+		label="static int max_select_fd(unsigned long n, fd_set_bits *fds)";
+		set_set_rever_rever_0_left_move_n_and___NFDBITS_sub_1[label="set_set_rever_rever_0_left_move_n_and___NFDBITS_sub_1"];
+		n_self_div___NFDBITS[label="n_self_div___NFDBITS"];
+		set_open_fds_current_files_open_fds_fds_bits_add_n[label="set_open_fds_current_files_open_fds_fds_bits_add_n"];
+		set_max_0[label="set_max_0"];
+		set_true[label="set_true"];
+		set_self_and_BITS_fds_n[label="set_self_and_BITS_fds_n"];
+		set_true[label="set_true"];
+		set_and_rever_open_fds_false[label="set_and_rever_open_fds_false"];
+		goto_get_max[label="goto_get_max"];
+		return_EBADF[label="return_EBADF"];
+		n_true[label="n_true"];
+		dec_open_fds[label="dec_open_fds"];
+		dec_n[label="dec_n"];
+		set_set_BITS_fds_n[label="set_set_BITS_fds_n"];
+		set_false[label="set_false"];
+		set_and_rever_open_fds[label="set_and_rever_open_fds"];
+		return_EBADF[label="return_EBADF"];
+		max_true[label="max_true"];
+		inc_max[label="inc_max"];
+		set_self_right_move_1[label="set_self_right_move_1"];
+		set_true[label="set_true"];
+		max_self_add_n_multi___NFDBITS[label="max_self_add_n_multi___NFDBITS"];
+		return_max[label="return_max"];
+	}
+
+	subgraph cluster_do_select{
+		label="int do_select(int n, fd_set_bits *fds, long *timeout)";
+		set___timeout_timeout[label="set___timeout_timeout"];
+		lock_current_files_file_lock[label="lock_current_files_file_lock"];
+		set_retval_max_select_fd_n_fds[label="set_retval_max_select_fd_n_fds"];
+		unlock_current_files_file_lock[label="unlock_current_files_file_lock"];
+		retval_small_0[label="retval_small_0"];
+		return_retval[label="return_retval"];
+		set_n_retval[label="set_n_retval"];
+		poll_initwait_table[label="poll_initwait_table"];
+		set_wait_table_pt[label="set_wait_table_pt"];
+		__timeout_false[label="__timeout_false"];
+		clear_wait[label="clear_wait"];
+		set_retval_0[label="set_retval_0"];
+		dead_for[label="dead_for"];
+		set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+		set_inp_fds_in[label="set_inp_fds_in"];
+		set_outp_fds_out[label="set_outp_fds_out"];
+		set_exp_fds_ex[label="set_exp_fds_ex"];
+		set_rinp_fds_res_in
+	}
+}
