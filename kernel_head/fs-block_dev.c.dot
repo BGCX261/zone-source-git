@@ -1,0 +1,618 @@
+digraph block_dev_c{
+        subgraph cluster_max_block{
+                label="static sector_t max_block(struct block_device *bdev)
+";
+                set_retval_rever_0[label="set_retval_rever_0"];
+                set_sz_i_size_read_bdev_bd_inode[label="set_sz_i_size_read_bdev_bd_inode"];
+                sz_true[label="sz_true"];
+                set_size_block_size_bdev[label="set_size_block_size_bdev"];
+                set_sizebits_blksize_bits_size[label="set_sizebits_blksize_bits_size"];
+                set_retval_sz_right_move_sizebits[label="set_retval_sz_right_move_sizebits"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_kill_bdev{
+                label="static void kill_bdev(struct block_device *bdev)
+";
+                invalidate_bdev_bdev_1[label="invalidate_bdev_bdev_1"];
+                truncate_inode_page_bdev_bd_inode_i_mapping_0[label="truncate_inode_page_bdev_bd_inode_i_mapping_0"];
+        }
+
+        subgraph cluster_set_blocksize{
+                label="int set_blocksize(struct block_device *bdev, int size)
+";
+                size_great_PAGE_SIZE_or_size_small_512_or_size_and_size_sub_1_true[label="size_great_PAGE_SIZE_or_size_small_512_or_size_and_size_sub_1_true"];
+                return_EINVAL[label="return_EINVAL"];
+                size_small_bdev_hardsect_size_bdev[label="size_small_bdev_hardsect_size_bdev"];
+                return_EINVAL[label="return_EINVAL"];
+                bdev_bd_block_size_not_eq_size[label="bdev_bd_block_size_not_eq_size"];
+                sync_blockdev_bdev[label="sync_blockdev_bdev"];
+                set_bdev_bd_block_size_size[label="set_bdev_bd_block_size_size"];
+                set_bdev_bd_inode_i_blkbits_blksize_bits_size[label="set_bdev_bd_inode_i_blkbits_blksize_bits_size"];
+                kill_bdev_bdev[label="kill_bdev_bdev"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_sb_set_blocksize{
+                label="int sb_set_blocksize(struct super_block *sb, int size)
+";
+                set_bits_9[label="set_bits_9"];
+                set_blocksize_sb_s_bdev_size_true[label="set_blocksize_sb_s_bdev_size_true"];
+                return_0[label="return_0"];
+                set_sb_s_blocksize_size[label="set_sb_s_blocksize_size"];
+                for_size_self_right_move_10_size_self_right_move_1[label="for_size_self_right_move_10_size_self_right_move_1"];
+                inc_bits[label="inc_bits"];
+                set_sb_s_blocksize_bits_bits[label="set_sb_s_blocksize_bits_bits"];
+                return_sb_s_blocksize[label="return_sb_s_blocksize"];
+        }
+
+        subgraph cluster_sb_min_blocksize{
+                label="int sb_min_blocksize(struct super_block *sb, int size)
+";
+                set_minsize_bdev_hardsect_size_sb_s_bdev[label="set_minsize_bdev_hardsect_size_sb_s_bdev"];
+                size_small_minsize[label="size_small_minsize"];
+                set_size_minsize[label="set_size_minsize"];
+                return_sb_set_blocksize_sb_size[label="return_sb_set_blocksize_sb_size"];
+        }
+
+        subgraph cluster_blkdev_get_block{
+                label="static int blkdev_get_block(struct inode *inode, sector_t iblock, struct buffer_head *bh, int create)
+";
+                iblock_not_small_max_block_I_BDEV_inode[label="iblock_not_small_max_block_I_BDEV_inode"];
+                creat_true[label="creat_true"];
+                return_EIO[label="return_EIO"];
+                return_0[label="return_0"];
+                set_bh_b_bdev_I_BDEV_inode[label="set_bh_b_bdev_I_BDEV_inode"];
+                set_bh_b_blocknr_iblock[label="set_bh_b_blocknr_iblock"];
+                set_buffer_mapped_bh[label="set_buffer_mapped_bh"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_blkdev_get_blocks{
+                label="static int blkdev_get_blocks(struct inode *inode, sector_t iblock, unsigned long max_blocks, struct buffer_head *bh, int create)
+";
+                set_end_block_max_block_I_BDEV_inode[label="set_end_block_max_block_I_BDEV_inode"];
+                iblock_add_max_blocks_great_end_block[label="iblock_add_max_blocks_great_end_block"];
+                set_max_blocks_end_block_sub_iblock[label="set_max_blocks_end_block_sub_iblock"];
+                max_blocks_not_great_0[label="max_blocks_not_great_0"];
+                create_true[label="create_true"];
+                return_EIO[label="return_EIO"];
+                set_max_blocks_0[label="set_max_blocks_0"];
+                set_bh_b_bdev_I_BDEV_inode[label="set_bh_b_bdev_I_BDEV_inode"];
+                set_bh_b_blocknr_iblock[label="set_bh_b_blocknr_iblock"];
+                set_bh_b_size_max_blocks_left_move_inode_i_blkbits[label="set_bh_b_size_max_blocks_left_move_inode_i_blkbits"];
+                max_blocks_true[label="max_blocks_true"];
+                set_buffer_mapped_bh[label="set_buffer_mapped_bh"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_blkdev_direct_IO{
+                label="static ssize_t blkdev_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov, loff_t offset, unsigned long nr_segs)
+";
+                set_file_iocb_ki_filp[label="set_file_iocb_ki_filp"];
+                set_inode_file_f_mapping_host[label="set_inode_file_f_mapping_host"];
+                return_blockdev_direct_IO_no_locking_rw_iocb_inode_I_BDEV_inode_iov_offset_nr_segs_blkdev_get_blocks_NULL[label="return_blockdev_direct_IO_no_locking_rw_iocb_inode_I_BDEV_inode_iov_offset_nr_segs_blkdev_get_blocks_NULL"];
+        }
+
+        subgraph cluster_blkdev_writepage{
+                label="static int blkdev_writepage(struct page *page, struct writeback_control *wbc)
+";
+                return_block_write_full_page_page_blkdev_get_block_wbc[label="return_block_write_full_page_page_blkdev_get_block_wbc"];
+        }
+
+        subgraph cluster_blkdev_readpage{
+                label="static int blkdev_readpage(struct file * file, struct page * page)
+";
+                return_block_read_full_page_page_blkdev_get_block[label="return_block_read_full_page_page_blkdev_get_block"];
+        }
+
+        subgraph cluster_blkdev_prepare_write{
+                label="static int blkdev_prepare_write(struct file *file, struct page *page, unsigned from, unsigned to)
+";
+                return_block_prepare_write_page_from_to_blkdev_get_block[label="return_block_prepare_write_page_from_to_blkdev_get_block"];
+        }
+
+        subgraph cluster_blkdev_commit_write{
+                label="static int blkdev_commit_write(struct file *file, struct page *page, unsigned from, unsigned to)
+";
+                return_block_commit_write_page_from_to[label="return_block_commit_write_page_from_to"];
+        }
+
+        subgraph cluster_block_llseek{
+                label="static loff_t block_llseek(struct file *file, loff_t offset, int origin)
+";
+                set_bd_inode_file_f_mapping_host[label="set_bd_inode_file_f_mapping_host"];
+                down_bd_inode_i_sem[label="down_bd_inode_i_sem"];
+                set_size_i_size_read_bd_inode[label="set_size_i_size_read_bd_inode"];
+                switch_origin[label="switch_origin"];
+                case_2[label="case_2"];
+                offset_self_add_size[label="offset_self_add_size"];
+                case_1[label="case_1"];
+                offset_self_add_file_f_pos[label="offset_self_add_file_f_pos"];
+                set_retval_EINVAL[label="set_retval_EINVAL"];
+                offset_not_small_0_and_offset_not_great_size[label="offset_not_small_0_and_offset_not_great_size"];
+                offset_not_eq_file_f_pos[label="offset_not_eq_file_f_pos"];
+                set_file_f_pos_offset[label="set_file_f_pos_offset"];
+                set_retval_offset[label="set_retval_offset"];
+                up_bd_inode_i_sem[label="up_bd_inode_i_sem"];
+                return_retval[label="return_retval"];
+        }
+
+        subgraph cluster_block_fsync{
+                label="static int block_fsync(struct file *filp, struct dentry *dentry, int datasync)
+";
+                return_sync_blockdev_I_BDEV_filp_f_mapping_host[label="return_sync_blockdev_I_BDEV_filp_f_mapping_host"];
+        }
+
+        subgraph cluster_*bdev_alloc_inode{
+                label="static struct inode *bdev_alloc_inode(struct super_block *sb)
+";
+                set_ei_kmem_cache_alloc_bdev_cachep[label="set_ei_kmem_cache_alloc_bdev_cachep"];
+                ei_false[label="ei_false"];
+                return_NULL[label="return_NULL"];
+                return_ei_vfs_inode[label="return_ei_vfs_inode"];
+        }
+
+        subgraph cluster_bdev_destroy_inode{
+                label="static void bdev_destroy_inode(struct inode *inode)
+";
+                set_bdi_BDEV_I_inode[label="set_bdi_BDEV_I_inode"];
+                clear_bdi_bdev_bd_inode_backing_dev_info[label="clear_bdi_bdev_bd_inode_backing_dev_info"];
+                kmem_cache_free_bdev_cachep_bdi[label="kmem_cache_free_bdev_cachep_bdi"];
+        }
+
+        subgraph cluster_init_once{
+                label="static void init_once(void * foo, kmem_cache_t * cachep, unsigned long flags)
+";
+                set_ei_foo[label="set_ei_foo"];
+                set_bdev_ei_bdev[label="set_bdev_ei_bdev"];
+                flags_SLAB_CTOR_VERIFY_SLAB_CTOR_CONSTRUCTOR_eq_SLAB_CTOR_CONSTRUCTOR[label="flags_SLAB_CTOR_VERIFY_SLAB_CTOR_CONSTRUCTOR_eq_SLAB_CTOR_CONSTRUCTOR"];
+                memset_bdev_0[label="memset_bdev_0"];
+                sema_init_bdev_bd_sem_1[label="sema_init_bdev_bd_sem_1"];
+                sema_init_bdev_bd_mount_sem_1[label="sema_init_bdev_bd_mount_sem_1"];
+                INIT_LIST_HEAD_bdev_bd_inodes[label="INIT_LIST_HEAD_bdev_bd_inodes"];
+                INIT_LIST_HEAD_bdev_bd_list[label="INIT_LIST_HEAD_bdev_bd_list"];
+                inode_init_once_ei_vfs_inode[label="inode_init_once_ei_vfs_inode"];
+        }
+
+        subgraph cluster___bd_forget{
+                label="static inline void __bd_forget(struct inode *inode)
+";
+                list_del_init_inode_i_devices[label="list_del_init_inode_i_devices"];
+                clear_inode_i_bdev[label="clear_inode_i_bdev"];
+                set_inode_i_mapping_inode_i_data[label="set_inode_i_mapping_inode_i_data"];
+        }
+
+        subgraph cluster_bdev_clear_inode{
+                label="static void bdev_clear_inode(struct inode *inode)
+";
+                set_bdev_BDEV_I_inode_bdev[label="set_bdev_BDEV_I_inode_bdev"];
+                lock_bdev_lock[label="lock_bdev_lock"];
+                set_p_bdev_bd_inodes_next_not_eq_bdev_bd_inodes[label="set_p_bdev_bd_inodes_next_not_eq_bdev_bd_inodes"];
+                __bd_forget_list_entry_p_struct_inode_i_devices[label="__bd_forget_list_entry_p_struct_inode_i_devices"];
+                list_del_init_bdev_bd_list[label="list_del_init_bdev_bd_list"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+        }
+
+        subgraph cluster_*bd_get_sb{
+                label="static struct super_block *bd_get_sb(struct file_system_type *fs_type,
+	int flags, const char *dev_name, void *data)
+";
+                return_get_sb_pseudo_fs_type_bdev_bdev_sops_0x62646576[label="return_get_sb_pseudo_fs_type_bdev_bdev_sops_0x62646576"];
+        }
+
+        subgraph cluster_bdev_cache_init{
+                label="void __init bdev_cache_init(void)
+";
+                set_bdev_cachep_kmem_cache_create_bdev_cache_sizeof_struct_bdev_inode[label="set_bdev_cachep_kmem_cache_create_bdev_cache_sizeof_struct_bdev_inode"];
+                set_err_register_filesystem_bd_type[label="set_err_register_filesystem_bd_type"];
+                err_true[label="err_true"];
+                panic[label="panic"];
+                set_bd_mmt_kern_mount_bd_type[label="set_bd_mmt_kern_mount_bd_type"];
+                set_err_PTR_ERR_bd_mnt[label="set_err_PTR_ERR_bd_mnt"];
+                IS_ERR_bd_mnt_true[label="IS_ERR_bd_mnt_true"];
+                panic[label="panic"];
+                set_blockdev_superblock_bd_mnt_mnt_sb[label="set_blockdev_superblock_bd_mnt_mnt_sb"];
+        }
+
+        subgraph cluster_bdev_test{
+                label="static int bdev_test(struct inode *inode, void *data)
+";
+                return_BDEV_I_inode_bdev_bd_dev_eq_data[label="return_BDEV_I_inode_bdev_bd_dev_eq_data"];
+        }
+
+        subgraph cluster_bdev_set{
+                label="static int bdev_set(struct inode *inode, void *data)
+";
+                BDEV_I_inode_bdev_bd_dev_data[label="BDEV_I_inode_bdev_bd_dev_data"];
+                return_0[label="return_0"];
+        }
+
+        subgraph cluster_*bdget{
+                label="struct block_device *bdget(dev_t dev)
+";
+                set_inode_iget5_locked_bd_mnt_mnt_sb_hash_dev_bdev_test_bdev_set_dev[label="set_inode_iget5_locked_bd_mnt_mnt_sb_hash_dev_bdev_test_bdev_set_dev"];
+                inode_false[label="inode_false"];
+                return_NULL[label="return_NULL"];
+                set_bdev_BDEV_i_state_I_NEW_set[label="set_bdev_BDEV_i_state_I_NEW_set"];
+                clear_bdev_bd_contains[label="clear_bdev_bd_contains"];
+                set_bdev_bd_inode_inode[label="set_bdev_bd_inode_inode"];
+                set_bdev_bd_block_size_1_left_move_inode_i_blkbits[label="set_bdev_bd_block_size_1_left_move_inode_i_blkbits"];
+                set_bdev_bd_part_count_0[label="set_bdev_bd_part_count_0"];
+                set_bdev_bd_invalidated_0[label="set_bdev_bd_invalidated_0"];
+                set_inode_i_mode_S_IFBLK[label="set_inode_i_mode_S_IFBLK"];
+                set_inode_i_rdev_dev[label="set_inode_i_rdev_dev"];
+                set_inode_i_bdev_bdev[label="set_inode_i_bdev_bdev"];
+                set_inode_i_data_a_ops_def_blk_aops[label="set_inode_i_data_a_ops_def_blk_aops"];
+                mapping_set_gfp_mask_inode_i_data_GFP_USER[label="mapping_set_gfp_mask_inode_i_data_GFP_USER"];
+                set_inode_i_data_backing_dev_info_default_backing_dev_info[label="set_inode_i_data_backing_dev_info_default_backing_dev_info"];
+                lock_bdev_lock[label="lock_bdev_lock"];
+                list_add_bdev_bd_list_all_bdevs[label="list_add_bdev_bd_list_all_bdevs"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+                unlock_new_inode_inode[label="unlock_new_inode_inode"];
+                return_bdev[label="return_bdev"];
+        }
+
+        subgraph cluster_nr_blockdev_pages{
+                label="long nr_blockdev_pages(void)
+";
+                set_ret_0[label="set_ret_0"];
+                lock_bdev_lock[label="lock_bdev_lock"];
+                list_for_each_p_all_bdevs[label="list_for_each_p_all_bdevs"];
+                set_bdev_list_entry_p_struct_block_device_bd_list[label="set_bdev_list_entry_p_struct_block_device_bd_list"];
+                ret_self_add_bdev_bd_inode_i_mapping_nrpages[label="ret_self_add_bdev_bd_inode_i_mapping_nrpages"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_bdput{
+                label="void bdput(struct block_device *bdev)
+";
+                iput_bdev_bd_inode[label="iput_bdev_bd_inode"];
+        }
+
+        subgraph cluster_*bd_acquire{
+                label="static struct block_device *bd_acquire(struct inode *inode)
+";
+                lock_bdev_lock[label="lock_bdev_lock"];
+                set_bdev_inode_i_bdev[label="set_bdev_inode_i_bdev"];
+                bdev_true_and_igrab_bdev_bd_inode_true[label="bdev_true_and_igrab_bdev_bd_inode_true"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+                return_bdev[label="return_bdev"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+                set_bdev_bdget_inode_i_rdev[label="set_bdev_bdget_inode_i_rdev"];
+                bdev_true[label="bdev_true"];
+                lock_bdev_lock[label="lock_bdev_lock"];
+                inode_i_bdev_true[label="inode_i_bdev_true"];
+                __bd_forget_inode[label="__bd_forget_inode"];
+                set_inode_i_bdev_bdev[label="set_inode_i_bdev_bdev"];
+                set_inode_i_mapping_bdev_bd_inode_i_mapping[label="set_inode_i_mapping_bdev_bd_inode_i_mapping"];
+                list_add_inode_i_devices_bdev_bd_inodes[label="list_add_inode_i_devices_bdev_bd_inodes"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+                return_bdev[label="return_bdev"];
+        }
+
+        subgraph cluster_bd_forget{
+                label="void bd_forget(struct inode *inode)
+";
+                lock_bdev_lock[label="lock_bdev_lock"];
+                inode_i_bdev_true[label="inode_i_bdev_true"];
+                __bd_forget_inode[label="__bd_forget_inode"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+        }
+
+        subgraph cluster_bd_claim{
+                label="int bd_claim(struct block_device *bdev, void *holder)
+";
+                lock_bdev_lock[label="lock_bdev_lock"];
+                bdev_bd_holder_eq_holder[label="bdev_bd_holder_eq_holder"];
+                set_res_0[label="set_res_0"];
+                bdev_bd_holder_not_eq_NULL[label="bdev_bd_holder_not_eq_NULL"];
+                set_res_EBUSY[label="set_res_EBUSY"];
+                bdev_bd_contains_eq_bdev[label="bdev_bd_contains_eq_bdev"];
+                set_res_0[label="set_res_0"];
+                bdev_bd_contains_bd_holder_eq_bd_claim[label="bdev_bd_contains_bd_holder_eq_bd_claim"];
+                set_res_0[label="set_res_0"];
+                bdev_bd_contains_bd_holder_not_eq_NULL[label="bdev_bd_contains_bd_holder_not_eq_NULL"];
+                set_res_EBUSY[label="set_res_EBUSY"];
+                set_res_0[label="set_res_0"];
+                res_eq_0[label="res_eq_0"];
+                inc_bdev_bd_cotains_bd_holders[label="inc_bdev_bd_cotains_bd_holders"];
+                set_bdev_bd_contains_bd_holder_bd_claim[label="set_bdev_bd_contains_bd_holder_bd_claim"];
+                inc_bdev_bd_holders[label="inc_bdev_bd_holders"];
+                set_bdev_bd_holder_holder[label="set_bdev_bd_holder_holder"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_bd_release{
+                label="void bd_release(struct block_device *bdev)
+";
+                lock_bdev_lock[label="lock_bdev_lock"];
+                dec_bdev_bd_contains_bd_holders_flase[label="dec_bdev_bd_contains_bd_holders_flase"];
+                clear_bdev_bd_contains_bd_holder[label="clear_bdev_bd_contains_bd_holder"];
+                dec_bdev_bd_holders_false[label="dec_bdev_bd_holders_false"];
+                clear_bdev_bd_holder[label="clear_bdev_bd_holder"];
+                unlock_bdev_lock[label="unlock_bdev_lock"];
+        }
+
+        subgraph cluster_*open_by_devnum{
+                label="struct block_device *open_by_devnum(dev_t dev, unsigned mode)
+";
+                set_bdev_bdget_dev[label="set_bdev_bdget_dev"];
+                set_err_ENOMEM[label="set_err_ENOMEM"];
+                set_flags_O_RDWR_or_O_RDONLY_decide_mode_FMODE_WRITE_set[label="set_flags_O_RDWR_or_O_RDONLY_decide_mode_FMODE_WRITE_set"];
+                bdev_true[label="bdev_true"];
+                set_err_blkdev_get_bdev_mode_flags[label="set_err_blkdev_get_bdev_mode_flags"];
+                return_ERR_PTR_err_or_bdev_decide_err[label="return_ERR_PTR_err_or_bdev_decide_err"];
+        }
+
+        subgraph cluster_check_disk_change{
+                label="int check_disk_change(struct block_device *bdev)
+";
+                set_disk_bdev_bd_disk[label="set_disk_bdev_bd_disk"];
+                set_bdops_disk_fops[label="set_bdops_disk_fops"];
+                bdops_media_changed_false[label="bdops_media_changed_false"];
+                return_0[label="return_0"];
+                bdops_media_changed_bdev_bd_disk_false[label="bdops_media_changed_bdev_bd_disk_false"];
+                return_0[label="return_0"];
+                __invalidate_device_bdev_true[label="__invalidate_device_bdev_true"];
+                printk[label="printk"];
+                bdops_revalidate_disk_true[label="bdops_revalidate_disk_true"];
+                bdops_revalidate_disk_true[label="bdops_revalidate_disk_true"];
+                bdops_revalidate_disk_bdev_bd_disk[label="bdops_revalidate_disk_bdev_bd_disk"];
+                bdev_bd_disk_minors_great_1[label="bdev_bd_disk_minors_great_1"];
+                set_bdev_bd_invalidated_1[label="set_bdev_bd_invalidated_1"];
+                return_1[label="return_1"];
+        }
+
+        subgraph cluster_bd_set_size{
+                label="void bd_set_size(struct block_device *bdev, loff_t size)
+";
+                set_bsize_bdev_hardsect_size_bdev[label="set_bsize_bdev_hardsect_size_bdev"];
+                set_bdev_bd_inode_i_size_size[label="set_bdev_bd_inode_i_size_size"];
+                bsize_small_PAGE_CACHE_SIZE[label="bsize_small_PAGE_CACHE_SIZE"];
+                size_and_bsize_true[label="size_and_bsize_true"];
+                bsize_self_left_move_1[label="bsize_self_left_move_1"];
+                set_bdev_bd_block_size_bsize[label="set_bdev_bd_block_size_bsize"];
+                set_bdev_bd_inode_i_blkbits_blksize_bits_bsize[label="set_bdev_bd_inode_i_blkbits_blksize_bits_bsize"];
+        }
+
+        subgraph cluster_do_open{
+                label="static int do_open(struct block_device *bdev, struct file *file)
+";
+                clear_owner[label="clear_owner"];
+                set_file_f_mapping_bdev_bd_inode_i_mapping[label="set_file_f_mapping_bdev_bd_inode_i_mapping"];
+                lock_kernel[label="lock_kernel"];
+                set_disk_get_gendisk_bdev_bd_dev_part[label="set_disk_get_gendisk_bdev_bd_dev_part"];
+                disk_true[label="disk_true"];
+                unlock_kernel[label="unlock_kernel"];
+                bdput_bdev[label="bdput_bdev"];
+                return_ret[label="return_ret"];
+                set_owner_disk_fops_owner[label="set_owner_disk_fops_owner"];
+                down_bdev_bd_sem[label="down_bdev_bd_sem"];
+                bdev_bd_openers_false[label="bdev_bd_openers_false"];
+                set_bdev_bd_disk_disk[label="set_bdev_bd_disk_disk"];
+                set_bdev_bd_contains_bdev[label="set_bdev_bd_contains_bdev"];
+                part_false[label="part_false"];
+                disk_fops_open_true[label="disk_fops_open_true"];
+                set_ret_disk_fops_open_bdev_bd_inode_file[label="set_ret_disk_fops_open_bdev_bd_inode_file"];
+                ret_true[label="ret_true"];
+                goto_out_first[label="goto_out_first"];
+                bdev_bd_openers_false[label="bdev_bd_openers_false"];
+                bd_set_size_bdev_get_capacity_disk_right_move_9[label="bd_set_size_bdev_get_capacity_disk_right_move_9"];
+                set_bdi_blk_get_backing_dev_info_bdev[label="set_bdi_blk_get_backing_dev_info_bdev"];
+                bdi_eq_NULL[label="bdi_eq_NULL"];
+                set_bdi_default_backing_dev_info[label="set_bdi_default_backing_dev_info"];
+                set_bdev_bd_inode_i_data_backing_dev_info_bdi[label="set_bdev_bd_inode_i_data_backing_dev_info_bdi"];
+                bdev_bd_invalidated_true[label="bdev_bd_invalidated_true"];
+                rescan_partitions_disk_bdev[label="rescan_partitions_disk_bdev"];
+                set_whole_bdget_disk_disk_0[label="set_whole_bdget_disk_disk_0"];
+                set_ret_ENOMEM[label="set_ret_ENOMEM"];
+                whole_false[label="whole_false"];
+                goto_out_first[label="goto_out_first"];
+                set_ret_blkdev_get_whole_file_f_mode_file_f_flags[label="set_ret_blkdev_get_whole_file_f_mode_file_f_flags"];
+                ret_true[label="ret_true"];
+                goto_out_first[label="goto_out_first"];
+                set_bdev_bd_contains_whole[label="set_bdev_bd_contains_whole"];
+                down_whole_bd_sem[label="down_whole_bd_sem"];
+                inc_whole_bd_part_count[label="inc_whole_bd_part_count"];
+                set_p_disk_part_part_sub_1[label="set_p_disk_part_part_sub_1"];
+                set_bdev_bd_inode_i_data_backing_dev_info_whole_bd_inode_i_data_backing_dev_info[label="set_bdev_bd_inode_i_data_backing_dev_info_whole_bd_inode_i_data_backing_dev_info"];
+                disk_flags_GENHD_FL_UP_clear_or_p_false_or_p_nr_sects_false[label="disk_flags_GENHD_FL_UP_clear_or_p_false_or_p_nr_sects_false"];
+                dec_whole_bd_part_count[label="dec_whole_bd_part_count"];
+                up_whole_bd_sem[label="up_whole_bd_sem"];
+                set_ret_ENXIO[label="set_ret_ENXIO"];
+                goto_out_first[label="goto_out_first"];
+                kobject_get_p_kobj[label="kobject_get_p_kobj"];
+                set_bdev_bd_part_p[label="set_bdev_bd_part_p"];
+                bd_set_size_bdev_p_nr_sects_left_move_9[label="bd_set_size_bdev_p_nr_sects_left_move_9"];
+                up_whole_bd_sem[label="up_whole_bd_sem"];
+                put_disk_disk[label="put_disk_disk"];
+                module_put_owner[label="module_put_owner"];
+                bdev_bd_contains_eq_bdev[label="bdev_bd_contains_eq_bdev"];
+                bdev_bd_disk_fops_open_true[label="bdev_bd_disk_fops_open_true"];
+                set_ret_bdev_bd_disk_fops_open_bdev_bd_inode_file[label="set_ret_bdev_bd_disk_fops_open_bdev_bd_inode_file"];
+                ret_true[label="ret_true"];
+                goto_out[label="goto_out"];
+                bdev_bd_invalidated_true[label="bdev_bd_invalidated_true"];
+                rescan_partitions_bdev_bd_disk_bdev[label="rescan_partitions_bdev_bd_disk_bdev"];
+                down_bdev_bd_contains_bd_sem[label="down_bdev_bd_contains_bd_sem"];
+                inc_bdev_bd_contains_bd_part_count[label="inc_bdev_bd_contains_bd_part_count"];
+                up_bdev_bd_contains_bd_sem[label="up_bdev_bd_contains_bd_sem"];
+                inc_bdev_bd_openers[label="inc_bdev_bd_openers"];
+                up_bdev_bd_sem[label="up_bdev_bd_sem"];
+                unlock_kernel[label="unlock_kernel"];
+                return_0[label="return_0"];
+                clear_bdev_bd_disk[label="clear_bdev_bd_disk"];
+                set_bdev_bd_inode_i_data_backing_dev_info_default_backing_dev_info[label="set_bdev_bd_inode_i_data_backing_dev_info_default_backing_dev_info"];
+                bdev_not_eq_bdev_bd_contains[label="bdev_not_eq_bdev_bd_contains"];
+                blkdev_put_bdev_bd_contains[label="blkdev_put_bdev_bd_contains"];
+                clear_bdev_bd_contains[label="clear_bdev_bd_contains"];
+                put_disk_disk[label="put_disk_disk"];
+                module_put_owner[label="module_put_owner"];
+                up_bdev_bd_sem[label="up_bdev_bd_sem"];
+                unlock_kernel[label="unlock_kernel"];
+                ret_true[label="ret_true"];
+                bdput_bdev[label="bdput_bdev"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_blkdev_get{
+                label="int blkdev_get(struct block_device *bdev, mode_t mode, unsigned flags)
+";
+                set_fake_file_f_mode_mode[label="set_fake_file_f_mode_mode"];
+                set_fake_file_f_flags_flags[label="set_fake_file_f_flags_flags"];
+                set_fake_file_f_dentry_fake_dentry[label="set_fake_file_f_dentry_fake_dentry"];
+                set_fake_dentry_d_inode_bdev_bd_inode[label="set_fake_dentry_d_inode_bdev_bd_inode"];
+                return_do_open_bdev_fake_file[label="return_do_open_bdev_fake_file"];
+        }
+
+        subgraph cluster_blkdev_open{
+                label="static int blkdev_open(struct inode * inode, struct file * filp)
+";
+                filp_f_flags_self_or_O_LARGEFILE[label="filp_f_flags_self_or_O_LARGEFILE"];
+                set_bdev_bd_acquire_inode[label="set_bdev_bd_acquire_inode"];
+                set_res_do_open_bdev_filp[label="set_res_do_open_bdev_filp"];
+                res_true[label="res_true"];
+                return_res[label="return_res"];
+                filp_f_flags_O_EXCL_clear[label="filp_f_flags_O_EXCL_clear"];
+                return_0[label="return_0"];
+                set_res_bd_claim_bdev_filp_false[label="set_res_bd_claim_bdev_filp_false"];
+                return_0[label="return_0"];
+                blk_dev_put_bdev[label="blk_dev_put_bdev"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_blkdev_put{
+                label="int blkdev_put(struct block_device *bdev)
+";
+                set_bd_inode_bdev_bd_inode[label="set_bd_inode_bdev_bd_inode"];
+                set_disk_bdev_bd_disk[label="set_disk_bdev_bd_disk"];
+                down_bdev_bd_sem[label="down_bdev_bd_sem"];
+                lock_kernel[label="lock_kernel"];
+                dec_bdev_bd_openers_false[label="dec_bdev_bd_openers_false"];
+                sync_blockdev_bdev[label="sync_blockdev_bdev"];
+                kill_bdev_bdev[label="kill_bdev_bdev"];
+                bdev_bd_contains_eq_bdev[label="bdev_bd_contains_eq_bdev"];
+                disk_fops_release_true[label="disk_fops_release_true"];
+                set_ret_disk_fops_release_bd_inode_NULL[label="set_ret_disk_fops_release_bd_inode_NULL"];
+                down_bdev_bd_contains_bd_sem[label="down_bdev_bd_contains_bd_sem"];
+                dec_bdev_bd_contains_bd_part_count[label="dec_bdev_bd_contains_bd_part_count"];
+                up_bdev_bd_contains_bd_sem[label="up_bdev_bd_contains_bd_sem"];
+                bdev_bd_openers_false[label="bdev_bd_openers_false"];
+                set_owner_disk_fops_owner[label="set_owner_disk_fops_owner"];
+                put_disk_disk[label="put_disk_disk"];
+                module_put_owner[label="module_put_owner"];
+                bdev_bd_contains_not_eq_bdev[label="bdev_bd_contains_not_eq_bdev"];
+                kobject_put_bdev_bd_part_kobj[label="kobject_put_bdev_bd_part_kobj"];
+                clear_bdev_bd_part[label="clear_bdev_bd_part"];
+                clear_bdev_bd_disk[label="clear_bdev_bd_disk"];
+                set_bdev_bd_inode_i_data_backing_dev_info_default_backing_dev_info[label="set_bdev_bd_inode_i_data_backing_dev_info_default_backing_dev_info"];
+                bdev_not_eq_bdev_bd_contains[label="bdev_not_eq_bdev_bd_contains"];
+                blkdev_put_bdev_bd_contains[label="blkdev_put_bdev_bd_contains"];
+                clear_bdev_bd_contains[label="clear_bdev_bd_contains"];
+                unlock_kernel[label="unlock_kernel"];
+                up_bdev_bd_sem[label="up_bdev_bd_sem"];
+                bdput_bdev[label="bdput_bdev"];
+                return_ret[label="return_ret"];
+        }
+
+        subgraph cluster_blkdev_close{
+                label="static int blkdev_close(struct inode * inode, struct file * filp)
+";
+                set_bdev_I_BDEV_filp_f_mapping_host[label="set_bdev_I_BDEV_filp_f_mapping_host"];
+                bdev_bd_holder_eq_filp[label="bdev_bd_holder_eq_filp"];
+                bd_release_bdev[label="bd_release_bdev"];
+                return_blkdev_put_bdev[label="return_blkdev_put_bdev"];
+        }
+
+        subgraph cluster_blkdev_file_write{
+                label="static ssize_t blkdev_file_write(struct file *file, const char __user *buf,
+				   size_t count, loff_t *ppos)
+";
+                set_local_iov_iov_base_buf_iov_len_count[label="set_local_iov_iov_base_buf_iov_len_count"];
+                return_generic_file_write_nolock_file_local_iov_1_ppos[label="return_generic_file_write_nolock_file_local_iov_1_ppos"];
+        }
+
+        subgraph cluster_blkdev_file_aio_write{
+                label="static ssize_t blkdev_file_aio_write(struct kiocb *iocb, const char __user *buf,
+				   size_t count, loff_t pos)
+";
+                set_local_iov_iov_base_buf_iov_len_count[label="set_local_iov_iov_base_buf_iov_len_count"];
+                return_generic_file_aio_nolock_iocb_local_iov_1_iocb_ki_pos[label="return_generic_file_aio_nolock_iocb_local_iov_1_iocb_ki_pos"];
+        }
+
+        subgraph cluster_block_ioctl{
+                label="static int block_ioctl(struct inode *inode, struct file *file, unsigned cmd,
+			unsigned long arg)
+";
+                return_blkdev_ioctl_file_f_mapping_host_file_cmd_arg[label="return_blkdev_ioctl_file_f_mapping_host_file_cmd_arg"];
+        }
+
+        subgraph cluster_ioctl_by_bdev{
+                label="int ioctl_by_bdev(struct block_device *bdev, unsigned cmd, unsigned long arg)
+";
+                set_old_fs_get_fs[label="set_old_fs_get_fs"];
+                set_fs_KERNEL_DS[label="set_fs_KERNEL_DS"];
+                set_res_blkdev_ioctl_bdev_bd_inode_NULL_cmd_arg[label="set_res_blkdev_ioctl_bdev_bd_inode_NULL_cmd_arg"];
+                set_fs_old_fs[label="set_fs_old_fs"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_*lookup_bdev{
+                label="struct block_device *lookup_bdev(const char *path)
+";
+                path_false_or_path_true[label="path_false_or_path_true"];
+                return_ERR_PTR_EINVAL[label="return_ERR_PTR_EINVAL"];
+                set_error_path_lookup_path_LOOKUP_FOLLOW_nd[label="set_error_path_lookup_path_LOOKUP_FOLLOW_nd"];
+                error_true[label="error_true"];
+                return_ERR_PTR_error[label="return_ERR_PTR_error"];
+                set_inode_nd_dentry_d_inode[label="set_inode_nd_dentry_d_inode"];
+                set_error_ENOTBLK[label="set_error_ENOTBLK"];
+                S_ISBLK_inode_i_mode_false[label="S_ISBLK_inode_i_mode_false"];
+                goto_fail[label="goto_fail"];
+                set_error_EACCES[label="set_error_EACCES"];
+                nd_mnt_mnt_flags_MNT_NODEV_set[label="nd_mnt_mnt_flags_MNT_NODEV_set"];
+                goto_fail[label="goto_fail"];
+                set_error_ENOMEM[label="set_error_ENOMEM"];
+                set_bdev_bd_acquire_inode[label="set_bdev_bd_acquire_inode"];
+                bdev_true[label="bdev_true"];
+                goto_fail[label="goto_fail"];
+                path_release_nd[label="path_release_nd"];
+                return_bdev[label="return_bdev"];
+                set_bdev_ERR_PTR_error[label="set_bdev_ERR_PTR_error"];
+                goto_out[label="goto_out"];
+        }
+
+        subgraph cluster_*open_bdev_excl{
+                label="struct block_device *open_bdev_excl(const char *path, int flags, void *holder)
+";
+                set_mode_FMODE_READ[label="set_mode_FMODE_READ"];
+                set_error_0[label="set_error_0"];
+                set_bdev_lookup_bdev_path[label="set_bdev_lookup_bdev_path"];
+                IS_ERR_bdev_true[label="IS_ERR_bdev_true"];
+                return_bdev[label="return_bdev"];
+                flags_MS_RDONLY_clear[label="flags_MS_RDONLY_clear"];
+                mode_self_or_FMODE_WRITE[label="mode_self_or_FMODE_WRITE"];
+                set_error_blkdev_get_bdev_mode_0[label="set_error_blkdev_get_bdev_mode_0"];
+                error_true[label="error_true"];
+                return_ERR_PTR_error[label="return_ERR_PTR_error"];
+                set_error_EACCES[label="set_error_EACCES"];
+                flags_MS_RDONLY_clear_and_bdev_read_only_bdev_true[label="flags_MS_RDONLY_clear_and_bdev_read_only_bdev_true"];
+                goto_blkdev_put[label="goto_blkdev_put"];
+                set_error_bd_claim_bdev_holder[label="set_error_bd_claim_bdev_holder"];
+                error_true[label="error_true"];
+                goto_blkdev_put[label="goto_blkdev_put"];
+                return_bdev[label="return_bdev"];
+                blkdev_put_bdev[label="blkdev_put_bdev"];
+                return_ERR_PTR_error[label="return_ERR_PTR_error"];
+        }
+
+        subgraph cluster_close_bdev_excl{
+                label="void close_bdev_excl(struct block_device *bdev)
+";
+                bd_release_bdev[label="bd_release_bdev"];
+                blkdev_put_bdev[label="blkdev_put_bdev"];
+        }
+}
