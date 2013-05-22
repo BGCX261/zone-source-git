@@ -73,6 +73,26 @@ digraph select_c{
 
 	subgraph cluster_do_select{
 		label="int do_select(int n, fd_set_bits *fds, long *timeout)";
+		set___timeout_timeout[label="set___timeout_timeout"];
+		lock_current_files_file_lock[label="lock_current_files_file_lock"];
+		set_retval_max_select_fd_n_fds[label="set_retval_max_select_fd_n_fds"];
+		unlock_current_files_file_lock[label="unlock_current_files_file_lock"];
+		retval_small_0[label="retval_small_0"];
+		return_retval[label="return_retval"];
+		set_n_retval[label="set_n_retval"];
+		poll_initwait_table[label="poll_initwait_table"];
+		set_wait_table_pt[label="set_wait_table_pt"];
+		__timeout_false[label="__timeout_false"];
+		clear_wait[label="clear_wait"];
+		set_retval_0[label="set_retval_0"];
+		dead_for[label="dead_for"];
+		set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+		set_inp_fds_in[label="set_inp_fds_in"];
+		set_outp_fds_out[label="set_outp_fds_out"];
+		set_exp_fds_ex[label="set_exp_fds_ex"];
+		set_rinp_fds_res_in[label="set_rinp_fds_res_in"];
+		set_routp_fd_res_out[label="set_routp_fd_res_out"];
+		set_rexp_fds_res_ex[label="set_rexp_fds_res_ex"];
 		
 	}
 }
