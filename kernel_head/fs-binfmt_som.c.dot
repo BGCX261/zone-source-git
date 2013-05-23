@@ -1,0 +1,87 @@
+digraph binfmt_som_c{
+	subgraph cluster_create_som_tables{
+		label="static void create_som_tables(struct linux_binprm *bprm)";
+		set_argc_bprm_argc[label="set_argc_bprm_argc"];
+		set_envc_bprm_envc[label="set_envc_bprm_envc"];
+		set_sp_bprm_p_add_3_and_rever_3[label="set_sp_bprm_p_add_3_and_rever_3"];
+		set_envp_sp[label="set_envp_sp"];
+		sp_self_add_envc_add_1[label="sp_self_add_envc_add_1"];
+		set_argv_sp[label="set_argv_sp"];
+		sp_self_add_argc_add_1[label="sp_self_add_argc_add_1"];
+		__put_user_envp_inc_sp[label="__put_user_envp_inc_sp"];
+		__put_user_argv_inc_sp[label="__put_user_argv_inc_sp"];
+		__put_user_argc_inc_sp[label="__put_user_argc_inc_sp"];
+		set_bprm_p_sp[label="set_bprm_p_sp"];
+		set_p_current_mm_arg_start[label="set_p_current_mm_arg_start"];
+		argc_dec_great_0[label="argc_dec_great_0"];
+		__put_user_p_argv_inc[label="__put_user_p_argv_inc"];
+		p_self_add_strlen_user_p[label="p_self_add_strlen_user_p"];
+		__put_user_NULL_argv[label="__put_user_NULL_argv"];
+		set_current_mm_arg_end_current_mm_env_start_p[label="set_current_mm_arg_end_current_mm_env_start_p"];
+		envc_dec_great_0[label="envc_dec_great_0"];
+		__put_user_p_envp_inc[label="__put_user_p_envp_inc"];
+		p_self_add_strlen_user_p[label="p_self_add_strlen_user_p"];
+		__put_user_NULL_envp[label="__put_user_NULL_envp"];
+		set_current_mm_env_end_p[label="set_current_mm_env_end_p"];
+	}
+
+	subgraph cluster_check_som_header{
+		label="static int check_som_header(struct som_hdr *som_ex)";
+		set_buf_som_ex[label="set_buf_som_ex"];
+		som_ex_system_id_not_eq_SOM_SID_PARISC_1_0_and_som_ex_system_id_not_eq_SOM_SID_PARISC_1_1_and_som_ex_system_id_not_eq_SOM_SID_PARISC_2_0[label="som_ex_system_id_not_eq_SOM_SID_PARISC_1_0_and_som_ex_system_id_not_eq_SOM_SID_PARISC_1_1_and_som_ex_system_id_not_eq_SOM_SID_PARISC_2_0"];
+		return_ENOEXEC[label="return_ENOEXEC"];
+		som_ex_a_magic_not_eq_SOM_EXEC_NONSHARE_and_som_ex_a_magic_not_eq_SOM_EXEC_SHARE_and_som_ex_a_maigic_not_eq_SOM_EXEC_DEMAND[label="som_ex_a_magic_not_eq_SOM_EXEC_NONSHARE_and_som_ex_a_magic_not_eq_SOM_EXEC_SHARE_and_som_ex_a_maigic_not_eq_SOM_EXEC_DEMAND"];
+		return_ENOEXEC[label="return_ENOEXEC"];
+		som_ex_version_id_not_eq_SOM_ID_OLD_and_som_ex_version_id_not_eq_SOM_ID_NEW[label="som_ex_version_id_not_eq_SOM_ID_OLD_and_som_ex_version_id_not_eq_SOM_ID_NEW"];
+		return_ENOEXEC[label="return_ENOEXEC"];
+		set_ck_0[label="set_ck_0"];
+		for_i_32[label="for_i_32"];
+		ck_xor_buf_i[label="ck_xor_buf_i"];
+		ck_not_eq_0[label="ck_not_eq_0"];
+		return_ENOEXEC[label="return_ENOEXEC"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_map_som_binary{
+		label="static int map_som_binary(struct file *file,
+		const struct som_exec_auxhdr *hpuxhdr)";
+		set_prot_PROT_READ_PROT_EXEC[label="set_prot_PROT_READ_PROT_EXEC"];
+		set_flags_MAP_FIXED_MAP_PRIVATE_MAP_DENYWRITE_MAP_EXECUTABLE[label="set_flags_MAP_FIXED_MAP_PRIVATE_MAP_DENYWRITE_MAP_EXECUTABLE"];
+		set_old_fs_get_fs[label="set_old_fs_get_fs"];
+		set_fs_get_ds[label="set_fs_get_ds"];
+		set_code_start_SOM_PAGESTART_hpuxhdr_exec_tmem[label="set_code_start_SOM_PAGESTART_hpuxhdr_exec_tmem"];
+		set_code_size_SOM_PAGEALIGN_hpuxhdr_exec_tsize[label="set_code_size_SOM_PAGEALIGN_hpuxhdr_exec_tsize"];
+		set_current_mm_start_code_code_start[label="set_current_mm_start_code_code_start"];
+		set_current_mm_end_code_code_start_add_code_size[label="set_current_mm_end_code_code_start_add_code_size"];
+		down_write_current_mm_mmap_sem[label="down_write_current_mm_mmap_sem"];
+		set_retval_do_mmap_file_code_start_code_size_prot_flags_SOM_PAGESTART_hpuxhdr_exec_tfile[label="set_retval_do_mmap_file_code_start_code_size_prot_flags_SOM_PAGESTART_hpuxhdr_exec_tfile"];
+		up_write_current_mm_mmap_sem[label="up_write_current_mm_mmap_sem"];
+		retval_small_0_and_retval_great_neg1024[label="retval_small_0_and_retval_great_neg1024"];
+		goto_out[label="goto_out"];
+		set_data_start_SOM_AGESTART_hpuxhdr_exec_dmem[label="set_data_start_SOM_AGESTART_hpuxhdr_exec_dmem"];
+		set_data_size_SOM_PAGEALIGN_hpuxhdr_exec_dsize[label="set_data_size_SOM_PAGEALIGN_hpuxhdr_exec_dsize"];
+		set_current_mm_start_data_data_start[label="set_current_mm_start_data_data_start"];
+		set_current_mm_end_data_bss_start_data_start_add_data_size[label="set_current_mm_end_data_bss_start_data_start_add_data_size"];
+		down_write_current_mm_mmap_sem[label="down_write_current_mm_mmap_sem"];
+		set_retval_do_mmap_file_data_start_data_size_prot_or_PROT_WRITE_flags_SOM_PAGESTART_hpuxhdr_exec_dfile[label="set_retval_do_mmap_file_data_start_data_size_prot_or_PROT_WRITE_flags_SOM_PAGESTART_hpuxhdr_exec_dfile"];
+		up_write_current_mm_mmap_sem[label="up_write_current_mm_mmap_sem"];
+		retval_small_0_and_retval_great_neg1024[label="retval_small_0_and_retval_great_neg1024"];
+		goto_out[label="goto_out"];
+		set_som_brk_bss_start_add_SOM_PAGEALIGN_hpuxhdr_exec_bsize[label="set_som_brk_bss_start_add_SOM_PAGEALIGN_hpuxhdr_exec_bsize"];
+		current_mm_start_brk_current_mm_brk_som_brk[label="current_mm_start_brk_current_mm_brk_som_brk"];
+		down_write_current_mm_mmap_sem[label="down_write_current_mm_mmap_sem"];
+		set_retval_do_mmap_NULL_bss_start_som_brk_sub_bss_start_prot_or_PROT_WRITE_MAP_FIXED_or_MAP_PRIVATE_0[label="set_retval_do_mmap_NULL_bss_start_som_brk_sub_bss_start_prot_or_PROT_WRITE_MAP_FIXED_or_MAP_PRIVATE_0"];
+		up_write_current_mm_mmap_sem[label="up_write_current_mm_mmap_sem"];
+		retval_great_0_or_retval_small_neg1024[label="retval_great_0_or_retval_small_neg1024"];
+		set_retval_0[label="set_retval_0"];
+		set_fs_old_fs[label="set_fs_old_fs"];
+		return_retval[label="return_retval"];
+	}
+
+	subgraph cluster_int
+		load_som_binary{
+		label="static int
+load_som_binary(struct linux_binprm * bprm, struct pt_regs * regs)";
+		
+	}
+}

@@ -1,0 +1,285 @@
+digraph char_dev_c{
+	subgraph cluster_major_to_index{
+		label="static inline int major_to_index(int major)";
+		return_major_mod_MAX_PROBE_HASH[label="return_major_mod_MAX_PROBE_HASH"];
+	}
+
+	subgraph cluster_get_chrdev_list{
+		label="int get_chrdev_list(char *page)";
+		set_len_sprintf_page_Character_devices[label="set_len_sprintf_page_Character_devices"];
+		down_chrdevs_lock[label="down_chrdevs_lock"];
+		for_i_0_ARRAY_SIZE_chrdevs[label="for_i_ARRAY_SIZE_chrdevs"];
+		for_cd_chrdevs_i_cd_cd_next[label="for_cd_chrdevs_i_cd_cd_next"];
+		len_self_add_sprintf_page_add_len_cd_major_cd_name[label="len_self_add_sprintf_page_add_len_cd_major_cd_name"];
+		up_chrdevs_lock[label="up_chrdevs_lock"];
+		return_len[label="return_len"];
+	}
+
+	subgraph cluster___register_chrdev_region{
+		label="static struct char_device_struct * __register_chrdev_region(unsigned int major, unsigned int baseminor, int minorct, const char *name)";
+		set_ret_0[label="set_ret_0"];
+		set_cd_kmalloc[label="set_cd_kmalloc"];
+		memset_cd_0[label="memset_cd_0"];
+		down_chrdevs_lock[label="down_chrdevs_lock"];
+		major_eq_0[label="major_eq_0"];
+		for_i_ARRAY_SIZE_chrdevs_sub_1_0[label="for_i_ARRAY_SIZE_chrdevs_sub_1_0"];
+		chrdevs_i_eq_NULL[label="chrdevs_i_eq_NULL"];
+		i_eq_0[label="i_eq_0"];
+		set_ret_EBUSY[label="set_ret_EBUSY"];
+		goto_out[label="goto_out"];
+		set_major_i[label="set_major_i"];
+		set_ret_major[label="set_ret_major"];
+		set_cd_major_major[label="set_cd_major_major"];
+		set_cd_baseminor_baseminor[label="set_cd_baseminor_baseminor"];
+		set_cd_minorct_minorct[label="set_cd_minorct_minorct"];
+		set_cd_name_name[label="set_cd_name_name"];
+		set_i_major_to_index_major[label="set_i_major_to_index_major"];
+		for_cp_chrdevs_i_cp_next[label="for_cp_chrdevs_i_cp_next"];
+		cp_major_great_major_or_cp_major_eq_major_and_cp_baseminor_not_small_baseminor[label="cp_major_great_major_or_cp_major_eq_major_and_cp_baseminor_not_small_baseminor"];
+		cp_true_cp_major_eq_major_cp_baseminor_small_baseminor_add_minorct[label="cp_true_cp_major_eq_major_cp_baseminor_small_baseminor_add_minorct"];
+		set_ret_EBUSY[label="set_ret_EBUSY"];
+		goto_out[label="goto_out"];
+		set_cd_next_cp[label="set_cd_next_cp"];
+		set_cp_cd[label="set_cp_cd"];
+		up_chrdevs_lock[label="up_chrdevs_lock"];
+		return_cd[label="return_cd"];
+		up_chrdevs_lock[label="up_chrdevs_lock"];
+		kfree_cd[label="kfree_cd"];
+		return_ERR_PTR_ret[label="return_ERR_PTR_ret"];
+	}
+
+	subgraph cluster___unregister_chrdev_region{
+		label="static struct char_device_struct *__unregister_chrdev_region(unsigned major, unsigned baseminor, int minorct)";
+		clear_cd[label="clear_cd"];
+		set_i_major_to_index_major[label="set_i_major_to_index_major"];
+		up_chrdevs_lock[label="up_chrdevs_lock"];
+		for_cp_chrdevs_i_cp_next[label="for_cp_chrdevs_i_cp_next"];
+		cp_major_eq_major_and_cp_baseminor_eq_baseminor_and_cp_minorct_eq_minorct[label="cp_major_eq_major_and_cp_baseminor_eq_baseminor_and_cp_minorct_eq_minorct"];
+		cp_true[label="cp_true"];
+		set_cd_cp[label="set_cd_cp"];
+		set_cp_cd_next[label="set_cp_cd_next"];
+		up_chrdevs_lock[label="up_chrdevs_lock"];
+		return_cd[label="return_cd"];
+	}
+
+	subgraph cluster_register_chrdev_region{
+		label="int register_chrdev_region(dev_t from, unsigned count, const char *name)";
+		set_to_from_add_count[label="set_to_from_add_count"];
+		for_n_from_to_next[label="for_n_from_to_next"];
+		set_next_MKDEV_MAJOR_n_add_1_0[label="set_next_MKDEV_MAJOR_n_add_1_0"];
+		next_great_to[label="next_great_to"];
+		set_next_to[label="set_next_to"];
+		set_cd___register_chrdev_region_MAJOR_n_MINOR_n_next_sub_n_name[label="set_cd___register_chrdev_region_MAJOR_n_MINOR_n_next_sub_n_name"];
+		IS_ERR_cd_true[label="IS_ERR_cd_true"];
+		goto_fail[label="goto_fail"];
+		return_0[label="return_0"];
+		set_to_n[label="set_to_n"];
+		for_n_from_to_next[label="for_n_from_to_next"];
+		set_next_MKDEV_MAJOR_n_add_1_0[label="set_next_MKDEV_MAJOR_n_add_1_0"];
+		kfree___unregister_chrdev_region_MAJOR_n_MINOR_n_next_sub_n[label="kfree___unregister_chrdev_region_MAJOR_n_MINOR_n_next_sub_n"];
+		return_PTR_ERR_cd[label="return_PTR_ERR_cd"];
+	}
+
+	subgraph cluster_alloc_chrdev_region{
+		label="int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
+			const char *name)";
+		set_cd___register_chr_dev_region_0_baseminor_count_name[label="set_cd___register_chr_dev_region_0_baseminor_count_name"];
+		IS_ERR_cd_true[label="IS_ERR_cd_true"];
+		return_PTR_ERR_cd[label="return_PTR_ERR_cd"];
+		set_dev_MKDEV_cd_major_cd_baseminor[label="set_dev_MKDEV_cd_major_cd_baseminor"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_register_chrdev{
+		label="int register_chrdev(unsigned int major, const char *name,
+		    struct file_operations *fops)";
+		set_err_ENOMEM[label="set_err_ENOMEM"];
+		set_cd___register_chrdev_region_major_0_256_name[label="set_cd___register_chrdev_region_major_0_256_name"];
+		IS_ERR_cd_true[label="IS_ERR_cd_true"];
+		return_PTR_ERR_cd[label="return_PTR_ERR_cd"];
+		set_cdev_cdev_alloc[label="set_cdev_cdev_alloc"];
+		cdev_false[label="cdev_false"];
+		goto_out2[label="goto_out2"];
+		set_cdev_owner_fops_owner[label="set_cdev_owner_fops_owner"];
+		set_cdev_ops_fops[label="set_cdev_ops_fops"];
+		kobject_set_name_cdev_kobj_[label="kobject_set_name_cdev_kobj_"];
+		for_s_strchr_kobject_name_cdev_kobj_slash_strchr_s_slash[label="for_s_strchr_kobject_name_cdev_kobj_slash_strchr_s_slash"];
+		set_s_char_exclamation_point[label="set_s_char_exclamation_point"];
+		set_err_cdev_add_cdev_MKDEV_cd_major_0_256[label="set_err_cdev_add_cdev_MKDEV_cd_major_0_256"];
+		err_true[label="err_true"];
+		goto_out[label="goto_out"];
+		set_cd_cdev_cdev[label="set_cd_cdev_cdev"];
+		return_0_or_cd_major_decide_major[label="return_0_or_cd_major_decide_major"];
+		kobject_put_cdev_kobj[label="kobject_put_cdev_kobj"];
+		kfree___unregister_chrdev_region_cd_major_0_256[label="kfree___unregister_chrdev_region_cd_major_0_256"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_unregister_chrdev_region{
+		label="void unregister_chrdev_region(dev_t from, unsigned count)";
+		set_to_from_add_count[label="set_to_from_add_count"];
+		for_n_from_to_next[label="for_n_from_to_next"];
+		set_next_MKDEV_MAJOR_n_add_1_0[label="set_next_MKDEV_MAJOR_n_add_1_0"];
+		next_great_to[label="next_great_to"];
+		set_next_to[label="set_next_to"];
+		kfree___unregister_chrdev_region_MAJOR_n_MINOR_n_next_sub_n[label="kfree___unregister_chrdev_region_MAJOR_n_MINOR_n_next_sub_n"];
+	}
+
+	subgraph cluster_unregister_chrdev{
+		label="int unregister_chrdev(unsigned int major, const char *name)";
+		set_cd___unregister_chrdev_region_major_0_256[label="set_cd___unregister_chrdev_region_major_0_256"];
+		cd_true_and_cd_cdev_true[label="cd_true_and_cd_cdev_true"];
+		cdev_del_cd_cdev[label="cdev_del_cd_cdev"];
+		kfree_cd[label="kfree_cd"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_*cdev_get{
+		label="static struct kobject *cdev_get(struct cdev *p)";
+		set_owner_p_owner[label="set_owner_p_owner"];
+		owner_true_and_try_module_get_owner_false[label="owner_true_and_try_module_get_owner_false"];
+		return_NULL[label="return_NULL"];
+		set_kobj_kobject_get_p_kobj[label="set_kobj_kobject_get_p_kobj"];
+		kobj_false[label="kobj_false"];
+		module_put_owner[label="module_put_owner"];
+		return_kobj[label="return_kobj"];
+	}
+
+	subgraph cluster_cdev_put{
+		label="void cdev_put(struct cdev *p)";
+		p_true[label="p_true"];
+		kobject_put_p_kobj[label="kobject_put_p_kobj"];
+		module_put_p_owner[label="module_put_p_owner"];
+	}
+
+	subgraph cluster_chrdev_open{
+		label="int chrdev_open(struct inode * inode, struct file * filp)";
+		lock_cdev_lock[label="lock_cdev_lock"];
+		set_p_inode_i_cdev[label="set_p_inode_i_cdev"];
+		p_false[label="p_false"];
+		unlock_cdev_lock[label="unlock_cdev_lock"];
+		set_kobj_kobj_lookup_cdev_map_inode_i_rdev_idx[label="set_kobj_kobj_lookup_cdev_map_inode_i_rdev_idx"];
+		kobj_false[label="kobj_false"];
+		return_ENXIO[label="return_ENXIO"];
+		set_new_container_of_kobj_struct_cdev_kobj[label="set_new_container_of_kobj_struct_cdev_kobj"];
+		lock_cdev_lock[label="lock_cdev_lock"];
+		set_p_inode_i_cdev[label="set_p_inode_i_cdev"];
+		p_false[label="p_false"];
+		set_inode_i_cdev_p_next[label="set_inode_i_cdev_p_next"];
+		set_indoe_i_cindex_idx[label="set_indoe_i_cindex_idx"];
+		list_add_inode_i_devices_p_list[label="list_add_inode_i_devices_p_list"];
+		clear_new[label="clear_new"];
+		cdev_get_p_false[label="cdev_get_p_false"];
+		set_ret_ENXIO[label="set_ret_ENXIO"];
+		cdev_get_p_false[label="cdev_get_p_false"];
+		set_ret_ENXIO[label="set_ret_ENXIO"];
+		unlock_cdev_lock[label="unlock_cdev_lock"];
+		cdev_put_new[label="cdev_put_new"];
+		ret_true[label="ret_true"];
+		return_ret[label="return_ret"];
+		set_filp_f_op_fops_get_p_ops[label="set_filp_f_op_fops_get_p_ops"];
+		filp_f_op_false[label="filp_f_op_false"];
+		cdev_put_p[label="cdev_put_p"];
+		return_ENXIO[label="return_ENXIO"];
+		filp_f_op_open_true[label="filp_f_op_open_true"];
+		lock_kernel[label="lock_kernel"];
+		set_ret_filp_f_op_open_inde_filp[label="set_ret_filp_f_op_open_inde_filp"];
+		unlock_kernel[label="unlock_kernel"];
+		ret_true[label="ret_true"];
+		cdev_put_p[label="cdev_put_p"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_cd_forget{
+		label="void cd_forget(struct inode *inode)";
+		lock_cdev_lock[label="lock_cdev_lock"];
+		list_del_init_inode_i_devices[label="list_del_init_inode_i_devices"];
+		clear_inode_i_cdev[label="clear_inode_i_cdev"];
+		unlock_cdev_lock[label="unlock_cdev_lock"];
+	}
+
+	subgraph cluster_cdev_purge{
+		label="static void cdev_purge(struct cdev *cdev)";
+		lock_cdev_lock[label="lock_cdev_lock"];
+		list_empty_cdev_list_false[label="list_empty_cdev_list_false"];
+		set_inode_container_of_cdev_list_next_sturct_inode_i_devices[label="set_inode_container_of_cdev_list_next_sturct_inode_i_devices"];
+		list_del_init_inode_i_devices[label="list_del_init_inode_i_devices"];
+		clear_inode_i_cdev[label="clear_inode_i_cdev"];
+		unlock_cdev_lock[label="unlock_cdev_lock"];
+	}
+
+	subgraph cluster_*exact_match{
+		label="static struct kobject *exact_match(dev_t dev, int *part, void *data)";
+		set_p_data[label="set_p_data"];
+		return_p_kobj[label="return_p_kobj"];
+	}
+
+	subgraph cluster_exact_lock{
+		label="static int exact_lock(dev_t dev, void *data)";
+		set_p_data[label="set_p_data"];
+		return_0_or_neg1_decide_cdev_get_p[label="return_0_or_neg1_decide_cdev_get_p"];
+	}
+
+	subgraph cluster_cdev_add{
+		label="int cdev_add(struct cdev *p, dev_t dev, unsigned count)";
+		set_p_dev_dev[label="set_p_dev_dev"];
+		set_p_count_count[label="set_p_count_count"];
+		return_kobj_map_cdev_map_dev_count_NULL_exact_match_exact_lock_p[label="return_kobj_map_cdev_map_dev_count_NULL_exact_match_exact_lock_p"];
+	}
+
+	subgraph cluster_cdev_unmap{
+		label="static void cdev_unmap(dev_t dev, unsigned count)";
+		kobj_unmap_cdev_map_dev_count[label="kobj_unmap_cdev_map_dev_count"];
+	}
+
+	subgraph cluster_cdev_del{
+		label="void cdev_del(struct cdev *p)";
+		cdev_unmap_p_dev_p_count[label="cdev_unmap_p_dev_p_count"];
+		kobject_put_p_kobj[label="kobject_put_p_kobj"];
+	}
+
+	subgraph cluster_cdev_default_release{
+		label="static void cdev_default_release(struct kobject *kobj)";
+		set_p_container_of_kobj_struct_cdev_kobj[label="set_p_container_of_kobj_struct_cdev_kobj"];
+		cdev_pruge_p[label="cdev_pruge_p"];
+	}
+
+	subgraph cluster_cdev_dynamic_release{
+		label="static void cdev_dynamic_release(struct kobject *kobj)";
+		set_p_container_of_kobj_struct_cdev_kobj[label="set_p_container_of_kobj_struct_cdev_kobj"];
+		cdev_purge_p[label="cdev_purge_p"];
+		kfree_p[label="kfree_p"];
+	}
+
+	subgraph cluster_*cdev_alloc{
+		label="struct cdev *cdev_alloc(void)";
+		set_p_kmalloc[label="set_p_kmalloc"];
+		p_true[label="p_true"];
+		memset_p_0[label="memset_p_0"];
+		set_p_kobj_ktype_ktype_cdev_dynamic[label="set_p_kobj_ktype_ktype_cdev_dynamic"];
+		INIT_LIST_HEAD_p_list[label="INIT_LIST_HEAD_p_list"];
+		kobject_init_p_kobj[label="kobject_init_p_kobj"];
+		return_p[label="return_p"];
+	}
+
+	subgraph cluster_cdev_init{
+		label="void cdev_init(struct cdev *cdev, struct file_operations *fops)";
+		memset_cdev_0[label="memset_cdev_0"];
+		INIT_LIST_HEAD_cdev_list[label="INIT_LIST_HEAD_cdev_list"];
+		set_cdev_kobj_ktype_ktype_cdev_default[label="set_cdev_kobj_ktype_ktype_cdev_default"];
+		kobject_init_cdev_kobj[label="kobject_init_cdev_kobj"];
+		set_cdev_ops_fops[label="set_cdev_ops_fops"];
+	}
+
+	subgraph cluster_*base_probe{
+		label="static struct kobject *base_probe(dev_t dev, int *part, void *data)";
+		request_modele_char_major_d_d_MAJOR_dev_MINOR_dev_great_0[label="request_modele_char_major_d_d_MAJOR_dev_MINOR_dev_great_0"];
+		request_module_char_major_d_MAJOR_dev[label="request_module_char_major_d_MAJOR_dev"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_chrdev_init{
+		label="void __init chrdev_init(void)";
+		set_cdev_map_kobj_map_init_base_probe_chrdevs_lock[label="set_cdev_map_kobj_map_init_base_probe_chrdevs_lock"];
+	}
+}
