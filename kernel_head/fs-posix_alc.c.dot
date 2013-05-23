@@ -1,0 +1,204 @@
+digraph posix_acl_c{
+	subgraph cluster_posix_acl_alloc{
+		label="struct posix_acl * posix_acl_alloc(int count, unsigned int __nocast flags)";
+		set_size_sizeof_struct_posix_acl_add_count_multi_sizeof_struct_posix_alc_entry[label="set_size_sizeof_struct_posix_acl_add_count_multi_sizeof_struct_posix_alc_entry"];
+		set_acl_kmalloc[label="set_acl_kmalloc"];
+		acl_true[label="acl_true"];
+		atomic_set_acl_a_refcount_1[label="atomic_set_acl_a_refcount_1"];
+		set_acl_a_count_count[label="set_acl_a_count_count"];
+		return_acl[label="return_acl"];
+	}
+
+	subgraph cluster_posix_acl_clone{
+		label="struct posix_acl *posix_acl_clone(const struct posix_acl *acl, unsigned int __nocast flags)";
+		alc_true[label="alc_true"];
+		set_size_sizeof_struct_posix_acl_add_acl_a_count_multi_sizeof_struct_posix_acl_entry[label="set_size_sizeof_struct_posix_acl_add_acl_a_count_multi_sizeof_struct_posix_acl_entry"];
+		set_clone_kmalloc[label="set_clone_kmalloc"];
+		clone_true[label="clone_true"];
+		memcpy_clone_acl[label="memcpy_clone_acl"];
+		atomic_set_clone_a_refcount_1[label="atomic_set_clone_a_refcount_1"];
+		return_clone[label="return_clone"];
+	}
+
+	subgraph cluster_posix_acl_valid{
+		label="int posix_acl_valid(const struct posix_acl *acl)";
+		set_state_ACL_USER_OBJ[label="set_state_ACL_USER_OBJ"];
+		FOREACH_ACL_ENTRY_pa_acl_pe[label="FOREACH_ACL_ENTRY_pa_acl_pe"];
+		pa_e_perm_clear_ACL_READ_ACL_WRITE_ACL_EXECUTE[label="pa_e_perm_clear_ACL_READ_ACL_WRITE_ACL_EXECUTE"];
+		return_EINVAL[label="return_EINVAL"];
+		switch_pa_e_tag[label="switch_pa_e_tag"];
+		case_ACL_USER_OBJ[label="case_ACL_USER_OBJ"];
+		state_eq_ACL_USER_OBJ[label="state_eq_ACL_USER_OBJ"];
+		set_id_0[label="set_id_0"];
+		set_state_ACL_USER[label="set_state_ACL_USER"];
+		return_EINVAL[label="return_EINVAL"];
+		case_ACL_USER[label="case_ACL_USER"];
+		state_not_eq_ACL_USER[label="state_not_eq_ACL_USER"];
+		return_EINVAL[label="return_EINVAL"];
+		pa_e_id_eq_ACL_UNDEFINED_ID_or_pa_e_id_small_id[label="pa_e_id_eq_ACL_UNDEFINED_ID_or_pa_e_id_small_id"];
+		return_EINVAL[label="return_EINVAL"];
+		set_id_pa_e_id_add_1[label="set_id_pa_e_id_add_1"];
+		set_needs_mask_1[label="set_needs_mask_1"];
+		case_ACL_GROUP_OBJ[label="case_ACL_GROUP_OBJ"];
+		state_eq_ACL_USER[label="state_eq_ACL_USER"];
+		set_id_0[label="set_id_0"];
+		set_state_ACL_GROUP[label="set_state_ACL_GROUP"];
+		return_EINVAL[label="return_EINVAL"];
+		case_ACL_GROUP[label="case_ACL_GROUP"];
+		state_not_eq_ACL_GROUP[label="state_not_eq_ACL_GROUP"];
+		return_EINVAL[label="return_EINVAL"];
+		pa_e_id_eq_ACL_UNDEFINED_ID_or_pa_e_id_small_id[label="pa_e_id_eq_ACL_UNDEFINED_ID_or_pa_e_id_small_id"];
+		return_EINVAL[label="return_EINVAL"];
+		set_id_pa_e_id_add_1[label="set_id_pa_e_id_add_1"];
+		set_needs_mask_1[label="set_needs_mask_1"];
+		case_ACL_MASK[label="case_ACL_MASK"];
+		state_not_eq_ACL_GROUP[label="state_not_eq_ACL_GROUP"];
+		return_EINVAL[label="return_EINVAL"];
+		set_state_ACL_OTHER[label="set_state_ACL_OTHER"];
+		case_ACL_OTHER[label="case_ACL_OTHER"];
+		set_state_eq_ACL_OTHER_or_state_eq_ACL_GROUP_and_needs_mask_false[label="set_state_eq_ACL_OTHER_or_state_eq_ACL_GROUP_and_needs_mask_false"];
+		set_state_0[label="set_state_0"];
+		return_EINVAL[label="return_EINVAL"];
+		default_[label="default_"];
+		return_EINVAL[label="return_EINVAL"];
+		state_eq_0[label="state_eq_0"];
+		return_0[label="return_0"];
+		return_EINVAL[label="return_EINVAL"];
+	}
+
+	subgraph cluster_posix_acl_equiv_mode{
+		label="int posix_acl_equiv_mode(const struct posix_acl *acl, mode_t *mode_p)";
+		FOREACH_ACL_ENTRY_pa_acl_pe[label="FOREACH_ACL_ENTRY_pa_acl_pe"];
+		switch_pa_e_tag[label="switch_pa_e_tag"];
+		case_ACL_USER_OBJ[label="case_ACL_USER_OBJ"];
+		mode_self_or_pa_e_perm_S_IRWXO_left_move_6[label="mode_self_or_pa_e_perm_S_IRWXO_left_move_6"];
+		case_ACL_GROUP_OBJ[label="case_ACL_GROUP_OBJ"];
+		mode_self_or_pa_e_perm_S_IRWXO_left_move_3[label="mode_self_or_pa_e_perm_S_IRWXO_left_move_3"];
+		case_ACL_OTHER[label="case_ACL_OTHER"];
+		mode_self_or_pa_e_perm_and_S_IRWXO[label="mode_self_or_pa_e_perm_and_S_IRWXO"];
+		case_ACL_MASK[label="case_ACL_MASK"];
+		set_mode_mode_clear_S_IRWXG_or_pa_e_perm_and_S_IRWXO_left_move_3[label="set_mode_mode_clear_S_IRWXG_or_pa_e_perm_and_S_IRWXO_left_move_3"];
+		set_not_equiv_1[label="set_not_equiv_1"];
+		case_ACL_USER[label="case_ACL_USER"];
+		case_ACL_GROUP[label="case_ACL_GROUP"];
+		set_not_equiv_1[label="set_not_equiv_1"];
+		default_[label="default_"];
+		return_EINVAL[label="return_EINVAL"];
+		mode_p_true[label="mode_p_true"];
+		set_mode_p_mode_p_clear_S_IRWXUGO_and_mode[label="set_mode_p_mode_p_clear_S_IRWXUGO_and_mode"];
+		return_not_equiv[label="return_not_equiv"];
+	}
+
+	subgraph cluster_posix_acl_from_mode{
+		label="struct posix_acl *posix_acl_from_mode(mode_t mode, unsigned int __nocast flags)";
+		set_acl_posix_acl_alloc_3_flags[label="set_acl_posix_acl_alloc_3_flags"];
+		acl_false[label="acl_false"];
+		return_ERR_PTR_ENOMEM[label="return_ERR_PTR_ENOMEM"];
+		set_acl_a_entries_0_e_tag_ACL_USER_OBJ[label="set_acl_a_entries_0_e_tag_ACL_USER_OBJ"];
+		set_acl_a_entries_0_e_id_ACL_UNDERFINED_ID[label="set_acl_a_entries_0_e_id_ACL_UNDERFINED_ID"];
+		set_acl_a_entries_0_e_perm_mode_and_S_IRWXU_right_move_6[label="set_acl_a_entries_0_e_perm_mode_and_S_IRWXU_right_move_6"];
+		set_acl_a_entries_1_e_tag_ACL_GROUP_OBJ[label="set_acl_a_entries_1_e_tag_ACL_GROUP_OBJ"];
+		set_acl_a_entries_1_e_id_ACL_UNDERFINED_ID[label="set_acl_a_entries_1_e_id_ACL_UNDERFINED_ID"];
+		set_acl_a_entries_1_e_perm_mode_and_S_IRWXG_right_move_3[label="set_acl_a_entries_1_e_perm_mode_and_S_IRWXG_right_move_3"];
+		set_acl_a_entries_2_e_tag_ACL_OTHER[label="set_acl_a_entries_2_e_tag_ACL_OTHER"];
+		set_acl_a_entries_2_e_id_ACL_UNDERFINED_ID[label="set_acl_a_entries_2_e_id_ACL_UNDERFINED_ID"];
+		set_acl_a_entries_2_e_perm_mode_and_S_IRWXO[label="set_acl_a_entries_2_e_perm_mode_and_S_IRWXO"];
+		return_acl[label="return_acl"];
+	}
+
+	subgraph cluster_posix_acl_permission{
+		label="int posix_acl_permission(struct inode *inode, const struct posix_acl *acl, int want)";
+		FOREACH_ACL_ENTRY_pa_acl_pe[label="FOREACH_ACL_ENTRY_pa_acl_pe"];
+		switch_pa_e_tag[label="switch_pa_e_tag"];
+		case_ACL_USER_OBJ[label="case_ACL_USER_OBJ"];
+		inode_i_uid_eq_current_fsuid[label="inode_i_uid_eq_current_fsuid"];
+		goto_check_perm[label="goto_check_perm"];
+		case_ACL_USER[label="case_ACL_USER"];
+		pa_e_id_eq_current_fsuid[label="pa_e_id_eq_current_fsuid"];
+		goto_mask[label="goto_mask"];
+		case_ACL_GROUP_OBJ[label="case_ACL_GROUP_OBJ"];
+		in_group_p_inode_i_gid_true[label="in_group_p_inode_i_gid_true"];
+		set_found_1[label="set_found_1"];
+		pa_e_perm_and_want_eq_want[label="pa_e_perm_and_want_eq_want"];
+		goto_mask[label="goto_mask"];
+		case_ACL_GROUP[label="case_ACL_GROUP"];
+		in_group_p_pa_e_id_true[label="in_group_p_pa_e_id_true"];
+		set_found_1[label="set_found_1"];
+		pa_e_perm_and_want_eq_want[label="pa_e_perm_and_want_eq_want"];
+		goto_mask[label="goto_mask"];
+		case_ACL_MASK[label="case_ACL_MASK"];
+		case_ACL_OTHER[label="case_ACL_OTHER"];
+		found_true[label="found_true"];
+		return_EACCES[label="return_EACCES"];
+		goto_check_perm[label="goto_check_perm"];
+		default_[label="default_"];
+		return_EIO[label="return_EIO"];
+		return_EIO[label="return_EIO"];
+		for_mask_obj_pa_add_1_mask_obj_not_eq_pe[label="for_mask_obj_pa_add_1_mask_obj_not_eq_pe"];
+		mask_obj_e_tag_eq_ACL_MASK[label="mask_obj_e_tag_eq_ACL_MASK"];
+		pa_e_perm_and_mask_obj_e_perm_and_want_eq_want[label="pa_e_perm_and_mask_obj_e_perm_and_want_eq_want"];
+		return_0[label="return_0"];
+		return_EACCES[label="return_EACCES"];
+		pa_e_perm_and_want_eq_want[label="pa_e_perm_and_want_eq_want"];
+		return_0[label="return_0"];
+		return_EACCES[label="return_EACCES"];
+	}
+
+	subgraph cluster_posix_acl_create_masq{
+		label="int posix_acl_create_masq(struct posix_acl *acl, mode_t *mode_p)";
+		set_mode_mode_p[label="set_mode_mode_p"];
+		FOREACH_ACL_ENTRY_pa_acl_pe[label="FOREACH_ACL_ENTRY_pa_acl_pe"];
+		switch_pa_e_tag[label="switch_pa_e_tag"];
+		case_ACL_USER_OBJ[label="case_ACL_USER_OBJ"];
+		pa_e_perm_self_and_mode_right_move_6_or_rever_S_IRWXO[label="pa_e_perm_self_and_mode_right_move_6_or_rever_S_IRWXO"];
+		mode_self_and_pa_e_perm_left_move_6_or_rever_S_IRWXU[label="mode_self_and_pa_e_perm_left_move_6_or_rever_S_IRWXU"];
+		case_ACL_USER[label="case_ACL_USER"];
+		case_ACL_GROUP[label="case_ACL_GROUP"];
+		set_not_equiv_1[label="set_not_equiv_1"];
+		case_ACL_GROUP_OBJ[label="case_ACL_GROUP_OBJ"];
+		set_group_obj_pa[label="set_group_obj_pa"];
+		case_ACL_OTHER[label="case_ACL_OTHER"];
+		pa_e_perm_self_and_move_or_rever_S_IRWXO[label="pa_e_perm_self_and_move_or_S_IRWXO"];
+		mode_self_and_pa_e_perm_or_rever_S_IRWXO[label="mode_self_and_pa_e_perm_or_rever_S_IRWXO"];
+		case_ACL_MASK[label="case_ACL_MASK"];
+		set_mask_obj_pa[label="set_mask_obj_pa"];
+		set_not_equiv_1[label="set_not_equiv_1"];
+		default_[label="default_"];
+		return_EIO[label="return_EIO"];
+		mask_obj_true[label="mask_obj_true"];
+		mask_obj_e_perm_self_and_mode_right_move_3_or_rever_S_IRWXO[label="mask_obj_e_perm_self_and_mode_right_move_3_or_rever_S_IRWXO"];
+		mode_self_and_mask_obj_e_perm_left_move_3_or_rever_S_IRWXG[label="mode_self_and_mask_obj_e_perm_left_move_3_or_rever_S_IRWXG"];
+		group_obj_false[label="group_obj_false"];
+		return_EIO[label="return_EIO"];
+		group_obj_e_perm_self_and_mode_right_move_3_or_rever_S_IRWXO[label="group_obj_e_perm_self_and_mode_right_move_3_or_rever_S_IRWXO"];
+		mode_self_and_group_obj_e_perm_left_3_or_rever_S_IRWXG[label="mode_self_and_group_obj_e_perm_left_3_or_rever_S_IRWXG"];
+		set_mode_p_mode_p_clear_S_IRWXUGO_or_mode[label="set_mode_p_mode_p_clear_S_IRWXUGO_or_mode"];
+		return_not_equiv[label="return_not_equiv"];
+	}
+
+	subgraph cluster_posix_acl_chmod_masq{
+		label="int posix_acl_chmod_masq(struct posix_acl *acl, mode_t mode)";
+		FOREACH_ACL_ENTRY_pa_acl_pe[label="FOREACH_ACL_ENTRY_pa_acl_pe"];
+		switch_pa_e_tag[label="switch_pa_e_tag"];
+		case_ACL_USER_OBJ[label="case_ACL_USER_OBJ"];
+		set_pa_e_perm_mode_and_S_IRWXU_right_move_6[label="set_pa_e_perm_mode_and_S_IRWXU_right_move_6"];
+		case_ACL_USER[label="case_ACL_USER"];
+		case_ACL_GROUP[label="case_ACL_GROUP"];
+		case_ACL_GROUP_OBJ[label="case_ACL_GROUP_OBJ"];
+		set_group_obj_pa[label="set_group_obj_pa"];
+		case_ACL_MASK[label="case_ACL_MASK"];
+		set_mask_obj_pa[label="set_mask_obj_pa"];
+		case_ACL_OTHER[label="case_ACL_OTHER"];
+		set_pa_e_perm_mode_and_S_IRWXO[label="set_pa_e_perm_mode_and_S_IRWXO"];
+		default_[label="default_"];
+		return_EIO[label="return_EIO"];
+		mask_obj_true[label="mask_obj_true"];
+		set_mask_obj_e_perm_mode_and_S_IRWXG_right_move_3[label="set_mask_obj_e_perm_mode_and_S_IRWXG_right_move_3"];
+		group_obj_false[label="group_obj_false"];
+		return_EIO[label="return_EIO"];
+		set_group_obj_e_perm_mode_and_S_IRWXG_right_move_3[label="set_group_obj_e_perm_mode_and_S_IRWXG_right_move_3"];
+		return_0[label="return_0"];
+	}
+
+	
+}
