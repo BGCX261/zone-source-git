@@ -1,0 +1,160 @@
+digraph readdir_c{
+        subgraph cluster_vfs_readdir{
+                label="int vfs_readdir(struct file *file, filldir_t filler, void *buf)
+";
+                set_inode_file_f_dentry_d_inode[label="set_inode_file_f_dentry_d_inode"];
+                set_res_ENOTDIR[label="set_res_ENOTDIR"];
+                file_f_op_false_or_file_f_op_readdir_false[label="file_f_op_false_or_file_f_op_readdir_false"];
+                goto_out[label="goto_out"];
+                set_res_security_file_permission_file_MAY_READ[label="set_res_security_file_permission_file_MAY_READ"];
+                res_true[label="res_true"];
+                goto_out[label="goto_out"];
+                down_inode_i_sem[label="down_inode_i_sem"];
+                set_res_ENOENT[label="set_res_ENOENT"];
+                IS_DEADDIR_inode_false[label="IS_DEADDIR_inode_false"];
+                set_res_file_f_op_readdir_file_buf_filler[label="set_res_file_f_op_readdir_file_buf_filler"];
+                file_accessed_file[label="file_accessed_file"];
+                up_inode_i_sem[label="up_inode_i_sem"];
+                return_res[label="return_res"];
+        }
+
+        subgraph cluster_fillonedir{
+                label="static int fillonedir(void * __buf, const char * name, int namlen, loff_t offset, ino_t ino, unsigned int d_type)
+";
+                set_buf__buf[label="set_buf__buf"];
+                buf_result_true[label="buf_result_true"];
+                return_EINVAL[label="return_EINVAL"];
+                inc_buf_result[label="inc_buf_result"];
+                set_dirent_buf_dirent[label="set_dirent_buf_dirent"];
+                __put_user_ino_dirent_d_ino[label="__put_user_ino_dirent_d_ino"];
+                __put_user_offset_dirent_d_offset[label="__put_user_offset_dirent_d_offset"];
+                __put_user_namlen_dirent_d_namlen[label="__put_user_namlen_dirent_d_namlen"];
+                __copy_to_user_dirent_d_name_name_namlen[label="__copy_to_user_dirent_d_name_name_namlen"];
+                __put_user_0_dirent_d_name_add_namlen[label="__put_user_0_dirent_d_name_add_namlen"];
+                return_0[label="return_0"];
+                set_buf_result_EFAULT[label="set_buf_result_EFAULT"];
+                return_EFAULT[label="return_EFAULT"];
+        }
+
+        subgraph cluster_old_readdir{
+                label="asmlinkage long old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
+";
+                set_error_EBADF[label="set_error_EBADF"];
+                set_file_fget_fd[label="set_file_fget_fd"];
+                set_file_fget_fd[label="set_file_fget_fd"];
+                file_false[label="file_false"];
+                goto_out[label="goto_out"];
+                set_buf_result_0[label="set_buf_result_0"];
+                set_buf_dirent_dirent[label="set_buf_dirent_dirent"];
+                set_error_vfs_readdir_file_fillonedir_buf[label="set_error_vfs_readdir_file_fillonedir_buf"];
+                error_not_small_0[label="error_not_small_0"];
+                set_error_buf_result[label="set_error_buf_result"];
+                fput_file[label="fput_file"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_filldir{
+                label="static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
+		   ino_t ino, unsigned int d_type)
+";
+                set_buf__buf[label="set_buf__buf"];
+                set_reclen_ROUND_UP_NAME_OFFSET_dirent_add_namlen_add_2[label="set_reclen_ROUND_UP_NAME_OFFSET_dirent_add_namlen_add_2"];
+                set_buf_error_EINVAL[label="set_buf_error_EINVAL"];
+                reclen_great_buf_count[label="reclen_great_buf_count"];
+                return_EINVAL[label="return_EINVAL"];
+                set_dirent_buf_previous[label="set_dirent_buf_previous"];
+                dirent_true[label="dirent_true"];
+                __put_user_offset_dirent_d_off[label="__put_user_offset_dirent_d_off"];
+                set_dirent_buf_current_dir[label="set_dirent_buf_current_dir"];
+                __put_user_ino_dirent_d_ino[label="__put_user_ino_dirent_d_ino"];
+                __put_user_reclen_dirent_d_reclen[label="__put_user_reclen_dirent_d_reclen"];
+                copy_to_user_dirent_d_name_name_namlen[label="copy_to_user_dirent_d_name_name_namlen"];
+                __put_user_0_dirent_d_name_add_namlen[label="__put_user_0_dirent_d_name_add_namlen"];
+                __put_user_d_type_dirent_add_relen_sub_1[label="__put_user_d_type_dirent_add_relen_sub_1"];
+                set_buf_previous_dirent[label="set_buf_previous_dirent"];
+                set_dirent_dirent_add_reclen[label="set_dirent_dirent_add_reclen"];
+                set_buf_current_dir_dirent[label="set_buf_current_dir_dirent"];
+                buf_count_self_sub_reclen[label="buf_count_self_sub_reclen"];
+                return_0[label="return_0"];
+                set_buf_error_EFAULT[label="set_buf_error_EFAULT"];
+                return_EFAULT[label="return_EFAULT"];
+        }
+
+        subgraph cluster_sys_getdents{
+                label="asmlinkage long sys_getdents(unsigned int fd, struct linux_dirent __user * dirent, unsigned int count)
+";
+                set_error_EFAULT[label="set_error_EFAULT"];
+                set_error_EBADF[label="set_error_EBADF"];
+                set_file_fgett_fd[label="set_file_fgett_fd"];
+                file_false[label="file_false"];
+                goto_out[label="goto_out"];
+                set_buf_current_dir_dirent[label="set_buf_current_dir_dirent"];
+                clear_buf_previous[label="clear_buf_previous"];
+                set_buf_count_count[label="set_buf_count_count"];
+                set_buf_error_0[label="set_buf_error_0"];
+                set_error_vfs_readdir_file_filldir_buf[label="set_error_vfs_readdir_file_filldir_buf"];
+                error_small_0[label="error_small_0"];
+                goto_out_putf[label="goto_out_putf"];
+                set_error_buf_error[label="set_error_buf_error"];
+                set_lastdirent_buf_previous[label="set_lastdirent_buf_previous"];
+                lastdirent_true[label="lastdirent_true"];
+                put_ueser_file_f_pos_lastdirent_d_off[label="put_ueser_file_f_pos_lastdirent_d_off"];
+                set_error_count_sub_buf_count[label="set_error_count_sub_buf_count"];
+                fput_file[label="fput_file"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_filldir64{
+                label="static int filldir64(void * __buf, const char * name, int namlen, loff_t offset,
+		     ino_t ino, unsigned int d_type)
+";
+                set_buf__buf[label="set_buf__buf"];
+                set_reclen_ROUND_UP64_NAME_OFFSET_dirent_add_namlen_add_1[label="set_reclen_ROUND_UP64_NAME_OFFSET_dirent_add_namlen_add_1"];
+                set_buf_error_EINVAL[label="set_buf_error_EINVAL"];
+                reclen_great_buf_count[label="reclen_great_buf_count"];
+                return_EINVAL[label="return_EINVAL"];
+                set_dirent_buf_previous[label="set_dirent_buf_previous"];
+                dirent_true[label="dirent_true"];
+                __put_user_offset_dirent_d_off[label="__put_user_offset_dirent_d_off"];
+                set_dirent_buf_current_dir[label="set_dirent_buf_current_dir"];
+                __put_user_ino_dirent_d_ino[label="__put_user_ino_dirent_d_ino"];
+                __put_user_0_dirent_d_off[label="__put_user_0_dirent_d_off"];
+                __put_user_reclen_dirent_d_reclen[label="__put_user_reclen_dirent_d_reclen"];
+                __put_user_d_type_dirent_d_type[label="__put_user_d_type_dirent_d_type"];
+                copy_to_user_dirent_d_name_name_namlen[label="copy_to_user_dirent_d_name_name_namlen"];
+                __put_user_0_dirent_d_name_add_namlen[label="__put_user_0_dirent_d_name_add_namlen"];
+                set_buf_previous_dirent[label="set_buf_previous_dirent"];
+                set_dirent_dirent_add_reclen[label="set_dirent_dirent_add_reclen"];
+                set_buf_current_dir_dirent[label="set_buf_current_dir_dirent"];
+                buf_count_self_sub_reclen[label="buf_count_self_sub_reclen"];
+                return_0[label="return_0"];
+                set_buf_error_EFAULT[label="set_buf_error_EFAULT"];
+                return_EFAULT[label="return_EFAULT"];
+        }
+
+        subgraph cluster_sys_getdents64{
+                label="asmlinkage long sys_getdents64(unsigned int fd, struct linux_dirent64 __user * dirent, unsigned int count)
+";
+                set_error_EFAULT[label="set_error_EFAULT"];
+                set_error_EBADF[label="set_error_EBADF"];
+                set_file_fgett_fd[label="set_file_fgett_fd"];
+                file_false[label="file_false"];
+                goto_out[label="goto_out"];
+                set_buf_current_dir_dirent[label="set_buf_current_dir_dirent"];
+                clear_buf_previous[label="clear_buf_previous"];
+                set_buf_count_count[label="set_buf_count_count"];
+                set_buf_error_0[label="set_buf_error_0"];
+                set_error_vfs_readdir_file_filldir64_buf[label="set_error_vfs_readdir_file_filldir64_buf"];
+                error_small_0[label="error_small_0"];
+                goto_out_putf[label="goto_out_putf"];
+                set_error_buf_error[label="set_error_buf_error"];
+                set_lastdirent_buf_previous[label="set_lastdirent_buf_previous"];
+                lastdirent_true[label="lastdirent_true"];
+                set_f_off_file_f_pos[label="set_f_off_file_f_pos"];
+                put_user_file_f_pos_lastdirent_d_off[label="put_user_file_f_pos_lastdirent_d_off"];
+                set_error_count_sub_buf_count[label="set_error_count_sub_buf_count"];
+                fput_file[label="fput_file"];
+                return_error[label="return_error"];
+        }
+        
+}

@@ -32,9 +32,284 @@ digraph xattr_c{
                 return_error[label="return_error"];
         }
 
-        subgraph cluster__setxattr{
+        subgraph cluster_sys_setxattr{
                 label="asmlinkage long sys_setxattr(char __user *path, char __user *name, void __user *value, size_t size, int flags)
 ";
-                
+                set_error_user_path_walk_path_nd[label="set_error_user_path_walk_path_nd"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_error_setxattr_nd_dentry_name_value_size_flags[label="set_error_setxattr_nd_dentry_name_value_size_flags"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_lsetxattr{
+                label="asmlinkage long sys_lsetxattr(char __user *path, char __user *name, void __user *value, size_t size, int flags)
+";
+                set_error_user_path_walk_link_path_nd[label="set_error_user_path_walk_link_path_nd"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_error_setxattr_nd_dentry_name_value_size_flags[label="set_error_setxattr_nd_dentry_name_value_size_flags"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_fsetxattr{
+                label="asmlinkage long sys_fsetxattr(int fd, char __user *name, void __user *value, size_t size, int flags)
+";
+                set_error_EBADF[label="set_error_EBADF"];
+                set_f_fget_fd[label="set_f_fget_fd"];
+                f_false[label="f_false"];
+                return_error[label="return_error"];
+                set_error_setxattr_f_f_dentry_name_value_size_flags[label="set_error_setxattr_f_f_dentry_name_value_size_flags"];
+                fput_f[label="fput_f"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_getxattr{
+                label="static ssize_t getxattr(struct dentry *d, char __user *name, void __user *value, size_t size)
+";
+                set_error_strncpy_from_user_kname_name[label="set_error_strncpy_from_user_kname_name"];
+                error_eq_0_or_error_eq_sizeof_kname[label="error_eq_0_or_error_eq_sizeof_kname"];
+                set_error_ERANGE[label="set_error_ERANGE"];
+                error_small_0[label="error_small_0"];
+                return_error[label="return_error"];
+                size_true[label="size_true"];
+                size_great_XATTR_SIZE_MAX[label="size_great_XATTR_SIZE_MAX"];
+                set_size_XATTR_SIZE_MAX[label="set_size_XATTR_SIZE_MAX"];
+                set_kvalue_kmalloc[label="set_kvalue_kmalloc"];
+                kvalue_false[label="kvalue_false"];
+                return_ENOMEM[label="return_ENOMEM"];
+                set_error_EOPNOTSUPP[label="set_error_EOPNOTSUPP"];
+                d_d_inode_i_op_true_and_d_d_inode_i_op_getxattr_true[label="d_d_inode_i_op_true_and_d_d_inode_i_op_getxattr_true"];
+                set_error_security_inode_getxattr_d_kname[label="set_error_security_inode_getxattr_d_kname"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_error_d_d_inode_i_op_getxattr_d_kname_kvalue_size[label="set_error_d_d_inode_i_op_getxattr_d_kname_kvalue_size"];
+                error_great_0[label="error_great_0"];
+                size_true_and_copy_to_user_value_kvalue[label="size_true_and_copy_to_user_value_kvalue"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                error_eq_ERANGE_and_size_not_small_XATTR_SIZE_MAX[label="error_eq_ERANGE_and_size_not_small_XATTR_SIZE_MAX"];
+                set_error_E2BIG[label="set_error_E2BIG"];
+                kvalue_true[label="kvalue_true"];
+                kfree_kvalue[label="kfree_kvalue"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_getxattr{
+                label="asmlinkage ssize_t sys_getxattr(char __user *path, char __user *name, void __user *value, size_t size)
+";
+                set_error_user_path_walk_path_nd[label="set_error_user_path_walk_path_nd"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_error_getxattr_nd_dentry_name_value_size[label="set_error_getxattr_nd_dentry_name_value_size"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_lgetxattr{
+                label="asmlinkage ssize_t sys_lgetxattr(char __user *path, char __user *name, void __user *value, size_t size)
+";
+                set_error_user_path_walk_link_path_nd[label="set_error_user_path_walk_link_path_nd"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_error_getxattr_nd_dentry_name_value_size[label="set_error_getxattr_nd_dentry_name_value_size"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_fgetxattr{
+                label="asmlinkage ssize_t sys_fgetxattr(int fd, char __user *name, void __user *value, size_t size)
+";
+                set_error_EBADF[label="set_error_EBADF"];
+                set_f_fget_fd[label="set_f_fget_fd"];
+                f_false[label="f_false"];
+                return_error[label="return_error"];
+                set_error_getxattr_f_f_dentry_name_value_size[label="set_error_getxattr_f_f_dentry_name_value_size"];
+                fput_f[label="fput_f"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_listxattr{
+                label="static ssize_t listxattr(struct dentry *d, char __user *list, size_t size)
+";
+                size_true[label="size_true"];
+                size_great_XATTR_LIST_MAX[label="size_great_XATTR_LIST_MAX"];
+                set_size_XATTR_LIST_MAX[label="set_size_XATTR_LIST_MAX"];
+                set_klist_kmalloc[label="set_klist_kmalloc"];
+                klist_false[label="klist_false"];
+                return_ENOMEM[label="return_ENOMEM"];
+                set_error_EOPNOTSUPP[label="set_error_EOPNOTSUPP"];
+                d_d_inode_i_op_true_and_d_d_inode_i_op_listxattr_true[label="d_d_inode_i_op_true_and_d_d_inode_i_op_listxattr_true"];
+                set_error_security_inode_listxattr_d[label="set_error_security_inode_listxattr_d"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                set_error_d_d_inode_i_op_listxattr_d_klist_size[label="set_error_d_d_inode_i_op_listxattr_d_klist_size"];
+                error_great_0[label="error_great_0"];
+                size_true_and_copy_to_user_list_klist_true[label="size_true_and_copy_to_user_list_klist_true"];
+                set_error_EFAULT[label="set_error_EFAULT"];
+                error_eq_ERANGE_and_size_not_small_XATTR_LIST_MAX[label="error_eq_ERANGE_and_size_not_small_XATTR_LIST_MAX"];
+                set_error_E2BIG[label="set_error_E2BIG"];
+                klist_true[label="klist_true"];
+                kfree_klist[label="kfree_klist"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_listxattr{
+                label="asmlinkage ssize_t sys_listxattr(char __user *path, char __user *list, size_t size)
+";
+                set_error_user_path_walk_path_nd[label="set_error_user_path_walk_path_nd"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_error_listxattr_nd_dentry_list_size[label="set_error_listxattr_nd_dentry_list_size"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_llistxattr{
+                label="asmlinkage ssize_t sys_llistxattr(char __user *path, char __user *list, size_t size)
+";
+                set_error_user_path_walk_link_path_nd[label="set_error_user_path_walk_link_path_nd"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_error_listxattr_nd_dentry_list_size[label="set_error_listxattr_nd_dentry_list_size"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_flistxattr{
+                label="asmlinkage ssize_t sys_flistxattr(int fd, char __user *list, size_t size)
+";
+                set_error_EBADF[label="set_error_EBADF"];
+                set_f_fget_fd[label="set_f_fget_fd"];
+                f_false[label="f_false"];
+                return_error[label="return_error"];
+                set_error_listxattr_f_f_dentry_list_size[label="set_error_listxattr_f_f_dentry_list_size"];
+                fput_f[label="fput_f"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_removexattr{
+                label="static long removexattr(struct dentry *d, char __user *name)
+";
+                set_error_strncpy_from_user_kname_name[label="set_error_strncpy_from_user_kname_name"];
+                error_eq_0_or_error_eq_sizeof_kname[label="error_eq_0_or_error_eq_sizeof_kname"];
+                set_error_ERANGE[label="set_error_ERANGE"];
+                error_small_0[label="error_small_0"];
+                return_error[label="return_error"];
+                set_error_EOPNOTSUPP[label="set_error_EOPNOTSUPP"];
+                d_d_inode_i_op_true_and_d_d_inode_i_op_removexattr_true[label="d_d_inode_i_op_true_and_d_d_inode_i_op_removexattr_true"];
+                set_error_security_inode_removexattr_d_kname[label="set_error_security_inode_removexattr_d_kname"];
+                error_true[label="error_true"];
+                goto_out[label="goto_out"];
+                down_d_d_inode_i_sem[label="down_d_d_inode_i_sem"];
+                set_error_d_d_inode_i_op_removexattr_d_kname[label="set_error_d_d_inode_i_op_removexattr_d_kname"];
+                up_d_d_inode_i_sem[label="up_d_d_inode_i_sem"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_removexattr{
+                label="asmlinkage long sys_removexattr(char __user *path, char __user *name)
+";
+                set_error_user_path_walk_path_nd[label="set_error_user_path_walk_path_nd"];
+                error_true[label="error_true"];
+                return_error[label="return_error"];
+                set_error_removexattr_nd_dentry_name[label="set_error_removexattr_nd_dentry_name"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_lremovexattr{
+                label="asmlinkage long sys_lremovexattr(char __user *path, char __user *name)
+";
+                set_error_user_path_walk_link_path_nd[label="set_error_user_path_walk_link_path_nd"];
+                error_true[label="error_true"];
+                set_error_removexattr_nd_dentry_name[label="set_error_removexattr_nd_dentry_name"];
+                path_release_nd[label="path_release_nd"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_sys_fremovexattr{
+                label="asmlinkage long sys_fremovexattr(int fd, char __user *name)
+";
+                set_error_EBADF[label="set_error_EBADF"];
+                set_f_fget_fd[label="set_f_fget_fd"];
+                f_false[label="f_false"];
+                return_error[label="return_error"];
+                set_error_removexattr_f_f_dentry_name[label="set_error_removexattr_f_f_dentry_name"];
+                fput_f[label="fput_f"];
+                return_error[label="return_error"];
+        }
+
+        subgraph cluster_strcmp_prefix{
+                label="static const char *strcmp_prefix(const char *a, const char *a_prefix)
+";
+                a_prefix_true_and_a_eq_a_prefix[label="a_prefix_true_and_a_eq_a_prefix"];
+                inc_a[label="inc_a"];
+                inc_a_prefix[label="inc_a_prefix"];
+                return_NULL_or_a_decide_a_prefix[label="return_NULL_or_a_decide_a_prefix"];
+        }
+
+        subgraph cluster_xattr_resolve_name{
+                label="static struct xattr_handler *xattr_resolve_name(struct xattr_handler **handlers, const char **name)
+";
+                name_false[label="name_false"];
+                return_NULL[label="return_NULL"];
+                for_each_xattr_handler_handlers_handler[label="for_each_xattr_handler_handlers_handler"];
+                set_n_strcmp_prefix_name_handler_prefix[label="set_n_strcmp_prefix_name_handler_prefix"];
+                n_true[label="n_true"];
+                set_name_n[label="set_name_n"];
+                return_handler[label="return_handler"];
+        }
+
+        subgraph cluster_generic_getxattr{
+                label="ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size)
+";
+                set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+                set_handler_xattr_resolve_name_inode_i_sb_s_xattr_name[label="set_handler_xattr_resolve_name_inode_i_sb_s_xattr_name"];
+                handler_false[label="handler_false"];
+                return_EOPNOTSUPP[label="return_EOPNOTSUPP"];
+                return_handler_get_inode_name_buffer_size[label="return_handler_get_inode_name_buffer_size"];
+        }
+
+        subgraph cluster_generic_listxattr{
+                label="ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size)
+";
+                set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+                set_handler_inode_i_sb_s_xattr[label="set_handler_inode_i_sb_s_xattr"];
+                buffer_false[label="buffer_false"];
+                for_each_xattr_handler_handlers_handler[label="for_each_xattr_handler_handlers_handler"];
+                size_self_add_handler_list_inode_NULL_0_NULL_0[label="size_self_add_handler_list_inode_NULL_0_NULL_0"];
+                set_buf_buffer[label="set_buf_buffer"];
+                for_each_xattr_handler_handlers_handler[label="for_each_xattr_handler_handlers_handler"];
+                set_size_handler_list_inode_buf_buffer_size_NULL_0[label="set_size_handler_list_inode_buf_buffer_size_NULL_0"];
+                size_great_buffer_size[label="size_great_buffer_size"];
+                return_ERANGE[label="return_ERANGE"];
+                buf_self_add_size[label="buf_self_add_size"];
+                buffer_size_self_sub_size[label="buffer_size_self_sub_size"];
+                set_size_buf_sub_buffer[label="set_size_buf_sub_buffer"];
+                return_size[label="return_size"];
+        }
+
+        subgraph cluster_generic_setxattr{
+                label="int generic_setxattr(struct dentry *dentry, const char *name, const void *value, size_t size, int flags)
+";
+                set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+                size_eq_0[label="size_eq_0"];
+                set_value_EOF[label="set_value_EOF"];
+                set_handler_xattr_resolve_name_inode_i_sb_s_xattr_name[label="set_handler_xattr_resolve_name_inode_i_sb_s_xattr_name"];
+                handler_false[label="handler_false"];
+                return_EOPNOTSUPP[label="return_EOPNOTSUPP"];
+                return_handler_set_inode_name_value_size_flags[label="return_handler_set_inode_name_value_size_flags"];
+        }
+
+        subgraph cluster_generic_removexattr{
+                label="int generic_removexattr(struct dentry *dentry, const char *name)
+";
+                set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+                set_handler_xattr_resolve_name_inode_i_sb_s_xattr_name[label="set_handler_xattr_resolve_name_inode_i_sb_s_xattr_name"];
+                handler_false[label="handler_false"];
+                return_EOPNOTSUPP[label="return_EOPNOTSUPP"];
+                return_handler_set_inode_name_NULL_0_XATTR_REPLACE[label="return_handler_set_inode_name_NULL_0_XATTR_REPLACE"];
         }
 }
