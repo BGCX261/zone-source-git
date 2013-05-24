@@ -1,0 +1,135 @@
+digraph file_c{
+	subgraph cluster_alloc_fd_array{
+		label="struct file ** alloc_fd_array(int num)";
+		set_size_num_multi_sizeof_struct_file[label="set_size_num_multi_sizeof_struct_file"];
+		size_not_great_PAGE_SIZE[label="size_not_great_PAGE_SIZE"];
+		set_new_fds_kmalloc[label="set_new_fds_kmalloc"];
+		set_new_fds_vmalloc[label="set_new_fds_vmalloc"];
+		return_new_fds[label="return_new_fds"];
+	}
+
+	subgraph cluster_free_fd_array{
+		label="void free_fd_array(struct file **array, int num)";
+		set_size_num_sizeof_struct_file[label="set_size_num_sizeof_struct_file"];
+		num_not_great_NR_OPEN_DEFAULT[label="num_not_great_NR_OPEN_DEFAULT"];
+		return[label="return"];
+		size_not_great_PAGE_SIZE[label="size_not_great_PAGE_SIZE"];
+		kfree_array[label="kfree_array"];
+		vfree_array[label="vfree_array"];
+	}
+
+	subgraph cluster_expand_fd_array{
+		label="static int expand_fd_array(struct files_struct *files, int nr)";
+		set_error_EMFILE[label="set_error_EMFILE"];
+		files_max_fds_not_small_NR_OPEN_or_nr_not_small_NR_OPEN[label="files_max_fds_not_small_NR_OPEN_or_nr_not_small_NR_OPEN"];
+		goto_out[label="goto_out"];
+		set_nfds_files_max_fds[label="set_nfds_files_max_fds"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		nfds_small_256[label="nfds_small_256"];
+		set_nfds_256[label="set_nfds_256"];
+		nfds_small_PAGE_SIZE_div_sizeof_struct_file[label="nfds_small_PAGE_SIZE_div_sizeof_struct_file"];
+		set_nfds_PAGE_SIZE_div_sizeof_struct_file[label="set_nfds_PAGE_SIZE_div_sizeof_struct_file"];
+		set_nfds_nfds_multi_2[label="set_nfds_nfds_multi_2"];
+		nfds_great_NR_OPEN[label="nfds_great_NR_OPEN"];
+		set_nfds_NR_OPEN[label="set_nfds_NR_OPEN"];
+		nfds_not_great_nr[label="nfds_not_great_nr"];
+		set_error_ENOMEM[label="set_error_ENOMEM"];
+		set_new_fds_alloc_fd_array_nfds[label="set_new_fds_alloc_fd_array_nfds"];
+		lock_files_file_lock[label="lock_files_file_lock"];
+		new_fds_false[label="new_fds_false"];
+		goto_out[label="goto_out"];
+		nfds_great_files_max_fds[label="nfds_great_files_max_fds"];
+		set_old_fds_xchg_files_fd_new_fds[label="set_old_fds_xchg_files_fd_new_fds"];
+		set_i_xchg_files_max_fds_nfds[label="set_i_xchg_files_max_fds_nfds"];
+		i_true[label="i_true"];
+		memcpy_new_fds_old_fds[label="memcpy_new_fds_old_fds"];
+		memset_new_fds_i_0[label="memset_new_fds_i_0"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		free_fd_array_old_fds_i[label="free_fd_array_old_fds_i"];
+		lock_files_file_lock[label="lock_files_file_lock"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		free_fd_array_new_fds_nfds[label="free_fd_array_new_fds_nfds"];
+		lock_files_file_lock[label="lock_files_file_lock"];
+		set_error_0[label="set_error_0"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_alloc_fdset{
+		label="fd_set * alloc_fdset(int num)";
+		set_size_num_div_8[label="set_size_num_div_8"];
+		size_not_great_PAGE_SIZE[label="size_not_great_PAGE_SIZE"];
+		set_new_fdset_kmalloc[label="set_new_fdset_kmalloc"];
+		set_new_fdset_vmalloc[label="set_new_fdset_vmalloc"];
+		return_new_fdset[label="return_new_fdset"];
+	}
+
+	subgraph cluster_free_fdset{
+		label="void free_fdset(fd_set *array, int num)";
+		set_size_num_div_8[label="set_size_num_div_8"];
+		num_not_great___FD_SETSIZE[label="num_not_great___FD_SETSIZE"];
+		return[label="return"];
+		size_not_great_PAGE_SIZE[label="size_not_great_PAGE_SIZE"];
+		kfree_array[label="kfree_array"];
+		vfree_array[label="vfree_array"];
+	}
+
+	subgraph cluster_expand_fdset{
+		label="static int expand_fdset(struct files_struct *files, int nr)";
+		set_error_EMFILE[label="set_error_EMFILE"];
+		files_max_fdset_not_small_NR_OPEN_or_nr_not_small_NR_OPEN[label="files_max_fdset_not_small_NR_OPEN_or_nr_not_small_NR_OPEN"];
+		goto_out[label="goto_out"];
+		set_nfds_files_max_fdset[label="set_nfds_files_max_fdset"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		nfds_small_PAGE_SIZE_multi_8[label="nfds_small_PAGE_SIZE_multi_8"];
+		set_nfds_PAGE_SIZE_multi_8[label="set_nfds_PAGE_SIZE_multi_8"];
+		set_nfds_nfds_multi_2[label="set_nfds_nfds_multi_2"];
+		nfds_great_NR_OPEN[label="nfds_great_NR_OPEN"];
+		set_nfds_NR_OPEN[label="set_nfds_NR_OPEN"];
+		nfds_not_great_nr[label="nfds_not_great_nr"];
+		set_error_ENOMEM[label="set_error_ENOMEM"];
+		set_new_openset_alloc_fdset_nfds[label="set_new_openset_alloc_fdset_nfds"];
+		set_new_execset_alloc_fdset_nfds[label="set_new_execset_alloc_fdset_nfds"];
+		lock_file_file_lock[label="lock_file_file_lock"];
+		new_openset_false_or_new_execset_false[label="new_openset_false_or_new_execset_false"];
+		goto_out[label="goto_out"];
+		set_error_0[label="set_error_0"];
+		nfds_great_files_max_fdset[label="nfds_great_files_max_fdset"];
+		set_i_files_max_fdset_div_sizeof_long_multi_8[label="set_i_files_max_fdset_div_sizeof_long_multi_8"];
+		set_count_nfds_sub_files_max_fdset_div_8[label="set_count_nfds_sub_files_max_fdset_div_8"];
+		i_true[label="i_true"];
+		memcpy_new_openset_files_open_fds[label="memcpy_new_openset_files_open_fds"];
+		memcpy_new_execset_files_close_on_exec[label="memcpy_new_execset_files_close_on_exec"];
+		memset_new_openset_fds_bits_i_0[label="memset_new_openset_fds_bits_i_0"];
+		memset_new_execset_fds_bits_i_0[label="memset_new_execset_fds_bits_i_0"];
+		set_nfds_xchg_files_max_fdset_nfds[label="set_nfds_xchg_files_max_fdset_nfds"];
+		set_new_openset_xchg_files_open_fds_new_openset[label="set_new_openset_xchg_files_open_fds_new_openset"];
+		set_new_execset_xchg_files_close_on_exec_new_execset[label="set_new_execset_xchg_files_close_on_exec_new_execset"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		free_fdset_new_openset_nfds[label="free_fdset_new_openset_nfds"];
+		free_fdset_new_execset_nfds[label="free_fdset_new_execset_nfds"];
+		lock_files_file_lock[label="lock_files_file_lock"];
+		return_0[label="return_0"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		new_openset_true[label="new_openset_true"];
+		free_fdset_new_openset_nfds[label="free_fdset_new_openset_nfds"];
+		new_execset_true[label="new_execset_true"];
+		free_fdset_new_execset_nfds[label="free_fdset_new_execset_nfds"];
+		lock_files_file_lock[label="lock_files_file_lock"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_expand_files{
+		label="int expand_files(struct files_struct *files, int nr)";
+		set_expand_0[label="set_expand_0"];
+		nr_not_small_files_max_fdset[label="nr_not_small_files_max_fdset"];
+		set_expand_1[label="set_expand_1"];
+		set_err_expand_fdset_files_nr_true[label="set_err_expand_fdset_files_nr_true"];
+		goto_out[label="goto_out"];
+		nr_not_small_files_max_fds[label="nr_not_small_files_max_fds"];
+		set_expand_1[label="set_expand_1"];
+		set_err_expand_fd_array_files_nr_true[label="set_err_expand_fd_array_files_nr_true"];
+		goto_out[label="goto_out"];
+		set_err_expand[label="set_err_expand"];
+		return_err[label="return_err"];
+	}
+}

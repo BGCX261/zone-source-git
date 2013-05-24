@@ -1,0 +1,120 @@
+digraph attr_c{
+	subgraph cluster_inode_change_ok{
+		label="int inode_change_ok(struct inode *inode, struct iattr *attr)";
+		set_retval_EPERM[label="set_retval_EPERM"];
+		set_ia_valid_attr_ia_valid[label="set_ia_valid_attr_ia_valid"];
+		ia_valid_ATTR_FORCE_set[label="ia_valid_ATTR_FORCE_set"];
+		goto_fine[label="goto_fine"];
+		ia_valid_ATTR_UID_set_and_current_fsuid_not_eq_inode_i_uid_or_attr_ia_uid_not_eq_inode_i_uid_and_capable_CAP_CHOWN_false[label="ia_valid_ATTR_UID_set_and_current_fsuid_not_eq_inode_i_uid_or_attr_ia_uid_not_eq_inode_i_uid_and_capable_CAP_CHOWN_false"];
+		goto_error[label="goto_error"];
+		ia_valid_ATTR_GID_set_and_current_fsuid_not_eqinode_i_uid_or_in_group_p_attr_ia_gid_false_and_attr_ia_gid_not_eq_inode_i_gid_and_capable_CAP_CHOWN_false[label="ia_valid_ATTR_GID_set_and_current_fsuid_not_eqinode_i_uid_or_in_group_p_attr_ia_gid_false_and_attr_ia_gid_not_eq_inode_i_gid_and_capable_CAP_CHOWN_false"];
+		goto_error[label="goto_error"];
+		ia_valid_ATTR_MODE_set[label="ia_valid_ATTR_MODE_set"];
+		current_fsuid_not_eq_inode_i_uid_and_capable_CAP_FOWNER_false[label="current_fsuid_not_eq_inode_i_uid_and_capable_CAP_FOWNER_false"];
+		goto_error[label="goto_error"];
+		in_group_p_attr_ia_gid_or_inode_i_gid_decide_ia_valid_ATTR_GID_set_and_capable_CAP_FSGETID_false[label="in_group_p_attr_ia_gid_or_inode_i_gid_decide_ia_valid_ATTR_GID_set_and_capable_CAP_FSGETID_false"];
+		attr_ia_mode_clear_S_ISGID[label="attr_ia_mode_clear_S_ISGID"];
+		ia_valid_ATTR_MTIME_SET_ATTR_ATIME_SET_set[label="ia_valid_ATTR_MTIME_SET_ATTR_ATIME_SET_set"];
+		current_fsuid_not_eq_inode_i_uid_and_capable_CAP_FOWNER_false[label="current_fsuid_not_eq_inode_i_uid_and_capable_CAP_FOWNER_false"];
+		goto_error[label="goto_error"];
+		set_retval_0[label="set_retval_0"];
+		return_retval[label="return_retval"];
+	}
+
+	subgraph cluster_inode_setattr{
+		label="int inode_setattr(struct inode * inode, struct iattr * attr)";
+		set_ia_valid_attr_ia_valid[label="set_ia_valid_attr_ia_valid"];
+		ia_valid_ATTR_SIZE_set[label="ia_valid_ATTR_SIZE_set"];
+		attr_ia_size_not_eq_i_size_read_inode[label="attr_ia_size_not_eq_i_size_read_inode"];
+		set_error_vmtruncate_inode_attr_ia_size[label="set_error_vmtruncate_inode_attr_ia_size"];
+		error_true_or_ia_valid_eq_ATTR_SIZE[label="error_true_or_ia_valid_eq_ATTR_SIZE"];
+		goto_out[label="goto_out"];
+		ia_valid_self_or_ATTR_MTIME_ATTR_CTIME[label="ia_valid_self_or_ATTR_MTIME_ATTR_CTIME"];
+		ia_valid_ATTR_UID_set[label="ia_valid_ATTR_UID_set"];
+		set_inode_i_uid_attr_ia_uid[label="set_inode_i_uid_attr_ia_uid"];
+		ia_valid_ATTR_GID_set[label="ia_valid_ATTR_GID_set"];
+		set_inode_i_gid_attr_ia_gid[label="set_inode_i_gid_attr_ia_gid"];
+		ia_valid_ATTR_ATIME_set[label="ia_valid_ATTR_ATIME_set"];
+		set_inode_i_atime_timespec_trunc_attr_ia_atime_inode_i_sb_s_time_gran[label="set_inode_i_atime_timespec_trunc_attr_ia_atime_inode_i_sb_s_time_gran"];
+		ia_valid_ATTR_MTIME_set[label="ia_valid_ATTR_MTIME_set"];
+		set_inode_i_mtime_timespec_trunc_attr_ia_mtime_inode_i_sb_s_time_gran[label="set_inode_i_mtime_timespec_trunc_attr_ia_mtime_inode_i_sb_s_time_gran"];
+		ia_valid_ATTR_CTIME_set[label="ia_valid_ATTR_CTIME_set"];
+		set_inode_i_ctime_timespec_trunc_attr_ia_ctime_inode_i_sb_s_time_gran[label="set_inode_i_ctime_timespec_trunc_attr_ia_ctime_inode_i_sb_s_time_gran"];
+		ia_valid_ATTR_MODE_set[label="ia_valid_ATTR_MODE_set"];
+		set_mode_attr_ia_mode[label="set_mode_attr_ia_mode"];
+		in_group_p_inode_i_gid_false_and_capable_CAP_FSETID_false[label="in_group_p_inode_i_gid_false_and_capable_CAP_FSETID_false"];
+		mode_clear_S_ISGID[label="mode_clear_S_ISGID"];
+		set_inode_i_mode_mode[label="set_inode_i_mode_mode"];
+		mark_inode_dirty_inode[label="mark_inode_dirty_inode"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster_setattr_mask{
+		label="int setattr_mask(unsigned int ia_valid)";
+		ia_valid_ATTR_UID_set[label="ia_valid_ATTR_UID_set"];
+		dn_mask_self_or_DN_ATTRIB[label="dn_mask_self_or_DN_ATTRIB"];
+		ia_valid_ATTR_GID_set[label="ia_valid_ATTR_GID_set"];
+		dn_mask_self_or_DN_ATTRIB[label="dn_mask_self_or_DN_ATTRIB"];
+		ia_valid_ATTR_SIZE_set[label="ia_valid_ATTR_SIZE_set"];
+		dn_mask_self_or_DN_MODIFY[label="dn_mask_self_or_DN_MODIFY"];
+		ia_valid_ATTR_AITME_ATTR_MTIME_set[label="ia_valid_ATTR_AITME_ATTR_MTIME_set"];
+		dn_mask_self_or_DN_ATTRIB[label="dn_mask_self_or_DN_ATTRIB"];
+		ia_valid_ATTR_ATIME_set[label="ia_valid_ATTR_ATIME_set"];
+		dn_mask_self_or_DN_ACCESS[label="dn_mask_self_or_DN_ACCESS"];
+		ia_valid_ATTR_MTIME_set[label="ia_valid_ATTR_MTIME_set"];
+		dn_mask_self_or_DN_MODIFY[label="dn_mask_self_or_DN_MODIFY"];
+		ia_valid_ATTR_MODE_set[label="ia_valid_ATTR_MODE_set"];
+		dn_mask_self_or_DN_ATTRIB[label="dn_mask_self_or_DN_ATTRIB"];
+		return_dn_mask[label="return_dn_mask"];
+	}
+
+	subgraph cluster_notify_change{
+		label="int notify_change(struct dentry * dentry, struct iattr * attr)";
+		set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+		set_attr_ia_valid[label="set_attr_ia_valid"];
+		set_mode_inode_i_mode[label="set_mode_inode_i_mode"];
+		set_now_current_fs_time_inode_i_sb[label="set_now_current_fs_time_inode_i_sb"];
+		set_attr_ia_ctime_now[label="set_attr_ia_ctime_now"];
+		ia_valid_ATTR_ATIME_SET_clear[label="ia_valid_ATTR_ATIME_SET_clear"];
+		set_attr_ia_atime_now[label="set_attr_ia_atime_now"];
+		ia_valid_ATTR_MTIME_SET_clear[label="ia_valid_ATTR_MTIME_SET_clear"];
+		set_attr_ia_mtime_now[label="set_attr_ia_mtime_now"];
+		ia_valid_ATTR_KILL_SUID_set[label="ia_valid_ATTR_KILL_SUID_set"];
+		attr_ia_valid_clear_ATTR_KILL_SUID[label="attr_ia_valid_clear_ATTR_KILL_SUID"];
+		mode_S_ISUID_set[label="mode_S_ISUID_set"];
+		ia_valid_ATTR_MODE_clear[label="ia_valid_ATTR_MODE_clear"];
+		set_ia_valid_attr_ia_valid_self_or_ATTR_MODE[label="set_ia_valid_attr_ia_valid_self_or_ATTR_MODE"];
+		set_attr_ia_mode_inode_i_mode[label="set_attr_ia_mode_inode_i_mode"];
+		attr_ia_mode_clear_S_ISUID[label="attr_ia_mode_clear_S_ISUID"];
+		ia_valid_ATTR_KILL_SGID_set[label="ia_valid_ATTR_KILL_SGID_set"];
+		attr_ia_valid_clear_ATTR_KILL_SGID[label="attr_ia_valid_clear_ATTR_KILL_SGID"];
+		mode_S_ISGID_S_IXGRP_set[label="mode_S_ISGID_S_IXGRP_set"];
+		ia_valid_ATTR_MODE_clear[label="ia_valid_ATTR_MODE_clear"];
+		set_ia_valid_attr_ia_valid_self_or_ATTR_MODE[label="set_ia_valid_attr_ia_valid_self_or_ATTR_MODE"];
+		set_attr_ia_mode_inode_i_mode[label="set_attr_ia_mode_inode_i_mode"];
+		attr_ia_mode_clear_S_ISGID[label="attr_ia_mode_clear_S_ISGID"];
+		attr_ia_valid_false[label="attr_ia_valid_false"];
+		return_0[label="return_0"];
+		ia_valid_ATTR_SIZE_set[label="ia_valid_ATTR_SIZE_set"];
+		down_write_dentry_d_inode_i_alloc_sem[label="down_write_dentry_d_inode_i_alloc_sem"];
+		inode_i_op_true_inode_i_op_setattr_true[label="inode_i_op_true_inode_i_op_setattr_true"];
+		set_error_security_inode_setattr_dentry_attr[label="set_error_security_inode_setattr_dentry_attr"];
+		error_false[label="error_false"];
+		set_error_inode_i_op_setattr_dentry_attr[label="set_error_inode_i_op_setattr_dentry_attr"];
+		set_error_inode_change_ok_inode_attr[label="set_error_inode_change_ok_inode_attr"];
+		error_false[label="error_false"];
+		set_error_security_inode_setattr_dentry_attr[label="set_error_security_inode_setattr_dentry_attr"];
+		error_false[label="error_false"];
+		ia_valid_ATTR_UID_set_and-attr_ia_uid_not_eq_inode_i_uid_or_ia_valid_ATTR_GID_set_and_attr_ia_gid_not_eq_inode_i_gid[label="ia_valid_ATTR_UID_set_and-attr_ia_uid_not_eq_inode_i_uid_or_ia_valid_ATTR_GID_set_and_attr_ia_gid_not_eq_inode_i_gid"];
+		set_error_EDQUOT_or_0_decide_DQUOT_TRANSFER_inode_attr[label="set_error_EDQUOT_or_0_decide_DQUOT_TRANSFER_inode_attr"];
+		error_false[label="error_false"];
+		set_error_inode_setattr_inode_attr[label="set_error_inode_setattr_inode_attr"];
+		ia_valid_ATTR_SIZE_set[label="ia_valid_ATTR_SIZE_set"];
+		up_write_dentry_d_inode_i_alloc_sem[label="up_write_dentry_d_inode_i_alloc_sem"];
+		error_false[label="error_false"];
+		set_dn_mask_setattr_mask_ia_valid[label="set_dn_mask_setattr_mask_ia_valid"];
+		dn_mask_true[label="dn_mask_true"];
+		dnotify_parent_dentry_dn_mask[label="dnotify_parent_dentry_dn_mask"];
+		return_error[label="return_error"];
+	}
+}

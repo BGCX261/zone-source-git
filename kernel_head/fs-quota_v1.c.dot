@@ -1,0 +1,117 @@
+digraph quota_v1_c{
+	subgraph cluster_v1_disk2mem_dqblk{
+		label="static void v1_disk2mem_dqblk(struct mem_dqblk *m, struct v1_disk_dqblk *d)";
+		set_m_dqb_ihardlimit_d_dqb_ihardlimit[label="set_m_dqb_ihardlimit_d_dqb_ihardlimit"];
+		set_m_dqb_isoftlimit_d_dqb_isoftlimit[label="set_m_dqb_isoftlimit_d_dqb_isoftlimit"];
+		set_m_dqb_curinodes_d_dqb_curinodes[label="set_m_dqb_curinodes_d_dqb_curinodes"];
+		set_m_dqb_bhardlimit_d_dqb_bhardlimit[label="set_m_dqb_bhardlimit_d_dqb_bhardlimit"];
+		set_m_dqb_bsoftlimit_d_dqb_bsoftlimit[label="set_m_dqb_bsoftlimit_d_dqb_bsoftlimit"];
+		set_m_dqb_curspace_d_dqb_curblocks_left_move_QUOTABLOCK_BITS[label="set_m_dqb_curspace_d_dqb_curblocks_left_move_QUOTABLOCK_BITS"];
+		set_m_dqb_itime_d_dqb_itime[label="set_m_dqb_itime_d_dqb_itime"];
+		set_m_dqb_btime_d_dqb_btime[label="set_m_dqb_btime_d_dqb_btime"];
+	}
+
+	subgraph cluster_v1_mem2disk_dqblk{
+		label="static void v1_mem2disk_dqblk(struct v1_disk_dqblk *d, struct mem_dqblk *m)";
+		set_d_dqb_ihardlimit_m_dqb_ihardlimit[label="set_d_dqb_ihardlimit_m_dqb_ihardlimit"];
+		set_d_dqb_isoftlimit_m_dqb_isoftlimit[label="set_d_dqb_isoftlimit_m_dqb_isoftlimit"];
+		set_d_dqb_curinodes_m_dqb_curinodes[label="set_d_dqb_curinodes_m_dqb_curinodes"];
+		set_d_dqb_bhardlimit_m_dqb_bhardlimit[label="set_d_dqb_bhardlimit_m_dqb_bhardlimit"];
+		set_d_dqb_bsoftlimit_m_dqb_bsoftlimit[label="set_d_dqb_bsoftlimit_m_dqb_bsoftlimit"];
+		set_d_dqb_curblocks_toqb_m_dqb_curspace[label="set_d_dqb_curblocks_toqb_m_dqb_curspace"];
+		set_d_dqb_itime_m_dqb_itime[label="set_d_dqb_itime_m_dqb_itime"];
+		set_d_dqb_btime_m_dqb_btime[label="set_d_dqb_btime_m_dqb_btime"];
+	}
+
+	subgraph cluster_v1_read_dqblk{
+		label="static int v1_read_dqblk(struct dquot *dquot)";
+		set_type_dquot_dq_type[label="set_type_dquot_dq_type"];
+		sb_dqopt_dquot_dq_sb_files_type_false[label="sb_dqopt_dquot_dq_sb_files_type_false"];
+		return_EINVAL[label="return_EINVAL"];
+		memset_dqblk_0[label="memset_dqblk_0"];
+		dquot_dq_sb_s_op_quota_read_dquot_dq_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_dquot_dq_id[label="dquot_dq_sb_s_op_quota_read_dquot_dq_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_dquot_dq_id"];
+		v1_disk2mem_dqblk_dquot_dq_dqb_dqblk[label="v1_disk2mem_dqblk_dquot_dq_dqb_dqblk"];
+		dquot_dq_dqb_dqb_bhardlimit_eq_0_and_dquot_dq_dqb_dqb_bsoftlimit_eq_0_and_dquot_dq_dqb_dqb_ihardlimit_eq_0_and_dquot_dq_dqb_dqb_isoftlimit_eq_0[label="dquot_dq_dqb_dqb_bhardlimit_eq_0_and_dquot_dq_dqb_dqb_bsoftlimit_eq_0_and_dquot_dq_dqb_dqb_ihardlimit_eq_0_and_dquot_dq_dqb_dqb_isoftlimit_eq_0"];
+		set_bit_DQ_FAKE_B_dquot_dq_flags[label="set_bit_DQ_FAKE_B_dquot_dq_flags"];
+		inc_dqstats_reads[label="inc_dqstats_reads"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_v1_commit_dqblk{
+		label="static int v1_commit_dqblk(struct dquot *dquot)";
+		set_type_dquot_dq_type[label="set_type_dquot_dq_type"];
+		v1_mem2disk_dqblk_dqblk_dquot_dq_dqb[label="v1_mem2disk_dqblk_dqblk_dquot_dq_dqb"];
+		dquot_dq_id_eq_0[label="dquot_dq_id_eq_0"];
+		set_dqblk_dqb_btime_sb_dqopt_dquot_dq_sb_info_type_dqi_bgrace[label="set_dqblk_dqb_btime_sb_dqopt_dquot_dq_sb_info_type_dqi_bgrace"];
+		set_dqblk_dqb_itime_sb_dqopt_dquot_dq_sb_info_type_dqi_igrace[label="set_dqblk_dqb_itime_sb_dqopt_dquot_dq_sb_info_type_dqi_igrace"];
+		set_ret_0[label="set_ret_0"];
+		sb_dqopt_dquot_dq_sb_files_type_true[label="sb_dqopt_dquot_dq_sb_files_type_true"];
+		set_ret_dquot_dq_sb_s_op_quota_write_dquot_dq_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_dquot_dq_id[label="set_ret_dquot_dq_sb_s_op_quota_write_dquot_dq_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_dquot_dq_id"];
+		ret_not_eq_sizeof_struct_v1_disk_dqblk[label="ret_not_eq_sizeof_struct_v1_disk_dqblk"];
+		ret_not_small_0[label="ret_not_small_0"];
+		set_ret_EIO[label="set_ret_EIO"];
+		goto_out[label="goto_out"];
+		set_ret_0[label="set_ret_0"];
+		inc_dqstats_writes[label="inc_dqstats_writes"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_v1_check_quota_file{
+		label="static int v1_check_quota_file(struct super_block *sb, int type)";
+		set_inode_sb_dqopt_sb_files_type[label="set_inode_sb_dqopt_sb_files_type"];
+		set_isize_i_size_read_inode[label="set_isize_i_size_read_inode"];
+		isize_false[label="isize_false"];
+		return_0[label="return_0"];
+		set_blocks_isize_right_move_BLOCK_SIZE_BITS[label="set_blocks_isize_right_move_BLOCK_SIZE_BITS"];
+		set_off_isize_and_BLOCK_SIZE_sub_1[label="set_off_isize_and_BLOCK_SIZE_sub_1"];
+		blocks_mod_sizeof_struct_v1_disk_dqblk_multi_BLOCK_SIZE_add_off_mode_sizeof_struct_v1_disk_dqblk_true[label="blocks_mod_sizeof_struct_v1_disk_dqblk_multi_BLOCK_SIZE_add_off_mode_sizeof_struct_v1_disk_dqblk_true"];
+		return_0[label="return_0"];
+		set_size_sb_s_op_quota_read_sb_type_dqhead_sizeof_struct_v2_disk_dqheader_0[label="set_size_sb_s_op_quota_read_sb_type_dqhead_sizeof_struct_v2_disk_dqheader_0"];
+		size_not_eq_sizeof_struct_v2_disk_dqheader[label="size_not_eq_sizeof_struct_v2_disk_dqheader"];
+		return_1[label="return_1"];
+		le32_to_cpu_dqhead_dqh_magic_not_eq_quota_magics_type[label="le32_to_cpu_dqhead_dqh_magic_not_eq_quota_magics_type"];
+		return_1[label="return_1"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_v1_read_file_info{
+		label="static int v1_read_file_info(struct super_block *sb, int type)";
+		set_dqopt_sb_dqopt_sb[label="set_dqopt_sb_dqopt_sb"];
+		set_ret_sb_s_op_quota_read_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_0_not_eq_sizeof_struct_v1_disk_dqblk[label="set_ret_sb_s_op_quota_read_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_0_not_eq_sizeof_struct_v1_disk_dqblk"];
+		ret_not_small_0[label="ret_not_small_0"];
+		set_ret_EIO[label="set_ret_EIO"];
+		goto_out[label="goto_out"];
+		set_ret_0[label="set_ret_0"];
+		set_dqopt_info_type_dqi_igrace_dqblk_dqb_itime_or_MAX_IQ_TIME_decide_dqblk_dqb_itime[label="set_dqopt_info_type_dqi_igrace_dqblk_dqb_itime_or_MAX_IQ_TIME_decide_dqblk_dqb_itime"];
+		set_dqopt_info_type_dqi_bgrace_dqblk_dqb_btime_or_MAX_IQ_TIME_decide_dqblk_dqb_btime[label="set_dqopt_info_type_dqi_bgrace_dqblk_dqb_btime_or_MAX_IQ_TIME_decide_dqblk_dqb_btime"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_v1_write_file_info{
+		label="static int v1_write_file_info(struct super_block *sb, int type)";
+		set_dqopt_sb_dqopt_sb[label="set_dqopt_sb_dqopt_sb"];
+		set_dqopt_info_type_dqi_flags_clear_DQF_INFO_DIRTY[label="set_dqopt_info_type_dqi_flags_clear_DQF_INFO_DIRTY"];
+		set_ret_sb_s_op_quota_read_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_0_not_eq_sizeof_struct_v1_disk_dqblk[label="set_ret_sb_s_op_quota_read_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_0_not_eq_sizeof_struct_v1_disk_dqblk"];
+		ret_not_small_0[label="ret_not_small_0"];
+		set_ret_EIO[label="set_ret_EIO"];
+		goto_out[label="goto_out"];
+		set_dqblk_dqb_itime_dqopt_info_type_dqi_igrace[label="set_dqblk_dqb_itime_dqopt_info_type_dqi_igrace"];
+		set_dqblk_dqb_btime_dqopt_info_type_dqi_bgrace[label="set_dqblk_dqb_btime_dqopt_info_type_dqi_bgrace"];
+		set_ret_sb_s_op_quota_write_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_0[label="set_ret_sb_s_op_quota_write_sb_type_dqblk_sizeof_struct_v1_disk_dqblk_v1_dqoff_0"];
+		ret_sizeof_struct_v1_disk_dqblk[label="ret_sizeof_struct_v1_disk_dqblk"];
+		set_ret_0[label="set_ret_0"];
+		ret_great_0[label="ret_great_0"];
+		set_ret_EIO[label="set_ret_EIO"];
+		return_ret[label="return_ret"];
+	}
+
+	subgraph cluster_init_v1_quota_format{
+		label="static int __init init_v1_quota_format(void)";
+		return_register_quota_format_v1_quota_format[label="return_register_quota_format_v1_quota_format"];
+	}
+
+	subgraph cluster_exit_v1_quota_format{
+		label="static void __exit exit_v1_quota_format(void)";
+		unregister_quota_format_v1_quota_format[label="unregister_quota_format_v1_quota_format"];
+	}
+}

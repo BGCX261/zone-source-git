@@ -1,0 +1,148 @@
+digraph file_table_c{
+	subgraph cluster_filp_ctor{
+		label="void filp_ctor(void * objp, struct kmem_cache_s *cachep, unsigned long cflags)";
+		cflags_SLAB_CTOR_CONSTRUCTOR_set_except_SLAB_CTOR_VERIFY[label="cflags_SLAB_CTOR_CONSTRUCTOR_set_except_SLAB_CTOR_VERIFY"];
+		lock_filp_count_lock[label="lock_filp_count_lock"];
+		inc_files_stat_nr_files[label="inc_files_stat_nr_files"];
+		unlock_filp_count_lock[label="unlock_filp_count_lock"];
+	}
+
+	subgraph cluster_filp_dtor{
+		label="void filp_dtor(void * objp, struct kmem_cache_s *cachep, unsigned long dflags)";
+		lock_filp_count_lock[label="lock_filp_count_lock"];
+		dec_files_stat_nr_files[label="dec_files_stat_nr_files"];
+		unlock_filp_count_lock[label="unlock_filp_count_lock"];
+	}
+
+	subgraph cluster_file_free{
+		label="static inline void file_free(struct file *f)";
+		kmem_cache_free_filp_cachep_f[label="kmem_cache_free_filp_cachep_f"];
+	}
+
+	subgraph cluster_*get_empty_filp{
+		label="struct file *get_empty_filp(void)";
+		files_stat_nr_files_small_files_stat_max_files_or_capable_CAP_SYS_ADMIN_true[label="files_stat_nr_files_small_files_stat_max_files_or_capable_CAP_SYS_ADMIN_true"];
+		set_f_kmem_cache_alloc_filp_cachep[label="set_f_kmem_cache_alloc_filp_cachep"];
+		f_true[label="f_true"];
+		memset_f_0[label="memset_f_0"];
+		security_file_alloc_f_true[label="security_file_alloc_f_true"];
+		file_free_f[label="file_free_f"];
+		goto_fail[label="goto_fail"];
+		eventpoll_init_file_f[label="eventpoll_init_file_f"];
+		atomic_set_f_f_count_1[label="atomic_set_f_f_count_1"];
+		set_f_f_uid_current_fsuid[label="set_f_f_uid_current_fsuid"];
+		set_f_f_gid_current_fsgid[label="set_f_f_gid_current_fsgid"];
+		rwlock_init_f_f_owner_lock[label="rwlock_init_f_f_owner_lock"];
+		INIT_LIST_HEAD_f_f_list[label="INIT_LIST_HEAD_f_f_list"];
+		set_f_f_maxcount_INT_MAX[label="set_f_f_maxcount_INT_MAX"];
+		return_f[label="return_f"];
+		files_stat_max_files_not_small_old_max[label="files_stat_max_files_not_small_old_max"];
+		set_old_max_files_stat_max_files[label="set_old_max_files_stat_max_files"];
+		return_NULL[label="return_NULL"];
+	}
+
+	subgraph cluster_fput{
+		label="void fastcall fput(struct file *file)";
+		atomic_dec_and_test_file_f_count_true[label="atomic_dec_and_test_file_f_count_true"];
+		__fput_file[label="__fput_file"];
+	}
+
+	subgraph cluster___fput{
+		label="void fastcall __fput(struct file *file)";
+		set_dentry_file_f_dentry[label="set_dentry_file_f_dentry"];
+		set_mnt_file_f_vfsmnt[label="set_mnt_file_f_vfsmnt"];
+		set_inode_dentry_d_inode[label="set_inode_dentry_d_inode"];
+		might_sleep[label="might_sleep"];
+		eventpoll_release_file[label="eventpoll_release_file"];
+		locks_remove_flock_file[label="locks_remove_flock_file"];
+		set_file_f_op_true_and_file_f_op_release_true[label="set_file_f_op_true_and_file_f_op_release_true"];
+		file_f_op_release_inode_file[label="file_f_op_release_inode_file"];
+		security_file_free_file[label="security_file_free_file"];
+		inode_i_cdev_not_eq_NULL[label="inode_i_cdev_not_eq_NULL"];
+		cdev_put_inode_i_cdev[label="cdev_put_inode_i_cdev"];
+		fops_put_file_f_f_op[label="fops_put_file_f_f_op"];
+		file_f_mode_FMODE_WRITE_set[label="file_f_mode_FMODE_WRITE_set"];
+		put_write_access_inode[label="put_write_access_inode"];
+		file_kill_file[label="file_kill_file"];
+		clear_file_f_dentry[label="clear_file_f_dentry"];
+		clear_file_f_vfsmnt[label="clear_file_f_vfsmnt"];
+		file_free_file[label="file_free_file"];
+		dput_dentry[label="dput_dentry"];
+		mntput_mnt[label="mntput_mnt"];
+	}
+
+	subgraph cluster_*fget{
+		label="struct file fastcall *fget(unsigned int fd)";
+		set_files_current_files[label="set_files_current_files"];
+		lock_files_file_lock[label="lock_files_file_lock"];
+		set_file_fcheck_files_files_fd[label="set_file_fcheck_files_files_fd"];
+		file_true[label="file_true"];
+		get_file_file[label="get_file_file"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		return_file[label="return_file"];
+	}
+
+	subgraph cluster_*fget_light{
+		label="struct file fastcall *fget_light(unsigned int fd, int *fput_needed)";
+		set_files_current_files[label="set_files_current_files"];
+		set_fput_needed_0[label="set_fput_needed_0"];
+		atomic_read_files_count_eq_1[label="atomic_read_files_count_eq_1"];
+		set_file_fcheck_files_files_fd[label="set_file_fcheck_files_files_fd"];
+		lock_files_file_lock[label="lock_files_file_lock"];
+		set_file_fcheck_files_files_fd[label="set_file_fcheck_files_files_fd"];
+		file_true[label="file_true"];
+		get_file_file[label="get_file_file"];
+		set_fput_needed_1[label="set_fput_needed_1"];
+		unlock_files_file_lock[label="unlock_files_file_lock"];
+		return_file[label="return_file"];
+	}
+
+	subgraph cluster_put_filp{
+		label="void put_filp(struct file *file)";
+		atomic_dec_and_test_file_f_count_true[label="atomic_dec_and_test_file_f_count_true"];
+		security_file_free_file[label="security_file_free_file"];
+		file_kill_file[label="file_kill_file"];
+		file_free_file[label="file_free_file"];
+	}
+
+	subgraph cluster_file_move{
+		label="void file_move(struct file *file, struct list_head *list)";
+		list_false[label="list_false"];
+		return[label="return"];
+		file_list_lock[label="file_list_lock"];
+		list_move_file_f_list_list[label="list_move_file_f_list_list"];
+		file_list_unlock[label="file_list_unlock"];
+	}
+
+	subgraph cluster_file_kill{
+		label="void file_kill(struct file *file)";
+		list_empty_file_f_list_false[label="list_empty_file_f_list_false"];
+		file_list_lock[label="file_list_lock"];
+		list_del_init_file_f_list[label="list_del_init_file_f_list"];
+		file_list_unlock[label="file_list_unlock"];
+	}
+
+	subgraph cluster_fs_may_remount_ro{
+		label="int fs_may_remount_ro(struct super_block *sb)";
+		file_list_lock[label="file_list_lock"];
+		list_for_each_p_sb_s_files[label="list_for_each_p_sb_s_files"];
+		set_file_entry_p_struct_file_f_list[label="set_file_entry_p_struct_file_f_list"];
+		set_inode_file_f_dentry_d_inode[label="set_inode_file_f_dentry_d_inode"];
+		inode_i_nlink_eq_0[label="inode_i_nlink_eq_0"];
+		goto_too_bad[label="goto_too_bad"];
+		S_ISREG_inode_i_mode_true_and_file_f_mode_FMODE_WRITE_set[label="S_ISREG_inode_i_mode_true_and_file_f_mode_FMODE_WRITE_set"];
+		goto_too_bad[label="goto_too_bad"];
+		file_list_unlock[label="file_list_unlock"];
+		return_1[label="return_1"];
+		file_list_unlock[label="file_list_unlock"];
+		return_0[label="return_0"];
+	}
+
+	subgraph cluster_files_init{
+		label="void __init files_init(unsigned long mempages)";
+		set_n_mempages_multi_PAGE_SIZE_div_1024_div_10[label="set_n_mempages_multi_PAGE_SIZE_div_1024_div_10"];
+		set_files_stat_max_files_n[label="set_files_stat_max_files_n"];
+		files_stat_max_files_small_NR_FILE[label="files_stat_max_files_small_NR_FILE"];
+		set_files_stat_max_files_NR_FILE[label="set_files_stat_max_files_NR_FILE"];
+	}
+}

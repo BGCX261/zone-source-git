@@ -1,0 +1,126 @@
+digraph filesystems_c{
+	subgraph cluster_get_filesystem{
+		label="void get_filesystem(struct file_system_type *fs)";
+		__module_get_fs_owner[label="__module_get_fs_owner"];
+	}
+
+	subgraph cluster_put_filesystem{
+		label="void put_filesystem(struct file_system_type *fs)";
+		module_put_fs_owner[label="module_put_fs_owner"];
+	}
+
+	subgraph cluster_find_filesystem{
+		label="static struct file_system_type **find_filesystem(const char *name)";
+		for_p_file_systems_p_next[label="for_p_file_systems_p_next"];
+		strcmp_p_name_name_eq_0[label="strcmp_p_name_name_eq_0"];
+		return_p[label="return_p"];
+	}
+
+	subgraph cluster_register_filesystem{
+		label="int register_filesystem(struct file_system_type * fs)";
+		fs_false[label="fs_false"];
+		return_EINVAL[label="return_EINVAL"];
+		fs_next_true[label="fs_next_true"];
+		return_EBUSY[label="return_EBUSY"];
+		INIT_LIST_HEAD_fs_fs_supers[label="INIT_LIST_HEAD_fs_fs_supers"];
+		write_lock_file_systems_lock[label="write_lock_file_systems_lock"];
+		set_p_find_filesystem_fs_name[label="set_p_find_filesystem_fs_name"];
+		p_true[label="p_true"];
+		set_re_EBUSY[label="set_re_EBUSY"];
+		set_p_fs[label="set_p_fs"];
+		write_unlock_file_systems_lock[label="write_unlock_file_systems_lock"];
+		return_res[label="return_res"];
+	}
+
+	subgraph cluster_unregister_filesystem{
+		label="int unregister_filesystem(struct file_system_type * fs)";
+		write_lock_file_systems_lock[label="write_lock_file_systems_lock"];
+		set_tmp_file_systems[label="set_tmp_file_systems"];
+		tmp_true[label="tmp_true"];
+		fs_eq_tmp[label="fs_eq_tmp"];
+		set_tmp_fs_next[label="set_tmp_fs_next"];
+		clear_fs_next[label="clear_fs_next"];
+		write_unlock_file_systems_lock[label="write_unlock_file_systems_lock"];
+		return_0[label="return_0"];
+		set_tmp_tmp_next[label="set_tmp_tmp_next"];
+		write_unlock_file_systems_lock[label="write_unlock_file_systems_lock"];
+		return_EINVAL[label="return_EINVAL"];
+	}
+
+	subgraph cluster_fs_index{
+		label="static int fs_index(const char __user * __name)";
+		set_name_getname___name[label="set_name_getname___name"];
+		set_err_PTR_ERR_name[label="set_err_PTR_ERR_name"];
+		IS_ERR_name_true[label="IS_ERR_name_true"];
+		return_err[label="return_err"];
+		set_err_INVAL[label="set_err_INVAL"];
+		read_lock_file_systems_lock[label="read_lock_file_systems_lock"];
+		for_tmp_file_systems_tmp_next[label="for_tmp_file_systems_tmp_next"];
+		strcmp_tmp_name_name_eq_0[label="strcmp_tmp_name_name_eq_0"];
+		set_err_index[label="set_err_index"];
+		read_unlock_file_systems_lock[label="read_unlock_file_systems_lock"];
+		putname_name[label="putname_name"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_fs_name{
+		label="static int fs_name(unsigned int index, char __user * buf)";
+		read_lock_file_systems_lock[label="read_lock_file_systems_lock"];
+		for_tmp_file_systems_tmp_next[label="for_tmp_file_systems_tmp_next"];
+		index_not_great_0_and_try_module_get_tmp_owner[label="index_not_great_0_and_try_module_get_tmp_owner"];
+		read_unlock_file_systems_lock[label="read_unlock_file_systems_lock"];
+		tmp_false[label="tmp_false"];
+		return_EINVAL[label="return_EINVAL"];
+		set_len_strlen_tmp_name_add_1[label="set_len_strlen_tmp_name_add_1"];
+		set_ret_EFAULT_or_0_decide_copy_to_user_buf_tmp_name[label="set_ret_EFAULT_or_0_decide_copy_to_user_buf_tmp_name"];
+		put_filesystem_tmp[label="put_filesystem_tmp"];
+		return_res[label="return_res"];
+	}
+
+	subgraph cluster_fs_maxindex{
+		label="static int fs_maxindex(void)";
+		read_lock_file_systems_lock[label="read_lock_file_systems_lock"];
+		for_tmp_file_systems_tmp_next[label="for_tmp_file_systems_tmp_next"];
+		read_unlock_file_systems_lock[label="read_unlock_file_systems_lock"];
+		return_index[label="return_index"];
+	}
+
+	subgraph cluster_sys_sysfs{
+		label="asmlinkage long sys_sysfs(int option, unsigned long arg1, unsigned long arg2)";
+		switch_tmp[label="switch_tmp"];
+		case_1[label="case_1"];
+		set_retval_fs_index_arg1[label="set_retval_fs_index_arg1"];
+		case_2[label="case_2"];
+		retval_fs_name_arg1_arg2[label="retval_fs_name_arg1_arg2"];
+		case_3[label="case_3"];
+		set_retval_fs_maxindex[label="set_retval_fs_maxindex"];
+		return_retval[label="return_retval"];
+	}
+
+	subgraph cluster_get_filesystem_list{
+		label="int get_filesystem_list(char * buf)";
+		read_lock_file_systems_lock[label="read_lock_file_systems_lock"];
+		set_tmp_file_systems[label="set_tmp_file_systems"];
+		tmp_true_and_len_small_PAGE_SIZE_sub_80[label="tmp_true_and_len_small_PAGE_SIZE_sub_80"];
+		len_self_add_sprintf_buf_add_len_tmp_fs_flags_sand_FS_REQUIRES_DEV_tmp_name[label="len_self_add_sprintf_buf_add_len_tmp_fs_flags_sand_FS_REQUIRES_DEV_tmp_name"];
+		set_tmp_tmp_next[label="set_tmp_tmp_next"];
+		read_unlock_file_system_lock[label="read_unlock_file_system_lock"];
+		return_len[label="return_len"];
+	}
+
+	subgraph cluster_*get_fs_type{
+		label="struct file_system_type *get_fs_type(const char *name)";
+		read_lock_file_systems_lock[label="read_lock_file_systems_lock"];
+		set_fs_find_filesystem_name[label="set_fs_find_filesystem_name"];
+		fs_true_and_try_module_get_fs_owner_false[label="fs_true_and_try_module_get_fs_owner_false"];
+		clear_fs[label="clear_fs"];
+		read_unlock_file_systems_lock[label="read_unlock_file_systems_lock"];
+		fs_false_and_request_module_s_name_eq_0[label="fs_false_and_request_module_s_name_eq_0"];
+		read_lock_file_systems_lock[label="read_lock_file_systems_lock"];
+		set_fs_find_filesystem_name[label="set_fs_find_filesystem_name"];
+		fs_true_and_try_module_get_fs_owner_false[label="fs_true_and_try_module_get_fs_owner_false"];
+		clear_fs[label="clear_fs"];
+		read_unlock_file_systems_lock[label="read_unlock_file_systems_lock"];
+		return_fs[label="return_fs"];
+	}
+}
