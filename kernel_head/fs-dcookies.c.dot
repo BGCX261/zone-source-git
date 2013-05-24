@@ -1,0 +1,162 @@
+digraph dcookies_c{
+	subgraph cluster_is_live{
+		label="static inline int is_live(void)";
+		retrun_rever_list_empty_dcookie_users[label="retrun_rever_list_empty_dcookie_users"];
+	}
+
+	subgraph cluster_dcookie_value{
+		label="static inline unsigned long dcookie_value(struct dcookie_struct * dcs)";
+		return_dsc_dentry[label="return_dsc_dentry"];
+	}
+
+	subgraph cluster_dcookie_hash{
+		label="static size_t dcookie_hash(unsigned long dcookie)";
+		return_dcookie_right_move_L1_CACHE_SHIFT_and_hash_size_sub_1[label="return_dcookie_right_move_L1_CACHE_SHIFT_and_hash_size_sub_1"];
+	}
+
+	subgraph cluster_find_dcookie{
+		label="static struct dcookie_struct * find_dcookie(unsigned long dcookie)";
+		set_list_dcookie_hash_table_add_dcookie_hash_dcookie[label="set_list_dcookie_hash_table_add_dcookie_hash_dcookie"];
+		list_for_each_pos_list[label="list_for_each_pos_list"];
+		set_dcs_list_entry_pos_struct_dcookie_struct_hash_list[label="set_dcs_list_entry_pos_struct_dcookie_struct_hash_list"];
+		dcookie_value_dcs_eq_dcookie[label="dcookie_value_dcs_eq_dcookie"];
+		set_found_dcs[label="set_found_dcs"];
+		return_found[label="return_found"];
+	}
+
+	subgraph cluster_hash_dcookie{
+		label="static void hash_dcookie(struct dcookie_struct * dcs)";
+		set_list_dcookie_hashtable_add_dcookie_hash_dcookie_value_dcs[label="set_list_dcookie_hashtable_add_dcookie_hash_dcookie_value_dcs"];
+		list_add_dcs_hash_list_list[label="list_add_dcs_hash_list_list"];
+	}
+
+	subgraph cluster_alloc_dcookie{
+		label="static struct dcookie_struct * alloc_dcookie(struct dentry * dentry,
+	struct vfsmount * vfsmnt)";
+		set_dcs_kmem_cache_alloc_dcookie_cache[label="set_dcs_kmem_cache_alloc_dcookie_cache"];
+		atomic_inc_dentry_d_count[label="atomic_inc_dentry_d_count"];
+		atomic_inc_vfsmnt_mnt_count[label="atomic_inc_vfsmnt_mnt_count"];
+		set_dentry_d_cookie_dcs[label="set_dentry_d_cookie_dcs"];
+		set_dcs_dentry_dentry[label="set_dcs_dentry_dentry"];
+		set_dcs_vfsmnt_vfsmnt[label="set_dcs_vfsmnt_vfsmnt"];
+		hash_dcookie_dcs[label="hash_dcookie_dcs"];
+		return_dcs[label="return_dcs"];
+	}
+
+	subgraph cluster_get_dcookie{
+		label="int get_dcookie(struct dentry * dentry, struct vfsmount * vfsmnt,
+	unsigned long * cookie)";
+		down_dcookie_sem[label="down_dcookie_sem"];
+		is_live_false[label="is_live_false"];
+		set_err_EINVAL[label="set_err_EINVAL"];
+		goto_out[label="goto_out"];
+		set_dcs_dentry_d_cookie[label="set_dcs_dentry_d_cookie"];
+		dcs_false[label="dcs_false"];
+		set_dcs_alloc_dcookie_dentry_vfsmnt[label="set_dcs_alloc_dcookie_dentry_vfsmnt"];
+		dcs_false[label="dcs_false"];
+		set_err_ENOMEM[label="set_err_ENOMEM"];
+		goto_out[label="goto_out"];
+		set_cookie_dcookie_value_dcs[label="set_cookie_dcookie_value_dcs"];
+		up_dcookie_sem[label="up_dcookie_sem"];
+		return_err[label="retrun_err"];
+	}
+
+	subgraph cluster_sys_lookup_dcookie{
+		label="asmlinkage long sys_lookup_dcookie(u64 cookie64, char __user * buf, size_t len)";
+		set_cookie_cookie64[label="set_cookie_cookie64"];
+		set_err_EINVAL[label="set_err_EINVAL"];
+		capable_CAP_SYS_ADMIN_false[label="capable_CAP_SYS_ADMIN_false"];
+		return_EPERM[label="return_EPERM"];
+		down_dcookie_sem[label="down_dcookie_sem"];
+		is_live_false[label="is_live_false"];
+		set_err_EINVAL[label="set_err_EINVAL"];
+		goto_out[label="goto_out"];
+		set_dcs_find_dcookie_cookie_false[label="set_dcs_find_dcookie_cookie_false"];
+		goto_out[label="goto_out"];
+		set_err_ENOMEM[label="set_err_ENOMEM"];
+		set_kbuf_kmalloc[label="set_kbuf_kmalloc"];
+		set_path_d_path_dcs_dentry_dcs_vfsmnt_kbuf_PAGE_SIZE[label="set_path_d_path_dcs_dentry_dcs_vfsmnt_kbuf_PAGE_SIZE"];
+		IS_ERR_path_true[label="IS_ERR_path_true"];
+		set_err_PTR_ERR_path[label="set_err_PTR_ERR_path"];
+		goto_out_free[label="goto_out_free"];
+		set_err_ERANGE[label="set_err_ERANGE"];
+		set_pathlen_kbuf_add_PAGE_SIZE_sub_path[label="set_pathlen_kbuf_add_PAGE_SIZE_sub_path"];
+		pathlen_not_great_len[label="pathlen_not_great_len"];
+		set_err_pathlen[label="set_err_pathlen"];
+		copy_to_user_buf_path_pathlen[label="copy_to_user_buf_path_pathlen"];
+		kfree_kbuf[label="kfree_kbuf"];
+		up_dcookie_sem[label="up_dcookie_sem"];
+		return_err[label="return_err"];
+	}
+
+	subgraph cluster_dcookie_init{
+		label="static int dcookie_init(void)";
+		set_err+ENOMEM[label="set_err+ENOMEM"];
+		set_dcookie_cache_kmem_cache_create_dcookie_cache[label="set_dcookie_cache_kmem_cache_create_dcookie_cache"];
+		dcookie_cache_false[label="dcookie_cache_false"];
+		goto_out[label="goto_out"];
+		set_dcookie_hashtable_kmalloc[label="set_dcookie_hashtable_kmalloc"];
+		dcookie_hashtable_false[label="dcookie_hashtable_false"];
+		goto_out_kmem[label="goto_out_kmem"];
+		set_err_0[label="set_err_0"];
+		set_hash_size_PAGE_SIZE_div_sizeof_struct_list_head[label="set_hash_size_PAGE_SIZE_div_sizeof_struct_list_head"];
+		set_hash_bits_0[label="set_hash_bits_0"];
+		inc_hash_bits[label="inc_hash_bits"];
+		hash_size_right_move_hash_bits_not_eq_0[label="hash_size_right_move_hash_bits_not_eq_0"];
+		dec_hash_bits[label="dec_hash_bits"];
+		set_hash_size_1_left_move_hash_bits[label="set_hash_size_1_left_move_hash_bits"];
+		set_d_dcookie_hashtable[label="set_d_dcookie_hashtable"];
+		set_i_hash_size[label="set_i_hash_size"];
+		INIT_LIST_HEAD_d[label="INIT_LIST_HEAD_d"];
+		inc_d[label="inc_d"];
+		dec_i[label="dec_i"];
+		i_true[label="i_true"];
+		return_err[label="return_err"];
+		kmem_cache_destroy_dcookie_cache[label="kmem_cache_destroy_dcookie_cache"];
+		goto_out[label="goto_out"];
+	}
+
+	subgraph cluster_free_dcookie{
+		label="static void free_dcookie(struct dcookie_struct * dcs)";
+		clear_dcs_dentry_d_cookie[label="clear_dcs_dentry_d_cookie"];
+		dput_dcs_dentry[label="dput_dcs_dentry"];
+		mntput_dcs_vfsmnt[label="mntput_dcs_vfsmnt"];
+		kmem_cache_free_dcookie_cache_dcs[label="kmem_cache_free_dcookie_cache_dcs"];
+	}
+
+	subgraph cluster_dcookie_exit{
+		label="static void dcookie_exit(void)";
+		for_i_hash_size[label="for_i_hash_size"];
+		set_list_dcookie_hashtable_add_i[label="set_list_dcookie_hashtable_add_i"];
+		list_for_each_safe_pos_pos2_list[label="list_for_each_safe_pos_pos2_list"];
+		set_dcs_list_entry_pos_struct_dcookie_struct_hash_list[label="set_dcs_list_entry_pos_struct_dcookie_struct_hash_list"];
+		list_del_dcs_hash_list[label="list_del_dcs_hash_list"];
+		free_dcookie_dcs[label="free_dcookie_dcs"];
+		kfree_dcookie_hashtable[label="kfree_dcookie_hashtable"];
+		kmem_cache_destroy_dcookie_cache[label="kmem_cache_destroy_dcookie_cache"];
+	}
+
+	subgraph cluster_dcookie_register{
+		label="struct dcookie_user * dcookie_register(void)";
+		down_dcookie_sem[label="down_dcookie_sem"];
+		set_user_kmalloc[label="set_user_kmalloc"];
+		is_live_false_and_dcookie_init_true[label="is_live_false_and_dcookie_init_true"];
+		goto_out_free[label="goto_out_free"];
+		list_add_user_next_dcookie_users[label="list_add_user_next_dcookie_users"];
+		up_dcookie_sem[label="up_dcookie_sem"];
+		return_user[label="return_user"];
+		kfree_user[label="kfree_user"];
+		clear_user[label="clear_user"];
+		goto_out[label="goto_out"];
+	}
+
+	subgraph cluster_dcookie_unregister{
+		label="void dcookie_unregister(struct dcookie_user * user)";
+		down_dcookie_sem[label="down_dcookie_sem"];
+		list_del_user_next[label="list_del_user_next"];
+		kfree_user[label="kfree_user"];
+		is_live_false[label="is_live_false"];
+		dcookie_exit[label="dcookie_exit"];
+		up_dcookie_sem[label="up_dcookie_sem"];
+	}
+}
