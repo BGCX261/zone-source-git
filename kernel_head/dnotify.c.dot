@@ -1,0 +1,107 @@
+digraph dnotify_c{
+	subgraph cluster_redo_inode_mask{
+		label="static void redo_inode_mask(struct inode *inode)";
+		set_new_mask_0[label="set_new_mask_0"];
+		for_dn_inode_i_dnotify_dn_dn_next[label="for_dn_inode_i_dnotify_dn_dn_next"];
+		new_mask_self_or_dn_dn_mask_clear_DN_MULTISHOT[label="new_mask_self_or_dn_dn_mask_clear_DN_MULTISHOT"];
+		set_inode_i_dnotify_mask_new_mask[label="set_inode_i_dnotify_mask_new_mask"];
+	}
+
+	subgraph cluster_dnotify_flush{
+		label="void dnotify_flush(struct file *filp, fl_owner_t id)";
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		S_ISDIR_inode_i_mode_false[label="S_ISDIR_inode_i_mode_false"];
+		return[label="return"];
+		lock_inode_i_lock[label="lock_inode_i_lock"];
+		set_prev_inode_i_dnotify[label="set_prev_inode_i_dnotify"];
+		set_dn_prev_not_eq_NULL[label="set_dn_prev_not_eq_NULL"];
+		dn_dn_owner_eq_id_and_dn_dn_filp_eq_filp[label="dn_dn_owner_eq_id_and_dn_dn_filp_eq_filp"];
+		set_prev_dn_dn_next[label="set_prev_dn_dn_next"];
+		redo_inode_mask_inode[label="redo_inode_mask_inode"];
+		kmem_cache_free_dn_cache_dn[label="kmem_cache_free_dn_cache_dn"];
+		set_prev_dn_dn_next[label="set_prev_dn_dn_next"];
+		unlock_inode_i_lock[label="unlock_inode_i_lock"];
+	}
+
+	subgraph cluster_fcntl_dirnotify{
+		label="int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg)";
+		set_id_current_files[label="set_id_current_files"];
+		arg_set_except_DN_MULTISHOT[label="arg_set_except_DN_MULTISHOT"];
+		donitify_flush_filp_id[label="donitify_flush_filp_id"];
+		return_0[label="return_0"];
+		dir_notify_enable_false[label="dir_notify_enable_false"];
+		return_EINVAL[label="return_EINVAL"];
+		set_inode_filp_f_dentry_d_inode[label="set_inode_filp_f_dentry_d_inode"];
+		S_ISDIR_inode_i_mode_false[label="S_ISDIR_inode_i_mode_false"];
+		return_ENOTDIR[label="return_ENOTDIR"];
+		dn_kmem_cache_alloc_dn_cache_SLAB_KERNEL[label="dn_kmem_cache_alloc_dn_cache_SLAB_KERNEL"];
+		dn_eq_NULL[label="dn_eq_NULL"];
+		return_ENOMEM[label="return_ENOMEM"];
+		lock_inode_i_lock[label="lock_inode_i_lock"];
+		set_prev_inode_i_dnotify[label="set_prev_inode_i_dnotify"];
+		set_odn_prev_not_eq_NULL[label="set_odn_prev_not_eq_NULL"];
+		odn_dn_owner_eq_id_and_odn_dn_filp_eq_filp[label="odn_dn_owner_eq_id_and_odn_dn_filp_eq_filp"];
+		set_odn_dn_fd_fd[label="set_odn_dn_fd_fd"];
+		odn_dn_mask_self_or_arg[label="odn_dn_mask_self_or_arg"];
+		inode_i_dnotify_mask_self_or_arg_clear_DN_MULTISHOT[label="inode_i_dnotify_mask_self_or_arg_clear_DN_MULTISHOT"];
+		goto_out_free[label="goto_out_free"];
+		set_prev_odn_dn_next[label="set_prev_odn_dn_next"];
+		set_error_f_setown_filp_current_pid_0[label="set_error_f_setown_filp_current_pid_0"];
+		error_true[label="error_true"];
+		goto_out_free[label="goto_out_free"];
+		set_dn_dn_mask_arg[label="set_dn_dn_mask_arg"];
+		set_dn_dn_fd_fd[label="set_dn_dn_fd_fd"];
+		set_dn_dn_filp_filp[label="set_dn_dn_filp_filp"];
+		set_dn_dn_owner_id[label="set_dn_dn_owner_id"];
+		inode_i_dnotify_mask_self_or_arg_clear_DN_MULTISHOT[label="inode_i_dnotify_mask_self_or_arg_clear_DN_MULTISHOT"];
+		set_dn_dn_next_inode_i_dnotify[label="set_dn_dn_next_inode_i_dnotify"];
+		set_inode_i_dnotify_nd[label="set_inode_i_dnotify_nd"];
+		unlock_inode_i_lock[label="unlock_inode_i_lock"];
+		filp_f_op_true_and_filp_f_op_dir_notify_true[label="filp_f_op_true_and_filp_f_op_dir_notify_true"];
+		return_filp_f_op_dir_notify_filp_arg[label="return_filp_f_op_dir_notify_filp_arg"];
+		return_0[label="return_0"];
+		unlock_inode_i_lock[label="unlock_inode_i_lock"];
+		kmem_cache_free_dn_cache_dn[label="kmem_cache_free_dn_cache_dn"];
+		return_error[label="return_error"];
+	}
+
+	subgraph cluster___inode_dir_notify{
+		label="void __inode_dir_notify(struct inode *inode, unsigned long event)";
+		set_changed_0[label="set_changed_0"];
+		lock_inode_i_lock[label="lock_inode_i_lock"];
+		set_prev_inode_i_dnotify[label="set_prev_inode_i_dnotify"];
+		set_dn_prev_not_eq_NULL[label="set_dn_prev_not_eq_NULL"];
+		dn_dn_mask_set_except_event[label="dn_dn_mask_set_except_event"];
+		set_prev_dn_dn_next[label="set_prev_dn_dn_next"];
+		set_fown_dn_dn_filp_f_owner[label="set_fown_dn_dn_filp_f_owner"];
+		send_sigio_fown_dn_dn_fd_POLL_MSG[label="send_sigio_fown_dn_dn_fd_POLL_MSG"];
+		dn_dn_mask_DN_MULTISHOT_set[label="dn_dn_mask_DN_MULTISHOT_set"];
+		set_prev_dn_dn_next[label="set_prev_dn_dn_next"];
+		set_prev_dn_dn_next[label="set_prev_dn_dn_next"];
+		set_changed_1[label="set_changed_1"];
+		kmem_cache_free_dn_cache_dn[label="kmem_cache_free_dn_cache_dn"];
+		changed_true[label="changed_true"];
+		redo_inode_mask_inode[label="redo_inode_mask_inode"];
+		unlock_inode_i_lock[label="unlock_inode_i_lock"];
+	}
+
+	subgraph cluster_dnotify_parent{
+		label="void dnotify_parent(struct dentry *dentry, unsigned long event)";
+		dir_notify_enable_false[label="dir_notify_enable_false"];
+		return[label="return"];
+		lock_dentry_d_lock[label="lock_dentry_d_lock"];
+		set_parent_dentry_d_parent[label="set_parent_dentry_d_parent"];
+		parent_d_inode_i_dnotify_mask_event_set[label="parent_d_inode_i_dnotify_mask_event_set"];
+		dget_parent[label="dget_parent"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+		__inode_dir_notify_parent_d_inode_event[label="__inode_dir_notify_parent_d_inode_event"];
+		dput_parent[label="dput_parent"];
+		unlock_dentry_d_lock[label="unlock_dentry_d_lock"];
+	}
+
+	subgraph cluster_dnotify_init{
+		label="static int __init dnotify_init(void)";
+		set_dn_cache_kmem_cache_create_dnotify_cache[label="set_dn_cache_kmem_cache_create_dnotify_cache"];
+		return_0[label="return_0"];
+	}
+}
