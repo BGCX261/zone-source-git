@@ -6381,3 +6381,30 @@ N，你不喜欢，他再好又有什么用？别拉拉扯扯的浪费彼此的�
 ==============================[2013-05-29 三]==============================
 
 调试硬件时要用可调电源，用限流的方式来调试以防烧坏。
+
+==============================[2013-06-04 二]==============================
+
+删除硬链接不会把原文件删除，用emacs的打开一个硬链接时显示的文件名将是原文件的名字。
+用ll命令来查看硬链接显示的文件属性是普通文件。
+
+make是可以识别软链接的。
+
+==============================[2013-06-06 四]==============================
+
+3-wire and 5-wire RS-232
+
+A minimal "3-wire" RS-232 connection consisting only of transmit data, receive data, and
+ground, is commonly used when the full facilities of RS-232 are not required. Even a
+two-wire connection (data and ground) can be used if the data flow is one way (for
+example, a digital postal scale that periodically sends a weight reading, or a GPS
+receiver that periodically sends position, if no configuration via RS-232 is
+necessary). When only hardware flow control is required in addition to two-way data, the
+RTS and CTS lines are added in a 5-wire version.
+
+RTS,CTS------请求发送/清除发送。用于半双工时，收发切换。属于辅助流控信号。半双工的意思是说，
+    发的时候不收，收的时候不发。那么怎么区分收发呢？缺省时是DCE向DTE发送数据，当DTE决定向
+    DCE发数据时，先有效RTS，表示DTE希望向DCE发送，一般DCE不能马上转换收发状态，DTE就通过监
+    测CTS是否有效来判断可否发送，这样避免了DTE在DCE未准备好时发送所导致的数据丢失。全双工时，
+    这两个信号一直有效即可。
+
+两台机的串口相连时A机RTS连B机的CTS，B机RTS连A机的CTS，DSR和DTR也是这样交叉的。如果不用A机的CTS和RTS就短接

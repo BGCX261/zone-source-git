@@ -142,6 +142,11 @@ lib/rwsem-spinlock.c里出现
   所以一个等待队列的结点必须有这两个信息。。。这个错误的解释，没有什么想执行的动作，只不过是一个普通的唤醒函数罢了。上面那个也不是工作队列的解
   释，感觉不伦不类了，更像是用户态下所使用的信号。那信号用什么来实现的呢？在等待队列里关键的不是执行某事，而是等待某事，而等待某事已在创建这个
   等待队列时已确定了，不由后来加入的进程所影响。
+
+  * CONFIG_BASE_SMALL:Disabling CONFIG_BASE_FULL sets the boolean CONFIG_BASE_SMALL to 1 and it is used to shrink a
+  number of core datastructures.
+  https://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.11-rc4/2.6.11-rc4-mm1/broken-out/base-small-introduce-the-config_base_small-flag.patch
+
  **/
 /* page.h */
 /* PAGE_SHIFT determines the page size */

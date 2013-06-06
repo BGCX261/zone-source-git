@@ -15,3 +15,96 @@
 - 主要是做0号进程的工作。只分配一页。
 ** int alloc_pidmap(void)
 - 在这里也分配页给page
+- alloc_pidmap里的求max_scan的方法为什么要减!offset呢?因为若不在一页的起始位置就要减去0而不是1是因为想多循环一次当前页，所以max_scan指的是
+  将要经过多少次页头（页尾）.
+** int default_wake_function(wait_queue_t *curr, unsigned mode, int sync, void *key)
+- 仅仅是调用try_to_wake_up
+- key参数没有用
+- 所以自定义唤醒函数时,里面可以一开始调用default_wake_function,在最后做一些想做的事情,而不能在一开始做想做的事情因为进程还没有切换.
+** int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
+- 调用上一个函数后从链表中删除,删除用list_del_init,与__remove_wait_queue所用的list_del不一样
+** #define DEFINE_WAIT(name)
+- 用了上一个函数作为唤醒函数。
+- 若用这个定义一个WAIT,因为用上一个函数作为唤醒调用函数,所以同时会把它从队列删除.唤醒之后不用再把它从队列删除.
+** static inline void init_waitqueue_func_entry(wait_queue_t *q, wait_queue_func_t func) 
+*** include/linux/wait.h:
+- 可以自定义唤醒函数。仅此而已,没有赋值给task
+** static inline void init_waitqueue_entry(wait_queue_t *q, struct task_struct *p)
+*** include/linux/wait.h:
+- 与上一个比多了初始化进程。但唤醒函数用default_wake_function, flags都是0
+** #define DECLARE_WAITQUEUE(name, tsk)
+*** include/linux/wait.h:
+- 注意与DEFINE_WAIT的不同，用tsk,default_wake_function,NULL和NULL初始task_list,而不是
+  current,autoremove_wake_function,LIST_HEAD_INIT
+- 那么用DECLARE_WAITQUEUE定义的要不要在删除的时候把它从链表删除呢？要的用remove_wait_queue，
+  在ulk里也有说的- 那么用DECLARE_WAITQUEUE定义的要不要在删除的时候把它从链表删除呢？要的用
+  remove_wait_queue，在ulk里也有说的:unless DEFINE_WAIT or finish_wait( ) are used, the
+  kernel must remove the wait queue element from the list after the waiting process has
+  been awakened.
+
+** #define DECLARE_WAIT_QUEUE_HEAD(name)
+*** include/linux/wait.h:
+- 用自已来初始化链表.
+** static inline void init_waitqueue_head(wait_queue_head_t *q)
+*** include/linux/wait.h:
+- 结果和DECLARE_WAIT_QUEUE_HEAD(name)一样.
+** static inline int waitqueue_active(wait_queue_head_t *q)
+*** include/linux/wait.h:
+- 看队列是否为空
+** static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
+*** include/linux/wait.h:
+- 这个是加在队列前面的
+** static inline void __add_wait_queue_tail(wait_queue_head_t *head, wait_queue_t *new)
+*** include/linux/wait.h:
+- 这个是加在队列尾的
+** void fastcall __sched sleep_on(wait_queue_head_t *q)
+*** kernel/sched.c:
+- 就是改状态,加入队列,schedule,删除队列. 要注意加锁.
+- sleep_on系列的函数是与等待队列相关的.
+- 时间窗口出现在改状态和schedule之间可能会被唤醒.
+- the sleep_on( )-like functions cannot be used in the common situation where one has to
+  test a condition and atomically put the process to sleep when the condition is not
+  verified; therefore, because they are a well-known source of race conditions, their use
+  is discouraged.
+** long fastcall __sched sleep_on_timeout(wait_queue_head_t *q, long timeout)
+** long fastcall __sched interruptible_sleep_on_timeout(wait_queue_head_t *q, long timeout)
+** void fastcall __sched interruptible_sleep_on(wait_queue_head_t *q)
+** void fastcall prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
+*** include/linux/wait.h:
+- 这个用于把current加入等待队列的。
+- 注释有说为什么把设置进程状态放在加入队列的后面
+- 要先判断wait->task_list为空的时候才把wait加入队列。为什么在sleep_on里不用呢?因为
+  prepare_to_wait的应用场合不同，prepare_to_wait会放在一个循环里重复调用，但是finish_wait不会被放到循环里，看看__wait_event就知道了。
+- 虽然在is_sync_wait里会检查wait是否为空，但进入prepare_to_wait是肯定不会为空的，所以is_sync_wait做了多余的事情。
+** #define is_sync_wait(wait)	(!(wait) || ((wait)->task))
+*** include/linux/wait.h:
+- 有一段注释：Used to distinguish between sync and async io wait context: sync i/o typically specifies a NULL wait queue entry or a wait
+  queue entry bound to a task (current task) to wake up. aio specifies a wait queue entry with an async notification
+  callback routine, not associated with any task.为什么同步io可以指定一个NULL 的wait呢？
+** void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
+*** include/linux/wait.h:
+- 不同的是设置了exclusive标志。
+** void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
+*** kernel/wait.c:
+- 用了list_empty_careful，为什么呢？只能用于调用list_del_init的情况，因为list_del_init里调用了INIT_LIST_HEAD
+- sleep_on是状态->插入队列->schedule->删除队列;插入队列(prepare)（检测是否已插入）->状态
+  (prepare)（检查同步）->schedule->状态(finish)->删除队列(finish)(先list_empty_careful)
+- 有一个例子：
+#+BEGIN_EXAMPLE
+    DEFINE_WAIT(wait);
+    prepare_to_wait_exclusive(&wq, &wait, TASK_INTERRUPTIBLE);
+                                /* wq is the head of the wait queue */
+    ...
+    if (!condition)
+        schedule();
+    finish_wait(&wq, &wait);
+#+END_EXAMPLE
+** #define wake_up(x)			__wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, 1, NULL)
+*** kernel/sched.c:
+- 要知道linux是不能指定下一个切换到某个进程。
+- wake_up也不能指定唤醒某个进程（把某个进程状态改成运行），注意只有一个参数x，但是找到一个
+  被唤醒的进程后就会马上调用它的func，因为大部分的func是default_wake_function，会调用
+  try_to_wake_up
+- 等待队列是从第一个开始唤醒的，一个wait可以加入到队列头add_wait_queue也可以加到队列尾
+  add_wait_queue_tail，同时还有互斥和非互斥的wait，所以可以用这些东西组合成一个有优先级的队
+  列。
