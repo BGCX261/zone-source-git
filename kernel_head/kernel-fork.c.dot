@@ -1,5 +1,5 @@
 digraph fork_c{
-        size="20,80";
+        size="300,100";
         ratio=filled;
 
         subgraph cluster_copy_process{
@@ -838,7 +838,7 @@ digraph fork_c{
 			set_sig_it_virt_incr_cputime_zero[label="set_sig_it_virt_incr_cputime_zero"];
 			set_sig_it_prof_expires_cputime_zero[label="set_sig_it_prof_expires_cputime_zero"];
 			set_sig_it_prof_incr_cputime_zero[label="set_sig_it_prof_incr_cputime_zero"];
-			set_sig_tty_current-signal_tty[label="set_sig_tty_current-signal_tty"];
+			set_sig_tty_current_signal_tty[label="set_sig_tty_current_signal_tty"];
 			set_sig_pgrp_process_group_current[label="set_sig_pgrp_process_group_current"];
 			set_sig_session_current_signal_session[label="set_sig_session_current_signal_session"];
 			set_sig_leader_0[label="set_sig_leader_0"];

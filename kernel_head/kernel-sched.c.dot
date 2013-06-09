@@ -1,4 +1,6 @@
 digraph sched_c{
+		size="300,100";
+		ratio=filled;
         subgraph cluster_preempt_schedule{
                 label="asmlinkage void __sched preempt_schedule(void)";
                 set_ti_current_thread_info[label="set_ti_current_thread_info"];
@@ -720,8 +722,8 @@ digraph sched_c{
                 set_this_cpu_smp_processor_id[label="set_this_cpu_smp_processor_id"];
                 set_p_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_p_multi_CHILD_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS[label="set_p_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_p_multi_CHILD_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS"];
                 set_p_prio_effective_prio_p[label="set_p_prio_effective_prio_p"];
-                cpu_not_eq_this_cpu[label="cpu_not_eq_this_cpu"];
-                clone_flags_CLONE_VM_set[label="clone_flags_CLONE_VM_set"];
+                cpu_eq_this_cpu[label="cpu_eq_this_cpu"];
+                clone_flags_CLONE_VM_clear[label="clone_flags_CLONE_VM_clear"];
                 current_array_null[label="current_array_null"];
                 __activate_task_p_rq[label="__activate_task_p_rq"];
                 set_p_prio_current_prio[label="set_p_prio_current_prio"];
@@ -732,15 +734,49 @@ digraph sched_c{
                 set_need_resched[label="set_need_resched"];
                 __activate_task_p_rq[label="__activate_task_p_rq"];
                 set_this_rq_rq[label="set_this_rq_rq"];
-                this_rq_cpu_rq_this_cpu[label="this_rq_cpu_rq_this_cpu"];
+                set_this_rq_cpu_rq_this_cpu[label="set_this_rq_cpu_rq_this_cpu"];
                 set_p_timestamp_p_timestamp_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick[label="set_p_timestamp_p_timestamp_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick"];
-                __activate_task_p_rq[label="__activate_task_p_rq"];
+                __activate_task_p_rq_1[label="__activate_task_p_rq"];
+                __activate_task_p_rq_2[label="__activate_task_p_rq"];
                 TASK_PREEMPTS_CURR_p_rq[label="TASK_PREEMPTS_CURR_p_rq"];
                 resched_task_rq_curr[label="resched_task_rq_curr"];
                 task_rq_unlock_rq[label="task_rq_unlock_rq"];
+				set_this_rq_task_rq_lock_current[label="set_this_rq_task_rq_lock_current"];
                 this_rq_task_rq_lock[label="this_rq_task_rq_lock"];
                 set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS[label="set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS"];
                 task_rq_unlock_this_rq[label="task_rq_unlock_this_rq"];
+
+				task_rq_lock -> set_cpu_task_cpu_p;
+				set_cpu_task_cpu_p -> set_this_cpu_smp_processor_id;
+				set_this_cpu_smp_processor_id -> set_p_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_p_multi_CHILD_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS;
+				set_p_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_p_multi_CHILD_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS -> set_p_prio_effective_prio_p;
+				set_p_prio_effective_prio_p -> cpu_eq_this_cpu;
+				cpu_eq_this_cpu -> clone_flags_CLONE_VM_clear;
+				cpu_eq_this_cpu -> set_this_rq_cpu_rq_this_cpu;
+				clone_flags_CLONE_VM_clear -> current_array_null;
+				clone_flags_CLONE_VM_clear -> __activate_task_p_rq_1;
+				current_array_null -> __activate_task_p_rq;
+				current_array_null -> set_p_prio_current_prio;
+				set_p_prio_current_prio -> list_add_tail_p_run_list_current_run_list;
+				list_add_tail_p_run_list_current_run_list -> set_p_array_array;
+				set_p_array_array -> inc_p_array_nr_active;
+				inc_p_array_nr_active -> inc_rq_nr_running;
+				inc_rq_nr_running -> set_need_resched;
+				__activate_task_p_rq -> set_need_resched;
+				set_need_resched -> set_this_rq_rq;
+				__activate_task_p_rq_1 -> set_this_rq_rq;
+				set_this_rq_rq -> set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS;
+				set_this_rq_cpu_rq_this_cpu -> set_p_timestamp_p_timestamp_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick;
+				set_p_timestamp_p_timestamp_sub_this_rq_timestamp_last_tick_add_rq_timestamp_last_tick -> __activate_task_p_rq
+				set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS -> __activate_task_p_rq_2;
+				__activate_task_p_rq_2 -> TASK_PREEMPTS_CURR_p_rq;
+				TASK_PREEMPTS_CURR_p_rq -> resched_task_rq_curr;
+				TASK_PREEMPTS_CURR_p_rq -> task_rq_unlock_rq;
+				resched_task_rq_curr -> task_rq_unlock_rq;
+				task_rq_unlock_rq -> set_this_rq_task_rq_lock_current;
+				set_this_rq_task_rq_lock_current -> set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS;
+				set_current_sleep_avg_JIFFIES_TO_NS_CURRENT_BONUS_current_multi_PARENT_PENALTY_div_100_multi_MAX_SLEEP_AVG_div_MAX_BONUS -> task_rq_unlock_this_rq;
+				
         }
 
         subgraph cluster_sched_exit{
@@ -2015,7 +2051,7 @@ digraph sched_c{
                         CONFIG_SMP[label="CONFIG_SMP"];
                         set_rq_sd_sched_domain_dummy[label="set_rq_sd_sched_domain_dummy"];
                         set_rq_cpu_load_0[label="set_rq_cpu_load_0"];
-                        set_rq_active_balance_-[label="set_rq_active_balance_-"];
+                        set_rq_active_balance[label="set_rq_active_balance"];
                         set_rq_push_cpu_0[label="set_rq_push_cpu_0"];
                         set_rq_migration_thread_NULL[label="set_rq_migration_thread_NULL"];
                         INIT_LIST_HEAD_rq_migration_queue[label="INIT_LIST_HEAD_rq_migration_queue"];

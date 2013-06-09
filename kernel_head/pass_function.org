@@ -108,3 +108,67 @@
 - 等待队列是从第一个开始唤醒的，一个wait可以加入到队列头add_wait_queue也可以加到队列尾
   add_wait_queue_tail，同时还有互斥和非互斥的wait，所以可以用这些东西组合成一个有优先级的队
   列。
+
+** #define wake_up_nr(x, nr)		__wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, nr, NULL)
+** #define wake_up_all(x)			__wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, 0, NULL)
+** #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
+** #define wake_up_interruptible_nr(x, nr)	__wake_up(x, TASK_INTERRUPTIBLE, nr, NULL)
+** #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
+** #define wake_up_locked(x)		__wake_up_locked((x), TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE)
+- 已经把队列给lock住了
+** #define wake_up_interruptible_sync(x)   __wake_up_sync((x),TASK_INTERRUPTIBLE, 1)
+** void fastcall __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr_exclusive)
+*** kernel/sched.c:
+- 这个函数目前为止只是用于上一个宏，所以nr_exclusive一直是1，但是在实现的时候nr_exclusive为0的时候就不同步了，为什么呢？
+** static void __wake_up_common(wait_queue_head_t *q, unsigned int mode, int nr_exclusive, int sync, void *key)
+- sync这个参数是只是传给func而已。
+- 如果想唤醒所有的进程而不管它是否互斥，那么nr_exclusive就是0，实现的方法是!--nr_exclusive
+** clone
+- 这个是C的库函数，它有多个参数但是它调用的sys_clone只有一个参数，转而调用的do_fork有多个参
+  数。但是ARM又是不一样的，它的包含了很多参数。
+- 关于fn和arg参数在ULK有：the wrapper function saves the pointer fn into the child's stack
+  position corresponding to the return address of the wrapper function itself; the pointer
+  arg is saved on the child's stack right below fn.
+** fork
+- 也是一个C库函数。
+- ULK:The traditional fork( ) system call is implemented by Linux as a clone( ) system
+  call whose flags parameter specifies both a SIGCHLD signal and all the clone flags
+  cleared, and whose child_stack parameter is the current parent stack pointer. Therefore,
+  the parent and child temporarily share the same User Mode stack.总之比clone就多了一个
+  SIGCHLD和与父进程共用一个堆栈.
+** vfork
+- 也是一个C库函数。
+- ULK:The vfork( ) system call, introduced in the previous section, is implemented by
+  Linux as a clone( ) system call whose flags parameter specifies both a SIGCHLD signal
+  and the flags CLONE_VM and CLONE_VFORK, and whose child_stack parameter is equal to the
+  current parent stack pointer.总之比fork就多了CLONE_VM和CLONE_VFORK
+** long do_fork(unsigned long clone_flags, unsigned long stack_start, struct pt_regs *regs, unsigned long stack_size, int __user *parent_tidptr, int __user *child_tidptr)
+*** kernel/fork.c:
+- 注意参数的意思
+- 如果clone_flags和current->ptrace的符合某些条件时，就算clone_flags不设置CLONE_PTRACE也给它加上。主要是看current_ptrace的设置。
+** static inline int fork_traceflag (unsigned clone_flags)
+*** kernel/fork.c:
+- 在clone_flags里的最低8位是指定退出时所要发送的信号。
+- 若系统调用是由vfork发起的且想跟踪vfork发起的创建的子进程就返回PTRACE_EVENT_VFORK;若子进程
+  退出时所发的信号不是SIGCHLD(为什么要这个条件呢？)且想跟踪clone创建的子进程就返回PTRACE_EVENT_CLONE；若想跟踪由
+  fork创建的子进程就返回PTRACE_EVENT_FORK.
+- 为什么是CLONE_VFORK是要使用completion原语呢？因为vfork的man手册有一段这样的话：vfork()
+       is a special case of clone(2).  It is used to create new processes without copying
+       the page tables of the parent process.  It may be useful in performance-sensitive
+       applica‐ tions where a child is created which then immediately issues an
+       execve(2)vfork() differs from fork(2) in that the parent is suspended until the
+       child terminates (either normally, by calling _exit(2), or abnormally, after
+       delivery of a fatal signal), or it makes a call to execve(2).  Until that point,
+       the child shares all memory with its parent, including the stack.  The child must
+       not return from the current function or call exit(3), but may call _exit(2).
+       Signal handlers are inherited, but not shared.  Signals to the parent arrive after
+       the child releases the parent's memory (i.e., after the child terminates or calls
+       execve(2)).
+- CLONE_STOPPED:Forces the child to start in the TASK_STOPPED state.
+- 若设置了CLONE_STOPPED,为什么还要设置PT_PTRACE才可以添加SIGSTOP的信号呢?
+** void fastcall wake_up_new_task(task_t * p, unsigned long clone_flags)
+*** kernel/sched.c:
+- 再次说一下task_t->array是指向CPU运行队列里的某一个active或expire成员.
+- 如何通过一个task_t来获得一个运行队列:从task_t里的thread_inof里的CPU来找到task是在哪一个
+  CPU上,知道哪个CPU就可以找出相应的运行队列了.task_t里的run_list就是task_t->array链表里的一
+  个结点.
