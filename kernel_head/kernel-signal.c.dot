@@ -554,13 +554,13 @@ digraph signal_c{
                 unlock_tasklist_lock[label="unlock_tasklist_lock"];
                 return_ret[label="return_ret"];
 
-				valid_signal_sig_null -> return_EINVAL;
-				valid_signal_sig_null -> lock_tasklist_lock;
-				lock_tasklist_lock -> lock_p_sighand_siglock;
-				lock_p_sighand_siglock -> set_ret_specific_send_sig_info_sig_info_p;
-				set_ret_specific_send_sig_info_sig_info_p -> unlock_p_sighand_siglock;;
-				unlock_p_sighand_siglock -> unlock_tasklist_lock;
-				unlock_tasklist_lock -> return_ret;
+		valid_signal_sig_null -> return_EINVAL;
+		valid_signal_sig_null -> lock_tasklist_lock;
+		lock_tasklist_lock -> lock_p_sighand_siglock;
+		lock_p_sighand_siglock -> set_ret_specific_send_sig_info_sig_info_p;
+		set_ret_specific_send_sig_info_sig_info_p -> unlock_p_sighand_siglock;
+		unlock_p_sighand_siglock -> unlock_tasklist_lock;
+		unlock_tasklist_lock -> return_ret;
         }
 
         subgraph cluster_force_sig{
@@ -578,14 +578,14 @@ digraph signal_c{
                 set_ret_specific_send_sig_info_sig_info_t[label="set_ret_specific_send_sig_info_sig_info_t"];
                 unlock_t_sighand_siglock[label="unlock_t_sighand_siglock"];
 
-				lock_t_sighand_siglock -> sigismember_t_blocked_sig_true_or_t_sighand_action_eq_SIG_IGN;
-				sigismember_t_blocked_sig_true_or_t_sighand_action_eq_SIG_IGN -> set_t_sighand_action_sa_sa_handler_SIG_DFL;;
-				set_t_sighand_action_sa_sa_handler_SIG_DFL -> sigdelset_t_blocked_sig;
-				sigdelset_t_blocked_sig -> recalc_sigpending_tsk_t;
-				recalc_sigpending_tsk_t -> set_ret_specific_send_sig_info_sig_info_t;
-				sigismember_t_blocked_sig_true_or_t_sighand_action_eq_SIG_IGN -> set_ret_specific_send_sig_info_sig_info_t;
-				set_ret_specific_send_sig_info_sig_info_t -> unlock_t_sighand_siglock;
-				unlock_t_sighand_siglock -> return_ret;
+		lock_t_sighand_siglock -> sigismember_t_blocked_sig_true_or_t_sighand_action_eq_SIG_IGN;
+		sigismember_t_blocked_sig_true_or_t_sighand_action_eq_SIG_IGN -> set_t_sighand_action_sa_sa_handler_SIG_DFL;
+		set_t_sighand_action_sa_sa_handler_SIG_DFL -> sigdelset_t_blocked_sig;
+		sigdelset_t_blocked_sig -> recalc_sigpending_tsk_t;
+		recalc_sigpending_tsk_t -> set_ret_specific_send_sig_info_sig_info_t;
+		sigismember_t_blocked_sig_true_or_t_sighand_action_eq_SIG_IGN -> set_ret_specific_send_sig_info_sig_info_t;
+		set_ret_specific_send_sig_info_sig_info_t -> unlock_t_sighand_siglock;
+		unlock_t_sighand_siglock -> return_ret;
         }
 
         subgraph cluster_force_sig_specific{
@@ -599,7 +599,7 @@ digraph signal_c{
                 unlock_t_sighand_siglock[label="unlock_t_sighand_siglock"];
 
 				lock_t_sighand_siglock -> t_sighand_action_sa_sa_handler_eq_SIG_IGN;
-				t_sighand_action_sa_sa_handler_eq_SIG_IGN -> set_t_sighand_action_sa_sa_handler_SIG_DFL;;
+				t_sighand_action_sa_sa_handler_eq_SIG_IGN -> set_t_sighand_action_sa_sa_handler_SIG_DFL;
 				set_t_sighand_action_sa_sa_handler_SIG_DFL -> sigdelset_t_blocked_sig;
 				t_sighand_action_sa_sa_handler_eq_SIG_IGN -> sigdelset_t_blocked_sig;
 				sigdelset_t_blocked_sig -> recalc_sigpending_tsk_t;
@@ -690,7 +690,7 @@ digraph signal_c{
 
 				set_mask_current_blocked -> lock_current_sighand_siglock;
 				lock_current_sighand_siglock -> dead_for;
-				dead_for -> current_signal_group_stop_count_great_0_and_handle_group_stop_true;;
+				dead_for -> current_signal_group_stop_count_great_0_and_handle_group_stop_true;
 				dead_for -> unlock_current_sighand_siglock;
 				current_signal_group_stop_count_great_0_and_handle_group_stop_true -> lock_current_sighand_siglock;
 				current_signal_group_stop_count_great_0_and_handle_group_stop_true -> set_signr_dequeue_signal_current_mask_info;
@@ -711,7 +711,7 @@ digraph signal_c{
 				set_info_si_errno_0 -> set_info_si_code_SI_USER;
 				set_info_si_code_SI_USER -> set_info_si_pid_current_parent_pid;
 				set_info_si_pid_current_parent_pid -> set_info_si_uid_current_parent_uid;
-				set_info_si_uid_current_parent_uid -> sigismember_current_blocked_signr_true;;
+				set_info_si_uid_current_parent_uid -> sigismember_current_blocked_signr_true;
 				sigismember_current_blocked_signr_true -> set_ka_current_sighand_action_signr_sub_1;
 				sigismember_current_blocked_signr_true -> specific_send_sig_info_signr_info_current;
 				specific_send_sig_info_signr_info_current -> current_signal_group_stop_count_great_0_and_handle_group_stop_true;
@@ -1621,30 +1621,30 @@ digraph signal_c{
                 __wake_up_parent_tsk_parent[label="__wake_up_parent_tsk_parent"];
                 unlock_sighand_siglock[label="unlock_sighand_siglock"];
 
-				set_info_si_signo_SIGCHLD -> set_info_si_errno_0;
-				set_info_si_errno_0 -> set_info_si_pid_tsk_pid;
-				set_info_si_pid_tsk_pid -> set_info_si_uid_current_uid;
-				set_info_si_uid_current_uid -> set_info_si_utime_cputime_to_jiffies_cputime_add_tsk__utime_tsk_signal_utime;
-				set_info_si_utime_cputime_to_jiffies_cputime_add_tsk__utime_tsk_signal_utime -> set_info_si_stime_cputime_to_jiffies_cputime_add_tsk__stime_tsk_signal_stime;
-				set_info_si_stime_cputime_to_jiffies_cputime_add_tsk__stime_tsk_signal_stime -> set_info_si_code_why;
-				set_info_si_code_why -> switch_why;
-				switch_why -> case_CLD_CONTINUED;
-				case_CLD_CONTINUED -> set_info_si_status_SIGCONT;
-				set_info_si_status_SIGCONT -> set_sighand_parent_sighand;
-				switch_why -> case_CLD_STOPPED;
-				case_CLD_STOPPED -> set_info_si_status_tsk_signal_group_exit_code_and_0x7f;
-				set_info_si_status_tsk_signal_group_exit_code_and_0x7f -> set_sighand_parent_sighand;
-				switch_why -> case_CLD_TRAPPED;
-				case_CLD_TRAPPED -> set_info_si_status_tsk_exit_code_and_0x7f;
-				set_info_si_status_tsk_exit_code_and_0x7f -> set_sighand_parent_sighand;
-				set_sighand_parent_sighand -> lock_sighand_siglock;
-				lock_sighand_siglock -> sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set;
-				sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set -> __group_send_sig_info_SIGCHLD_info_parent;
-				sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set -> __wake_up_parent_tsk_tsk_parent;
-				__group_send_sig_info_SIGCHLD_info_parent -> __wake_up_parent_tsk_tsk_parent;
-				__wake_up_parent_tsk_tsk_parent -> unlock_sighand_siglock;
+		set_info_si_signo_SIGCHLD -> set_info_si_errno_0;
+		set_info_si_errno_0 -> set_info_si_pid_tsk_pid;
+		set_info_si_pid_tsk_pid -> set_info_si_uid_current_uid;
+		set_info_si_uid_current_uid -> set_info_si_utime_cputime_to_jiffies_cputime_add_tsk__utime_tsk_signal_utime;
+		set_info_si_utime_cputime_to_jiffies_cputime_add_tsk__utime_tsk_signal_utime -> set_info_si_stime_cputime_to_jiffies_cputime_add_tsk__stime_tsk_signal_stime;
+		set_info_si_stime_cputime_to_jiffies_cputime_add_tsk__stime_tsk_signal_stime -> set_info_si_code_why;
+		set_info_si_code_why -> switch_why;
+		switch_why -> case_CLD_CONTINUED;
+		case_CLD_CONTINUED -> set_info_si_status_SIGCONT;
+		set_info_si_status_SIGCONT -> set_sighand_parent_sighand;
+		switch_why -> case_CLD_STOPPED;
+		case_CLD_STOPPED -> set_info_si_status_tsk_signal_group_exit_code_and_0x7f;
+		set_info_si_status_tsk_signal_group_exit_code_and_0x7f -> set_sighand_parent_sighand;
+		switch_why -> case_CLD_TRAPPED;
+		case_CLD_TRAPPED -> set_info_si_status_tsk_exit_code_and_0x7f;
+		set_info_si_status_tsk_exit_code_and_0x7f -> set_sighand_parent_sighand;
+		set_sighand_parent_sighand -> lock_sighand_siglock;
+		lock_sighand_siglock -> sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set;
+		sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set -> __group_send_sig_info_SIGCHLD_info_parent;
+		sighand_action_SIGCHLD_sa_sa_handler_SIG_IGN_and_sighand_action_SIGCHLD_sa_sa_flags_SANOCLDSTOP_set -> __wake_up_parent_tsk_tsk_parent;
+		__group_send_sig_info_SIGCHLD_info_parent -> __wake_up_parent_tsk_tsk_parent;
+		__wake_up_parent_tsk_tsk_parent -> unlock_sighand_siglock;
         }
-
+        
         subgraph cluster_ptrace_stop{
                 label="static void ptrace_stop(int exit_code, int nostop_code, siginfo_t *info)";
                 current_signal_group_stop_count_great_0[label="current_signal_group_stop_count_great_0"];
@@ -1665,36 +1665,44 @@ digraph signal_c{
                 clear_current_last_siginfo[label="clear_current_last_siginfo"];
                 recalc_sigpending[label="recalc_sigpending"];
 
-				current_signal_group_stop_count_great_0 -> dec_current_signal_group_stop_count;
-				current_signal_group_stop_count_great_0 -> set_current_last_siginfo_info;
-				dec_current_signal_group_stop_count -> set_current_last_siginfo_info;
-				set_current_last_siginfo_info -> set_current_exit_code_exit_code;
-				set_current_exit_code_exit_code -> set_current_state_TASK_TRACED;
-				set_current_state_TASK_TRACED -> unlock_current_sighand_siglock;
-				unlock_current_sighand_siglock -> lock_tasklist_lock;
-				lock_tasklist_lock -> current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null;
-				current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null -> do_notify_parent_cldstop_current_current_parent_CLD_TRAPPED;
-				current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null -> unlock_tasklist_lock;
-				do_notify_parent_cldstop_current_current_parent_CLD_TRAPPED -> unlock_tasklist_lock;
-				unlock_tasklist_lock -> schedule;
-				schedule -> lock_current_sighand_siglock;
-				unlock_tasklist_lock -> set_current_state_TASK_RUNNING;
-				set_current_state_TASK_RUNNING -> set_current_exit_code_nostop_code;
-				set_current_exit_code_nostop_code -> lock_current_sighand_siglock;
-				lock_current_sighand_siglock -> clear_current_last_siginfo;
-				clear_current_last_siginfo -> recalc_sigpending;
+                current_signal_group_stop_count_great_0 -> dec_current_signal_group_stop_count;
+                current_signal_group_stop_count_great_0 -> set_current_last_siginfo_info;
+                dec_current_signal_group_stop_count -> set_current_last_siginfo_info;
+                set_current_last_siginfo_info -> set_current_exit_code_exit_code;
+                set_current_exit_code_exit_code -> set_current_state_TASK_TRACED;
+                set_current_state_TASK_TRACED -> unlock_current_sighand_siglock;
+                unlock_current_sighand_siglock -> lock_tasklist_lock;
+                lock_tasklist_lock -> current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null;
+                current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null -> do_notify_parent_cldstop_current_current_parent_CLD_TRAPPED;
+                current_ptrace_PT_PTRACED_set_and_current_parent_not_current_real_parent_or_current_ptrace_PT_ATTACHED_not_null_and_current_parent_signal_not_eq_current_signal_or_current_signal_flags_SIGNAL_GROUP_EXIT_null -> unlock_tasklist_lock;
+                do_notify_parent_cldstop_current_current_parent_CLD_TRAPPED -> unlock_tasklist_lock;
+                unlock_tasklist_lock -> schedule;
+                schedule -> lock_current_sighand_siglock;
+                unlock_tasklist_lock -> set_current_state_TASK_RUNNING;
+                set_current_state_TASK_RUNNING -> set_current_exit_code_nostop_code;
+                set_current_exit_code_nostop_code -> lock_current_sighand_siglock;
+                lock_current_sighand_siglock -> clear_current_last_siginfo;
+                clear_current_last_siginfo -> recalc_sigpending;
         }
 
         subgraph cluster_ptrace_notify{
                 label="void ptrace_notify(int exit_code)";
                 memset_info_0[label="memset_info_0"];
-                set_info_signo_SIGTRAP[label="set_info_signo_SIGTRAP"];
+                set_info_si_signo_SIGTRAP[label="set_info_si_signo_SIGTRAP"];
                 set_info_si_code_exit_code[label="set_info_si_code_exit_code"];
-                set_si_pid_current_pid[label="set_si_pid_current_pid"];
-                set_info_uid_current_uid[label="set_info_uid_current_uid"];
+                set_info_si_pid_current_pid[label="set_info_si_pid_current_pid"];
+                set_info_si_uid_current_uid[label="set_info_si_uid_current_uid"];
                 lock_current_sighand_siglock[label="lock_current_sighand_siglock"];
                 ptrace_stop_exit_code_0_info[label="ptrace_stop_exit_code_0_info"];
                 unlock_current_sighand_siglock[label="unlock_current_sighand_siglock"];
+
+                memset_info_0 -> set_info_si_signo_SIGTRAP;
+                set_info_si_signo_SIGTRAP -> set_info_si_code_exit_code;
+                set_info_si_code_exit_code -> set_info_si_pid_current_pid;
+                set_info_si_pid_current_pid -> set_info_si_uid_current_uid;
+                set_info_si_uid_current_uid -> lock_current_sighand_siglock;
+                lock_current_sighand_siglock -> ptrace_stop_exit_code_0_info;
+                ptrace_stop_exit_code_0_info -> unlock_current_sighand_siglock;
         }
 
         subgraph cluster_finish_stop{

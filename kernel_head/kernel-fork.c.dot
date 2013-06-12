@@ -1,6 +1,6 @@
 digraph fork_c{
-        size="300,100";
-        ratio=filled;
+        // size="300,100";
+        // ratio=filled;
 
         subgraph cluster_copy_process{
                 label="static task_t *copy_process(unsigned long clone_flags,unsigned long stack_start,struct pt_regs *regs,unsigned long stack_size,int __user *parent_tidptr,int __user *child_tidptr,int pid)";
@@ -446,7 +446,7 @@ digraph fork_c{
                 set_tsk_min_flt_tsk_maj_flt_0[label="set_tsk_min_flt_tsk_maj_flt_0"];
                 set_tsk_nvcsw_tsk_nivcsw_0[label="set_tsk_nvcsw_tsk_nivcsw_0"];
                 clear_tsk_mm[label="clear_tsk_mm"];
-                clear_active_mm[label="clear_active_mm"];
+                clear_tsk_active_mm[label="clear_tsk_active_mm"];
                 set_oldmm_current_mm[label="set_oldmm_current_mm"];
                 oldmm_null[label="oldmm_null"];
                 return_0[label="return_0"];
@@ -454,14 +454,18 @@ digraph fork_c{
                 atomic_inc_oldmm_mm_users[label="atomic_inc_oldmm_mm_users"];
                 set_mm_oldmm[label="set_mm_oldmm"];
                 unlock_wait_oldmm_page_table_lock[label="unlock_wait_oldmm_page_table_lock"];
+                goto_good_mm[label="goto_good_mm;"];
                 set_retval_ENOMEM[label="set_retval_ENOMEM"];
                 set_mm_allocate_mm[label="set_mm_allocate_mm"];
                 mm_null[label="mm_null"];
+                goto_fail_nomem[label="goto_fail_nomem"];
                 memcpy_mm_oldmm[label="memcpy_mm_oldmm"];
                 mm_init_mm_false[label="mm_init_mm_false"];
                 init_new_context_tsk_mm[label="init_new_context_tsk_mm"];
+                goto_fail_nocontext[label="goto_fail_nocontext"];
                 set_retval_dup_mmap_mm_oldmm[label="set_retval_dup_mmap_mm_oldmm"];
                 retval_not_null[label="retval_not_null"];
+                goto_free_pt[label="goto_free_pt"];
                 set_mm_hiwater_rss_get_mm_counter_mm_rss[label="set_mm_hiwater_rss_get_mm_counter_mm_rss"];
                 set_mm_hiwater_vm_mm_total_vm[label="set_mm_hiwater_vm_mm_total_vm"];
                 set_tsk_active_mm_mm[label="set_tsk_active_mm_mm"];
@@ -471,6 +475,39 @@ digraph fork_c{
                 mm_free_pgd_mm[label="mm_free_pgd_mm"];
                 free_mm_mm[label="free_mm_mm"];
                 return_retval[label="return_retval"];
+
+                set_tsk_min_flt_tsk_maj_flt_0 -> set_tsk_nvcsw_tsk_nivcsw_0;
+                set_tsk_nvcsw_tsk_nivcsw_0 -> clear_tsk_mm;
+                clear_tsk_mm -> clear_tsk_active_mm;
+                clear_tsk_active_mm -> set_oldmm_current_mm;
+                set_oldmm_current_mm -> oldmm_null;
+                oldmm_null -> return_0;
+                oldmm_null -> clone_flags_CLONE_VM_set;
+                clone_flags_CLONE_VM_set -> atomic_inc_oldmm_mm_users;
+                atomic_inc_oldmm_mm_users -> set_mm_oldmm;
+                set_mm_oldmm -> unlock_wait_oldmm_page_table_lock;
+                unlock_wait_oldmm_page_table_lock -> goto_good_mm;
+                clone_flags_CLONE_VM_set -> set_retval_ENOMEM;
+                set_retval_ENOMEM -> set_mm_allocate_mm;
+                set_mm_allocate_mm -> mm_null;
+                mm_null -> goto_fail_nomem;
+                mm_null -> memcpy_mm_oldmm;
+                memcpy_mm_oldmm -> mm_init_mm_false;
+                mm_init_mm_false -> goto_fail_nomem;
+                mm_init_mm_false -> init_new_context_tsk_mm;
+                init_new_context_tsk_mm -> goto_fail_nocontext;
+                init_new_context_tsk_mm -> set_retval_dup_mmap_mm_oldmm;
+                set_retval_dup_mmap_mm_oldmm -> retval_not_null;
+                retval_not_null -> goto_free_pt;
+                retval_not_null -> set_mm_hiwater_rss_get_mm_counter_mm_rss;
+                set_mm_hiwater_rss_get_mm_counter_mm_rss -> set_mm_hiwater_vm_mm_total_vm;
+                set_mm_hiwater_vm_mm_total_vm -> set_tsk_mm_mm;
+                set_tsk_mm_mm -> set_tsk_active_mm_mm;
+                set_tsk_active_mm_mm -> return_0;
+                return_0 -> mmput_mm;
+                mmput_mm -> return_retval;
+                mm_free_pgd_mm -> free_mm_mm;
+                free_mm_mm -> return_retval;
         }
 
 		subgraph cluster_nr_processes{
@@ -534,6 +571,7 @@ digraph fork_c{
 			security_vm_enough_memory_len_true[label="security_vm_enough_memory_len_true"];
 			goto_fail_nomem[label="goto_fail_nomem"];
 			set_charge_len[label="set_charge_len"];
+                        set_tmp_kmem_cache_alloc_vm_area_cachep_SLAB_KERNEL[label="set_tmp_kmem_cache_alloc_vm_area_cachep_SLAB_KERNEL"];
 			tmp_null[label="tmp_null"];
 			goto_fail_nomem[label="goto_fail_nomem"];
 			set_tmp_mpnt[label="set_tmp_mpnt"];
@@ -550,7 +588,7 @@ digraph fork_c{
 			file_not_null[label="file_not_null"];
 			set_inode_file_f_dentry_d_inode[label="set_inode_file_f_dentry_d_inode"];
 			get_file_file[label="get_file_file"];
-			tmp_vm_flags_VM_DENYWRITE[label="tmp_vm_flags_VM_DENYWRITE"];
+			tmp_vm_flags_VM_DENYWRITE_set[label="tmp_vm_flags_VM_DENYWRITE_set"];
 			atomic_dec_inode_i_writecount[label="atomic_dec_inode_i_writecount"];
 			lock_file_f_mapping_i_mmap_lock[label="lock_file_f_mapping_i_mmap_lock"];
 			set_tmp_vm_truncate_count_mpnt_vm_truncate_count[label="set_tmp_vm_truncate_count_mpnt_vm_truncate_count"];
@@ -578,6 +616,81 @@ digraph fork_c{
 			kmem_cache_free_vm_area_cachep_tmp[label="kmem_cache_free_vm_area_cachep_tmp"];
 			set_retval_ENOMEM[label="set_retval_ENOMEM"];
 			vm_unacct_memory_charge[label="vm_unacct_memory_charge"];
+
+                        down_write_oldmm_mmap_sem -> flush_cache_mm_current_mm;
+                        flush_cache_mm_current_mm -> set_mm_locked_vm_0;
+                        set_mm_locked_vm_0 -> clear_mm_mmap;
+                        clear_mm_mmap -> clear_mm_mmap_cache;
+                        clear_mm_mmap_cache -> set_mm_free_area_cache_oldmm_mmap_base;
+                        set_mm_free_area_cache_oldmm_mmap_base -> set_mm_map_count_0;
+                        set_mm_map_count_0 -> set_mm_counter_mm_rss_0;
+                        set_mm_counter_mm_rss_0 -> set_mm_counter_mm_rss_0;
+                        set_mm_counter_mm_rss_0 -> cpus_clear_mm_cpu_vm_mask;
+                        cpus_clear_mm_cpu_vm_mask -> set_mm_mm_rb_RB_ROOT;
+                        set_mm_mm_rb_RB_ROOT -> set_rb_link_mm_mmrb_rb_node;
+                        set_rb_link_mm_mmrb_rb_node -> clear_rb_parent;
+                        clear_rb_parent -> set_pprev_mm_mmap;
+                        set_pprev_mm_mmap -> for_mpnt_current_mm_mmap;
+                        for_mpnt_current_mm_mmap -> mpnt_vm_flags_VM_DONTCOPY_set;
+                        mpnt_vm_flags_VM_DONTCOPY_set -> __vm_stat_account_mm_mpnt_vm_flags_mpnt_vm_file_neg_vma_pages_mpnt;
+                        __vm_stat_account_mm_mpnt_vm_flags_mpnt_vm_file_neg_vma_pages_mpnt -> for_mpnt_current_mm_mmap;
+                        mpnt_vm_flags_VM_DONTCOPY_set -> set_charge_0;
+                        set_charge_0 -> mpnt_vm_flags_VM_ACCOUNT_set;
+                        mpnt_vm_flags_VM_ACCOUNT_set -> set_len_mpnt_vm_end_sub_mpnt_vm_start_right_move_PAGE_SHIFT;
+                        set_len_mpnt_vm_end_sub_mpnt_vm_start_right_move_PAGE_SHIFT -> security_vm_enough_memory_len_true;
+                        security_vm_enough_memory_len_true -> goto_fail_nomem;
+                        security_vm_enough_memory_len_true -> set_charge_len;
+                        set_charge_len -> set_tmp_kmem_cache_alloc_vm_area_cachep_SLAB_KERNEL;
+                        mpnt_vm_flags_VM_ACCOUNT_set -> set_tmp_kmem_cache_alloc_vm_area_cachep_SLAB_KERNEL;
+                        set_tmp_kmem_cache_alloc_vm_area_cachep_SLAB_KERNEL -> tmp_null;
+                        tmp_null -> goto_fial_nomem;
+                        tmp_null -> set_tmp_mpnt;
+                        set_tmp_mpnt -> set_pol_mpol_copy_vma_policy_mpnt;
+                        set_pol_mpol_copy_vma_policy_mpnt -> set_retval_PTR_ERR_pol;
+                        set_retval_PTR_ERR_pol -> IS_ERR_pol_true;
+                        IS_ERR_pol_true -> goto_fail_nomem_policy;
+                        IS_ERR_pol_true -> vma_set_policy_tmp_pol;
+                        vma_set_policy_tmp_pol -> tmp_vm_flags_VM_LOCKED_clear;
+                        tmp_vm_flags_VM_LOCKED_clear -> set_tmp_vm_mm_mm;
+                        set_tmp_vm_mm_mm -> clear_tmp_vm_next;
+                        clear_tmp_vm_next -> anon_vma_link_tmp;
+                        anon_vma_link_tmp -> set_file_tmp_vm_file;
+                        for_mpnt_current_mm_mmap -> file_not_null;
+                        file_not_null -> set_inode_file_f_dentry_d_inode;
+                        set_inode_file_f_dentry_d_inode -> get_file_file;
+                        get_file_file -> tmp_vm_flags_VM_DENYWRITE_set;
+                        tmp_vm_flags_VM_DENYWRITE_set -> atomic_dec_inode_i_writecount;
+                        atomic_dec_inode_i_writecount -> lock_file_f_mapping_i_mmap_lock;
+                        tmp_vm_flags_VM_DENYWRITE_set -> lock_file_f_mapping_i_mmap_lock;
+                        lock_file_f_mapping_i_mmap_lock -> set_tmp_vm_truncate_count_mpnt_vm_truncate_count;
+                        set_tmp_vm_truncate_count_mpnt_vm_truncate_count -> flush_dcache_mmap_lock_file_f_mapping;
+                        flush_dcache_mmap_lock_file_f_mapping -> vma_prio_tree_add_tmp_mpnt;
+                        vma_prio_tree_add_tmp_mpnt -> flush_dcache_mmap_unlock_file_f_mapping;
+                        flush_dcache_mmap_unlock_file_f_mapping -> unlock_file_f_mapping_i_mmap_lock;
+                        unlock_file_f_mapping_i_mmap_lock -> lock_mm_page_table_lock;
+                        file_not_null -> lock_mm_page_table_lock;
+                        lock_mm_page_table_lock -> set_pprev_tmp;
+                        set_pprev_tmp -> set_pprev_tmp_vm_next;
+                        set_pprev_tmp_vm_next -> __vma_link_rb_mm_tmp_rb_link_rb_parent;
+                        __vma_link_rb_mm_tmp_rb_link_rb_parent -> set_rb_link_tmp_vm_rb_rb_right;
+                        set_rb_link_tmp_vm_rb_rb_right -> set_rb_parent_tmp_vm_rb;
+                        set_rb_parent_tmp_vm_rb -> inc_mm_map_count;
+                        inc_mm_map_count -> set_retval_copy_page_range_mm_current_mm_tmp;
+                        set_retval_copy_page_range_mm_current_mm_tmp -> unlock_mm_page_table_lock;
+                        unlock_mm_page_table_lock -> tmp_vm_ops_not_null_and_tmp_vm_ops_open_not_null;
+                        tmp_vm_ops_not_null_and_tmp_vm_ops_open_not_null -> tmp_vm_ops_open_tmp;
+                        tmp_vm_ops_open_tmp -> retval_true;
+                        tmp_vm_ops_not_null_and_tmp_vm_ops_open_not_null -> retval_true;
+                        retval_true -> goto_out;
+                        retval_true -> for_mpnt_current_mm_mmap;
+                        for_mpnt_current_mm_mmap -> set_retval_0;
+                        set_retval_0 -> flush_tlb_mm_current_mm;
+                        flush_tlb_mm_current_mm -> up_write_oldmm_mmap_sem;
+                        up_write_oldmm_mmap_sem -> return_retval;
+                        kmem_cache_free_vm_area_cachep_tmp;
+                        kmem_cache_free_vm_area_cachep_tmp -> set_retval_ENOMEM;
+                        set_retval_ENOMEM -> vm_unacct_memory_charge;
+                        vm_unacct_memory_charge -> goto_out;
 		}
 
 		subgraph cluster_mm_alloc_pgd{
@@ -687,6 +800,25 @@ digraph fork_c{
 			clear_fs_altroot[label="clear_fs_altroot"];
 			read_unlock_old_lock[label="read_unlock_old_lock"];
 			return_fs[label="return_fs"];
+
+                        set_fs_kmem_cache_alloc_fs_cachep_GFP_KERNEL -> fs_not_null;
+                        fs_not_null -> return_fs;
+                        fs_not_null -> atomic_set_fs_count_1;
+                        atomic_set_fs_count_1 -> rwlock_init_fs_lock;
+                        rwlock_init_fs_lock -> set_fs_umask_old_umask;
+                        set_fs_umask_old_umask -> read_lock_old_lock;
+                        read_lock_old_lock -> set_fs_rootmnt_mntget_old_rootmnt;
+                        set_fs_rootmnt_mntget_old_rootmnt -> set_fs_root_dget_old_root;
+                        set_fs_root_dget_old_root -> set_fs_pwdmnt_mntget_old_pwdmnt;
+                        set_fs_pwdmnt_mntget_old_pwdmnt -> set_fs_pwd_dget_old_pwd;
+                        set_fs_pwd_dget_old_pwd -> old_altroot_not_null;
+                        old_altroot_not_null -> set_fs_altroot_dget_old_altroot;
+                        set_fs_altroot_dget_old_altroot -> set_fs_altroot_dget_old_altroot;
+                        set_fs_altroot_dget_old_altroot -> read_unlock_old_lock;
+                        old_altroot_not_null -> clear_fs_altrootmnt;
+                        clear_fs_altrootmnt -> clear_fs_altroot;
+                        clear_fs_altroot -> read_unlock_old_lock;
+                        read_unlock_old_lock -> return_fs;
 		}
 
 		subgraph cluster_copy_fs_struct{
@@ -703,6 +835,13 @@ digraph fork_c{
 			tsk_fs_null[label="tsk_fs_null"];
 			return_ENOMEM[label="return_ENOMEM"];
 			return_0[label="return_0"];
+
+                        clone_flags_CLONE_FS_set -> atomic_inc_current_fs_count;
+                        atomic_inc_current_fs_count -> return_0;
+                        clone_flags_CLONE_FS_set -> set_tsk_fs___copy_fs_struct_current_fs;
+                        set_tsk_fs___copy_fs_struct_current_fs -> tsk_fs_null;
+                        tsk_fs_null -> return_ENOMEM;
+                        tsk_fs_null -> return_0;
 		}
 
 		subgraph cluster_count_open_files{
@@ -804,6 +943,17 @@ digraph fork_c{
 			atomic_set_sig_count_1[label="atomic_set_sig_count_1"];
 			memcpy_sig_action_current_sighand_action_sizeof_sig_action[label="memcpy_sig_action_current_sighand_action_sizeof_sig_action"];
 			return_0[label="return_0"];
+
+                        clone_flags_CLONE_SIGHAND_CLONE_THREAD_set -> atomic_inc_current_sighand_count;
+                        atomic_inc_current_sighand_count -> return_0;
+                        clone_flags_CLONE_SIGHAND_CLONE_THREAD_set -> set_sig_kmem_cache_alloc_sighand_cachep_GFP_KERNEL;
+                        set_sig_kmem_cache_alloc_sighand_cachep_GFP_KERNEL -> set_tsk_sighand_sig;
+                        set_tsk_sighand_sig -> sig_null;
+                        sig_null -> return_ENOMEM;
+                        sig_null -> lock_init_sig_siglock;
+                        lock_init_sig_siglock -> atomic_set_sig_count_1;
+                        atomic_set_sig_count_1 -> memcpy_sig_action_current_sighand_action_sizeof_sig_action;
+                        memcpy_sig_action_current_sighand_action_sizeof_sig_action -> return_0;
 		}
 
 		subgraph cluster_copy_signal{
@@ -828,7 +978,7 @@ digraph fork_c{
 			clear_sig_group_exit_task[label="clear_sig_group_exit_task"];
 			set_sig_group_stop_count_0[label="set_sig_group_stop_count_0"];
 			clear_sig_curr_target[label="clear_sig_curr_target"];
-			init_sigpnding_sig_shared_pending[label="init_sigpnding_sig_shared_pending"];
+			init_sigpending_sig_shared_pending[label="init_sigpending_sig_shared_pending"];
 			INIT_LIST_HEAD_sig_posix_timers[label="INIT_LIST_HEAD_sig_posix_timers"];
 			set_sig_it_real_value_sig_it_real_incr_0[label="set_sig_it_real_value_sig_it_real_incr_0"];
 			set_sig_real_timer_function_it_real_fn[label="set_sig_real_timer_function_it_real_fn"];
@@ -856,6 +1006,55 @@ digraph fork_c{
 			sig_rlim_RLIMIT_CPU_rlim_cur_not_eq_RLIM_INFINITY[label="sig_rlim_RLIMIT_CPU_rlim_cur_not_eq_RLIM_INFINITY"];
 			set_tsk_it_prof_expires_secs_to_cputime_sig_rlim_RLIMIT_CPU_rlim_cur[label="set_tsk_it_prof_expires_secs_to_cputime_sig_rlim_RLIMIT_CPU_rlim_cur"];
 			return_0[label="return_0"];
+
+                        clone_flags_CLONE_THREAD_set -> atomic_inc_current_signal_count;
+                        atomic_inc_current_signal_count -> atomic_inc_current_signal_live;
+                        atomic_inc_current_signal_live -> return_0;
+                        clone_flags_CLONE_THREAD_set -> set_sig_kmem_cache_alloc_signal_cachep_GFP_KERNEL;
+                        set_sig_kmem_cache_alloc_signal_cachep_GFP_KERNEL -> set_tsk_sighand_sig;
+                        set_tsk_sighand_sig -> sig_null;
+                        sig_null -> return_ENOMEM;
+                        sig_null -> set_ret_copy_thread_group_keys_tsk;
+                        set_ret_copy_thread_group_keys_tsk -> ret_small_0;
+                        ret_small_0 -> kmem_cache_free_signal_cachep_sig;
+                        kmem_cache_free_signal_cachep_sig -> return_ret;
+                        ret_small_0 -> atomic_set_sig_count_1;
+                        atomic_set_sig_count_1 -> atomic_set_sig_live_1;
+                        atomic_set_sig_live_1 -> init_waitqueue_head_sig_wait_chldexit;
+                        init_waitqueue_head_sig_wait_chldexit -> set_sig_flags_0;
+                        set_sig_flags_0 -> set_sig_group_exit_code_0;
+                        set_sig_group_exit_code_0 -> clear_sig_group_exit_task;
+                        clear_sig_group_exit_task -> set_sig_group_stop_count_0;
+                        set_sig_group_stop_count_0 -> clear_sig_curr_target;
+                        clear_sig_curr_target -> init_sigpending_sig_shared_pending;
+                        init_sigpending_sig_shared_pending -> INIT_LIST_HEAD_sig_posix_timers;
+                        INIT_LIST_HEAD_sig_posix_timers -> set_sig_it_real_value_sig_it_real_incr_0;
+                        set_sig_it_real_value_sig_it_real_incr_0 -> set_sig_real_timer_function_it_real_fn;
+                        set_sig_real_timer_function_it_real_fn -> set_sig_real_timer_data_tsk;
+                        set_sig_real_timer_data_tsk -> init_timer_sig_real_timer;
+                        init_timer_sig_real_timer -> set_sig_it_virt_expires_cputime_zero;
+                        set_sig_it_virt_expires_cputime_zero -> set_sig_it_virt_incr_cputime_zero;
+                        set_sig_it_virt_incr_cputime_zero -> set_sig_it_prof_expires_cputime_zero;
+                        set_sig_it_prof_expires_cputime_zero -> set_sig_it_prof_incr_cputime_zero;
+                        set_sig_it_prof_incr_cputime_zero -> set_sig_tty_current_signal_tty;
+                        set_sig_tty_current_signal_tty -> set_sig_pgrp_process_group_current;
+                        set_sig_pgrp_process_group_current -> set_sig_session_current_signal_session;
+                        set_sig_session_current_signal_session -> set_sig_leader_0;
+                        set_sig_leader_0 -> set_sig_tty_old_pgrp_0;
+                        set_sig_tty_old_pgrp_0 -> set_sig_utime_sig_stime_sig_cutime_sig_cstime_cputime_zero;
+                        set_sig_utime_sig_stime_sig_cutime_sig_cstime_cputime_zero -> set_sig_nvcsw_sig_nivcsw_sig_cnvcsw_sig_cnivcsw_0;
+                        set_sig_nvcsw_sig_nivcsw_sig_cnvcsw_sig_cnivcsw_0 -> set_sig_min_flt_sig_maj_flt_sig_cmin_flt_sig_cmaj_flt_0;
+                        set_sig_min_flt_sig_maj_flt_sig_cmin_flt_sig_cmaj_flt_0 -> set_sig_sched_time_0;
+                        set_sig_sched_time_0 -> INIT_LIST_HEAD_sig_cpu_timers_0;
+                        INIT_LIST_HEAD_sig_cpu_timers_0 -> INIT_LIST_HEAD_sig_cpu_timers_1;
+                        INIT_LIST_HEAD_sig_cpu_timers_1 -> INIT_LIST_HEAD_sig_cpu_timers_2;
+                        INIT_LIST_HEAD_sig_cpu_timers_2 -> task_lock_current_group_leader;
+                        task_lock_current_group_leader -> memcpy_sig_rlim_current_signal_rlim_sizeof_sig_rlim;
+                        memcpy_sig_rlim_current_signal_rlim_sizeof_sig_rlim -> task_unlock_current_group_leader;
+                        task_unlock_current_group_leader -> sig_rlim_RLIMIT_CPU_rlim_cur_not_eq_RLIM_INFINITY;
+                        sig_rlim_RLIMIT_CPU_rlim_cur_not_eq_RLIM_INFINITY -> set_tsk_it_prof_expires_secs_to_cputime_sig_rlim_RLIMIT_CPU_rlim_cur;
+                        set_tsk_it_prof_expires_secs_to_cputime_sig_rlim_RLIMIT_CPU_rlim_cur -> return_0;
+                        sig_rlim_RLIMIT_CPU_rlim_cur_not_eq_RLIM_INFINITY -> return_0;
 		}
 
 		subgraph cluster_sys_set_tid_address{

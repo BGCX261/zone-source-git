@@ -1,4 +1,14 @@
 #+STARTUP: showall
+* question/answer:
+- 因为中断的处理函数在内核态运行，又因为中断可以嵌套的，如果一连续有行验中断产生，那么会不
+  会把内核栈给爆了？
+- 内核线程用谁的栈呢？
+- 进程0最后执行cpu_idle()
+- linux2.6有exit_group()和_exit()系统调用来终止一个用户程序。前者用do_group_exit()实现，C库
+  的exit()调用，后者用do_exit()实现，如C库的pthread_exit()调用。
+- TGID，PGID，SID这几个hash表的主要目的是让你容易通过一个领头进程找到它的线程组中的其它线程，
+  进程组中的其它进程，对话中的其它进程。
+
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 没办法，还是要用遍历
 ** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
@@ -146,6 +156,19 @@
 *** kernel/fork.c:
 - 注意参数的意思
 - 如果clone_flags和current->ptrace的符合某些条件时，就算clone_flags不设置CLONE_PTRACE也给它加上。主要是看current_ptrace的设置。
+- 关于调用ptrace_notify在ULK有这样说：If the parent process is being traced, it stores the
+  PID of the child in the ptrace_message field of current and invokes ptrace_notify( ),
+  which essentially stops the current process and sends a SIGCHLD signal to its
+  parent. The "grandparent" of the child is the debugger that is tracing the parent; the
+  SIGCHLD signal notifies the debugger that current has forked a child, whose PID can be
+  retrieved by looking into the current->ptrace_message field.
+- 在调用ptrace_notify时的参数在里面被赋给了task_struct->exit_code，为什么要这样呢？也赋给了
+  si_code,这还可以理解
+- 调的ptrace_notify的原因：因为父进程被跟踪而且要求被创建的子进程也要被跟踪，所以就调用了。
+  调用完这个函数的过程中因调用schedule(do_notify_parent_cldstop())所以会停下。
+- 这个函数是在哪里真正创建一个进程并开始以两个执行路径运行的呢？好像整个进程都是以current来
+  运行的。那创建的子进程在什么时候运行呢？可能是在copy_process函数里把它插入到了某个运行队列里了。
+- 若CLONE_VFORK设置了要在ptrace_notify之后才可以等待，子进程运行完。
 ** static inline int fork_traceflag (unsigned clone_flags)
 *** kernel/fork.c:
 - 在clone_flags里的最低8位是指定退出时所要发送的信号。
@@ -172,3 +195,200 @@
 - 如何通过一个task_t来获得一个运行队列:从task_t里的thread_inof里的CPU来找到task是在哪一个
   CPU上,知道哪个CPU就可以找出相应的运行队列了.task_t里的run_list就是task_t->array链表里的一
   个结点.
+- 会根据是否共用相同的VM和是否在同一个CPU来插入进程和父进程的相对位置。
+- __activate_task会使用enqueue_task来把进程插入到相应的运行队列尾，而不是头。
+- 在这个函数里current->array会有空的时候,是什么时候呢？
+- 为什么不共享VM就要子进程运行先呢？注释有说明是因为可能运行exec，那么是不是子进程运行
+  exec后会把所有的原来的VM删掉呢？
+- 好像在cpu==this且CLONE_VM清除且current->array不为空时的情况下没有设置array->bitmap,这个是
+  一个bug吗？在这里为什么要把子进程的prio设置成父进程的prio呢？难道仅是为了想在父进程之前运
+  行而把它放在程父进程相同优先级的运行队列中？
+- 它的this_rq为什么不是通过task_rq_lock来获取的呢？而是根据cpu==this_cpu来判断的呢？
+- 为什么在不是同一个CPU时要重新计算timestamp呢？计算的方法是减去父进程所在运行队列的
+  timestamp_last_tick再加上子进程所在运行队列的timestamp_last_tick
+- __activate_task这个函数里会把进程加入到运行队列里的，虽然名子看起来不是这样子的，但结合参
+  数一起还是可以看来的。
+- 把一个进程加入到另外一个CPU之后还要看那个CPU需不需要重新调度。实现很简单，用被加入的进程
+  的优先级（动态优先级）与CPU上的运行队列里的curr->prio比较即可。
+- 为什么不实现CONFIG_SMP版和非CONFIG_SMP版的呢？像resched_task那样。
+- set_need_resched()和resched_task()不一样的，前者只是设置了current的标志，而后者会让其它
+  CPU的进程重新调度。
+- 为什么要把current的运行队列锁住呢？
+- 这个函数只有do_fork调用而已
+** void ptrace_notify(int exit_code)
+*** kernel/signal.c:
+- ULK有解释：ptrace_notify( ), which essentially stops the current process and sends a
+  SIGCHLD signal to its parent.
+- si_signo的是SIGTRAP，且调的的ptrace_stop函数里的do_notify_parent_cldstop是用相应的
+  CLD_TRAPPED
+- 在这个函数里建立的siginfo_t是在ptrace_stop函数被放到last_siginfo里，在
+  do_notify_parent_cldstop里建立的siginfo_t是发给跟踪进程的.
+- 调的这个函数因ptrace_stop的schedule，所以可能会被调度.是在do_notify_parent_cldstop里唤醒
+  父进程,在ptrace_stop调度。
+- current重新可以运行后是马上看有没有挂起的进程。为什么这之前要把last_sigpending清掉呢？
+** static void ptrace_stop(int exit_code, int nostop_code, siginfo_t *info)
+*** kernel/signal.c:
+- 这个函数的作用应该是在current被跟踪时用来停止current的,并通知跟踪进程
+- 不知道为什么要自减group_stop_count
+- task_t->last_siginfo是给跟踪用的,保存的东西有什么用呢?
+- 为什么要设置current->exit_code呢?
+- 把current的状态改成TASK_TRACED之后没有把它从运行队列中删除吗？
+- 函数里是先解siglock的锁再加上siglock的锁
+- 为什么那个PT_ATTACHED要非呢?好像不对的吧
+- current->parent->signal不等于current->signal是不是说明current与current->parent不在同一个
+  线程组呢?
+- 为什么要各种条件不成立的时候再次设置进程为TASK_RUNNING状态呢？有注释说是跟踪进程已不在了。
+** static void do_notify_parent_cldstop(struct task_struct *tsk, struct task_struct *parent, int why)
+*** kernel/signal.c:
+- 重新认识一下struct siginfo_t,结构体里的联合体用得有技巧，因为_kill->_pid和_sigchld->_pid
+  的地址相同，_kill->_uid和_sigchld->_uid地址相同，所以只需提供访问_kill或_sigchld里其
+  中_pid和_uid即可，所以只提供了访问了_kill->_uid和_kill->_pid的宏而没有_sigchld.si_errno是
+  The error code of the instruction that caused the signal to be raised, or 0 if there was
+  no error。si_code是A code identifying who raised the signal 。si_status是exit code.不知道
+  si_utime和si_stime有什么用，保存什么的，但是它们分别被赋tsk->utime和tsk->stime,原来ULK里
+  列出的si_code只是一部分，还有一些SIGILL类、SIGFPE类、SIGSEGV类、SIGBUF类的、SIGTRAP类的、
+  SIGCHLD类的等。每次发信号时都要填这个结构体，在这个函数里因为要给发一个信号所以要填这个结
+  构体,又因为发的是SIGCHLD信号，所以要填结构体中的联合体的SIGCHLD结构体。
+- CLD_TRAPPED这个表示被跟踪进程被捕获，可能运行到了breakpoint,所以运行要停下来，这时候应该
+  给跟踪进程发一个信号，所以在这个函数里要检查CLD_TRAPPED是否被置。但是为什么也要检查
+  CLD_CONTINUED.
+- 为什么是CLD_STOPPED时要这样设置si_status呢？是CLD_TRAPPED时要这样设置si_status呢?
+- 既然要在两个判断之后才使用info为什么花那么多时间先设置info呢？
+- 因为一个子进程只有一个父进程，所以__wake_up_parent函里使用的wait_chldexit等待队列最多只有
+  一个进程，这样解释对吗？
+- wait_chldexit是给wait4()系统调用用的，但是子进程只给父进程发一个SIGCHLD信号而已，父进程是
+  怎么是子进程退出了呢？
+- 这个函数的主要功能是什么呢？是给父进程发一个SIGCHLD信号，而且还必须与CLD_CONTINUED、
+  CLD_STOPPED、CLD_TRAPPED相关的。
+** static task_t *copy_process(unsigned long clone_flags, unsigned long stack_start, struct pt_regs *regs, long stack_size, int __user *parent_tidptr,int __user *child_tidptr, int pid)
+*** kernel/fork.c:
+- p->user这个成员是一个指针，就是说还是和父进程共用的。这是对的，因为创建子进程时的用户是与
+  父进程的用户相同的
+- nr_threads在这个函数里增加，在__unhash_process减，__unhash_process被release_task和
+  unhash_process调用
+- max_threads表示什么意思呢？它在fork_init里被初始化
+- 我觉得nr_threads>=max_threads不应该放在nr_threads++之前，如果root调用fork足够多次且每次都
+  在nr_threads>=max_threads这个比较之后且在nr_threads++之前那么nr_threads就会大于
+  max_threads
+- 在这里把tgid设置了pid,就是说创建一个进程时把子进程作一个新线程组的领头进程,是这样子吗?为
+  什么呢?但是设置了CLONE_THREAD又不同了.
+- 为什么要设置set_child_tid和clear_child_tid呢？clear_child_tid是什么来的，有一句主释：
+  Clear TID on mm_release()?
+- 创建的子进程是不能跟踪它运行后的系统调用的.
+- 把父进程的执行域设置成了自已的执行域,为什么呢?
+- 为什么要这样设置exit_signal呢?若没设置CLONE_THREAD,那么用clone_flags里的
+- 要设置group_leader为子进程,好像不对的吧.是不对,在后面会因为CLONE_THREAD而做修改的
+- 把cpus_allowed设置成与current的一样,设置子进程的cpu与current的一样.
+- 若current有一个SIGKILL信号,那么它就不能创建子进程.
+- 若设置了CLONE_PARENT或CLONE_THREAD的时候要把子进程的real_parent设置了current的
+  reald_parent,为什么有CLONE_THREAD的要这样设置,正真创建子进程的current竟然不是current,
+- 刚创建完的子进程的parent与real_parent是一样的.
+- 若CLONE_THREAD设置了同是SIGNAL_GROUP_EXIT也设置了,那么是不能创建子进程的.
+- 若CLONE_THREAD设置了那么把子进程的group_leader设置成current的group_leader
+- SIGNAL_GROUP_EXIT和group_stop_count没有关联的吗?可以不设置SIGNAL_GROUP_EXIT但
+  group_stop_count可以大于0?
+- 若group_stop_count大于0说明一个全组的停止正在进行,那么就要把正创建的进程加入到停止组中.
+- 有一个跟踪进程的被跟踪进程链表(task_struct->ptrace_list, task_struct->ptrace_childen)
+- 子进程一定会被插入到PID hash表和TGID hash（tgid在上面被设置成正确的值了）表，但是为什么要
+  在子进程为线程组领头进程时才会把子进程插入PGID hash表和SID hash表呢？
+- 在这里居然还会检查p->pid是否为0，是否多此一举？
+- 每个CPU都有一个进程个数计数器process_counts
+- ULK有一句这样的话：If the child is a thread group leader (flag CLONE_THREAD cleared)。就
+  是说CLONE_THREAD若不设置那么子进程就是线程组领头进程，若进程是一个线程而不是一个线程组领
+  头进程那么它就不是一个进程组的成员，若进程是一个线程组领头进程那么它就是一个进程组的成员，
+  那么一个进程怎样才可以成为进程组领头进程呢？
+- 关于进程归属的问题总结ULK:若子进程是一个thread group leader(清CLONE_THREAD),就设tgid为
+  pid(就是自已),设group_leader为自已(这个有点想不明白,源码的确的这样的.)那么除了把子进程插
+  入到TGID,PGID之外还要插入到SID中.若子进程不是一个thread group leader(置CLONE_THREAD),那么
+  tgid设为current->tgid(注意不是current,所以线程组不能嵌套),设group_leader为
+  current->group_leader并把它插入到TGID中去,但是为什么子进程不是thread group leader了还要插
+  入到TGID中呢？哦看错了，源码是这样的attach_pid(p, PIDTYPE_TGID, p->tgid);不是插p而是
+  p->tgid那么每创建一个线程时领头线程不是都要被插一次，这点在ULK上表述有错。不是，我错了，
+  的确的把子进程插入TGID中。要重新认识一下那4个链表。
+** static struct task_struct *dup_task_struct(struct task_struct *orig)
+*** kernel/fork.c:
+- prepare_to_copy()在i386里用来关闭fpu，在arm里什么也不做。
+- 就是分配了task_struct和thread_info并拷贝和设置之间的指针；再设置tsk->usage.
+** static inline void copy_flags(unsigned long clone_flags, struct task_struct *p)
+*** kernel/fork.c:
+- 这个函数是被copy_process调用的，为什么要把PF_SUPERPRIV清掉呢？不能继承父进程的
+  PF_SUPERPRIV吗？为什么把PF_FORKNOEXEC给置了？
+- 由copy_process传入的clone_flags在do_fork可能对CLONE_PTRACE动了手脚.task_struct->ptrace是
+  在这里设置的,在do_fork里用到,为什么不在do_fork做修改呢?隔太远了.
+** static int copy_files(unsigned long clone_flags, struct task_struct * tsk)
+*** kernel/fork.c:
+- 一个后台程序可能不包含任何文件.
+- 若设置了CLONE_FILES那么就用current的files,不用改.
+- 
+** static int count_open_files(struct files_struct *files, int size)
+*** kernel/fork.c:
+- 这种的计算方法是不是有的粗略了?
+** static inline int copy_fs(unsigned long clone_flags, struct task_struct * tsk)
+*** kernel/fork.c:
+- CLONE_FS:ulk:Shares the table that identifies the root directory and the current working
+  directory, as well as the value of the bitmask used to mask the initial file permissions
+  of a new file (the so-called file umask ).
+** static inline struct fs_struct *__copy_fs_struct(struct fs_struct *old)
+*** kernel/fork.c:
+- 主要的步骤的分配一个fs_struct再把old里的值拷贝过去
+** static inline int copy_sighand(unsigned long clone_flags, struct task_struct * tsk)
+*** kernel/fork.c:
+- 若是CLONE_sighand或CLONE_THREAD其中一个设置就与父进程共享，即增加计数器就可以了。
+- 若不共享，但还要把action的内容拷贝过来，为什么呢？所以无论共享与否都会把共享action
+** static inline int copy_signal(unsigned long clone_flags, struct task_struct * tsk)
+*** kernel/fork.c:
+- 若CLONE_THREAD设置那么就共享进程的，增加计数器即可。
+** static int copy_mm(unsigned long clone_flags, struct task_struct * tsk)
+*** kernel/fork.c:
+- 若current->mm为空的时候就不用拷贝也不分配了，为什么不分配了呢？
+- 若设置了CLONE_VM就共享.若不共享,还会把父进程的mm给拷贝过来.再后来又修改了部分成员
+** int copy_thread(int nr, unsigned long clone_flags, unsigned long esp, unsigned long unused, struct task_struct * p, struct pt_regs * regs)
+*** arch/i386/kernel/process.c:
+- 这个函数初始化了task_struct->thread_info结构体,其中有reg成员、栈、ip寄存器，使子进程被调
+  度运行时在正确的栈和ip指针下运行。
+- ULK:The value returned by the system call is contained in eax: the value is 0 for the
+  child and equal to the PID for the child's parent. To understand how this is done, look
+  back at what copy_thread() does on the eax register of the child's process.
+** void fastcall sched_fork(task_t *p)
+*** kernel/sched.c:
+- 函数一开始把进程状态设置为运行,但到目前为止还没有把进程插入到运行队列,所以还不会被调度.但
+  可以不可以通过把它插入到一个等待队列来获得运行呢?
+- 给子进程分时间片时为什么current的时间片要先加1呢?current->time_slice不可能是0;若是1的话,
+  如果不加1,那么子进程的时间就是0,又因为current的时间片又会用移位的方式重新调整,所以若是1,
+  最后父和子进程的时间片都是0.用这种计算方式无论如何都不会增加和减少原来current的时间片.
+- 调整之后的current时间片若为0那么会马上开始定时器的调度.
+** NORET_TYPE void do_group_exit(int exit_code)
+*** kernel/exit.c:
+- SIGNAL_GROUP_EXIT是该线程组中所有的线程都要设置的吗？还是只是调用这个函数的线程才会设置。
+  不是这样的，task_struct->signal是线程共享的。
+- 这代码实现了退出代码的传递性，就是第一个调用该函数的线程所使用的exit_code参数才会被一值采
+  用。
+** void zap_other_threads(struct task_struct *p)
+*** kernel/signal.c:
+- SIGNAL_GROUP_EXIT不是在do_group_exit里设置了吗？为什么又要在这里设置SIGNAL_GROUP_EXIT呢？
+  多此一举吗？
+- 要把group_stop_count清零。所以group_stop_count是从0开始计数的。
+- thread_group_exit不是在do_goup_exit里查过了吗？这里是不是多此一举呢？
+- 在copy_process里可以看出线程的group_leader与领头线程的一样。但这里为什么有不相等的情况呢？
+  一个线程可以不与领头线程在相同的进程组吗？可以从注释上看出若线程执行execve或类似的东西的
+  时候不在同一进程组
+- 不在同一进程组时要设exit_signal为-1呢？就算不在同一线程组也要发SIGKILL信号给它。
+- 会把被杀线程的SIGSTOP,SIGSTP,SIGTTIN,SIGTTOU的信号删掉。
+** void signal_wake_up(struct task_struct *t, int resume)
+*** kernel/signal.c:
+- ULK:to notify the process about the new pending signal
+- 若想恢复执行，那么就不管进程的状态是TASK_INTERRUPTIBLE，TASK_STOPPED还是TASK_TRACED.
+- 会调的wake_up_state,转而调用try_to_wake_up来唤配进程。若在其它CPU会发一个CPU间中断让它调
+  度。
+** fastcall NORET_TYPE void do_exit(long code)
+*** kernel/exit.c:
+- 在能在中断上下文调的，不能对进程0进程1调用
+- 按照字面意思，PT_TRACE_EXIT应该是指跟踪进程退出，就是在退出时通知跟踪进程。
+** static void exit_notify(struct task_struct *tsk)
+*** kernel/exit.c:
+- 有一个调用exit同时该进程被选中来执行一个线程组信号。这时它要找其它线程来处理。
+** static inline void forget_original_parent(struct task_struct * father, struct list_head *to_release)
+*** kernel/exit.c:
+- ULK：All child processes created by the terminating process become children of another
+  process in the same thread group, if any is running, or otherwise of the init process.
+- 里面有一个child_reaper是被初始化为init_task的。

@@ -1039,7 +1039,7 @@ struct prio_array {
       signal: generally used with SIGCHLD to signal init on exit
 	**/
 	/* blog.csdn.net/dog250/article/details/5303673 */
-	int exit_code, exit_signal;	/* 把task_struct.exit_code(任务退出代码)置为exit()提供的代码code(退出代码存放在task_struct.exit_code中以供父进程随时检索) */
+	int exit_code, exit_signal;	/* ULK:This value is either the _exit( ) or exit_group( ) system call parameter (normal termination), or an error code supplied by the kernel (abnormal termination).把task_struct.exit_code(任务退出代码)置为exit()提供的代码code(退出代码存放在task_struct.exit_code中以供父进程随时检索) */
 	int pdeath_signal;  /*  The signal sent when the parent dies  */
 	/* ??? */
 	unsigned long personality;/**
@@ -1063,8 +1063,10 @@ struct prio_array {
 	 * older sibling, respectively.  (p->father can be replaced with 
 	 * p->parent->pid)
 	 */
-	struct task_struct *real_parent; /* real parent process (when being debugged) */
-	struct task_struct *parent;	/* parent process */
+	struct task_struct *real_parent; /* ULK:Points to the process descriptor of the process that created P or to the descriptor of process 1 (init) if the parent process no longer exists. (Therefore, when a user starts a background process and exits the shell, the background process becomes the child of init.)
+                                            real parent process (when being debugged) */
+	struct task_struct *parent;	/* ULK:Points to the current parent of P (this is the process that must be signaled when the child process terminates); its value usually coincides with that of real_parent. It may occasionally differ, such as when another process issues a ptrace( ) system call requesting that it be allowed to monitor P
+                                           parent process */
 	/*
 	 * children/sibling forms the list of my children plus the
 	 * tasks I'm ptracing.
@@ -1644,7 +1646,7 @@ struct thread_struct {
 /**
    这些是task_struct.ptrace里设置的标志
  **/
-#define PT_PTRACED	0x00000001
+#define PT_PTRACED	0x00000001 /* 从ULK的综合解释来看，这个标志说明进程正在被跟踪 */
 #define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
 #define PT_TRACESYSGOOD	0x00000004
 #define PT_PTRACE_CAP	0x00000008	/* ptracer can follow suid-exec */
@@ -1655,7 +1657,9 @@ struct thread_struct {
 #define PT_TRACE_VFORK_DONE	0x00000100
 #define PT_TRACE_EXIT	0x00000200
 #define PT_ATTACHED	0x00000400	/* parent != real_parent */
-
+        /**
+           说明被某个进程跟踪,所以parent与real_parent不再相等了.
+         */
 	/******************************include/linux/irq.h******************************/
 	
 /*

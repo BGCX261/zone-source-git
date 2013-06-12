@@ -1,8 +1,8 @@
-digraph exit_c{
+/* digraph exit_c{ */
         size="20,80";
         ratio=filled;
 
-	subgraph cluster_next_thread{
+	/* subgraph cluster_next_thread{ */
 		label="task_t *next_thread(const task_t *p)";
 
 		pid_task[label="pid_task(p->pids[PIDTYPE_TGID].pid_list.next, PIDTYPE_TGID);"];
@@ -576,6 +576,33 @@ digraph exit_c{
 			set_p_list_entry__p_struct_task_struct_ptrace_list[label="set_p_list_entry__p_struct_task_struct_ptrace_list"];
 			choose_new_parent_p_reaper_child_reaper[label="choose_new_parent_p_reaper_child_reaper"];
 			reparent_thread_p_father_1[label="reparent_thread_p_father_1"];
+
+                        set_reaper_father -> set_reaper_next_thread_reaper;
+                        set_reaper_next_thread_reaper -> reaper_eq_father;
+                        reaper_eq_father -> set_reaper_child_reaper;
+                        set_reaper_child_reaper -> list_for_each_safe__p__n_father_children;
+                        reaper_eq_father -> reaper_exit_state_not_null;
+                        reaper_exit_state_not_null -> set_reaper_next_thread_reaper;
+                        reaper_exit_state_not_null -> list_for_each_safe__p__n_father_children;
+                        list_for_each_safe__p__n_father_children -> set_p_list_entry__p_struct_task_struct_sibling;
+                        set_p_list_entry__p_struct_task_struct_sibling -> set_ptrace_pptrace;
+                        set_ptrace_pptrace -> father_eq_p_real_parent;
+                        father_eq_p_real_parent -> choose_new_parent_p_reaper_child_reaper;
+                        choose_new_parent_p_reaper_child_reaper -> reparent_thread_p_father_0;
+                        reparent_thread_p_father_0 -> ptrace_not_null_and_p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_eq_neg1;
+                        father_eq_p_real_parent -> __ptrace_unlink_p;
+                        __ptrace_unlink_p -> p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_not_eq_neg1_and_thread_group_empty_p_true;
+                        p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_not_eq_neg1_and_thread_group_empty_p_true -> do_notify_parent_p_p_exit_signal;
+                        do_notify_parent_p_p_exit_signal -> ptrace_not_null_and_p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_eq_neg1 -> 
+                        p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_not_eq_neg1_and_thread_group_empty_p_true -> ptrace_not_null_and_p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_eq_neg1 -> 
+                        ptrace_not_null_and_p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_eq_neg1 -> list_add_p_ptrace_list_to_release;
+                        list_add_p_ptrace_list_to_release -> list_for_each_safe__p__n_father_children;
+                        ptrace_not_null_and_p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_eq_neg1 -> list_for_each_safe__p__n_father_children;
+                        list_for_each_safe__p__n_father_children -> list_for_each_safe__p__n_father_ptrace_children;
+                        list_for_each_safe__p__n_father_ptrace_children -> set_p_list_entry__p_struct_task_struct_ptrace_list;
+                        set_p_list_entry__p_struct_task_struct_ptrace_list -> choose_new_parent_p_reaper_child_reaper;
+                        choose_new_parent_p_reaper_child_reaper -> reparent_thread_p_father_1;
+                        reparent_thread_p_father_1 -> list_for_each_safe__p__n_father_ptrace_children;
 		}
 
 		subgraph cluster_complete_and_exit{

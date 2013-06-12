@@ -1,7 +1,7 @@
-digraph sched_c{
+// digraph sched_c{
 		size="300,100";
 		ratio=filled;
-        subgraph cluster_preempt_schedule{
+        // subgraph cluster_preempt_schedule{
                 label="asmlinkage void __sched preempt_schedule(void)";
                 set_ti_current_thread_info[label="set_ti_current_thread_info"];
                 ti_preempt_count_not_0_or_irqs_disabled[label="ti_preempt_count_not_0_or_irqs_disabled"];
@@ -282,26 +282,44 @@ digraph sched_c{
 				__get_cpu_var[label="(&__get_cpu_var(runqueues))"];
 		}
 
-		subgraph cluster_sched_fork{
-				label="void fastcall sched_fork(task_t *p)";
-				set_p_state_TASK_RUNNING[label="set_p_state_TASK_RUNNING"];
-				INIT_LIST_HEAD_p_run_list[label="INIT_LIST_HEAD_p_run_list"];
-				clear_p_array[label="clear_p_array"];
-				lock_p_switch_lock[label="lock_p_switch_lock"];
-				memset_p_sched_info[label="memset_p_sched_info"];
-				set_p_thread_info_preempt_count_1[label="set_p_thread_info_preempt_count_1"];
-				local_irq_disable[label="local_irq_disable"];
-				set_p_time_slice_current_time_slice_add_1_move_right_1[label="set_p_time_slice_current_time_slice_add_1_move_right_1"];
-				set_p_first_time_slice_1[label="set_p_first_time_slice_1"];
-				current_time_slice_self_move_right_1[label="current_time_slice_self_move_right_1"];
-				set_p_timestamp_sched_clock[label="set_p_timestamp_sched_clock"];
-				current_time_slice_null[label="current_time_slice_null"];
-				set_current_time_slice_1[label="set_current_time_slice_1"];
-				preempt_disable[label="preempt_disable ()"];
-				scheduler_tick[label="scheduler_tick ()"];
-				local_irq_enable[label="local_irq_enable ()"];
-				preempt_enable[label="preempt_enable ()"];
-				local_irq_enable_1[label="local_irq_enable ()"];
+subgraph cluster_sched_fork{
+        label="void fastcall sched_fork(task_t *p)";
+        set_p_state_TASK_RUNNING[label="set_p_state_TASK_RUNNING"];
+        INIT_LIST_HEAD_p_run_list[label="INIT_LIST_HEAD_p_run_list"];
+        clear_p_array[label="clear_p_array"];
+        lock_p_switch_lock[label="lock_p_switch_lock"];
+        memset_p_sched_info[label="memset_p_sched_info"];
+        set_p_thread_info_preempt_count_1[label="set_p_thread_info_preempt_count_1"];
+        local_irq_disable[label="local_irq_disable"];
+        set_p_time_slice_current_time_slice_add_1_move_right_1[label="set_p_time_slice_current_time_slice_add_1_move_right_1"];
+        set_p_first_time_slice_1[label="set_p_first_time_slice_1"];
+        current_time_slice_self_move_right_1[label="current_time_slice_self_move_right_1"];
+        set_p_timestamp_sched_clock[label="set_p_timestamp_sched_clock"];
+        current_time_slice_null[label="current_time_slice_null"];
+        set_current_time_slice_1[label="set_current_time_slice_1"];
+        preempt_disable[label="preempt_disable ()"];
+        scheduler_tick[label="scheduler_tick ()"];
+        local_irq_enable[label="local_irq_enable ()"];
+        preempt_enable[label="preempt_enable ()"];
+        local_irq_enable_1[label="local_irq_enable ()"];
+
+        set_p_state_TASK_RUNNING -> INIT_LIST_HEAD_p_run_list;
+        INIT_LIST_HEAD_p_run_list -> clear_p_array;
+        clear_p_array -> lock_p_switch_lock;
+        lock_p_switch_lock -> memset_p_sched_info;
+        memset_p_sched_info -> set_p_thread_info_preempt_count_1;
+        set_p_thread_info_preempt_count_1 -> local_irq_disable;
+        local_irq_disable -> set_p_time_slice_current_time_slice_add_1_move_right_1;
+        set_p_time_slice_current_time_slice_add_1_move_right_1 -> set_p_first_time_slice_1;
+        set_p_first_time_slice_1 -> set_current_time_slice_1;
+        set_current_time_slice_1 -> set_p_timestamp_sched_clock;
+        set_p_timestamp_sched_clock -> current_time_slice_null;
+        current_time_slice_null -> set_current_time_slice_1;
+        set_current_time_slice_1 -> preempt_disable;
+        preempt_disable -> scheduler_tick;
+        scheduler_tick -> local_irq_enable;
+        local_irq_enable -> preempt_enable;
+        current_time_slice_null -> local_irq_enable;
 		}
 
 		subgraph cluster_try_to_wake_up{
