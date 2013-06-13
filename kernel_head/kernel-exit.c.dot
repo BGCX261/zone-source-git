@@ -1,8 +1,8 @@
-/* digraph exit_c{ */
+digraph exit_c{
         size="20,80";
         ratio=filled;
 
-	/* subgraph cluster_next_thread{ */
+	subgraph cluster_next_thread{
 		label="task_t *next_thread(const task_t *p)";
 
 		pid_task[label="pid_task(p->pids[PIDTYPE_TGID].pid_list.next, PIDTYPE_TGID);"];
@@ -552,6 +552,33 @@
 			will_become_orphaned_pgrp_pgrp_NULL_and_has_stopped_jobs_pgrp[label="will_become_orphaned_pgrp_pgrp_NULL_and_has_stopped_jobs_pgrp"];
 			__kill_pg_info_SIGHUP_1_pgrp[label="__kill_pg_info_SIGHUP_1_pgrp"];
 			__kill_pg_info_SIGCONT_1_pgrp[label="__kill_pg_info_SIGCONT_1_pgrp"];
+
+			p_exit_signal_not_eq_1 -> set_p_exit_signal_SIGCHLD;
+			set_p_exit_signal_SIGCHLD -> p_pdeath_signal_not_null;
+			p_exit_signal_not_eq_1 -> p_pdeath_signal_not_null;
+			p_pdeath_signal_not_null -> group_send_sig_info_p_pdeath_signal_0_p;
+			group_send_sig_info_p_pdeath_signal_0_p -> traced_true;
+			p_pdeath_signal_not_null -> traced_true;
+			traced_true ->  list_del_init_p_ptrace_list;
+			list_del_init_p_ptrace_list -> p_parent_not_eq_p_real_parent;
+			p_parent_not_eq_p_real_parent -> list_add_p_ptrace_list_p_real_parent_ptrace_children;
+			traced_true -> set_p_ptrace_0;
+			set_p_ptrace_0 -> list_del_init_p_sibling;
+			list_del_init_p_sibling -> set_p_parent_p_real_parent;
+			set_p_parent_p_real_parent -> list_add_tail_p_sibling_p_parent_children;
+			list_add_tail_p_sibling_p_parent_children -> p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_not_eq_neg1_and_thread_group_empty_p_true;
+			p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_not_eq_neg1_and_thread_group_empty_p_true -> do_notify_parent_p_p_exit_signal;
+			p_exit_state_eq_EXIT_ZOMBIE_and_p_exit_signal_not_eq_neg1_and_thread_group_empty_p_true -> p_state_eq_TASK_TRACED;
+			p_state_eq_TASK_TRACED -> ptrace_untrace_p;
+			ptrace_untrace_p -> process_group_p_not_eq_process_group_father_and_p_signal_session_father_signal_session;
+			p_state_eq_TASK_TRACED -> process_group_p_not_eq_process_group_father_and_p_signal_session_father_signal_session;
+			do_notify_parent_p_p_exit_signal -> process_group_p_not_eq_process_group_father_and_p_signal_session_father_signal_session;
+			list_add_p_ptrace_list_p_real_parent_ptrace_children -> process_group_p_not_eq_process_group_father_and_p_signal_session_father_signal_session;
+			p_parent_not_eq_p_real_parent -> process_group_p_not_eq_process_group_father_and_p_signal_session_father_signal_session;
+			process_group_p_not_eq_process_group_father_and_p_signal_session_father_signal_session -> set_pgrp_process_group_p;
+			set_pgrp_process_group_p -> will_become_orphaned_pgrp_pgrp_NULL_and_has_stopped_jobs_pgrp;
+			will_become_orphaned_pgrp_pgrp_NULL_and_has_stopped_jobs_pgrp -> __kill_pg_info_SIGHUP_1_pgrp;
+			__kill_pg_info_SIGHUP_1_pgrp -> __kill_pg_info_SIGCONT_1_pgrp;
 		}
 
 		subgraph cluster_forget_original_parent{

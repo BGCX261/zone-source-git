@@ -392,3 +392,16 @@
 - ULK：All child processes created by the terminating process become children of another
   process in the same thread group, if any is running, or otherwise of the init process.
 - 里面有一个child_reaper是被初始化为init_task的。
+- 要处理这个进程的两个进程链表：子进程链表，跟踪进程链表。在task_struct->children里这两种的
+  进程那包含了。
+- 
+** static inline void reparent_thread(task_t *p, task_t *father, int traced)
+*** kernel/exit.c:
+- exit_signal等于-1是什么意思,表示没有任何信号，就是初始值，不能用0，这个好像用来测试的。
+- 若子进程有退出信号，那么把它改成SIGCHLD,为什么要这样子做呢？
+- pdeath_singal是在ULK：The signal sent when the parent dies时候发的。但是发给谁呢？从代码
+  看好像是发给自已,从forget_original_parent来看好像发给父进程的.
+- 在task_struct里关于跟踪的链表也有两个：ptrace_list和ptrace_children.
+- 在这里father是正在退出的进程,在进入这个函数之前real_parent被改了，无论是有没跟踪的。
+- 参数traced说明的是父进程有没有被跟踪。
+- 如果父进程是被跟踪的且p的parent和real_parent不相同，那么就把p插入到real_parent的ptrace_children中
