@@ -404,4 +404,17 @@
 - 在task_struct里关于跟踪的链表也有两个：ptrace_list和ptrace_children.
 - 在这里father是正在退出的进程,在进入这个函数之前real_parent被改了，无论是有没跟踪的。
 - 参数traced说明的是父进程有没有被跟踪。
-- 如果父进程是被跟踪的且p的parent和real_parent不相同，那么就把p插入到real_parent的ptrace_children中
+- 如果父进程是被跟踪的且p的parent和real_parent不相同，那么就把p插入到real_parent的
+  ptrace_children中,但什么时候父进程是被跟踪的且parent与修改之后的real_parent是相同的呢？好
+  像这样是不可能的吧，因为在以参数trace=1调用之前p是在father->ptrace_children链表里的，所以
+  p->parent一定是father，又因为在调用reparent_thread () 之前调用了choose_new_parent把
+  p->real_parent改成了不可能为father的reaper,所以在reparent_thread里是不可能有
+  p->parent==p->real_parent的,如果有可能的话，那么可能是p虽在father->ptrace_children里但是
+  p->parent不等于father.
+- 如果进程A在进程B的children中，那么进程A的real_parent一定是进程B吗？
+- 如果进程A在进程B的ptrace_children中，那么进程A的parent一定是进程B吗？
+- 不知道为什么在traced假的时候要设p->ptrace为0而且还把p->parent改为p->real_parent，如果是这
+  样的话，那么有可能有这样一种情况：p->parent和p->real_parent不相同(p被p->parent跟踪)且它的
+  real_parent正被杀成为father参数且又先以traced=0调用reparent_thread ()，这时会在reparent里
+  把p->ptrace设为0，把p->parent设为p->real_parent,但一直没有从p->parent的ptrace_children把
+  p删掉，这合理吗？
