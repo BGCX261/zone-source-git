@@ -411,6 +411,7 @@
   p->real_parent改成了不可能为father的reaper,所以在reparent_thread里是不可能有
   p->parent==p->real_parent的,如果有可能的话，那么可能是p虽在father->ptrace_children里但是
   p->parent不等于father.
+- ptrace不为0是什么意思，为0又是什么意思。
 - 如果进程A在进程B的children中，那么进程A的real_parent一定是进程B吗？
 - 如果进程A在进程B的ptrace_children中，那么进程A的parent一定是进程B吗？
 - 不知道为什么在traced假的时候要设p->ptrace为0而且还把p->parent改为p->real_parent，如果是这
@@ -418,3 +419,14 @@
   real_parent正被杀成为father参数且又先以traced=0调用reparent_thread ()，这时会在reparent里
   把p->ptrace设为0，把p->parent设为p->real_parent,但一直没有从p->parent的ptrace_children把
   p删掉，这合理吗？
+- 在这个函数里如果发现有僵死进程且有退出信号那么就通知父进程，为什么还要加多一个判断线程组是否为空呢？
+- 关于p->state==TASK_TRACED 有注释:If it was at a trace stop, turn it into a normal stop
+  since it's no longer being traced.
+- 又有不明白了，本来p和father是父子关系，按理说应该在同一个进程组，但是为什么还要判断是否在
+  同一个进程组呢？可以这样的。孤儿进程组： 一个进程组中的所有进程的父进程要么是该进程组的一
+  个进程，要么不是该进程组所在的会话中的进程。 一个进程组不是孤儿进程组的条件是，该组中有一
+  个进程其父进程在属于同一个会话的另一个组中。函数里有一个判断孤立进程组的代码？又有一个问
+  题：在同一个进程组里的任意一个进程都与同组中其它至少一个进程有父子或兄弟关系吗？
+** void ptrace_untrace(task_t *child)
+*** kernel/ptrace.c:
+- 也不是一定是切回TASK_STOPPED状态，还要看看是不是有停止信号。

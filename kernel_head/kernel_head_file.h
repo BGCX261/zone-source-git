@@ -935,14 +935,14 @@ struct task_struct {
 /**
    这些是task_struct.ptrace里设置的标志
  **/
-#define PT_PTRACED	0x00000001
+#define PT_PTRACED	0x00000001	/* 表示该进程被跟踪？ */
 #define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
-#define PT_TRACESYSGOOD	0x00000004
+#define PT_TRACESYSGOOD	0x00000004 
 #define PT_PTRACE_CAP	0x00000008	/* ptracer can follow suid-exec */
-#define PT_TRACE_FORK	0x00000010
-#define PT_TRACE_VFORK	0x00000020
-#define PT_TRACE_CLONE	0x00000040
-#define PT_TRACE_EXEC	0x00000080
+#define PT_TRACE_FORK	0x00000010	/* 表如果该进程如果想用FORK创建一个进程那么就要跟踪这个子进程 */
+#define PT_TRACE_VFORK	0x00000020  /* 表如果该进程如果想用VFORK创建一个进程那么就要跟踪这个子进程 */
+#define PT_TRACE_CLONE	0x00000040  /* 表如果该进程如果想用CLONE创建一个进程那么就要跟踪这个子进程 */
+#define PT_TRACE_EXEC	0x00000080  /* 表如果该进程如果想用创建一个进程并用EXEC执行一个新的程序那么就要跟踪这个子进程 */
 #define PT_TRACE_VFORK_DONE	0x00000100
 #define PT_TRACE_EXIT	0x00000200
 #define PT_ATTACHED	0x00000400	/* parent != real_parent */
