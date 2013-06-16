@@ -387,6 +387,27 @@
 ** static void exit_notify(struct task_struct *tsk)
 *** kernel/exit.c:
 - 有一个调用exit同时该进程被选中来执行一个线程组信号。这时它要找其它线程来处理。
+- 有注释：Check to see if any process groups have become orphaned as a result of our
+  exiting, and if they have any stopped jobs, send them a SIGHUP and then a SIGCONT.
+  (POSIX 3.2.2.2)
+- 如果被杀进程的exit_signal不等于SIGCHLD且exit_signal不为空，安全域或执行域被修改且没有
+  KILL权限那么改exit_signla为SIGCHLD。为了是让父进程知道子进程已死。
+- 进入这个函数之后，退出进程有可能在EXIT_ZOMBIE状态，也有可能在EXIT_DEAD状态，如果进入
+  EXIT_DEAD了，那么之后会调用release_task.若没在出退信号且不被跟踪或在进行组退出就是
+  EXIT_DEAD,否则是EXIT_ZOMBIE.如果在这里被设置成EXIT_ZOMBIE,那么会在那被设成EXIT_DEAD呢？好
+  像是如果在EXIT_ZOMBIE时，就表明等待父进程调用wait类函数。
+- 在这里会把forget_original_parent收集到的子进程给release_task掉。
+- 在这个函数一定会把tsk->flags设为PF_DEAD，说明无论是EXIT_DEAD还是EXIT_ZOMBIE,那是PF_DEAD.
+- 想到一个问题：release_task之后应该是所有的内存空都被收回了，但是为什么被退出的进程还可以
+  运行呢？因为内存空间被收回后并没有把内存空间的内容清掉且这些内存没有被分配，因为已把抢占
+  给禁止了，所以进程的代码代和数据都没被破坏。好像上面那个解释是错的，因为ULK：The
+  release_task( ) function detaches the last data structures from the descriptor of a
+  zombie process; it is applied on a zombie process in two possible ways: by the
+  do_exit()function if the parent is not interested in receiving signals from the child,
+  or by the wait4( ) or waitpid( ) system calls after a signal has been sent to the
+  parent. In the latter case, the function also will reclaim the memory used by the
+  process descriptor,while in the former case the memory reclaiming will be done by the
+  scheduler (see Chapter7).
 ** static inline void forget_original_parent(struct task_struct * father, struct list_head *to_release)
 *** kernel/exit.c:
 - ULK：All child processes created by the terminating process become children of another
@@ -394,7 +415,11 @@
 - 里面有一个child_reaper是被初始化为init_task的。
 - 要处理这个进程的两个进程链表：子进程链表，跟踪进程链表。在task_struct->children里这两种的
   进程那包含了。
-- 
+- 有注释：If something other than our normal parent is ptracing us, then send it a SIGCHLD
+  instead of honoring exit_signal.  exit_signal only has special meaning to our real
+  parent.被杀进程要是被跟踪，就发SIGCHLD，否则且exit_signal不为空且所在的线程组没有其它线程
+  (thread_group_empty(tsk)是指tsk作为一个线程所在的线程组没有其它线程，不是指以tsk作为线
+  程组领头线程的线程组没有其它线程)（为什么要这个条件呢？）
 ** static inline void reparent_thread(task_t *p, task_t *father, int traced)
 *** kernel/exit.c:
 - exit_signal等于-1是什么意思,表示没有任何信号，就是初始值，不能用0，这个好像用来测试的。
@@ -427,6 +452,66 @@
   个进程，要么不是该进程组所在的会话中的进程。 一个进程组不是孤儿进程组的条件是，该组中有一
   个进程其父进程在属于同一个会话的另一个组中。函数里有一个判断孤立进程组的代码？又有一个问
   题：在同一个进程组里的任意一个进程都与同组中其它至少一个进程有父子或兄弟关系吗？
+- 在forget_original_parent里以traced为0调用reparent_thread时的father是p的real_parent,在这种
+  情况下，在reparent_thread里会把对p的跟踪去掉，换句话说就是如果一个进程A的父进程
+  real_parent被杀掉，那么进程A就不能再被跟踪和去跟踪了，因为p->ptrace被清和p->parent设为
+  p->real_parent。
+- 如果进程A的父进程被杀掉，且进程A被跟踪且是EXIT_ZOMBIE状态，且没有退出信号，这种情况为什么
+  要收集这些进程呢？
+- 在forget_original_parent里以traced为1调用reparent_thread时的father是p的parent（可能与
+  real_parent一样），且p->parent不等于p->real_parent,在这种情况下，reparent_thread里会把
+  p->ptrace_list插入到p->real_parent->ptrace_children中，但p->real_parent可能不是一个跟踪函
+  数，为什么要这样做呢？有这样的注释：Preserve ptrace links if someone else is tracing
+  this child.
 ** void ptrace_untrace(task_t *child)
 *** kernel/ptrace.c:
 - 也不是一定是切回TASK_STOPPED状态，还要看看是不是有停止信号。
+** void release_task(struct task_struct * p)
+*** kernel/exit.c:
+- 在这里p->ptrace还有可能不为0，这是会调用__ptrace_unlink把p->trace改为0
+- 为什么如果这个函数被跟踪就要脱离跟踪呢?而且是在release_task里做
+- ULK关于task_struct->parent的说明：this is the process that must be signaled whn the
+  child process terminates。
+- 看了ULK的一段话:If the process is not a thread group leader, the leader is a zombie, and
+  the process is the last member of the thread group, the function sends a signal to the
+  parent of the leader to notify it of the death of the process.和看了源码,有一个结
+  论:task_struct->group_leader是线程组的领头进程的task_struct.为什么要这样的需求呢?
+- 通知已在EXIT_ZOMBIE状态的进程还有用吗?它会做出响应.
+- 为什么thread_group_empty(leader)为true时表示被杀进程是最后一个线程,因为被杀进程
+  在_unhash_process里被从PIDTYPE_TGID中删除了.
+- 在这里调用了put_task_struct回收task_struct了
+- 有注释:If we were the last child thread and the leader has exited already, and the
+  leader's parent ignores SIGCHLD, then we are the one who should release the leader.所以在
+  最后p又会回到函数的开始来把leader删除掉.
+** void __ptrace_unlink(task_t *child)
+*** kernel/ptrace.c:
+- 有一个问题：silbing是一定与real_parent有关系的吗？如果parent与real_parent不相等就和
+  parent没有任何关系吗？如果是这样，那为什么还要在这个函数里调同REMOVE_LINKS(child)呢？因为
+  REMOVE_LINKS是与real_parent有关的.
+- 
+** void __exit_signal(struct task_struct *tsk)
+*** kernel/signal.c:
+- atomic_dec_and_test(v):Subtract 1 from *v and return 1 if the result is zero; 0
+  otherwise
+- 为什么没有其它进程用signal之后还可以找到next_thread呢？
+- 关于group_exit_task有注释： notify group_exit_task when ->count is equal to notify_count；
+  everyone except group_exit_task is stopped during signal delivery of fatal signals,
+  group_exit_task processes the signal.
+- notify_count是通知group_exit_task的阀值，有这种需求吗？
+- flush_sigqueue(tsk->pending)是一定的，但是共享的要在signal_struct使用计数为0的时候才flush.
+- 如果没有人用signal_struct会在最后回收signal_struct结构体。
+** void __exit_sighand(struct task_struct *tsk)
+*** kernel/signal.c:
+- 这个函数比较简单，没人使用就直接回收。
+** static void __unhash_process(struct task_struct *p)
+*** kernel/exit.c:
+- 减nr_threads, 从PIDTYPE_PID, PIDTYPE_TGID,中删除， 若是线程组领头进程就从PIDTYPE_PGID和
+  PIDTYPE_SID中删除，从进程链表中删除。
+- 要为线程组领头进程才可以减process_counts,为什么会这样呢?可能创建一个非领头线程时不会增加
+  process_coun
+- 在这里有可能p->pid为空吗?
+** void fastcall sched_exit(task_t * p)
+*** kernel/sched.c:
+- 用来修改父进程的时间片和平均睡眠时间.注意父进程是parent而不是real_parent
+- 有注释:Potentially available exiting-child timeslices are retrieved here - this way the
+  parent does not get penalized for creating too many threads.
