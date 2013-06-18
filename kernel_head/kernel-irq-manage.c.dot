@@ -48,6 +48,10 @@ digraph manage_c{
 		set_desc_irq_desc_add_irq[label="set_desc_irq_desc_add_irq"];
 		while_desc_status_IRQ_INPROGESS_set[label="while_desc_status_IRQ_INPROGESS_set"];
 		cpu_relax[label="cpu_relax"];
+
+		set_desc_irq_desc_add_irq -> while_desc_status_IRQ_INPROGESS_set;
+		while_desc_status_IRQ_INPROGESS_set -> cpu_relax;
+		cpu_relax -> while_desc_status_IRQ_INPROGESS_set;
 	}
 
 	subgraph cluster_disable_irq_nosync{
@@ -55,9 +59,16 @@ digraph manage_c{
 		set_desc_irq_desc_add_irq[label="set_desc_irq_desc_add_irq"];
 		lock_desc_lock[label="lock_desc_lock"];
 		desc_depth_inc_null[label="desc_depth_inc_null"];
-		sesc_status_self_or_IRQ_DISABLED[label="sesc_status_self_or_IRQ_DISABLED"];
+		desc_status_self_or_IRQ_DISABLED[label="desc_status_self_or_IRQ_DISABLED"];
 		desc_handler_disable_irq[label="desc_handler_disable_irq"];
 		unlock_desc_lock[label="unlock_desc_lock"];
+
+		set_desc_irq_desc_add_irq -> lock_desc_lock;
+		lock_desc_lock -> desc_depth_inc_null;
+		desc_depth_inc_null -> desc_status_self_or_IRQ_DISABLED;
+		desc_status_self_or_IRQ_DISABLED -> desc_handler_disable_irq;
+		desc_handler_disable_irq -> unlock_desc_lock;
+		desc_depth_inc_null -> unlock_desc_lock;
 	}
 
 	subgraph cluster_disable_irq{
@@ -66,6 +77,10 @@ digraph manage_c{
 		disable_irq_nosync_irq[label="disable_irq_nosync_irq"];
 		desc_action_not_null[label="desc_action_not_null"];
 		synchronize_irq_irq[label="synchronize_irq_irq"];
+
+		set_desc_irq_desc_add_irq -> disable_irq_nosync_irq;
+		disable_irq_nosync_irq -> desc_action_not_null;
+		desc_action_not_null -> synchronize_irq_irq;
 	}
 
 	subgraph cluster_enable_irq{
@@ -75,7 +90,7 @@ digraph manage_c{
 		switch_desc_depth[label="switch_desc_depth"];
 		case_0[label="case_0"];
 		case_1[label="case_1"];
-		set_status_desc_status_except_IRQ_DISABLED[label="set_status_desc_status_except_IRQ_DISABLED"];
+		clear_desc_status_IRQ_DISABLED[label="clear_desc_status_IRQ_DISABLED"];
 		set_desc_status_status[label="set_desc_status_status"];
 		status_and_IRQ_PENDING_or_IRQ_REPLAY_eq_IRQ_PENDING[label="status_and_IRQ_PENDING_or_IRQ_REPLAY_eq_IRQ_PENDING"];
 		set_desc_status_status_or_IRQ_REPLAY[label="set_desc_status_status_or_IRQ_REPLAY"];
@@ -83,6 +98,21 @@ digraph manage_c{
 		desc_handler_enable_irq[label="desc_handler_enable_irq"];
 		dec_desc_depth[label="dec_desc_depth"];
 		unlock_desc_lock[label="unlock_desc_lock"];
+
+		set_desc_irq_desc_add_irq -> lock_desc_lock;
+		lock_desc_lock -> switch_desc_depth;
+		switch_desc_depth -> case_0;
+		switch_desc_depth -> case_1;
+		case_1 -> clear_desc_status_IRQ_DISABLED;
+		clear_desc_status_IRQ_DISABLED -> set_desc_status_status;
+		set_desc_status_status -> status_and_IRQ_PENDING_or_IRQ_REPLAY_eq_IRQ_PENDING;
+		status_and_IRQ_PENDING_or_IRQ_REPLAY_eq_IRQ_PENDING -> set_desc_status_status_or_IRQ_REPLAY;
+		set_desc_status_status_or_IRQ_REPLAY -> hw_resend_irq_desc_handler_irq;
+		hw_resend_irq_desc_handler_irq -> desc_handler_disable_irq;
+		status_and_IRQ_PENDING_or_IRQ_REPLAY_eq_IRQ_PENDING -> desc_handler_disable_irq;
+		desc_handler_disable_irq -> dec_desc_depth;
+		switch_desc_depth -> dec_desc_depth;
+		dec_desc_depth -> unlock_irq_desc_lock;
 	}
 
 	subgraph cluster_can_request_irq{

@@ -8,7 +8,17 @@
   的exit()调用，后者用do_exit()实现，如C库的pthread_exit()调用。
 - TGID，PGID，SID这几个hash表的主要目的是让你容易通过一个领头进程找到它的线程组中的其它线程，
   进程组中的其它进程，对话中的其它进程。
-
+- 一个中断号一个irq_desc_t结构体。
+- irq_desc_t里的depth表示这个中断被禁止了多少次，但是Linux经常是禁止所有中断，为了效率不能
+  在这种情况一个一个中断来禁止。
+- arm的用arch/arm/kernel/irq.c的，里面有disable_irq()之类的，i386用kernel/irq/manage.c也有
+  disable_irq()之类的，但是disable_irq()的实现是一样的。
+- 中断丢失是发生要多处理器中的。CPU A在应答一个中断线前被CPU B禁止了相同的中断，但是CPU A在
+  应答之后执行do_irq()，但在do_irq()里会检查IRQ_DISABLE,所以do_irq()不会往下执行了。
+- SA_INTERRUPT 这个标志指的是在禁止本地上所有的中断，而不是自已本身。
+- IRQ_PER_CPU:该IRQ只能发生在一个cpu上
+  IRQ_LEVEL:该中断由电平触发
+  IRQ_MASKED:屏蔽了其他中断
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 没办法，还是要用遍历
 ** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
@@ -515,3 +525,35 @@
 - 用来修改父进程的时间片和平均睡眠时间.注意父进程是parent而不是real_parent
 - 有注释:Potentially available exiting-child timeslices are retrieved here - this way the
   parent does not get penalized for creating too many threads.
+** void disable_irq(unsigned int irq)
+*** kernel/irq/manage.c:
+- 这个函数要同步的，看是否正在执行这个中断函数。所以进入中断函数之后不能禁止本中断，这可能是
+  为什么要在进入该中断函数之前系统会自已禁止中断。
+** void disable_irq_nosync(unsigned int irq)
+*** kernel/irq/manage.c:
+- depth是先判断再增加的
+- 这个函数可以多次被调用，仅是在depth上有变化。
+** void synchronize_irq(unsigned int irq)
+*** kernel/irq/manage.c:
+- 这里的这个是在多处理器的情况下实现的，在非多处理器的情况下的实现在
+  include/linux/hardirq.h下，就是一个barrier而己。
+- 在进行处理中就relax cpu.
+** void enable_irq(unsigned int irq)
+*** kernel/irq/manage.c:
+- 在case 1时不用break,我还以为depth没有减少
+- 虽然在case 1时会挽回丢失的中断，但是已经晚了，因为中断不是在被应答之后马上处理的，这种情
+  况有点意思，CPU A在接收到中断后接着CPU B才禁止中断，但是因为中断丢失所以要在CPU B禁止之后
+  的不确定时间后才执行中断。
+- 有IRQ_PENDING和IRQ_DISABLE就表明有中断丢失了
+** fastcall unsigned int __do_IRQ(unsigned int irq, struct pt_regs *regs)
+*** kernel/irq/handle.c:
+- 在这里会增加kstat->irqs[irq],kstat是per_cpu变量。
+- 为什么在这个函数里还要检查IRQ_DISABLE和IRQ_INPROGRESS呢？
+- 在这个函数里会把IRQ_PENDING清掉，若IRQ_DISABLE或IRQ_INPROGRESS设置了也有可能会把
+  IRQ_PENDING设置了。
+- 相同的中断处理函数有可能正在别的CPU上执行，为什么不推到正在处理相同的CPU上运行该中断处理
+  函数呢？ULK：This leads to a simpler kernel architecture because device drivers'
+  interrupt service routines need not to be reentrant (their execution is
+  serialized). Moreover, the freed CPU can quickly return to what it was doing, without
+  dirtying its hardware cache; this is beneficial to system performance.
+
