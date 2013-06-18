@@ -34,7 +34,39 @@ digraph handle_c{
 		unlock_desc_lock[label="unlock_desc_lock"];
 		return_1[label="return_1"];
 
-		
+		set_desc_irq_desc_add_irq -> inc_kstat_this_cpu_irqs_irq;
+		inc_kstat_this_cpu_irqs_irq -> desc_status_IRQ_PER_CPU_set;
+		desc_status_IRQ_PER_CPU_set -> desc_handler_ack_irq;
+		desc_handler_ack_irq -> set_action_ret_handle_IRQ_event_irq_regs_desc_action;
+		set_action_ret_handle_IRQ_event_irq_regs_desc_action -> desc_handler_end_irq;
+		desc_handler_end_irq -> return_1
+		desc_status_IRQ_PER_CPU_set -> lock_desc_lock;
+		lock_desc_lock -> desc_handler_ack_irq;
+		desc_handler_ack_irq -> clear_status_desc_status_IRQ_REPLAY_IRQ_WAITING;
+		clear_status_desc_status_IRQ_REPLAY_IRQ_WAITING -> status_self_or_IRQ_PENDING;
+		status_self_or_IRQ_PENDING -> clear_action;
+		clear_action -> status_IRQ_DISABLE_and_IRQ_INPROGRESS_clean;
+		status_IRQ_DISABLE_and_IRQ_INPROGRESS_clean -> set_action_desc_action;
+		set_action_desc_action -> clear_status_IRQ_PENDING;
+		clear_status_IRQ_PENDING -> status_self_or_IRQ_INPROGRESS;
+		status_self_or_IRQ_INPROGRESS -> set_desc_status_status;
+		status_IRQ_DISABLE_and_IRQ_INPROGRESS_clean -> set_desc_status_status;
+		set_desc_status_status -> action_false;
+		action_false -> goto_out;
+		action_false -> dead_for;
+		dead_for -> unlock_desc_lock;
+		unlock_desc_lock -> set_action_ret_handle_IRQ_event_irq_regs_desc_action;
+		set_action_ret_handle_IRQ_event_irq_regs_desc_action -> lock_desc_lock;
+		lock_desc_lock -> noirqdebug_false;
+		noirqdebug_false -> note_interrupt_irq_desc_action_ret;
+		note_interrupt_irq_desc_action_ret -> desc_status_IRQ_PENDING_clean;
+		noirqdebug_false -> desc_status_IRQ_PENDING_clean;
+		desc_status_IRQ_PENDING_clean -> clear_desc_status_IRQ_PENDING;
+		clear_desc_status_IRQ_PENDING -> dead_for;
+		desc_status_IRQ_PENDING_clean -> clear_desc_status_IRQ_INPROGRESS;
+		clear_desc_status_IRQ_INPROGRESS -> desc_handler_end_irq;
+		desc_handler_end_irq -> unlock_desc_lock;
+		unlock_desc_lock -> return_1;
 	}
 
 	subgraph cluster_handle_IRQ_event{

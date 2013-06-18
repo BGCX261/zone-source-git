@@ -13,6 +13,8 @@ digraph softirq_c{
                 label="void open_softirq(int nr, void (*action)(struct softirq_action*), void *data)";
                 set_softirq_vec_nr_data_data[label="set_softirq_vec_nr_data_data"];
                 set_softirq_vec_action_action[label="set_softirq_vec_action_action"];
+
+				set_softirq_vec_nr_data_data -> set_softirq_vec_action_action;
         }
 
         subgraph cluster_raise_softirq{
@@ -21,6 +23,9 @@ digraph softirq_c{
                 local_irq_save[label="local_irq_save()"];
                 raise_softirq_irqoff[label="raise_softirq_irqoff(nr)"];
                 local_irq_restore[label="local_irq_restore(flags)"];
+
+				local_irq_save -> raise_softirq_irqoff;
+				raise_softirq_irqoff -> local_irq_restore;
         }
 
         subgraph cluster_raise_softirq_irqoff{
@@ -28,6 +33,9 @@ digraph softirq_c{
                 __raise_softirq_irqoff[label="__raise_softirq_irqoff(nr)"];
                 in_interrupt_null[label="in_interrupt_null"];
                 wakeup_softirqd[label="wakeup_softirqd()"];
+
+				__raise_softirq_irqoff -> in_interrupt_null;
+				in_interrupt_null -> wakeup_softirqd;
         }
 
         subgraph cluster_do_softirq{
@@ -40,30 +48,63 @@ digraph softirq_c{
                 pinding[label="pinding"];
                 __do_softirq[label="__do_softirq()"];
                 local_irq_restore[label="local_irq_restore()"];
+
+				in_interrupt_not_null -> return;
+				in_interrupt_not_null -> local_irq_save;
+				local_irq_save -> set_pending_local_softirq_pending;
+				set_pending_local_softirq_pending -> pending_not_null;
+				pending_not_null -> __do_softirq;
+				__do_softirq -> local_irq_restore;
+				pending_not_null -> local_irq_restore;
         }
 
         subgraph cluster___do_softirq{
                 label="asmlinkage void __do_softirq(void)";
 
                 set_pending_local_softirq_pending[label="set_pending_local_softirq_pending"];
-                local_hb_disable[label="local_hb_disable()"];
+                local_bh_disable[label="local_bh_disable()"];
                 set_cpu_smp_processor_id[label="set_cpu_smp_processor_id"];
 
                 clear_local_softirq_pending[label="clear_local_softirq_pending"];
                 local_irq_enable[label="local_irq_enable()"];
                 pending_lowest_bit_set[label="pending_lowest_bit_set"];
-                call_softirq_vec_action[label="call_softirq_vec_action"];
-                rec_bh_qsctr_inc_cpu[label="rec_bh_qsctr_inc_cpu"];
-                inc_softriq_vec[label="inc_softriq_vec"];
-                pending_move_right_1[label="pending_move_right_1"];
+                set_h_softirq_vec[label="set_h_softirq_vec"];
+				pending_and_1_true[label="pending_and_1_true"];
+                h_action_h[label="h_action_h"];
+				rcu_bh_qsctr_inc_cpu[label="rcu_bh_qsctr_inc_cpu"];
+                inc_h[label="inc_h"];
+                pending_self_move_right_1[label="pending_self_move_right_1"];
                 pending_not_null[label="pending_not_null"];
                 local_irq_disable[label="local_irq_disable()"];
                 set_pending_local_softirq_pending_1[label="set_pending_local_softirq_pending"];
                 dec_max_restart[label="dec_max_restart"];
                 pending_not_null_and_max_restart_not_null[label="pending_not_null_and_max_restart_not_null"];
+				goto_restart[label="goto_restart"];
                 pending_not_null_1[label="pending_not_null"];
                 call_wakeup_softirqd[label="call_wakeup_softirqd"];
-                __local_hb_enable[label="__local_hb_enable()"];
+                __local_bh_enable[label="__local_bh_enable()"];
+
+				set_pending_local_softirq_pending -> local_bh_disable;
+				local_bh_disable -> set_cpu_smp_processor_id;
+				set_cpu_smp_processor_id -> clear_local_softirq_pending;
+				clear_local_softirq_pending -> local_irq_enable;
+				local_irq_enable -> set_h_softirq_vec;
+				set_h_softirq_vec -> pending_and_1_true;
+				pending_and_1_true -> inc_h;
+				pending_and_1_true -> h_action_h;
+				h_action_h -> rcu_bh_qsctr_inc_cpu;
+				rcu_bh_qsctr_inc_cpu -> inc_h;
+				inc_h -> pending_self_move_right_1;
+				pending_not_null -> pending_and_1_true;
+				pending_not_null -> local_irq_disable;
+				local_irq_disable -> set_pending_local_softirq_pending_1;
+				set_pending_local_softirq_pending_1 -> dec_max_restart;
+				dec_max_restart -> pending_not_null_and_max_restart_not_null;
+				pending_not_null_and_max_restart_not_null -> goto_restart;
+				pending_not_null_and_max_restart_not_null -> pending_not_null_1;
+				pending_not_null_1 -> wakeup_softirqd;
+				wakeup_softirqd -> __local_bh_enable;
+				pending_not_null_1 -> __local_bh_enable;
         }
 
         subgraph cluster_ksoftirqd{

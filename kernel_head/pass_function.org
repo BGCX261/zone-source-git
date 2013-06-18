@@ -13,13 +13,16 @@
 - irq_desc_t里的depth表示这个中断被禁止了多少次，但是Linux经常是禁止所有中断，为了效率不能
   在这种情况一个一个中断来禁止。
 - arm的用arch/arm/kernel/irq.c的，里面有disable_irq()之类的，i386用kernel/irq/manage.c也有
-  disable_irq()之类的，但是disable_irq()的实现是一样的。
+  disable_irq()之类的，但是disable_irq()的实现是一样的。request_irq()也有类似的情况.
 - 中断丢失是发生要多处理器中的。CPU A在应答一个中断线前被CPU B禁止了相同的中断，但是CPU A在
   应答之后执行do_irq()，但在do_irq()里会检查IRQ_DISABLE,所以do_irq()不会往下执行了。
 - SA_INTERRUPT 这个标志指的是在禁止本地上所有的中断，而不是自已本身。
 - IRQ_PER_CPU:该IRQ只能发生在一个cpu上
   IRQ_LEVEL:该中断由电平触发
   IRQ_MASKED:屏蔽了其他中断
+- irq_desc->handler和irqaction->handler老是混淆.
+- set_current_state这个函数不就只是改变进程的状态吗?并没有对运行队列做出相应的操作.这有什么
+  用呢?好像在schedule()里会检测这个标志.
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 没办法，还是要用遍历
 ** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
@@ -555,9 +558,50 @@
 - 为什么在这个函数里还要检查IRQ_DISABLE和IRQ_INPROGRESS呢？
 - 在这个函数里会把IRQ_PENDING清掉，若IRQ_DISABLE或IRQ_INPROGRESS设置了也有可能会把
   IRQ_PENDING设置了。
-- 相同的中断处理函数有可能正在别的CPU上执行，为什么不推到正在处理相同的CPU上运行该中断处理
+- 相同的中断处理函数有可能正在别的CPU上执行，为什么不推到接收的那CPU上运行该中断处理
   函数呢？ULK：This leads to a simpler kernel architecture because device drivers'
   interrupt service routines need not to be reentrant (their execution is
   serialized). Moreover, the freed CPU can quickly return to what it was doing, without
   dirtying its hardware cache; this is beneficial to system performance.
-
+- 那个死循环里处理特点是可以在执行这个函数的过程中处理别的CPU刚刚接收到的相同的中断。但是假
+  如有多个相同的中断发生，那么只有一个未决的中断,这个未决的中断在handle_IRQ_event里发生（设
+  置IRQ_PENDING）有注释：* This applies to any hw interrupts that allow a second instance
+  of the same irq to arrive while we are in do_IRQ or in the handler. But the code here
+  only handles the _second_ instance of the irq, not the third or fourth. So it is mostly
+  useful for irq hardware that does not mask cleanly in an SMP environment.
+- 如果IRQ_PER_CPU被设置了,那么就不用加锁了,也不用处理IRQ_PENDING, IRQ_INPROGRESS所有这些标志.
+** int request_irq(unsigned int irq, irqreturn_t (*handler)(int, void *, struct pt_regs *), unsigned long irqflags, const char * devname, void *dev_id)
+*** kernel/irq/manage.c:
+- 是SA_SHIRQ时那么dev_id就不能为空.
+- 基本是用参数初始化一个irqaction之后调用setup_irq()
+** int setup_irq(unsigned int irq, struct irqaction * new)
+*** kernel/irq/manage.c:
+- 不能
+** void open_softirq(int nr, void (*action)(struct softirq_action*), void *data)
+*** kernel/softirq.c:
+- 就是在softirq_vec的第nr个元素下设置data和action
+** void fastcall raise_softirq(unsigned int nr)
+*** kernel/softirq.c:
+- 仅是调用了raise_softirq_irqoff
+- 执行软中断是有检测点的(local_bh_enable,do_IRQ等),所以raise_softirq之后不会马上进入软中断.
+** inline fastcall void raise_softirq_irqoff(unsigned int nr)
+*** kernel/softirq.c:
+- 调用了__raise_softirq_irqoff.
+- 若不在中断上下文且没禁止软中断就马上调用wakeup_softirqd用线程来执行软中断
+- ULK:If we're in an interrupt or softirq, we're done (this also catches softirq-disabled
+  code). We will actually run the softirq once we return from the irq or softirq.
+** #define __raise_softirq_irqoff(nr)
+*** include/linux/interrupt.h:
+- 主要是用local_softirq_pending获取__softirq_pending来将相应的位置1.
+- 所以在pending了某个软中断之后多次raise_softirq()它是没有效果的.
+** #define in_interrupt()		(irq_count())
+*** include/linux/hardirq.h:
+- 这个为1表明是在中断也可能是禁止了中断.
+** asmlinkage void do_softirq(void)
+*** kernel/softirq.c:
+- 若抢占禁止那么一开始就要退出去,禁止枪占时不处理软中断.
+- 在raise的时候会把__softirq_pending的位给置了,那在哪里清呢?是在这里.
+- 在执行软中断函数的时候是打开软中断的,没有禁止.
+- 在这个函数里会把所有pending的软中断都处理掉.
+- 轮询完一次后发现又有新的软中断就又重新开始,但重新开始的次数是有限的,当次数到限后还有
+  pending的软中断那么就用线程来处理了.
