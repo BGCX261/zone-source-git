@@ -1,8 +1,9 @@
 #+STARTUP: showall
 * question/answer:
 - 因为中断的处理函数在内核态运行，又因为中断可以嵌套的，如果一连续有行验中断产生，那么会不
-  会把内核栈给爆了？
-- 内核线程用谁的栈呢？
+  会把内核栈给爆了？应该不会,因为产生某个中断之后系统会禁止相应的中断.
+- 内核线程用谁的栈呢？应该是当前进程的,再次回到用户态的时候线程已经执行完了,所以内核栈不用
+  因为再次回到用户态的时候把内核栈保存下来.
 - 进程0最后执行cpu_idle()
 - linux2.6有exit_group()和_exit()系统调用来终止一个用户程序。前者用do_group_exit()实现，C库
   的exit()调用，后者用do_exit()实现，如C库的pthread_exit()调用。
@@ -40,12 +41,17 @@
 ** int default_wake_function(wait_queue_t *curr, unsigned mode, int sync, void *key)
 - 仅仅是调用try_to_wake_up
 - key参数没有用
-- 所以自定义唤醒函数时,里面可以一开始调用default_wake_function,在最后做一些想做的事情,而不能在一开始做想做的事情因为进程还没有切换.
+- 所以自定义唤醒函数时,里面可以一开始调用default_wake_function,在最后做一些想做的事情,而不
+  能在一开始做想做的事情因为进程还没有切换.不是这样的,无论在default_wake_function之前还是之
+  后所做的事都是在被切换的进程的上下文中进行的.
 ** int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
-- 调用上一个函数后从链表中删除,删除用list_del_init,与__remove_wait_queue所用的list_del不一样
+- 调用上一个函数后从链表中删除,删除用list_del_init,与__remove_wait_queue所用的list_del不一
+  样,为什么是在调用上一个函数之前而不是之后呢?被try_to_wake_up()之后没有从等待队列里删除会
+  不会又再次唤醒呢?
 ** #define DEFINE_WAIT(name)
 - 用了上一个函数作为唤醒函数。
-- 若用这个定义一个WAIT,因为用上一个函数作为唤醒调用函数,所以同时会把它从队列删除.唤醒之后不用再把它从队列删除.
+- 若用这个定义一个WAIT,因为用上一个函数作为唤醒调用函数,所以同时会把它从队列删除.唤醒之后不
+  用再把它从队列删除.
 ** static inline void init_waitqueue_func_entry(wait_queue_t *q, wait_queue_func_t func) 
 *** include/linux/wait.h:
 - 可以自定义唤醒函数。仅此而已,没有赋值给task
@@ -56,12 +62,10 @@
 *** include/linux/wait.h:
 - 注意与DEFINE_WAIT的不同，用tsk,default_wake_function,NULL和NULL初始task_list,而不是
   current,autoremove_wake_function,LIST_HEAD_INIT
-- 那么用DECLARE_WAITQUEUE定义的要不要在删除的时候把它从链表删除呢？要的用remove_wait_queue，
-  在ulk里也有说的- 那么用DECLARE_WAITQUEUE定义的要不要在删除的时候把它从链表删除呢？要的用
+- 那么用DECLARE_WAITQUEUE定义的要不要在删除的时候把它从链表删除呢？要的,用
   remove_wait_queue，在ulk里也有说的:unless DEFINE_WAIT or finish_wait( ) are used, the
   kernel must remove the wait queue element from the list after the waiting process has
   been awakened.
-
 ** #define DECLARE_WAIT_QUEUE_HEAD(name)
 *** include/linux/wait.h:
 - 用自已来初始化链表.
