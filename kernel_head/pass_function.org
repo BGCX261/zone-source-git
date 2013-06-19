@@ -3,7 +3,8 @@
 - 因为中断的处理函数在内核态运行，又因为中断可以嵌套的，如果一连续有行验中断产生，那么会不
   会把内核栈给爆了？应该不会,因为产生某个中断之后系统会禁止相应的中断.
 - 内核线程用谁的栈呢？应该是当前进程的,再次回到用户态的时候线程已经执行完了,所以内核栈不用
-  因为再次回到用户态的时候把内核栈保存下来.
+  因为再次回到用户态的时候把内核栈保存下来.但像ksoftirqd()这样的内核线程会调用schedule(),在
+  内核空间用schdule()会切换进程,那原来的硬件上下文保存在那里了呢?什么时候会再用呢?
 - 进程0最后执行cpu_idle()
 - linux2.6有exit_group()和_exit()系统调用来终止一个用户程序。前者用do_group_exit()实现，C库
   的exit()调用，后者用do_exit()实现，如C库的pthread_exit()调用。
@@ -23,6 +24,12 @@
 - irq_desc->handler和irqaction->handler老是混淆.
 - set_current_state这个函数不就只是改变进程的状态吗?并没有对运行队列做出相应的操作.这有什么
   用呢?好像在schedule()里会检测这个标志.
+- ULK有句这样的话被我误解了:Right after switching from User Mode to Kernel Mode, the
+  kernel stack of a process is always empty, and therefore the esp register points to the
+  byte immediately following the stack.我以为从内核态切回用户态后就会把内核栈给清掉了,原来
+  不是,只是说把esp给改变了,当这个进程再切回到内核态时就会用回原来在内核态的数据,如调用read
+  函数时可能会休眠以致切换到其它进程.
+
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 没办法，还是要用遍历
 ** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
@@ -605,3 +612,48 @@
 - 在这个函数里会把所有pending的软中断都处理掉.
 - 轮询完一次后发现又有新的软中断就又重新开始,但重新开始的次数是有限的,当次数到限后还有
   pending的软中断那么就用线程来处理了.
+** static int ksoftirqd(void * __bind_cpu)
+*** kernel/softirq.c:
+- 
+** int kthread_should_stop(void)
+*** kernel/kthread.c:
+- 这个函数什么意思呢?
+- 这个函数会在内核线程里用循环使用这个函数来判断是否应该退出线程
+- 这个函数的实现比较简单，就是把线程停止信息中(struct kthread_stop_info)的停止进程与
+  current比较
+- 但是只有一个struct kthread_stop_info的全局变量，所有的进程都用这个变量，但多个进程都用这
+  个变量的话若是多个进程都要禁止线程执行不是会出问题吗？
+- 会不会在多个进程中都会执行相同的线程呢？如在进程A进入内核态时执行了线程C，在线程C还没有被
+  退出时切换到了进程B，在进程B进入内核态时又执行了线程C，这时就会有两个进程执行线程C了。关
+  键要看kthread_stop()什么时候调用了。
+** int kthread_stop(struct task_struct *k)
+*** kernel/kthread.c:
+- 因为thread_stop_info引用了stask_struct结构体，所以就要调用get_task_struct()
+- 在这个函数里用了init_completion()来初始化了kthread_stop_info.done,且调用了
+  wait_for_completion(),但是在ksoftirqd这个线程函数里没有相应地调用complete(),也没有设置相
+  应的kthread_stop_info.err
+** struct task_struct *kthread_create(int (*threadfn)(void *data), void *data, const char namefmt[], ...)
+*** kernel/kthread.c:
+- 这个函数用来创建一个线程，是用工作队列来运行线程函数的，用completion来同步创建完成而不是
+  同步创建开始，其实给工作队列执行的函数还不是线程函数，还是一个中间过程而已。执行的函数是
+  keventd_create_kthread,被执行的函数在它的参数create里。
+** static void keventd_create_kthread(void *_create)
+*** kernel/kthread.c:
+- 在这里没有调用线程的执行函数，而是以线程的执行函数来创建一个内核线程，是调用
+  kernel_thread()创建内核线程的。
+- 创建完成之后要等待创建开始的completion.
+- 最后要complete创建远成以通知kthread_create().
+** int kernel_thread(int (*fn)(void *), void * arg, unsigned long flags)
+*** arch/i386/kernel/process.c:
+- 这个函数是与架构相关的，与sys_clone的类似，里面调用了do_fork来创建一个线程，被创建的这个
+  线程所执行的函数还不是我们要执行的函数，还是一个系统函数kthread函数。
+- 就i386的架构来看，执行的函数是先是kernel_thread_helper,再在里面调用kthread(),返回后而调用
+  do_exit(),所以线程函数执行完返回到kthread()，kthread()再返回到
+  kernel_thread_helper,kernel_thread_helper再调用do_exit();
+** static int kthread(void *_create)
+*** kernel/kthread.c:
+- 在这个函数里会调用我们所要执行的函数
+- 为什么在执行线程函数之前要以TASK_INTERRUPTIBLE把current给切换出去呢？所以也可以看出创建完
+  线程还有一点延时才执行线程函数。
+- 为什么要在执行schedule()之前complete创建开始完成。
+- 因为先调用kthread_should_stop再调用线程函数，所以可能一次都没执行线程函数就终止了线程。
