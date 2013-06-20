@@ -3,10 +3,16 @@ digraph softirq_c{
                 label="void irq_exit(void)"
 
                 account_system_vtime[label="account_system_vtime(current)"];
-                sub_ppreempt_count[label="sub_ppreempt_count(IRQ_EXIT_OFFSET)"];
+                sub_preempt_count[label="sub_preempt_count(IRQ_EXIT_OFFSET)"];
                 not_in_interrupt_and_local_softirq_pending[label="not_in_interrupt_and_local_softirq_pending"];
                 invoke_softirq[label="invoke_softirq()"];
                 preempt_enable_no_resched[label="preempt_enable_no_resched()"];
+
+				account_system_vtime -> sub_preempt_count;
+				sub_preempt_count -> not_in_interrupt_and_local_softirq_pending;
+				not_in_interrupt_and_local_softirq_pending -> invoke_softirq;
+				invoke_softirq -> preempt_enable_no_resched;
+				not_in_interrupt_and_local_softirq_pending -> preempt_enable_no_resched;
         }
 
         subgraph cluster_open_softirq{
@@ -110,33 +116,69 @@ digraph softirq_c{
         subgraph cluster_ksoftirqd{
                 label="static int ksoftirqd(void *__bind_cpu)";
 
-                set_user_nice[label="set_user_nice_current_19"];
-                set_current_flags_PF_NOFREEZE[label="set_current_flags_PF_NOFREEZE"];
-                set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
-                kthread_should_stop_null[label="kthread_should_stop_null"];
-                call_preempt_disable[label="call_preempt_disable"];
-                local_softirq_pending_null[label="local_softirq_pending_null"];
-                call_preempt_enable_no_resched[label="call_preempt_enable_no_resched"];
-                schedule[label="schedule()"];
-                preempt_disable[label="call_preempt_disable"];
-                __set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
-                return_1[label="return 0"]
-                local_softirq_pending_not_null[label="local_softirq_pending_not_null"];
-                cpu_is_offline[label="cpu_is_offline(__bind_cpu)"];
-                do_softirq[label="do_softirq()"];
-                preempt_enable_no_resched[label="preempt_enable_no_resched()"];
-                cond_resched[label="cond_resched()"];
-                preempt_disable_1[label="preempt_disable()"];
-                preempt_enable_1[label="preempt_enable()"];
-                set_current_state_TASK_INTERRUPTIBLE_1[label="set_current_state_TASK_INTERRUPTIBLE"];
-                __set_current_state_TAKS_RUNNING[label="__set_current_state_TAKS_RUNNING"];
-                preempt_enable_2[label="preempt_enable()"];
-                set_current_state_TASK_INTERRUPTIBLE_2[label="set_current_state_TASK_INTERRUPTIBLE"];
-                kthread_should_stop_null_1[label="kthread_should_stop_null"];
-                schedule_1[label="schedule()"];
-                set_current_state_TASK_INTERRUPTIBLE_3[label="set_current_state_TASK_INTERRUPTIBLE"];
-                __set_current_state_TASK_RUNNING_1[label="__set_current_state_TASK_RUNNING"];
-                return[label="return 0"];
+				set_user_nice_current_19[label="set_user_nice_current_19"];
+				current_flags_self_or_PF_NOFREEZE[label="current_flags_self_or_PF_NOFREEZE"];
+				set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+				kthread_should_stop_false[label="kthread_should_stop_false"];
+				preempt_disable[label="preempt_disable"];
+				local_softirq_pending_false[label="local_softirq_pending_false"];
+				preempt_enable_no_resched[label="preempt_enable_no_resched"];
+				schedule[label="schedule"];
+				preempt_disable[label="preempt_disable"];
+				__set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+				local_softirq_pending[label="local_softirq_pending"];
+				cpu_is_offline___bind_cpu[label="cpu_is_offline___bind_cpu"];
+				goto_wait_to_die[label="goto_wait_to_die"];
+				do_softirq[label="do_softirq"];
+				preempt_enable_no_resched[label="preempt_enable_no_resched"];
+				cond_resched[label="cond_resched"];
+				preempt_diable[label="preempt_diable"];
+				preempt_enable[label="preempt_enable"];
+				set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+				__set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+				return_0[label="return_0"];
+				preempt_enable[label="preempt_enable"];
+				set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+				kthread_should_stop_false[label="kthread_should_stop_false"];
+				schedule[label="schedule"];
+				set_current_state_TASK_INTERRUPTIBLE[label="set_current_state_TASK_INTERRUPTIBLE"];
+				__set_current_state_TASK_RUNNING[label="__set_current_state_TASK_RUNNING"];
+				return_0[label="return_0"];
+
+				set_user_nice_current_19 -> current_flags_self_or_PF_NOFREEZE;
+				current_flags_self_or_PF_NOFREEZE -> set_current_state_TASK_INTERRUPTIBLE;
+				set_current_state_TASK_INTERRUPTIBLE -> kthread_should_stop_false;
+				kthread_should_stop_false -> preempt_disable;
+				preempt_disable -> local_softirq_pending_false;
+				local_softirq_pending_false -> preempt_enable_no_resched;
+				preempt_enable_no_resched -> schedule;
+				schedule -> preempt_disable;
+				preempt_disable -> __set_current_state_TASK_RUNNING;
+				local_softirq_pending_false -> __set_current_state_TASK_RUNNING;
+				__set_current_state_TASK_RUNNING -> local_softirq_pending;
+				local_softirq_pending -> cpu_is_offline___bind_cpu;
+				cpu_is_offline___bind_cpu -> do_softirq;
+				cpu_is_offline___bind_cpu -> goto_wait_to_die
+				do_softirq -> preempt_enable_no_resched;
+				preempt_enable_no_resched -> cond_resched;
+				cond_resched -> preempt_disable;
+				preempt_disable -> preempt_enable;
+				preempt_disable -> local_softirq_pending;
+				local_softirq_pending -> preempt_enable;
+				preempt_enable -> set_current_state_TASK_INTERRUPTIBLE;
+				set_current_state_TASK_INTERRUPTIBLE -> kthread_should_stop_false
+				set_current_state_TASK_INTERRUPTIBLE -> __set_current_state_TASK_RUNNING;
+				kthread_should_stop_false -> __set_current_state_TASK_RUNNING;
+				__set_current_state_TASK_RUNNING -> return_0;
+				wait_to_die -> preempt_enable;
+				preempt_enable -> set_current_state_TASK_INTERRUPTIBLE;
+				set_current_state_TASK_INTERRUPTIBLE -> kthread_should_stop_false;
+				kthread_should_stop_false -> schedule;
+				schedule -> set_current_state_TASK_INTERRUPTIBLE;
+				set_current_state_TASK_INTERRUPTIBLE -> kthread_should_stop_false;
+				set_current_state_TASK_INTERRUPTIBLE -> __set_current_state_TASK_RUNNING;
+				__set_current_state_TASK_RUNNING -> return_0;
+				kthread_should_stop_false -> __set_current_state_TASK_RUNNING;
         }
 
         subgraph cluster_tasklet_init{
@@ -146,7 +188,12 @@ digraph softirq_c{
                 clear_t_state[label="clear_t_state"];
                 atomic_set_t_count_0[label="atomic_set_t_count_0"];
                 set_t_func_func[label="set_t_func_func"];
-                set_t_data_data[label="set_t_data_data"];        
+                set_t_data_data[label="set_t_data_data"];
+
+				clear_t_next -> clear_t_state;
+				clear_t_state -> atomic_set_t_count_0;
+				atomic_set_t_count_0 -> set_t_func_func;
+				set_t_func_func -> set_t_data_data;
         }
 
         subgraph cluster___tasklet_schedule{
@@ -155,8 +202,13 @@ digraph softirq_c{
                 local_irq_save[label="local_irq_save"];
                 set_t_next___get_cput_var_tasklet_vec_list[label="set_t_next___get_cput_var_tasklet_vec_list"];
                 set___get_cput_var_tasklet_vec_list_t[label="set___get_cput_var_tasklet_vec_list_t"];
-raise_softirq_irqoff_TASKLET_SOFTIRQ[label="raise_softirq_irqoff_TASKLET_SOFTIRQ"];
+				raise_softirq_irqoff_TASKLET_SOFTIRQ[label="raise_softirq_irqoff_TASKLET_SOFTIRQ"];
                 local_irq_restore[label="local_irq_restore"];
+
+				local_irq_save -> set_t_next___get_cput_var_tasklet_vec_list;
+				set_t_next___get_cput_var_tasklet_vec_list -> set___get_cput_var_tasklet_vec_list_t;
+				set___get_cput_var_tasklet_vec_list_t -> raise_softirq_irqoff_TASKLET_SOFTIRQ;
+				raise_softirq_irqoff_TASKLET_SOFTIRQ -> local_irq_restore;
         }
 
         subgraph cluster___tasklet_hi_schedule{
@@ -164,53 +216,55 @@ raise_softirq_irqoff_TASKLET_SOFTIRQ[label="raise_softirq_irqoff_TASKLET_SOFTIRQ
 
                 local_irq_save[label="local_irq_save"];
                 set_t_next___get_cpu_var_tasklet_hi_vec_list[label="set_t_next___get_cpu_var_tasklet_hi_vec_list"];
-                set___get_cput_var_tasklet_hi_vec_list_t[label="set___get_cput_var_tasklet_hi_vec_list_t"];
-raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
+                set___get_cpu_var_tasklet_hi_vec_list_t[label="set___get_cpu_var_tasklet_hi_vec_list_t"];
+				raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
                 local_irq_restore[label="local_irq_restore"];
+
+				local_irq_save -> set_t_next___get_cpu_var_tasklet_hi_vec_list;
+				set_t_next___get_cpu_var_tasklet_hi_vec_list -> set___get_cpu_var_tasklet_hi_vec_list_t;
+				set___get_cpu_var_tasklet_hi_vec_list_t -> raise_softirq_irqoff_HI_SOFTIRQ;
+				raise_softirq_irqoff_HI_SOFTIRQ -> local_irq_restore;
         }
 
         subgraph cluster_tasklet_action{
                 label="static void tasklet_action(struct softirq_action *a)";
 
                 local_irq_disable[label="local_irq_disable"];
-                set_list_tasklet_vec_list[label="set_list_tasklet_vec_list"];
-                set_tasklet_vec_list_null[label="set_tasklet_vec_list_null"];
-                local_irq_enable[label="local_irq_enable"];
-                list_not_null[label="list_not_null"];
-                set_t_list[label="set_t_list"];
-                set_list_list_next[label="set_list_list_next"];
-                tasklet_trylock_t_not_null[label="tasklet_trylock_t_not_null"];
-                atomic_read_t_count_null[label="atomic_read_t_count_null"];
-                test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null[label="test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null"];
-                t_func_t_data[label="t_func_t_data"];
-                tasklet_unlock_t[label="tasklet_unlock_t"];
-                tasklet_unlock_t_1[label="tasklet_unlock_t"];
-                local_irq_disable[label="local_irq_disable"];
-                set_t_next_tasklet_vec_list[label="set_t_next_tasklet_vec_list"];
-                raise_softirq_irqoff_TASKLET_SOFTIRQ[label="raise_softirq_irqoff_TASKLET_SOFTIRQ"];
-                local_irq_enable[label="local_irq_enable"];
-        }
+				set_list___get_cpu_var_tasklet_vec_list[label="set_list___get_cpu_var_tasklet_vec_list"];
+				clear__get_cpu_var_tasklet_vec_list[label="clear__get_cpu_var_tasklet_vec_list"];
+				local_irq_enable[label="local_irq_enable"];
+				list_true[label="list_true"];
+				set_t_list[label="set_t_list"];
+				set_list_list_next[label="set_list_list_next"];
+				tasklet_trylock_t_true[label="tasklet_trylock_t_true"];
+				atomic_read_t_count_false[label="atomic_read_t_count_false"];
+				t_func_t_data[label="t_func_t_data"];
+				tasklet_unlock_t[label="tasklet_unlock_t"];
+				tasklet_unlock_t[label="tasklet_unlock_t"];
+				local_irq_disable[label="local_irq_disable"];
+				set_t_next___get_cpu_var_tasklet_vec_list[label="set_t_next___get_cpu_var_tasklet_vec_list"];
+				__get_cpu_var_tasklet_vec_list_t[label="__get_cpu_var_tasklet_vec_list_t"];
+				__raise_softirq_irqoff_TASKLET_SOFTIRQ[label="__raise_softirq_irqoff_TASKLET_SOFTIRQ"];
+				local_irq_enable[label="local_irq_enable"];
 
-        subgraph cluster_tasklet_action{
-                label="static void tasklet_action(struct softirq_action *a)";
-
-                local_irq_disable[label="local_irq_disable"];
-                set_list_tasklet_hi_vec_list[label="set_list_tasklet_hi_vec_list"];
-                set_tasklet_hi_vec_list_null[label="set_tasklet_hi_vec_list_null"];
-                local_irq_enable[label="local_irq_enable"];
-                list_not_null[label="list_not_null"];
-                set_t_list[label="set_t_list"];
-                set_list_list_next[label="set_list_list_next"];
-                tasklet_trylock_t_not_null[label="tasklet_trylock_t_not_null"];
-                atomic_read_t_count_null[label="atomic_read_t_count_null"];
-                test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null[label="test_and_clear_bit_TASKLET_STATE_SCHED_t_state_null"];
-                t_func_t_data[label="t_func_t_data"];
-                tasklet_unlock_t[label="tasklet_unlock_t"];
-                tasklet_unlock_t_1[label="tasklet_unlock_t"];
-                local_irq_disable[label="local_irq_disable"];
-                set_t_next_tasklet_hi_vec_list[label="set_t_next_tasklet_hi_vec_list"];
-                raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HIH_SOFTIRQ"];
-                local_irq_enable[label="local_irq_enable"];
+				local_irq_disable -> set_list___get_cpu_var_tasklet_vec_list;
+				set_list___get_cpu_var_tasklet_vec_list -> clear__get_cpu_var_tasklet_vec_list;
+				clear__get_cpu_var_tasklet_vec_list -> local_irq_enable;
+				local_irq_enable -> list_true;
+				list_true -> set_t_list;
+				set_t_list -> tasklet_trylock_t_true;
+				tasklet_trylock_t_true -> atomic_read_t_count_false;
+				atomic_read_t_count_false -> t_func_t_data;
+				t_func_t_data -> tasklet_unlock_t;
+				tasklet_unlock_t -> list_true;
+				atomic_read_t_count_false -> tasklet_unlock_t;
+				tasklet_trylock_t_true -> local_irq_disable;
+				tasklet_unlock_t -> local_irq_disable;
+				local_irq_disable -> set_t_next___get_cput_var_tasklet_vec_list;
+				set_t_next___get_cput_var_tasklet_vec_list -> __get_cpu_var_tasklet_vec_list_t;
+				__get_cpu_var_tasklet_vec_list_t -> __raise_softirq_irqoff_TASKLET_SOFTIRQ;
+				__raise_softirq_irqoff_TASKLET_SOFTIRQ -> local_irq_enable;
+				local_irq_enable -> list_true;
         }
 
 		subgraph cluster_local_bh_enable{
@@ -220,6 +274,12 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 				do_softirq[label="do_softirq ()"];
 				dec_preempt_count[label="dec_preempt_count ()"];
 				preempt_check_resched[label="preempt_check_resched ()"];
+
+				sub_preempt_count -> in_interrupt_not_null_and_local_softirq_pending_true;
+				in_interrupt_not_null_and_local_softirq_pending_true -> do_softirq;
+				do_softirq -> dec_preempt_count;
+				in_interrupt_not_null_and_local_softirq_pending_true -> dec_preempt_count;
+				dec_preempt_count -> preempt_check_resched;
 		}
 
 		subgraph cluster_wakeup_softirqd{
@@ -227,6 +287,9 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 			set_tsk___get_cpu_var_ksoftirqd[label="set_tsk___get_cpu_var_ksoftirqd"];
 			tsk_not_null_and_tsk_state_not_eq_TASK_RUNNING[label="tsk_not_null_and_tsk_state_not_eq_TASK_RUNNING"];
 			wake_up_process_tsk[label="wake_up_process_tsk"];
+
+			set_tsk___get_cpu_var_ksoftirqd -> tsk_not_null_and_tsk_state_not_eq_TASK_RUNNING;
+			tsk_not_null_and_tsk_state_not_eq_TASK_RUNNING -> wake_up_process_tsk;
 		}
 
 		subgraph cluster_tasklet_hi_action{
@@ -247,8 +310,27 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 			local_irq_disable[label="local_irq_disable"];
 			set_t_next___get_cpu_var_tasklet_hi_vec_list[label="set_t_next___get_cpu_var_tasklet_hi_vec_list"];
 			set___get_cpu_var_tasklet_hi_vec_list_t[label="set___get_cpu_var_tasklet_hi_vec_list_t"];
-			set___raise_softirq_irqoff_HI_SOFTIRQ[label="set___raise_softirq_irqoff_HI_SOFTIRQ"];
+			__raise_softirq_irqoff_HI_SOFTIRQ[label="__raise_softirq_irqoff_HI_SOFTIRQ"];
 			local_irq_enable[label="local_irq_enable"];
+
+			local_irq_disable -> set_list___get_cpu_var_tasklet_hi_vec_list;
+			set_list___get_cpu_var_tasklet_hi_vec_list -> clear___get_cpu_var_tasklet_hi_vec_list;
+			clear___get_cpu_var_tasklet_hi_vec_list -> local_irq_enable;
+			local_irq_enable -> list_not_null;
+			list_not_null -> set_t_list;
+			set_t_list -> set_list_list_next;
+			set_list_list_next -> tasklet_trylock_t_true;
+			tasklet_trylock_t_true -> atomic_read_t_count_false;
+			atomic_read_t_count_false -> t_func_t_data;
+			t_func_t_data -> tasklet_unlock_t;
+			tasklet_unlock_t -> list_not_null;
+			atomic_read_t_count_false -> tasklet_unlock_t;
+			tasklet_unlock_t -> local_irq_disable;
+			tasklet_trylock_t_true -> local_irq_disable;
+			local_irq_disable -> set_t_next___get_cpu_var_tasklet_hi_vec_list;
+			set_t_next___get_cpu_var_tasklet_hi_vec_list -> __raise_softirq_irqoff_HI_SOFTIRQ;
+			__raise_softirq_irqoff_HI_SOFTIRQ -> local_irq_enable;
+			local_irq_enable -> list_not_null;
 		}
 
 		subgraph cluster_tasklet_kill{
@@ -259,12 +341,22 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 			test_bit_TASKLET_STATE_SCHED_t_state[label="test_bit_TASKLET_STATE_SCHED_t_state"];
 			tasklet_unlock_wait_t[label="tasklet_unlock_wait_t"];
 			clear_bit_TASKLET_STATE_SCHED_t_state[label="clear_bit_TASKLET_STATE_SCHED_t_state"];
+
+			in_interrupt -> test_and_set_bit_TASKLET_STATE_SCHED_t_state;
+			test_and_set_bit_TASKLET_STATE_SCHED_t_state -> yield;
+			yield -> test_bit_TASKLET_STATE_SCHED_t_state;
+			test_bit_TASKLET_STATE_SCHED_t_state -> test_and_set_bit_TASKLET_STATE_SCHED_t_state;
+			test_bit_TASKLET_STATE_SCHED_t_state -> tasklet_unlock_wait_t;
+			test_and_set_bit_TASKLET_STATE_SCHED_t_state -> tasklet_unlock_wait_t;
+			tasklet_unlock_wait_t -> clear_bit_TASKLET_STATE_SCHED_t_state;
 		}
 
 		subgraph cluster_softirq_init{
 			label="void __init softirq_init(void)";
 			open_softirq_TASKLET_SOFTIRQ_tasklet_action_NULL[label="open_softirq_TASKLET_SOFTIRQ_tasklet_action_NULL"];
 			open_softirq_HI_SOFTIRQ_tasklet_hi_action_NULL[label="open_softirq_HI_SOFTIRQ_tasklet_hi_action_NULL"];
+
+			open_softirq_TASKLET_SOFTIRQ_tasklet_action_NULL -> open_softirq_HI_SOFTIRQ_tasklet_hi_action_NULL;
 		}
 
 		subgraph cluster_tasklet_kill_immediate{
@@ -275,6 +367,13 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 			i_eq_t[label="i_eq_t"];
 			set_i_t_next[label="set_i_t_next"];
 			return[label="return"];
+
+			test_bit_TASKLET_STATE_SCHED_t_state_null -> return;
+			test_bit_TASKLET_STATE_SCHED_t_state_null -> for_i_per_cpu_tasklet_vec_cpu_list;
+			for_i_per_cpu_tasklet_vec_cpu_list -> i_eq_t;
+			i_eq_t -> set_i_t_next;
+			set_i_t_next -> return;
+			i_eq_t -> for_i_per_cpu_tasklet_vec_cpu_list;
 		}
 
 		subgraph cluster_takeover_tasklets{
@@ -287,6 +386,71 @@ raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 			clear_per_cpu_tasklet_hi_vec_cpu_list[label="clear_per_cpu_tasklet_hi_vec_cpu_list"];
 			raise_softirq_irqoff_HI_SOFTIRQ[label="raise_softirq_irqoff_HI_SOFTIRQ"];
 			local_irq_enable[label="local_irq_enable"];
+
+			local_irq_disable -> for_i___get_cpu_var_tasklet_vec_list;
+			for_i___get_cpu_var_tasklet_vec_list -> set_i_per_cpu_tasklet_hi_vec_cpu_list;
+			set_i_per_cpu_tasklet_hi_vec_cpu_list -> clear_per_cpu_tasklet_hi_vec_cpu_list;
+			clear_per_cpu_tasklet_hi_vec_cpu_list -> raise_softirq_irqoff_TASKLET_SOFTIRQ;
+			raise_softirq_irqoff_TASKLET_SOFTIRQ -> for_i___get_cpu_var_tasklet_hi_vec_list;
+			for_i___get_cpu_var_tasklet_hi_vec_list -> set_i_per_cpu_tasklet_hi_vec_cpu_list;
+			set_i_per_cpu_tasklet_hi_vec_cpu_list -> clear_per_cpu_tasklet_hi_vec_cpu_list;
+			clear_per_cpu_tasklet_hi_vec_cpu_list -> raise_softirq_irqoff_HI_SOFTIRQ;
+			raise_softirq_irqoff_HI_SOFTIRQ -> local_irq_enable;
+		}
+
+		subgraph cluster_cpu_callback{
+			set_hotcpu_cpu[label="set_hotcpu_cpu"];
+			switch_action[label="switch_action"];
+			case_CPU_UP_PREPARE[label="case_CPU_UP_PREPARE"];
+			set_p_kthread_create_ksoftirqd_hcpu_hotcpu[label="set_p_kthread_create_ksoftirqd_hcpu_hotcpu"];
+			IS_ERR_p_true[label="IS_ERR_p_true"];
+			return_NOTIFY_BAD[label="return_NOTIFY_BAD"];
+			kthread_bind_p_hotcpu[label="kthread_bind_p_hotcpu"];
+			set_per_cpu_ksoftirqd_hotcpu_p[label="set_per_cpu_ksoftirqd_hotcpu_p"];
+			case_CPU_ONLINE[label="case_CPU_ONLINE"];
+			wake_up_process_per_cpu_ksoftirq_hotcpu[label="wake_up_process_per_cpu_ksoftirq_hotcpu"];
+			CONFIG_HOTPULG_CPU[label="CONFIG_HOTPULG_CPU"];
+			kthread_bind_per_cpu_ksoftirqd_hotcpu_smp_processor_id[label="kthread_bind_per_cpu_ksoftirqd_hotcpu_smp_processor_id"];
+			case_CPU_DEAD[label="case_CPU_DEAD"];
+			set_p_per_cpu_ksoftirq_hotcpu[label="set_p_per_cpu_ksoftirq_hotcpu"];
+			clear_per_cpu_ksoftirqd_hotcpu[label="clear_per_cpu_ksoftirqd_hotcpu"];
+			kthread_stop_p[label="kthread_stop_p"];
+			takeover_tasklets_hotcpu[label="takeover_tasklets_hotcpu"];
+			return_NOTIFY_OK[label="return_NOTIFY_OK"];
+
+			set_hotcpu_cpu -> switch_action;
+			switch_action -> case_CPU_UP_PREPARE;
+			case_CPU_UP_PREPARE -> set_p_kthread_create_ksoftirqd_hcpu_hotcpu;
+			set_p_kthread_create_ksoftirqd_hcpu_hotcpu -> IS_ERR_p_true;
+			IS_ERR_p_true -> return_NOTIFY_BAD;
+			IS_ERR_p_true -> kthread_bind_p_hotcpu;
+			kthread_bind_p_hotcpu -> set_per_cpu_ksoftirqd_hotcpu_p;
+			set_per_cpu_ksoftirqd_hotcpu_p -> return_NOTIFY_OK;
+			switch_action -> case_CPU_ONLINE;
+			case_CPU_ONLINE -> wake_up_process_per_cpu_ksoftirq_hotcpu;
+			wake_up_process_per_cpu_ksoftirq_hotcpu -> return_NOTIFY_OK;
+			switch_action -> kthread_bind_per_cpu_ksoftirqd_hotcpu_smp_processor_id;
+			kthread_bind_per_cpu_ksoftirqd_hotcpu_smp_processor_id -> return_NOTIFY_OK;
+			switch_action -> case_CPU_DEAD;
+			case_CPU_DEAD -> set_p_per_cpu_ksoftirq_hotcpu;
+			set_p_per_cpu_ksoftirq_hotcpu -> clear_per_cpu_ksoftirqd_hotcpu;
+			clear_per_cpu_ksoftirqd_hotcpu -> kthread_stop_p;
+			kthread_stop_p -> takeover_tasklets_hotcpu;
+			takeover_tasklets_hotcpu -> return_NOTIFY_OK;
+		}
+
+		subgraph cluster_spawn_ksoftirqd{
+			label="__init int spawn_ksoftirqd(void)";
+			set_cpu_smp_processor_id[label="set_cpu_smp_processor_id"];
+			cpu_callback_cpu_nfb_CPU_UP_PREPARE_cpu[label="cpu_callback_cpu_nfb_CPU_UP_PREPARE_cpu"];
+			cpu_callback_cpu_nfb_CPU_ONLINE_cpu[label="cpu_callback_cpu_nfb_CPU_ONLINE_cpu"];
+			register_cpu_notifier_cpu_nfb[label="register_cpu_notifier_cpu_nfb"];
+			return_0[label="return_0"];
+
+			set_cpu_smp_processor_id -> cpu_callback_cpu_nfb_CPU_UP_PREPARE_cpu;
+			cpu_callback_cpu_nfb_CPU_UP_PREPARE_cpu -> cpu_callback_cpu_nfb_CPU_ONLINE_cpu;
+			cpu_callback_cpu_nfb_CPU_ONLINE_cpu -> register_cpu_notifier_cpu_nfb;
+			register_cpu_notifier_cpu_nfb -> return_0;
 		}
 
 }

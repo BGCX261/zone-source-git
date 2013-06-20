@@ -607,14 +607,19 @@
 ** asmlinkage void do_softirq(void)
 *** kernel/softirq.c:
 - 若抢占禁止那么一开始就要退出去,禁止枪占时不处理软中断.
+** asmlinkage void do_softirq(void)
+*** kernel/softirq.c:
 - 在raise的时候会把__softirq_pending的位给置了,那在哪里清呢?是在这里.
 - 在执行软中断函数的时候是打开软中断的,没有禁止.
 - 在这个函数里会把所有pending的软中断都处理掉.
 - 轮询完一次后发现又有新的软中断就又重新开始,但重新开始的次数是有限的,当次数到限后还有
   pending的软中断那么就用线程来处理了.
+- 因为是轮询整个softirq_vec,所以优先级的区别就没那么大了.
 ** static int ksoftirqd(void * __bind_cpu)
 *** kernel/softirq.c:
-- 
+- 这个函数只有在被通知退出的时候才会退出,退出的结果是线程也终止.
+- 在执行do_softirq()前要禁止抢占,将进程状态设为运行,执行do_softirq()后要使能抢占,将进程状态
+  设为可中断,
 ** int kthread_should_stop(void)
 *** kernel/kthread.c:
 - 这个函数什么意思呢?
@@ -657,3 +662,44 @@
   线程还有一点延时才执行线程函数。
 - 为什么要在执行schedule()之前complete创建开始完成。
 - 因为先调用kthread_should_stop再调用线程函数，所以可能一次都没执行线程函数就终止了线程。
+- 所以创建内核线程的函数执行顺序是kthread_create创建一个工作队列的工作执行
+  keventd_create_kthread(),keventd_create_kthread()调用与架构相关的
+  kernel_thread(),kernel_thread()调用do_fork()来执行kthread(),kthread()里会调用要执行的线程
+  函数，kthread()函数会等待线程的终止。
+** __init int spawn_ksoftirqd(void)
+*** kernel/softirq.c:
+- 创建当前CPU的软中断线程
+- 先用CPU_UP_PREPARE调用cpu_callback()，再用CPU_ONLINE调用cpu_callback()
+- 这些线程是在哪个进程的内核栈中执行的呢?这个进程会不会退出呢?这个线程应该是在init进程的内
+  核栈里执行的.好像这些线程又不是用内核栈的?是的,内核线程也一个进程,只不过它在内核运行,一个
+  进程的执行怎么会用到其它进程的栈呢?使用内核栈的都是系统调用和中断执行之类的.
+- 那么线程是怎样被调度的呢?与用户进程一样吗?
+** void kthread_bind(struct task_struct *k, unsigned int cpu)
+*** kernel/kthread.c:
+- 这个函数的作用就是把线程k绑定到第cpu个cpu上执行.
+- 绑定之前要先说线程先停下来.
+- 绑定的方法就是设置线程k的cpu再设置cpumask.
+** static int __devinit cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+*** kernel/softirq.c:
+- 这个函数只是用来给软中断用的.
+- 为CPU_UP_PREPARE时就创建线程,再绑定到一个CPU上,为CPU_ONLINE时就唤醒一个线程.
+- 这个函数创建的线程是调用ksoftirqd这个函数的.软中断只需一个线程就可以了,ksoftirqd里调用
+  do_softrirq(),所以它会轮询所有等级的软中断.
+** void __init softirq_init(void)
+*** kernel/softirq.c:
+- 就是打开了TASKLET_SOFTIRQ和HI_SOFTIRQ而已,与其它的软中断无关了,也就这两个软中断是提供给内
+  核开发者用的
+- 被添加到这两个软中断函数是用链表的形式关联的.
+- struct tasklet_head是struct tasklet_struct里next的头结点.
+** void fastcall __tasklet_schedule(struct tasklet_struct *t)
+*** kernel/softirq.c:
+- 新加入的tasklet是放在链表头的,但执行的时候也是从链表头开始执行的,就是先进后出(堆栈)
+- 插入后会raise
+** static inline int tasklet_trylock(struct tasklet_struct *t)
+*** include/linux/interrupt.h:
+- 看tasklet是否在TASKLET_STATE_RUN的状态,主要用来防止一个tasklet在其它CPU被执行,本地CPU不会
+  嵌套tasklet吗?执行tasklet函数之前没有禁止抢占.
+** static inline void tasklet_unlock(struct tasklet_struct *t)
+- 清掉TASKLET_STATE_RUN状态,可以看出tasklet用来防止本地CPU嵌套执行相同的tasklet函数(不是同
+  一等级的tasklet)是用tasklet_struct->state是否在TASKLET_STATE_RUN决定的,所以在运行tasklet
+  函数时是可以被中断的.
