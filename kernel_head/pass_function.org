@@ -754,4 +754,31 @@
   作队列链表
 - 为什么当创建非单个CPU的工作队列时会把要创建的工作队列插入到workqueues里而创建单个CPU的工
   作队列时就不用呢?又在什么地方删除呢?
-
+- 调用了create_workqueue_thread()创建工作队列.
+** static struct task_struct *create_workqueue_thread(struct workqueue_struct *wq,
+*** kernel/workqueue.c:
+- 初始化完cpu_workqueue_thread结构体后调用kthread_create()创建一个线程调用worker_thread(),
+  传以初始化完的cpu_workqueue_thread.kthread_create()创建线程的方式用了工作队列.
+** static int worker_thread(void *__cwq)
+*** kernel/workqueue.c:
+- 进入这个函数时已经是在新创建的内核线程里执行了
+- 这里要把线程状态加多一个PF_NOFREEZE状态,这个状态有什么用呢?用来指明这个线程在休眠时不能冻
+  结,/linux/Documentation/power/freezing-of-tasks.txt有说明.
+- 在这个函数里就是一直循环执行已插入工作队列的工作,直到这个线程被要求停止
+  (kthread_should_stop())
+** static int worker_thread(void *__cwq)
+*** kernel/workqueue.c:
+- 把一个没有执行函数的wait_queue_t插入到struct cpu_workqueue_struct->more_work是什么意思呢?应
+  该是这样的:这个wait_queue_t的task被设为current了,就是这个执行工作队列的内核线程,所以要想
+  执行这个工作队列的工作可以wake_up这个more_work里的进程,是这个意思吗?ULK: more_work:Wait
+  queue where the worker thread waiting for more work to be done sleeps.调用schedule()把当
+  前线程加入到more_work()当schdule()返回后就从more_work删掉当前进程.
+** int fastcall queue_work(struct workqueue_struct *wq, struct work_struct *work)
+*** kernel/workqueue.c:
+- 一个工作被插入工作队列之后执行之前是不能再被插入的,这点和tasklet是一样的.
+- 被插入的工作只会被插入到当前的CPU,不是所有的CPU.
+** static void __queue_work(struct cpu_workqueue_struct *cwq,
+*** kernel/workqueue.c:
+- 在queue_work里找到CPU后在这个函数里设置wq_data,这个要找到CPU后才可以设置.
+- insert_sequence在这里自加
+- 会把more_work里的进程给唤醒以执行工作函数.
