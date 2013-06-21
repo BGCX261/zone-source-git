@@ -642,6 +642,9 @@
 - 这个函数用来创建一个线程，是用工作队列来运行线程函数的，用completion来同步创建完成而不是
   同步创建开始，其实给工作队列执行的函数还不是线程函数，还是一个中间过程而已。执行的函数是
   keventd_create_kthread,被执行的函数在它的参数create里。
+- 为什么要先判断helper_wq呢?因为工作队列的创建也是用到这个函数的,执行工作队列里的那些工作是
+  在通过创建一个线程来执行的.但是又因为创建内核线程也是用工作队列来完成的
+  (keventd_create_kthread()),所以这个先有鸡还是先有蛋的问题就出来了.
 ** static void keventd_create_kthread(void *_create)
 *** kernel/kthread.c:
 - 在这里没有调用线程的执行函数，而是以线程的执行函数来创建一个内核线程，是调用
@@ -685,10 +688,12 @@
 - 为CPU_UP_PREPARE时就创建线程,再绑定到一个CPU上,为CPU_ONLINE时就唤醒一个线程.
 - 这个函数创建的线程是调用ksoftirqd这个函数的.软中断只需一个线程就可以了,ksoftirqd里调用
   do_softrirq(),所以它会轮询所有等级的软中断.
+- 每个CPU都有一个执行本地CPU的所有等级软中断的内核线程(ksoftirqd()),而执行HI_SOFTIRQ和
+  TASKLET_SOFTIRQ这些等级的软中断时会执行完tasklet函数链表中函数.
 ** void __init softirq_init(void)
 *** kernel/softirq.c:
 - 就是打开了TASKLET_SOFTIRQ和HI_SOFTIRQ而已,与其它的软中断无关了,也就这两个软中断是提供给内
-  核开发者用的
+  核开发者用的.
 - 被添加到这两个软中断函数是用链表的形式关联的.
 - struct tasklet_head是struct tasklet_struct里next的头结点.
 ** void fastcall __tasklet_schedule(struct tasklet_struct *t)
@@ -703,3 +708,50 @@
 - 清掉TASKLET_STATE_RUN状态,可以看出tasklet用来防止本地CPU嵌套执行相同的tasklet函数(不是同
   一等级的tasklet)是用tasklet_struct->state是否在TASKLET_STATE_RUN决定的,所以在运行tasklet
   函数时是可以被中断的.
+** static inline void tasklet_schedule(struct tasklet_struct *t)
+*** include/linux/interrupt.h:
+- 要先看这个tasklet是否正在被调度,若是就不能再把这个tasklet插到tasklet的运行链表里了(就是调
+  用__tasklet_schedule()),所以正在schedule的函数不能在插入到运行链表中.
+** static void tasklet_action(struct softirq_action *a)
+*** kernel/softirq.c:
+- 这个函数就是TASKLET_SOFTIRQ这个等级所要的执行的函数,这个函数会轮询tasklet_vec这个链表中所
+  有的tasklet函数.
+- 每执行完这个函数就会把所有的tasklet函数执行完,再等到下一次执行TASKLET_SOFTIRQ这个等级的软
+  中断时就又会执行这个函数.
+- tasklet_trylock(),tasklet_unlock(),tasklet_unlock_waite()这些函数是与
+  TASKLET_STATE_SCHED/RUN有关的,tasklet_disable_nosync(),tasklet_disable(),tasklet_enable()这
+  些是与tasklet_struct->count有关的,为什么要两个标志呢?前者是用来防止同一个tasklet在多个
+  CPU执行的,而count可以防止同一个tasklet在同一个CPU嵌套执行,因为执行一个tasklet时是没有禁止
+  中断的,所以不用count的话可能会同一个tasklet在同一个CPU嵌套执行(这个说法错误,同一个
+  tasklet是不可能被嵌套执行的),使用count是可以使得即使某个tasklet被插入了也可以使它不被执行.
+- 从代码可以看出如果一个tasklet在其它的CPU上正在被执行或被禁止时会把这个tasklet重新插到链表
+  头,等着下一次执行tasklet_action时再执行,因为tasklet_action()下一次被调用的时候可能是在
+  do_softirq()函数里的下一次循环中所以会很快被调用,也有可以是下一次进入从ksoftirqd()进入
+  do_softirq()的时候.
+- ULK:using two kinds of non-urgent interruptible kernel functions: the so-called
+  deferrable functions, and those executed by means of some work queues.这可以看出软中断函
+  数是可以被中断的.但其实不然,因为在调用__do_softirq()之前已经把中断给禁止了(这种说法是错误
+  的,禁止的是抢占而不是中断)
+- ULK:interrupt context : it specifies that the kernel is currently executing either an
+  interrupt handler or a deferrable function.禁止抢占了就是在中断上下文吗?,禁止中断了也是在
+  中断上下文吗?可能叫临界区,中断上下文与临界区是不一样的.临界区应该包含中断上下文的意思,都不能调度不能休眠.
+- Softirqs are statically allocated, while tasklets can also be allocated and initialized
+  at runtime.
+- 因为在执行__do_softirq()时已经禁止抢占但没有禁止中断,所以执行可延迟函数时是不能做调度和休
+  眠的,但是可以被中断,所以软中断是执行在中断上下文的.
+** static void tasklet_hi_action(struct softirq_action *a)
+*** kernel/softirq.c:
+- 与上一个类似
+** #define in_interrupt()		(irq_count())
+*** include/linux/hardirq.h:
+- in_interrupte()判断的是Softirq counter域和Hardirq counter是否为正,不检查Preemption
+  counter域,而preempt_disable()增加的是Preemption counter域,所以in_interrupte()和
+  preempt_disable()是不相干的.
+** struct workqueue_struct *__create_workqueue(const char *name, int singlethread)
+*** kernel/workqueue.c:
+- 与工件队列相关的结构体和变量:struct workqueue_struct,struct cpu_workqueue_struct(这个结构
+  体包含在struct workqueue_struct中,wq成员指回包含它的struct workqueue_struct),workqueues工
+  作队列链表
+- 为什么当创建非单个CPU的工作队列时会把要创建的工作队列插入到workqueues里而创建单个CPU的工
+  作队列时就不用呢?又在什么地方删除呢?
+
