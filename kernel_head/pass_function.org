@@ -766,13 +766,27 @@
   结,/linux/Documentation/power/freezing-of-tasks.txt有说明.
 - 在这个函数里就是一直循环执行已插入工作队列的工作,直到这个线程被要求停止
   (kthread_should_stop())
-** static int worker_thread(void *__cwq)
-*** kernel/workqueue.c:
 - 把一个没有执行函数的wait_queue_t插入到struct cpu_workqueue_struct->more_work是什么意思呢?应
   该是这样的:这个wait_queue_t的task被设为current了,就是这个执行工作队列的内核线程,所以要想
   执行这个工作队列的工作可以wake_up这个more_work里的进程,是这个意思吗?ULK: more_work:Wait
   queue where the worker thread waiting for more work to be done sleeps.调用schedule()把当
-  前线程加入到more_work()当schdule()返回后就从more_work删掉当前进程.
+  前线程加入到more_work()当schdule()返回后就从more_work删掉当前进程.虽然more_work是一个等待
+  队列,但是并没有用到等待队列比较关键的东西(用wake_up类函数唤醒进程),仅仅是把一个有current
+  的waitqueue插入到more_work而没有任何作用.不是这样的,在__queue_work()函数里有调用
+  wake_up()把more_work的进程全唤醒.
+- 因为这个函数是在一直循环执行的, 但是它是在一开始就用current定义了wait这个waitqueue,而
+  current就是新创建的内核进程，所以current进程运行就会执行工作，在__queue_work里会在把一个
+  工作插入工作队列之后马上唤醒current.但是为什么要在while循环里把wait加到more_work里又把它
+  删除呢？就是在调度之前，在current状态为TASK_INTERRUPTIBLE的时候会把wait加到more_work里，
+  而调度完之后会把wait从more_work里删除而把状态改为TASK_RUNNING。
+- 好像只有current在more_work里.不会有其它进程了。
+- 好像有一个BUG：在把wait从more_work里删除之后more_work可能为空了，但是queue_work这个函数不
+  管有没有空都会从more_work里唤醒进程。这个BUG是不存在的，因为queue_work就是会把工作插入到
+  当前的CPU的，所以执行这个函数的current（B）一定不是处理工作队列那个current（A），所以A已
+  经是在调用schudule中，所以A一定是被插入到了more_work中，所以queue_work里调用wake_up是没有
+  问题的,在remove之后再到add之前内核线程是不会切换出去的,即使产生了中断,在内核态时如果不调
+  用schudle自动放弃，否则是不会被切到其它进程的。所以在run_workqueue()里执行的工作是在内核
+  线程的上下文执行的.
 ** int fastcall queue_work(struct workqueue_struct *wq, struct work_struct *work)
 *** kernel/workqueue.c:
 - 一个工作被插入工作队列之后执行之前是不能再被插入的,这点和tasklet是一样的.
@@ -782,3 +796,36 @@
 - 在queue_work里找到CPU后在这个函数里设置wq_data,这个要找到CPU后才可以设置.
 - insert_sequence在这里自加
 - 会把more_work里的进程给唤醒以执行工作函数.
+** static inline int is_single_threaded(struct workqueue_struct *wq)
+*** kernel/workqueue.c:
+- 若一个工作队列不是单CPU的，那么会把workqueue_struct.list插入到workqueues这个全局变量,难道
+  workqueues仅仅是把所有非单CPU工作队列链在一起的作用吗？从代码看好像这样链也没什么作用。现
+  在发现是有用的,因为struct workqueue_struct这个结构体里有一个cpu_wq成员是一个数组,就是说分
+  配一个workqueue_struct结构体的时候就会分配整个数组,但是为了分辨一个workqueue_struct变量是
+  一个CPU用的还是多个CPU用的,所以把所有的非单CPU的工作队列全放到一个链表里,以便对一个工作队
+  列操作时可以根据该workqueue_struct是否被链到workqueues链表而作出不同的操作.
+** static inline void run_workqueue(struct cpu_workqueue_struct *cwq)
+*** kernel/workqueue.c:
+- 注释说run_depth是防止run_workqueue()函数嵌套的,但是从代码看没有嵌套的可能啊.就算在工作函
+  数中进行了休眠也不可能被嵌套的啊,因为CPU与cpu_workqueue_struct与内核线程是绑定的,而且
+  run_workqueue是一个静态的函数所以不能被外部调用,在可能用的范围内也出现不了嵌套啊.出现了就是一个BUG.
+- 执行这个函数一次会把worklist里的所有工作都处理掉。
+** static void flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+*** kernel/workqueue.c:
+- 如果是参数cpu_workqueue_struct是当前CPU的,那么就调用run_workqueue()这个是不会出现
+  run_workqueue()嵌套的.
+- 这里把当前的insert_sequence保存下来与remove_sequeuece比较来判数是否某个cpu_workqueue已经
+  没有工作可以执行,但是为什么要用这种方式呢?直接用一个原子变量不行吗?或用一个加锁的计数器不
+  行吗?但因为访问insert_sequence和remove_sequeuece都获得了自旋锁，所以也不会出问题。
+- 如果调这个函数所在的CPU不与cpu_workqueue_struct所属的CPU不是同一个就不会调用
+  run_workqueue()仅仅是调用了schdule()因为所以工作一定要在指定的CPU执行，这样也可以防止
+  run_workqueue()嵌套执行。
+- 在这里会使用work_done这个等待队列来实现同步，在run_workqueue()会wake_up这个工作队列。
+  work_done就只是这个作用而已。
+** int fastcall queue_delayed_work(struct workqueue_struct *wq, struct work_struct *work, unsigned long delay)
+*** kernel/workqueue.c:
+- 实现延时执行的方法就是定时器插入工作。在时间到来的时候调用delayed_work_timer_fn()来把工作
+  插入工作队列。虽然把工作插入之后会马上调用wake_up把more_work唤醒，但是这个是有比较大的延
+  迟的。
+- 在没有把工作插入工作队列之前已经把work.pending给设置了，这个合适吗？合适的，因为不这样可
+  能有多个定时器同时在等着把工作插入工作队列。
