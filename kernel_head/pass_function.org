@@ -29,6 +29,16 @@
   byte immediately following the stack.我以为从内核态切回用户态后就会把内核栈给清掉了,原来
   不是,只是说把esp给改变了,当这个进程再切回到内核态时就会用回原来在内核态的数据,如调用read
   函数时可能会休眠以致切换到其它进程.
+- ret_from_intr()和ret_from_exception()时若有可能会进行调度。
+- ULK:a preemptive kernel differs from a nonpreemptive kernel on the way a process running
+  in Kernel Mode reacts to asynchronous events that could induce a process switchfor
+  instance, an interrupt handler that awakes a higher priority process. We will call this
+  kind of process switch a forced process switch。linux不能在中断里进行进程切换。那么不在定
+  时器中断里进行切换那么它是怎么做到分时的呢？
+- ULK：Both in preemptive and nonpreemptive kernels, a process running in Kernel Mode can
+  voluntarily relinquish the CPU, for instance because it has to sleep waiting for some
+  resource. We will call this kind of process switch a planned process switch.非抢占不是说
+  不能在内核态进行进程切换。
 
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 没办法，还是要用遍历
@@ -661,6 +671,7 @@
 ** static int kthread(void *_create)
 *** kernel/kthread.c:
 - 在这个函数里会调用我们所要执行的函数
+- 这个内核线程会屏蔽所有的信号。
 - 为什么在执行线程函数之前要以TASK_INTERRUPTIBLE把current给切换出去呢？所以也可以看出创建完
   线程还有一点延时才执行线程函数。
 - 为什么要在执行schedule()之前complete创建开始完成。
@@ -669,9 +680,12 @@
   keventd_create_kthread(),keventd_create_kthread()调用与架构相关的
   kernel_thread(),kernel_thread()调用do_fork()来执行kthread(),kthread()里会调用要执行的线程
   函数，kthread()函数会等待线程的终止。
+- 执行软中断函数的方式也是以一个独立的软中断线程为载体执行的，以kksoftirqd函数为参数调用
+  kthread_create,ksoftirqd()这个函数是被kthread()这个函数调用的，有意思的一点是kthread()使
+  用了kthread_should_stop()判断是否退出循环，ksoftirqd()也使用了，但从代码的设计看这是必要的。
 ** __init int spawn_ksoftirqd(void)
 *** kernel/softirq.c:
-- 创建当前CPU的软中断线程
+- 创建当前CPU的软中断线程,要创建多个CPU的ksoftirqd线程时就要调用多次了。
 - 先用CPU_UP_PREPARE调用cpu_callback()，再用CPU_ONLINE调用cpu_callback()
 - 这些线程是在哪个进程的内核栈中执行的呢?这个进程会不会退出呢?这个线程应该是在init进程的内
   核栈里执行的.好像这些线程又不是用内核栈的?是的,内核线程也一个进程,只不过它在内核运行,一个
@@ -679,15 +693,17 @@
 - 那么线程是怎样被调度的呢?与用户进程一样吗?
 ** void kthread_bind(struct task_struct *k, unsigned int cpu)
 *** kernel/kthread.c:
+- 原来把一个进程绑定到特定的CPU执行是那么容易就实现了的。
 - 这个函数的作用就是把线程k绑定到第cpu个cpu上执行.
 - 绑定之前要先说线程先停下来.
 - 绑定的方法就是设置线程k的cpu再设置cpumask.
 ** static int __devinit cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
 *** kernel/softirq.c:
 - 这个函数只是用来给软中断用的.
+- 根据kthread_should_pending()来决定是否退出。
 - 为CPU_UP_PREPARE时就创建线程,再绑定到一个CPU上,为CPU_ONLINE时就唤醒一个线程.
 - 这个函数创建的线程是调用ksoftirqd这个函数的.软中断只需一个线程就可以了,ksoftirqd里调用
-  do_softrirq(),所以它会轮询所有等级的软中断.
+  do_softrirq(),所以它会轮询所有等级的软中断.执行do_softirq()会禁止抢占。
 - 每个CPU都有一个执行本地CPU的所有等级软中断的内核线程(ksoftirqd()),而执行HI_SOFTIRQ和
   TASKLET_SOFTIRQ这些等级的软中断时会执行完tasklet函数链表中函数.
 ** void __init softirq_init(void)
@@ -699,11 +715,12 @@
 ** void fastcall __tasklet_schedule(struct tasklet_struct *t)
 *** kernel/softirq.c:
 - 新加入的tasklet是放在链表头的,但执行的时候也是从链表头开始执行的,就是先进后出(堆栈)
-- 插入后会raise
+- 插入后会raise,就像向一个工作队列里添加一个工作之后马上唤醒处理该工作队列的线程。
 ** static inline int tasklet_trylock(struct tasklet_struct *t)
 *** include/linux/interrupt.h:
 - 看tasklet是否在TASKLET_STATE_RUN的状态,主要用来防止一个tasklet在其它CPU被执行,本地CPU不会
   嵌套tasklet吗?执行tasklet函数之前没有禁止抢占.
+- 禁止抢占就是禁止进程切换禁止调度，不能禁止中断，在中断里是不能进行调度的。
 ** static inline void tasklet_unlock(struct tasklet_struct *t)
 - 清掉TASKLET_STATE_RUN状态,可以看出tasklet用来防止本地CPU嵌套执行相同的tasklet函数(不是同
   一等级的tasklet)是用tasklet_struct->state是否在TASKLET_STATE_RUN决定的,所以在运行tasklet
@@ -718,12 +735,17 @@
   有的tasklet函数.
 - 每执行完这个函数就会把所有的tasklet函数执行完,再等到下一次执行TASKLET_SOFTIRQ这个等级的软
   中断时就又会执行这个函数.
-- tasklet_trylock(),tasklet_unlock(),tasklet_unlock_waite()这些函数是与
+- tasklet_trylock(),tasklet_unlock(),tasklet_unlock_wait()这些函数是与
   TASKLET_STATE_SCHED/RUN有关的,tasklet_disable_nosync(),tasklet_disable(),tasklet_enable()这
   些是与tasklet_struct->count有关的,为什么要两个标志呢?前者是用来防止同一个tasklet在多个
   CPU执行的,而count可以防止同一个tasklet在同一个CPU嵌套执行,因为执行一个tasklet时是没有禁止
   中断的,所以不用count的话可能会同一个tasklet在同一个CPU嵌套执行(这个说法错误,同一个
-  tasklet是不可能被嵌套执行的),使用count是可以使得即使某个tasklet被插入了也可以使它不被执行.
+  tasklet是不可能被嵌套执行的),使用count是可以使得即使某个tasklet被插入了也可以使它不被执
+  行.两者的区别可能是另一种情况：TASKLET_STATE_SCHED/RUN表明的是tasklet有没有运行，所以
+  tasklet_trylock(),tasklet_unlock(),tasklet_unlock_wait()这些只能用于执行tasklet的前后，而
+  tasklet_struct->count是用来显示禁止tasklet执行的,不管在TASKLET_STATE_SCHED还是在
+  TASKLET_STATE_RUN，同时tasklet_disable()会调用tasklet_disable_nosync()和
+  tasklet_unlock_wait()这说明这个函数会被阻塞，要在为TASKLET_STATE_SCHED时才可以。
 - 从代码可以看出如果一个tasklet在其它的CPU上正在被执行或被禁止时会把这个tasklet重新插到链表
   头,等着下一次执行tasklet_action时再执行,因为tasklet_action()下一次被调用的时候可能是在
   do_softirq()函数里的下一次循环中所以会很快被调用,也有可以是下一次进入从ksoftirqd()进入
@@ -749,12 +771,12 @@
   preempt_disable()是不相干的.
 ** struct workqueue_struct *__create_workqueue(const char *name, int singlethread)
 *** kernel/workqueue.c:
-- 与工件队列相关的结构体和变量:struct workqueue_struct,struct cpu_workqueue_struct(这个结构
+- 与工作队列相关的结构体和变量:struct workqueue_struct,struct cpu_workqueue_struct(这个结构
   体包含在struct workqueue_struct中,wq成员指回包含它的struct workqueue_struct),workqueues工
   作队列链表
 - 为什么当创建非单个CPU的工作队列时会把要创建的工作队列插入到workqueues里而创建单个CPU的工
   作队列时就不用呢?又在什么地方删除呢?
-- 调用了create_workqueue_thread()创建工作队列.
+- 调用了create_workqueue_thread()创建工作队列.创建之后马上唤醒它。所以主要就两个任务：创建后唤醒。
 ** static struct task_struct *create_workqueue_thread(struct workqueue_struct *wq,
 *** kernel/workqueue.c:
 - 初始化完cpu_workqueue_thread结构体后调用kthread_create()创建一个线程调用worker_thread(),
@@ -814,7 +836,7 @@
 *** kernel/workqueue.c:
 - 如果是参数cpu_workqueue_struct是当前CPU的,那么就调用run_workqueue()这个是不会出现
   run_workqueue()嵌套的.
-- 这里把当前的insert_sequence保存下来与remove_sequeuece比较来判数是否某个cpu_workqueue已经
+- 这里把当前的insert_sequence保存下来与remove_sequeuece比较来判断是否某个cpu_workqueue已经
   没有工作可以执行,但是为什么要用这种方式呢?直接用一个原子变量不行吗?或用一个加锁的计数器不
   行吗?但因为访问insert_sequence和remove_sequeuece都获得了自旋锁，所以也不会出问题。
 - 如果调这个函数所在的CPU不与cpu_workqueue_struct所属的CPU不是同一个就不会调用
@@ -829,3 +851,10 @@
   迟的。
 - 在没有把工作插入工作队列之前已经把work.pending给设置了，这个合适吗？合适的，因为不这样可
   能有多个定时器同时在等着把工作插入工作队列。
+** #define get_cpu()		({ preempt_disable(); smp_processor_id(); })
+** #define put_cpu()		preempt_enable()
+*** include/linux/smp.h:
+- 先调用preempt_enable_no_resched()递减抢占计数器然后再调用preempt_check_resched()判断是否
+  要切换该进程来调用preempt_schedule().
+** #define put_cpu_no_resched()	preempt_enable_no_resched()
+
