@@ -39,7 +39,21 @@
   voluntarily relinquish the CPU, for instance because it has to sleep waiting for some
   resource. We will call this kind of process switch a planned process switch.非抢占不是说
   不能在内核态进行进程切换。
-
+- schedule()可能因为preempt_count设了PREEMPT_ACTIVE而会不调度，是不是说明调用schedule()有可
+  能不会切换进程的可能呢？
+- 对于多核处理机，使用PREEMPT_ACTIVE实现禁止抢占是没有什么作用的，不能防止其它CPU防问临界区，
+  仅仅是不能进行进程切换而已，要用自旋锁之类的.不是这样的，还是有用的，不禁止抢占会
+- ULK：kernel preemption may happen either when a kernel control path (usually, an
+  interrupt handler) is terminated, or when an exception handler reenables kernel
+  preemption by means of preempt_enable( )，kernel preemption may also happen when
+  deferrable functions are enabled.所以有三个地方是内核固定会调度的。
+- 感觉PREEMPT_ACTIVE实现的抢占在单核上就像一个LBK，在多核中又没什么作用。
+- ULK:spin locks are usually convenient, because many kernel resources are locked for a
+  fraction of a millisecond only;therefore, it would be far more time-consuming to release
+  the CPU and reacquire it later.
+- ULK:In the case of a uniprocessor system, the locks themselves are useless, and the spin
+  lock primitives just disable or enable the kernel preemption.
+- 可以确定设置PREEMPT_ACTIVE是不能/会抢占的意思。
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 没办法，还是要用遍历
 ** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
@@ -857,4 +871,147 @@
 - 先调用preempt_enable_no_resched()递减抢占计数器然后再调用preempt_check_resched()判断是否
   要切换该进程来调用preempt_schedule().
 ** #define put_cpu_no_resched()	preempt_enable_no_resched()
-
+** asmlinkage void __sched preempt_schedule(void)
+*** kernel/sched.c:
+- 
+** #define DEFINE_PER_CPU(type, name)
+*** include/asm-generic/percpu.h:
+- 为什么在多核处理器下多单核处理器下多加了一个指定段的编译属性就可以实现给每个CPU分配变量了？
+- 就像声明一个全局变量一样，因为这些全局变量都有一个per_cpu作为开头，所以以后声明变量时要注意
+  了。
+** #define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]))
+*** include/asm-generic/percpu.h:
+- 获取第cpu个的var变量。
+** #define __get_cpu_var(var) per_cpu(var, smp_processor_id())
+*** include/asm-generic/percpu.h:
+- 用per_cpu实现的
+** #define get_cpu_var(var) (*({ preempt_disable(); &__get_cpu_var(var); }))
+-　比上一个多了一个禁止抢占
+** #define put_cpu_var(var) preempt_enable()
+*** include/linux/percpu.h:
+- 打开抢占而已。name不使用
+** #define alloc_percpu(type)
+*** include/linux/percpu.h:
+- 这个是动态分配的，直接调用__alloc_percpu
+** static inline void *__alloc_percpu(size_t size, size_t align)
+*** include/linux/percpu.h:
+*** mm/slab.c:
+- 是单核的话就直接用kmalloc分配，是多核也用kmalloc分配，但分配的是struct percpu_data结构，
+  再用kmalloc_node来根据每个CPU各自所用的内存结点来分配。
+** #define spin_lock_init(lock)	do { (void)(lock); } while(0)
+*** include/linux/spinlock.h:
+- 这是单核的定义.
+** #define spin_lock_init(x)	do { *(x) = SPIN_LOCK_UNLOCKED; } while(0)
+*** include/asm-i386/spinlock.h:
+- 这是多核的的定义.
+** #define spin_lock(lock)		_spin_lock(lock)
+*** include/linux/spinlock.h:
+- 这个的定义没有分单多核.这个函数与ULK说的是不一样的,竟然调用preempt_enable()的地方不一样,
+  应该在spin_unlock里调用的把.看错ULK了,在spin_lock里调用preempt_enable()是在可抢占内核里实
+  现的.如果在不可抢占的内核中会一直自旋,不放弃CPU.
+- pause指令相当于rep;nop.
+** #define _spin_lock(lock)
+*** include/linux/spinlock.h:
+- 这是单核的定义,三步:禁止抢占,调_raw_spin_lock,调__acquire.
+- 为什么要禁止抢占呢?这样可以防止自已自动放弃CPU.
+** void __lockfunc _spin_lock(spinlock_t *lock) __acquires(spinlock_t);
+- 也上单核的操作方式
+** #define _raw_spin_lock(lock)	do { (void)(lock); } while(0)
+*** include/linux/spinlock.h:
+- 这是单核的方式
+** static inline void _raw_spin_lock(spinlock_t *lock)
+*** include/asm-i386/spinlock.h:
+- 多核的与架构有关,用汇编实现的.
+** #define spin_unlock(lock)	_spin_unlock(lock)
+*** include/linux/spinlock.h:
+- 这个不分单多核.
+** #define _spin_unlock(lock)
+*** include/linux/spinlock.h:
+- 这是单核的实现,就三步:调用_raw_spin_unlock,打开抢占,调用__release
+** void __lockfunc _spin_unlock(spinlock_t *lock)
+*** kernel/spinlock.c:
+- 与单核的一样.
+** #define spin_unlock_wait(lock)	(void)(lock)
+*** include/linux/spinlock.h:
+- 这是单核的实现
+** #define spin_unlock_wait(x)	do { barrier(); } while(spin_is_locked(x))
+*** include/linux/spinlock.h:
+- 这是多核的实现
+- 死循环调用spin_is_locked
+** #define spin_is_locked(lock)	((void)(lock), 0)
+*** include/linux/spinlock.h:
+- 这是单核的实现
+** #define spin_is_locked(x)	(*(volatile signed char *)(&(x)->slock) <= 0)
+*** include/asm-i386/spinlock.h:
+- 这个是多核的实现,就只是一个判断而已.
+** #define rwlock_init(lock)	do { (void)(lock); } while(0)
+*** include/linux/spinlock.h:
+- 这是单核的实现。
+** #define rwlock_init(x)	do { *(x) = RW_LOCK_UNLOCKED; } while(0)
+*** include/asm-i386/spinlock.h:
+- 这是多核的实现。
+- 0x01000000为可读可写，当想读时就将它减1，为0x00ffffff，为0x00000000时是已加上了写锁。
+- 像这些自旋锁的实现，要根据是否是单多核，是否配置为可抢占。
+** void __lockfunc _spin_lock(spinlock_t *lock)
+*** kernel/spinlock.c:
+- 在这个头文件里实现了_read_lock(), _read_lock(), _spin_lock_irqsave(), _spin_lock_irq(),
+  _spin_lock_irq(), _spin_lock_bh(), _read_lock_irqsave(), _read_lock_irq(),
+  _read_lock_bh(), _write_lock_irqsave(), _write_lock_irq(), _write_lock_bh(),
+  _spin_lock(), _write_lock()这些函数的可抢占版和非抢占版。而这些函数里面调用的前面有_raw字
+  样的就是被实现了单核版和多核版，单核版在include/linux/spinlock.h里实现的是单核版，多核版
+  在特定的架构的spinlock.h文件里实现。
+- 抢占版的都会调用cpu_relax()和使用break_lock成员。抢占版的会打开抢占，允许其它进程抢占，自
+  旋锁不再自旋。
+- 这类函数的调用关系层是以spin_lock为例：spin_lock() -> _spin_lock()(加一个下划线前缀) ->
+  _raw_spin_lock()
+- 关于_spin_lock()类函数的可抢占版和非抢占版的所在的文件的定义：要使用自旇锁就要包含文件
+  include/linux/spinlock.h(A文件),在文件A定义了单核版的_spin_lock()宏和多核版的_spin_lock()函
+  数声明，单核版的_spin_lock()没有可和非可抢占版之分,多核版的可抢占版和非抢占版
+  的_spin_lock()的实现都在kernel/spinlock.c里(注意:实现的函数的用宏的方式,所以cscope找不到
+  的).单核版的_spin_lock()里调用的_raw_spin_lock()在文件A里定义,单核版的_spin_lock()调用
+  的_raw_spin_lock()是有调试版和非调试版的;多核版的_spin_lock()的可抢占版调
+  用_raw_spin_lock(),这个_raw_spin_lock()不是单核版那个,而是在include/asm-i386/spinlock.h里
+  定义的那个,这个_raw_spin_lock()会用到pause指令(rep;nop),而多核版的_spin_lock()的非可抢占
+  版(!CONFIG_PREEMPT)没调用_raw_spin_lock(),而是调用了cpu_relax()而且在调用cpu_relax()之前还使
+  能抢占,cpu_relax()也是用rep;nop指令的.
+- 单核版的_spin_lock() -> 禁止抢占后调用有调试版的_raw_spin_lock(); 多核版的可抢占版
+  的_spin_lock() -> _raw_spin_lock()(架构相关), 多核版的非可抢占版的_spin_lock() -> 使能抢
+  占再调用cpu_relax().
+** #define seqlock_init(x)	do { *(x) = (seqlock_t) SEQLOCK_UNLOCKED; } while (0)
+*** include/linux/seqlock.h:
+- #define SEQLOCK_UNLOCKED { 0, SPIN_LOCK_UNLOCKED }
+** static inline void write_seqlock(seqlock_t *sl)
+*** include/linux/seqlock.h:
+- seqlock_t这个锁只是防止多个写操作,与读无关.
+- 把sequence自加。
+** static inline void write_sequnlock(seqlock_t *sl) 
+*** include/linux/seqlock.h:
+- 又把sequence自加。
+** static inline int write_tryseqlock(seqlock_t *sl)
+*** include/linux/seqlock.h:
+- 用了spin_trylock()
+** static inline unsigned read_seqbegin(const seqlock_t *sl)
+*** include/linux/seqlock.h:
+- 返回sequence
+** static inline int read_seqretry(const seqlock_t *sl, unsigned iv)
+*** include/linux/seqlock.h:
+- iv为奇数表示正在写，写的锁没有解，sl不等于iv表示已被修改过。这两种情况都要重新执行。
+** #define rcu_read_lock()		preempt_disable()
+*** include/linux/rcupdate.h:
+- 就只是禁止抢占而已
+** #define rcu_read_unlock()	preempt_enable()
+*** include/linux/rcupdate.h:
+- 就只是使能抢占而已
+- RCU锁和seq锁有一个区别是:RCU锁可以使用旧的数据作处理,不管数据是否被改变,而seq锁不能,如果
+  在处理完之后发现被保护的数据被改变就要重新用新的数据再做一次处理.
+** void fastcall call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+*** kernel/rcupdate.c:
+- 把head插到nxttail这个链表的尾部.
+- 这个函数把一个新的释放rcu旧数据的回调函数加到rcu_data这个per-cpu变量的nxttail这个成员的链
+  表里去.
+- 不是一个CPU经过了静止状态就调用所有的回调函数,而是所有的CPU都经过一次静止状态之后就执行一
+  个tasklet来把所有在nxttail里的callback函数执行一次来释放旧的rcu数据,那么回调函数是怎么知
+  道自己要释放的数据是什么呢?从回调函数的参数是struct rcu_head可以启发到被释放的数据度该是
+  一个结构体,这个结构体里至少有一个struct rcu_head类型的成员,而这个成员就是做为rcu_head参数
+  的那个,也是被链到nxttail的,所以可以从nxttail里把存放callback函数的struct rcu_head传给回调
+  函数,回调函数再用container_of找到要释放的结构体就可以了.
