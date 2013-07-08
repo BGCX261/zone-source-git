@@ -1015,3 +1015,227 @@
   一个结构体,这个结构体里至少有一个struct rcu_head类型的成员,而这个成员就是做为rcu_head参数
   的那个,也是被链到nxttail的,所以可以从nxttail里把存放callback函数的struct rcu_head传给回调
   函数,回调函数再用container_of找到要释放的结构体就可以了.
+** void synchronize_rcu(void)
+*** kernel/rcupdate.c:
+- 这个函数用completion来同步,等待所有CPU经过静止状态.
+- 这个函数的实现就是把一个唤醒自己的函数插入到rcu_tasklet里.
+- 有一个疑问:是不是被complete之后可能还有callback函数在tasklet里呢?可能有,这个函数的作用只
+  是说经过了一个静止状态,而不是说返回之后就没有callback函数在tasklet里了.所以这个函数可以这
+  样用:write一个rcu之后调用这个函数,这个函数返回之后可以读到最新的rcu数据没有延时太长的时间.
+** void rcu_check_callbacks(int cpu, int user)
+*** kernel/rcupdate.c:
+- 这个函数有什么用呢?
+** static void rcu_process_callbacks(unsigned long unused)
+*** kernel/rcupdate.c:
+- 就是调用__rcu_process_callbacks(),有软中断和非软中断之分.
+** static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp, struct rcu_state *rsp, struct rcu_data *rdp)
+*** kernel/rcupdate.c:
+- 在curlist不为空和完成的rcu(rcu_ctrlblk.completed)回收不小于rcu_data.batch的要求时就将
+  rcu_data.curlist的移到rcu_data.donetail中去并把rcu_data.curlist清空,这个rcu_data.donetail有什么用
+  呢?rcu_data.completed是在哪里加的呢?
+- 如果rcu_data.nxtlist不空且rcu_data.curlist为空(已经移到了donetail里去了),就把nxtlist移到
+  curlist里去并清空nxtlist.这三个链表nxtlist,curlist,donelist就是这种关系了.设置本cpu的
+  batch号为当前cur的下一个
+- RCU是怎么确定所有的CPU都不同时在RCU读锁里呢?经过的静止状态只是一个过去的状态而已.好像是这
+  样的:一个CPU经过静止状态之后就等待所有的CPU经过所有的静止状态,等到所有的CPU都经过静止状态
+  之后就可以把新的数据替换旧的数据.
+- rdp->quiescbatch = rcp->cur 标识 quiesc period 的开始， rdp->qs_pending = 1， 标识一个
+  quiesc period 尚未结束; rdp->passed_quiesc = 0 则是 cpu queisc 结束指示符， 当内核代码执
+  行诸如抢占动作前， 会将这个变量置 1， 在后面的时钟中断处理中， 如果发现这个值为 1， 则将
+  rdp->qs_pending 置 0 标识quiesc period 的结束， 并将 cpu 在 rcp->cpumask 中的位清除， 以
+  表示本 cpu 同意 grace period 结束， 至于能否结束， 则要看其他的 cpu 是否同意。
+  rdp->passed_quiesc = 0 还有一个作用是将 quiesc period 开始之前就 (多次) 置位的
+  passed_quiesc 的动作取消。
+- grace period 的开始代表的是 rcu 观察到至少一个 cpu 已经完成了至少一次数据更新操作，但可能
+  善后工作还没有做， 例如上面说的释放旧数据； 而 grace period 的结束， 则代表者 rcu 认为所
+  有的其他 cpu 都不再引用写者持有的旧数据了， 因此， 可以安全释放这份数据。 grace period 是
+  上一轮 grace period 结束后， 第一次观察到一个 cpu 完成数据更新操作为开始的， 这时所有
+  cpu 上一轮 quiesc period 都已经结束， 都处于停止状态。 grace period 一旦启动， 则后继的肯
+  定是各个 cpu 各自的 quiesc period 的启动， 停止； grace period 结束于最后一个 quiesc
+  period 的结束之后。 在 grace period 执行期间， 如果其他 cpu 上也出现了写者数据更新操作，
+  则视这个 cpu 上的 quiesc period 启动与否而有不同行为， 如果没有启动， 则可以认为这个更新
+  操作属于这个已启动的 grace period, 否则， 则将其归类于下一个 grace period。 但这个分类并
+  不是 100% 正确， 会将本该分在这个 grace period 的结果分在了下一个 grace period, 这是 smp
+  系统的缓存一致性决定的， 存在偶然因素， 但产生的结果不是不可接受的 ---- 即不会引起旧数据
+  的提前释放， 只会引起其释放延迟， 这个在 rcu 目标应用场景中， 是可以接受的。
+- 在退出所有读操作的那一瞬间， 那就不再引用了， 那么， 在那一瞬间之后呢， 会不会再次引用这
+  些旧数据？ 不会， 因为它就算再读相同的数据， 读到的也不过是写者已经更新的新数据。 最终的
+  结果就是， 只要发生了一次抢占， 则本 cpu 就会同意 grace period 的结束， 也就是说， 所有写
+  者不用再担心运行在这个 cpu 上的代码引用它的旧数据。 那么当最后所有 cpu 都退出 quiesc
+  period 的时候， 只会剩下写者自己持有旧数据， 它可以任意操作旧数据了。
+- 写者修改数据前首先拷贝一个被修改元素的副本，然后在副本上进行修改，修改完毕后它向垃圾回收
+  器注册一个回调函数以便在适当的时机执行真正的修改操作。等待适当时机的这一时期称为grace
+  period，而CPU发生了上下文切换称为经历一个quiescent state，grace period就是所有CPU都经历一
+  次quiescent state所需要的等待的时间。垃圾收集器就是在grace period之后调用写者注册的回调函
+  数来完成真正的数据修改或数据释放操作的。https://www.ibm.com/developerworks/cn/linux/l-rcu/
+- 因为 call_rcu_bh将把 softirq 的执行完毕也认为是一个 quiescent state，因此如果修改是通过
+  call_rcu_bh 进行的，在进程上下文的读端临界区必须使用这一变种。
+- 因为donelist一开始是赋初值的,所以就算在执行的过程中对链表进行增删改查也不用赋为NULL
+- rcu_data.batch大于rcu_ctrlblk.completed时(就是rcu_data.batch == rcu_ctrlblk.completed+1)
+- 如果nextlist里有数据且curlist里没有数据,那么当前CPU就会等待从当前时间开始的下一个完整的
+  grace period,如果所等行待的grace period结束了(rcu_data.batch>=rcu_ctrlblk.completed)且
+  rcu_data.curlist不为空,那么就会把curlist赋给donelist并在这个函数的最后调用rcu_do_batch()
+  来处理所有的回调函数.
+** static inline void rcu_qsctr_inc(int cpu)
+*** include/linux/rcupdate.h:
+- 当在CPU上发生进程切换时，函数rcu_qsctr_inc将被调用以标记该CPU已经经历了一个quiescent
+  state。该函数也会被时钟中断触发调用。rcu_qsctr_inc函数的确在schedule()里被调用.
+- 就是把per cpu变量rcu_data.passed_quiesc改为1.
+- quiesc period 与 grace period 的关系， 就是 quiesc 从来都是在 grace period 开始之后开始，
+  在 grace period 结束之前结束。
+** void rcu_check_callbacks(int cpu, int user)
+*** kernel/rcupdate.c:
+- 时钟中断触发垃圾收集器运行，它会检查：否在该CPU上有需要处理的回调函数并且已经经过一个
+  grace period；否没有需要处理的回调函数但有注册的回调函数；否该CPU已经完成回调函数的处理；
+  否该CPU正在等待一个quiescent state的到来；如果以上四个条件只要有一个满足，它就调用函数
+  rcu_check_callbacks。
+- idle_cpu(cpu)说明第cpu正在执行idle进程.
+- 检查CPU是否经历了一个quiescent state:1.当前进程运行在用户态;2.当前进程为idle且当前不处在
+  运行softirq状态，也不处在运行IRQ处理函数的状态；
+- 通过调用函数rcu_qsctr_inc标记该CPU的数据结构rcu_data和rcu_bh_data的标记字段passed_quiesc，
+  以记录该CPU已经经历一个quiescent state。
+- 函数rcu_check_callbacks将调用tasklet_schedule，它将调度为_该_CPU设置的tasklet rcu_tasklet，
+  每一个CPU都有一个对应的rcu_tasklet.
+- rcu_process_callbacks可能做以下事情：1． 开始一个新的grace period；这通过调用函数
+  rcu_start_batch实现。2． 运行需要处理的回调函数；这通过调用函数rcu_do_batch实现。3． 检查
+  该CPU是否经历一个quiescent state；这通过函数rcu_check_quiescent_state实现
+** static void rcu_do_batch(struct rcu_data *rdp)
+*** kernel/rcupdate.c:
+- rcu_data.donelist才是被tasklet执行的回收rcu函数,不是rcu_data.curlist.
+- 最终会在这个函数里调用回收函数.
+- 只有在__rcu_process_callbacks()里检测到donelist不为空时才调用rcu_do_batch()
+- 每调用里面的一个函数就是把一个旧数据释放掉.
+- 里面的maxbatch是每次执行tasklet时调用的回调函数的个数,为什么要这个东西而不是一次调用所有
+  的回调函数呢?
+- 如果donelist为空就把&donelist赋给donetail,否则就用tasklet_schedule再调度这tasklet.
+- 在这里,注意每次调用的回调函数有最大值限制.这样做主要是防止一次调用过多的回调函数而产生不
+  必要系统负载.http://blog.chinaunix.net/uid-12260983-id-2952617.html
+** static void rcu_check_quiescent_state(struct rcu_ctrlblk *rcp, struct rcu_state *rsp, struct rcu_data *rdp)
+*** kernel/rcupdate.c:
+- 调用函数rcu_check_quiescent_state检查该CPU是否经历了一个quiescent state,如果是并且是最后
+  一个经历quiescent state的CPU，那么就结束grace period，并开始新的grace period。如果有完成
+  的grace period，那么就调用rcu_do_batch运行所有需要处理的回调函数。
+- rcu_data.quiescbatch(Batch # for grace period)不等于rcu_ctrlblk.cur(Current batch
+  number)就说明当前CPU所在的quiesc period不是在全局的grace period里的,注释里说start new
+  grace period,这个应该不正确应该是quiesc period。因为不等了，也说明了开始了一个全局的
+  grace period之后，当前CPU还没经过一个quiesc period,所以就要开始一个quiesc period,而开始一
+  个quiesc period就是要把rcu_data里的三个变量设置一下：qs_pending设为1（标识一个quiesc
+  period 尚未结束,qs_pending只在这个函数被修改），passed_quiesc设为0（在经过quiesc period时设为1，schedule()调用
+  rcu_qsctr_inc()转而设passed_quiesc为1，但和qs_pending有什么区别呢？）,quiescbatch设为rcu_ctrlblk.cur指定所开始的这个
+  quiesc period是在第cur个grace period里的。
+- batch这个词在这里的指第几批grace period.
+- 若qs_pending为0，表明对于这个CPU来说已经经过了第quiescbatch个grace period了。
+- qs_pending和passed_quiesc还是有一点不同的:qs_pending - 0, passed_quiesc - 0这种情况是不可
+  能的,qs_pending - 0, passed_quiesc - 1:schedule()把passed_quiesc设为1了,之后也调用了这个
+  函数,但在开始一个新的grace period之前就会出现这种情况.qs_pending - 1, passed_quiesc - 0:
+  因发现又开始了一个新的grace period,所以当前CPU又要开始重新检查一个quiesc state,这种情况就
+  是在这个函数一开始时设置的.qs_pending - 1, passed_quiesc - 1:开始一个quiesc后也执行了
+  schedule()但还没有进行这个函数rcu_check_quiescent_state()
+- 搞明白rcu_data和rcu_ctrlblk里面的成员就差不多了.
+- 函数的功能就是若发现开始了一个新的grace period就开始一个新的quiesc period等待经过一个静止
+  状态,否则看是否经过了静止状态,若经过了静止状态就清sq_pending.
+- 对这个函数和里面调用的所有的函数层层解开之后功能就是：有可能开始一个新的quiesc period;有
+  可能标识当前的CPU已经经过了静止状态；有可能因为当前CPU经过了静止状态后同时发现自已是最后
+  一个经过静止状态的CPU而可能因为还有下一batch而开始一个新的grace period.
+** static void cpu_quiet(int cpu, struct rcu_ctrlblk *rcp, struct rcu_state *rsp)
+*** kernel/rcupdate.c:
+- cpus_empty()参数全为空的时候就为真。所以rcu_state.cpumask为空的话，就说明所有的CPU都经过
+  了当前第batch的grace period.当所有的CPU都经过静止状态时就把rcu_ctrlblk.completed给设为
+  rcu_ctrlblk.cur，所以可以通过这两个是否相等判断是否正在等待下一个grace period.
+- 这个函数主要是一个CPU经过静止状态的时候调用的（当经过一次静止状态时有被
+  rcu_check_quiescent_state调用）。
+** static void rcu_start_batch(struct rcu_ctrlblk *rcp, struct rcu_state *rsp,
+*** kernel/rcupdate.c:
+- 这个函数会根据传入的参数next_pending来修改rcu_ctrlblk.next_pending.在cpu_quiet()调用的
+  rcu_start_batch()是以next_pending为0调用的，因为在cpu_quiet()调用rcu_start_batch()时一定
+  是最后一个cpu经过了静止状态,就因为这个所以要以next_pending为0调用rcu_start_batch()吗?
+- 如果rcu_ctrlblk.next_pending为1但是rcu_ctrlblk.completed不等于rcu_ctrlblk.cur时是不会改变
+  rcu_ctrlblk.cur的,因为rcu_ctrlblk.completed不等于rcu_ctrlblk.cur说明当前批的grace period
+  还没有结束,所以即使有下一批的回收挂起,也不能把改变cur而开始下一个grace period.如果
+  rcu_ctrlblk.next_pending为0但是rcu_ctrlblk.completed等于rcu_ctrlblk.cur时也不能改变
+  rcu_ctrlblk.cur,因为rcu_ctrlblk.completed等于rcu_ctrlblk.cur说明当前已经不在grace period
+  里了,但因为next_pending为0即没有下一批需要回收的rcu,所以也不能设置rcu_ctrlblk.cur以开始一
+  个新的grace period.开始下一个grace period(递加rcu_ctrlblk.cur)时前会清掉
+  rcu_ctrlblk.next_pending,
+- 到目前为止rcu_ctrlblk结构体里的cur,completed,next_pending成员都已经明白什么意思
+  了,rcu_data结构体里的quiescbatch,passed_quiesc,qs_pending,donelist,donetail也明白什么意思
+  了.
+- 因为rcu_qsctr_inc()会在schedule()和rcu_check_callbacks()里调用,而且rcu_check_callbacks()
+  又在定时器中断处理程序里调用，所以比较明了在哪里会去确定是否经过静止状态。
+- 在next_pending不为假时才会开始一个grace period.
+- 读者是可以嵌套的.也就是说rcu_read_lock()可以嵌套调用.
+- The Linux kernel offers a number of RCU implementations, the first such implementation
+  being called "Classic RCU". More material introducing RCU may be found in the
+  Documentation/RCU directory in any recent Linux source tree, or at Paul McKenney's RCU
+  page. Linux RCU的第一个实现
+- 将rcp->next_pending置为1.设置这个变量主要是防止多个写者竞争的情况
+- 如果CPU 1上有进程调用rcu_read_lock进入临界区,之后退出来,发生了进程切换,新进程又通过
+  rcu_read­_lock进入临界区.由于RCU软中断中只判断一次上下文切换,因此,在调用回调函数的时候,仍
+  然有进程处于RCU的读临界区,这样会不会有问题呢?只要使用被RCU保护数据的方法正确就不会有问题,引
+  用时要用rcu_dereference()函数,rcu_dereference()函数里定义了一个新的局部变量来对保护指针的
+  引用,所以一下进入临界区的时候就是最新的数据了如:
+  #+BEGIN_EXAMPLE
+  void foo_update_a(int new_a)//这个是更新数据
+  {
+  struct foo *new_fp;
+  struct foo *old_fp;
+  
+  new_fp = kmalloc(sizeof(*new_fp), GFP_KERNEL);
+  spin_lock(&foo_mutex);
+  old_fp = gbl_foo;
+  *new_fp = *old_fp;
+  new_fp->a = new_a;
+  rcu_assign_pointer(gbl_foo, new_fp);
+  spin_unlock(&foo_mutex);
+  synchronize_rcu();
+  kfree(old_fp);
+  }
+
+  int foo_get_a(void)//这个是引用数据,不能使用gbl_foo直接引用.
+  {
+  int retval;
+  
+  rcu_read_lock();
+  retval = rcu_dereference(gbl_foo)->a;
+  rcu_read_unlock();
+  return retval;
+  } 
+  #+END_EXAMPLE
+** static inline void init_MUTEX (struct semaphore *sem)
+*** include/asm-i386/semaphore.h:
+- 就是调用sema_init这个函数.
+** static inline void init_MUTEX_LOCKED (struct semaphore *sem)
+*** include/asm-i386/semaphore.h:
+- 就是调用sema_init这个函数.
+** static inline void sema_init (struct semaphore *sem, int val)
+*** include/asm-i386/semaphore.h:
+- 初始化struct semaphore里的三个成员,count为参为val,sleepers(ULK:Stores a flag that
+  indicates whether some processes are sleeping on the semaphore.)为0,wait(ULK:Stores the
+  address of a wait queue list that includes all sleeping processes that are currently
+  waiting for the resource.)用init_waitqueue_head初始化.
+** #define DECLARE_MUTEX(name) __DECLARE_SEMAPHORE_GENERIC(name,1)
+*** include/asm-i386/semaphore.h:
+- 编译时声明
+** static inline void up(struct semaphore * sem)
+*** include/asm-i386/semaphore.h:
+- 用汇编实现，两步：1.把计数器加1，2.计数器大于0就调用__up_wakeup().
+** ".globl __up_wakeup\n"
+*** arch/i386/kernel/semaphore.c:
+- 这个函数全用汇编实现，就连函数名也是。
+- 就是把__up()这个函数的参数压入栈后调用__up()，返回后再出栈。
+** static fastcall void __attribute_used__  __up(struct semaphore *sem)
+*** arch/i386/kernel/semaphore.c:
+- 直接调用调用wake_up()，所以可以看出信号量是用等待队列实现的，可以得出它的性能如何。
+** static fastcall void __attribute_used__ __sched __down(struct semaphore * sem)
+*** arch/i386/kernel/semaphore.c:
+- 这个函数与down()函数结合可以看出：如果进程A获取信号X后因为count为0而进入__down(),这时A成
+  为了第一个等待信号A的进程，后来进程B也因为获取信号X进入休眠，但有可能进程B先获得信号量。
+- 理解这个函数sem->count, sem->sleepers之间的关系的例子：当sleepers为1,count为-1时进入
+  down()之后会把count自减1为-2，接着进入__down(),接着在__down()里会把sleepers自加为2，经过
+  atomic_add_negative之后count就为-1，所以为-1并不表明只有一个进程在等待，接着又把sleepers
+  改为1，所以这也表明sleepers为1也不说明只有一个睡眠进程,如果这时有一个进程up了，那么count
+  会为0,这时因为sem->sleepers为1，所以atomic_add_negative()为假，接着把sem->sleepers改为0，
+  这时只有一个进程在等待了，且sem->count为0,当这个等待的进程被唤醒之所再进入
+  atomic_add_negative()时，因为sem->sleepers为0,sem->count为0所以atomic_add_negative()为真，
+  所以会继续等待，且sem->count为-1了,接着sem->sleepers改为了1,再次执行
+  atomic_add_negative()时还是为真。
