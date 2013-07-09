@@ -1239,3 +1239,31 @@
   atomic_add_negative()时，因为sem->sleepers为0,sem->count为0所以atomic_add_negative()为真，
   所以会继续等待，且sem->count为-1了,接着sem->sleepers改为了1,再次执行
   atomic_add_negative()时还是为真。
+- 其实信号量有使用等待队列里的锁来保护整个信号量结构体的访问。所以不会对struct semaphore有
+  竞争访问，若有竞争访访问，会在一个地方有问题：若进程A是第一个等待某个信号量的进程，进程A
+  在某一个时刻执行完atomic_add_negative之后在sem->sleepers=1之前可能被切换去出执行进程B，这
+  时B又要调用down()获取这个信号量,down()会在一开始把sem->count自减1，接着进入__down()，在执
+  行完sem->sleepers++之后被切换出去执行A，而这时sem->sleepers为2，但是恢复执行A之后会执行
+  sem->sleepers=1这一句，所以当B再次恢复执行时就是执行int sleepers = sem->sleepers,而
+  sem->sleepers已被改成了1而不是恢复执行前的2，所以在某个进程执行up()之前sem->count是-2，当
+  某个进程真的执行up()时，按理说应该会唤醒一个进程，但是因为sem->count原来为-2所以最终也没
+  有唤醒进程。所以必须有一个锁给以保护才可以,这个锁就是sem->wait->lock自旋锁了。
+** static inline int down_trylock(struct semaphore * sem)
+*** include/asm-i386/semaphore.h:
+- 这个函数在一开始把sem->count减-1,如果为负数就进入__down_failed_trylock宏，转而直接调
+  用__down_trylock()
+** static fastcall int __attribute_used__ __down_trylock(struct semaphore * sem)
+*** arch/i386/kernel/semaphore.c:
+- 在一开始把sleepers赋予了sem->sleepers+1，接着再用atomic_add_negative()把sleepers加到
+  sem->count里去。因为sleepers是从sem->sleepers加多了1，所以这个1把sem->count在
+  down_trylock()里减的1给抵消了。
+** static fastcall int __attribute_used__ __sched __down_interruptible(struct semaphore * sem)
+*** arch/i386/kernel/semaphore.c:
+- 这个函数与__down()类似，多了一个检查信号量的步骤（因为是interruptible的等待，可以被信号唤
+  醒），还有一个地方不一样就是设置进程状态为TASK_INTERRUPTIBLE.
+** static inline void init_rwsem(struct rw_semaphore *sem)
+*** lib/rwsem-spinlock.c:
+*** include/asm-i386/rwsem.h:
+- linux通用的struct rw_semaphore和i386里的struct rw_semaphore是不同的。
+- struct rw_semaphore里的wait_list是一个struct rwsem_waiter的链表，rwsem_waiter->flags表明
+  了rwsem_waiter->task是读的还是写的。
