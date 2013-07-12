@@ -989,10 +989,10 @@
 - 又把sequence自加。
 ** static inline int write_tryseqlock(seqlock_t *sl)
 *** include/linux/seqlock.h:
-- 用了spin_trylock()
+- 用了spin_trylock(),写是用锁的
 ** static inline unsigned read_seqbegin(const seqlock_t *sl)
 *** include/linux/seqlock.h:
-- 返回sequence
+- 返回sequence，读是不用锁的
 ** static inline int read_seqretry(const seqlock_t *sl, unsigned iv)
 *** include/linux/seqlock.h:
 - iv为奇数表示正在写，写的锁没有解，sl不等于iv表示已被修改过。这两种情况都要重新执行。
@@ -1267,3 +1267,140 @@
 - linux通用的struct rw_semaphore和i386里的struct rw_semaphore是不同的。
 - struct rw_semaphore里的wait_list是一个struct rwsem_waiter的链表，rwsem_waiter->flags表明
   了rwsem_waiter->task是读的还是写的。
+- rw_semaphore->count的定义有点复杂：ULK:(Stores two 16-bit counters. The counter in the
+  most significant word encodes in two's complement form the sum of the number of
+  nonwaiting writers (either 0 or 1) and the number of waiting kernel control paths. The
+  counter in the less significant word encodes the total number of nonwaiting readers and
+  writers.)
+** void fastcall __sched wait_for_completion(struct completion *x)
+*** kernel/sched.c:
+- ULK在complete一节一开始所举的例子是有会出现吗？up()是用汇编实现的，实现的时候是一开始就自
+  加了sem->count,转而进入__up_wakeup(),这个函数在最后调用__up(),转而调用__wake_up()用
+  sem->wait作为参数,在__wake_up()里先把sem->wait->lock给锁上之后就以非同步的方式调
+  用__wake_up_common()，一定要用非同步的方式，因为现在持有自旋锁，__wake_up_common()退出之
+  后就解sem->wait->lock锁，而ULK说的被抢占的情况只能发现在这个解锁之后，但解锁之后就是退
+  到__up()再直接退到__up_wakeup()再直接退到up(),所以就算在解锁之后被等待信号量的进程抢占了
+  之后把信号量结构体释放也不会有问题，因为在解锁之后不会再被调用。
+- 与信号量的区别就是：信号量的sem->wait->lock不会完全保护sem->count的访问，因为在up()和
+  down()的一开始在没有加锁的情况下就修改了sem->count,而wait_for_completion()和complete()是
+  在加了锁之后才会访问completion->done.
+- completion的等待都是用WQ_FLAG_EXCLUSIVE插入的，被插入的等待是放在队列尾的，是把进程的状态
+  改为TASK_UNINTERRUPTIBLE的
+- 如果在进入函数时发现done大于0时就不会进入休眠，这点与信号量是一样的。
+- 信号量和completion都是用等待队列来实现同步的。
+** unsigned long fastcall __sched wait_for_completion_timeout(struct completion *x, unsigned long timeout)
+*** kernel/sched.c:
+- 不同的是调用了schedule_timeout()而不是schedule(),在发现超时就会马上退出而不再获取。
+- schedule_timeout()是与schedule()一样来处理切换的吗？而不会管时间来调度，就是说不会因为时
+  间到了而调度某个进程，是在这某个进程被切回来执行之后而判断与所要求的切回时间有多大的差距。
+** int fastcall __sched wait_for_completion_interruptible(struct completion *x)
+*** kernel/sched.c:
+- 这个的区别就是把进程的状态改成TASK_INTERRUPTIBLE，在改成这个状态之前和
+  down_interruptible()一样也会检查是否还有未处理的信号。
+** #define local_irq_disable() 	__asm__ __volatile__("cli": : :"memory")
+*** include/asm-i386/system.h:
+- i386就是用一个指令把本地的中断给禁止了，
+** #define irqs_disabled()
+*** include/asm-i386/system.h:
+- 查看本地中断传递是否被禁止.ULK:yields the value one if the IF flag of the eflags
+  register is clear, the value one if the flag is set.
+** #define local_bh_disable()
+*** include/linux/interrupt.h:
+- 在preempt_count的软中断位置了加1，所以若要使能软中断就要使local_bh_disable()和
+  local_bh_enable()的调用次数匹配。这点与local_irq_save()和local_irq_restore()不一样。
+** #define time_after(a,b)
+*** include/linux/jiffies.h:
+- a的时间在b之后就为真。
+- http://decimal.blog.51cto.com/1484476/410673 若b是固定的，那么无论b从哪里开始，只要开始时
+  a等于b，且a是在递增的且递增的次数小于有符号整型的最大值，那么这个宏就是安全的，对于
+  HZ=100，数据长度是32位的，2147483647/100秒 = 0.69年 = 248.5天才会出现不正确的判断。
+- jiffies_64要溢出需要几百万年，这样就可以保存从开机到现在所经过的时间了。
+** static inline u64 get_jiffies_64(void)
+*** kernel/time.c:
+*** include/linux/jiffies.h:
+- 可以通过BITS_PER_LONG来判断。
+- 若BITS_PER_LONG不是64位的，那么就要用顺序锁来读取jiffies_64了.
+** struct timespec
+*** include/linux/time.h:
+- tv_sec成员是秒，从1970-7-1开始计算起。
+- tv_nsec是纳秒
+** void __init time_init(void)
+*** arch/i386/kernel/time.c:
+- 从cmos获取的值赋给了xtime.tv_sec
+- xtime.tv_nsec设了一个特殊的值以在5min之后就会溢出。
+- 设置单调时间，但是看不懂这个设置什么含义.
+- 选择时间对象.
+- 设置时间中断处理函数。
+** irqreturn_t timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)
+*** arch/i386/kernel/time.c:
+- 这个是时钟中断函数，注意它那执行了哪些函数。
+- mark_offset()这个函数主要就是更新jiffies_64并记录相对应的
+- ULK:a few timer interrupts can be lost, for instance when interrupts remain disabled for
+  a long period of time; in other words, the kernel does not necessarily update the xtime
+  variable at every tick. However, no tick is definitively lost, and in the long run,
+  xtime stores the correct system time. The check for lost timer interrupts is done in the
+  mark_offset method of cur_timer; 禁止中断会把产生的中断丢失，原来mark_offset真的是来防止
+  时间中断丢失。这里有关如何使用tsc来防止中断丢失：http://book.51cto.com/art/200810/93782.htm
+- 好像只有在调用这个函数的时候才会增加jiffies_64啊且在增加jiffies_64之后很快就会在下面所调
+  用的update_times()函数里把wall_jiffies给补上，若是这样就只有在timer_interrupt()函数里才会
+  出现jiffies_64比wall_jiffies大的情况，但是为什么在do_gettimeofday()会用jiffies减
+  wall_jiffies呢？
+- 接着调用do_timer_interrupt().
+- 时钟中断：由系统定时硬件以周期性的间隔产生,hz：上述间隔由hz的值设定，hz是一个与体系结构相关的常数
+- 全局变量xtime所维持的当前时间通常是供用户来检索和设置的，而其他内核模块通常很少使用它（其
+  他内核模块用得最多的是jiffies），因此对xtime的更新并不是一项紧迫的任务，所以这一工作通常
+  被延迟到时钟中断的底半部（bottom half）中来进行。由于bottom half的执行时间带有不确定性，
+  因此为了记住内核上一次更新xtime是什么时候，Linux内核定义了一个类似于jiffies的全局变量
+  wall_jiffies，来保存内核上一次更新xtime时的jiffies值。好像更新xtime不是在底半部做的，因为
+  更新xtime.tv_nsec是在update_wall_time_one_tick()做的,而是在update_wall_time()被调用，
+  update_wall_time_one_tick()更新xtime.tv_nsec，update_wall_time()更新xtime.tv_sec。
+** static inline void do_timer_interrupt(int irq, void *dev_id, struct pt_regs *regs)
+*** arch/i386/kernel/time.c:
+- 只是调用了do_timer_interrupt_hook()
+** static inline void do_timer_interrupt_hook(struct pt_regs *regs)
+*** include/asm-i386/mach-default/do_timer.h:
+- 连续调用了do_timer(),profile_tick(),update_process_times()
+** void do_timer(struct pt_regs *regs)
+*** kernel/timer.c:
+- 为什么这里又要递增jiffies_64呢？不是已经在mark_offset里加了吗？好像mark_offset里的增加。
+  这两个地方增加是不一样的，在mark_offset()里加的丢失的时钟中断的时间，而在这里加的是定时到
+  来的时间。是jiffies_64是在中断丢失的情况下增加的。
+- 调用了update_times
+** static inline void update_times(void)
+*** kernel/timer.c:
+- 调用了update_wall_time()
+- jiffies和wall_jiffies是什么关系呢？只有在这个函数wall_jiffies被修改，把它与jiffies的差值加到wall_jiffies,
+** static void update_wall_time(unsigned long ticks)
+*** kernel/timer.c:
+- 调用ticks次update_wall_time_one_tick().和second_overflow()
+** static void update_wall_time_one_tick(void)
+*** kernel/timer.c:
+- 这个函数主要是用来更新xtime中的tv_nsec成员的。
+- 这个函数的实现考虑到了NTP和adjtimex()系统调用。
+- time_adjust是指要调整的时间，单位是微秒的（scale us）,它会在do_settimeofday()和
+  do_adjtimex()被修改成0，在这个函数里会被修改成time_next_adjust,而time_next_adjust会在
+  do_adjtimex()里被修改,所以do_timeadjx()调用之后不会马上改变时间，只是在时钟中断处理函数执
+  行时才会改变,因为time_adjust_step是微秒的,所以要乘1000,又因为是在中断定时器时调用了这个函
+  数所以要加上tick_nsec.
+- 从代码来看就是把xtime.tv_nsec加上（减去）time_phase上的高几位。time_phase和time_adj是与
+  second_overflow()有关的
+** static void second_overflow(void)
+*** kernel/timer.c:
+- 用来处理微秒数成员溢出的情况。
+- 为什么second_overflow()要在xtime.tv_sec增加之后才调用呢?
+
+
+- 在极端的条件下，同时会有多个 TV 需要进行 cascade 处理，会产生很大的时延。这也是为什么说
+  timeout 类型的定时器是 timer wheel 的主要应用环境，或者说 timer wheel 是为 timeout 类型的
+  定时器优化的。因为 timeout 类型的定时器的应用场景多是错误条件的检测，这类错误发生的机率很
+  小，通常不到超时就被删除了，因此不会产生 cascade 的开销。另一方面，由于 timer wheel 是建
+  立在 HZ 的基础上的，因此其计时精度无法进一步提高。毕竟一味的通过提高 HZ 值来提高计时精度
+  并无意义，结果只能是产生大量的定时中断，增加额外的系统开销。因此，有必要将高精度的 timer
+  与低精度的 timer 分开，这样既可以确保低精度的 timeout 类型的定时器应用，也便于高精度的
+  timer 类型定时器的应用。还有一个重要的因素是 timer wheel 的实现与 jiffies 的耦合性太强，
+  非常不便于扩展。因此，自从 2.6.16 开始，一个新的 timer 子系统 hrtimer 被加入到内核中。
+- 内核使用全局变量 xtime 来记录这一信息，这就是通常所说的“Wall Time”或者“Real Time”。与
+  此对应的是“System Time”。System Time 是一个单调递增的时间，每次系统启动时从 0 开始计时。
+- 每个CPU都必须定义两个时钟源：REAL和MONOTONIC。REAL代表实时时钟，MONOTONIC代表单调递增时钟。
+  两者的区别在于，当用户更改计算机时间时，REAL时钟会收到影响，但MONOTONIC不受影响。
+- wall_to_monotonic 没有被EXPORT_SYMBOL,xtime被EXPORT_SYMBOL

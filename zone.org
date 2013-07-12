@@ -6514,3 +6514,46 @@ xsel -f可以将被选中的数据放到剪切板
 
 Linux里是不用看门狗的，为什么呢？因为这个有异常处理，当跑飞时，会因为执行一条非法指令或跳到
 内核地方而引起kernel panic而死掉。
+
+==============================[2013-07-10 三]==============================
+
+#if HZ >= 12 && HZ < 24
+# define SHIFT_HZ	4
+#elif HZ >= 24 && HZ < 48
+# define SHIFT_HZ	5
+#elif HZ >= 48 && HZ < 96
+# define SHIFT_HZ	6
+#elif HZ >= 96 && HZ < 192
+# define SHIFT_HZ	7
+#elif HZ >= 192 && HZ < 384
+# define SHIFT_HZ	8
+#elif HZ >= 384 && HZ < 768
+# define SHIFT_HZ	9
+#elif HZ >= 768 && HZ < 1536
+# define SHIFT_HZ	10
+#else
+# error You lose.
+#endif
+可以使用在井号后加一个空格达到宏定义的缩进。
+还有#error是这样使用的。
+
+
+使用do{ } while(0)的好处
+http://blog.csdn.net/jk110333/article/details/8562078#comments
+
+==============================[2013-07-11 四]==============================
+
+		int a = 1,b = -2, c;
+		c = a - b;
+		printf("a - b = %d\n", c);
+结果是3
+
+减一个数就是这个数的取反再加1.
+
+关于linux的time_after()之类的讲解。
+http://decimal.blog.51cto.com/1484476/410673
+
+==============================[2013-07-12 五]==============================
+
+原来拇指可以往回拉左CTRL来按下，这样左拇指会舒服一点。往回拉的时候左手不要再按其它的键，不
+然实现不了按下，所以要左右CTRL一起开工。
