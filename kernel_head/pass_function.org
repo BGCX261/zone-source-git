@@ -1369,10 +1369,14 @@
 ** static inline void update_times(void)
 *** kernel/timer.c:
 - 调用了update_wall_time()
-- jiffies和wall_jiffies是什么关系呢？只有在这个函数wall_jiffies被修改，把它与jiffies的差值加到wall_jiffies,
+- jiffies和wall_jiffies是什么关系呢？只有在这个函数wall_jiffies被修改，把它与jiffies的差值
+  加到wall_jiffies,
+- 调用calc_load()来更新均衡负载,所以更新均衡负载每个时钟周期都计算的.不是这样的要进入
+  calc_load函数才知道,里面有一个循环定时器,经过了LOAD_FREQ个tick之后才会计算更新均衡负载.
 ** static void update_wall_time(unsigned long ticks)
 *** kernel/timer.c:
 - 调用ticks次update_wall_time_one_tick().和second_overflow()
+- 为什么second_overflow()要在xtime.tv_sec增加之后才调用呢?
 ** static void update_wall_time_one_tick(void)
 *** kernel/timer.c:
 - 这个函数主要是用来更新xtime中的tv_nsec成员的。
@@ -1387,9 +1391,111 @@
 ** static void second_overflow(void)
 *** kernel/timer.c:
 - 用来处理微秒数成员溢出的情况。
-- 为什么second_overflow()要在xtime.tv_sec增加之后才调用呢?
-
-
+** void update_process_times(int user_tick)
+*** kernel/timer.c:
+- 从do_timer_interrupt_hook()可以看出在多处理器的情况下才会调用这个函数.
+- 在do_timer_interrupt_hook()调用这个函数时的参数使用了user_mode(reg)来判断reg是在用户还是
+  在内核态以得出当前这个tick是在用户还是在内核态下发生的.但是这样的计算方法有点粗糙,因为在
+  一个tick内一个用户进程可以先在用户态然后进程调用系统调用以进入内核态,接着完成系统调用并返
+  回用户态执行.
+- ULK:cutime and cstime are provided in the process descriptor to count the number of CPU
+  ticks spent by the process children in User Mode and Kernel Mode, respectively.For
+  reasons of efficiency, these fields are not updated by update_process_times( ) , but
+  rather when the parent process queries the state of one of its children (see the section
+  "Destroying Processes" in Chapter 3).
+- cputime_add()这个宏只是将两个参数相加.
+- 在这里调用rcu_check_callbacks()来更新rcu.
+** void run_local_timers(void)
+*** kernel/timer.c:
+- 在update_process_times()里被调用来唤醒定时器中断处理的底半部软中断。
+** void account_user_time(struct task_struct *p, cputime_t cputime)
+*** kernel/sched.c:
+- 认识一下struct cpu_usage_stat的成员：user:从系统启动开始累计到当前时刻，用户态的CPU时间，
+ 不包含 nice值为负进程。nice: 从系统启动开始累计到当前时刻，nice值为负的进程所占用的CPU时间。
+ system: 从系统启动开始累计到当前时刻，核心时间.idle :从系统启动开始累计到当前时刻，除IO等
+ 待时间以外其它等待时间.  iowait 从系统启动开始累计到当前时刻，IO等待时间.irq:从系统启动开
+ 始累计到当前时刻，硬中断时间.softirq: 从系统启动开始累计到当前时刻，软中断时间./proc/stat
+ 文件里的第一行会显示这些信息。
+- 在这里cputime一定加到进程描述符的utime里，进程的nice大于0时会把cputime加到cpustat->nice里
+  否则加到cpustat->user里，可见utime的时间等于cpustat->nice加cpustat->user.为什么要这样做呢？
+** void account_system_time(struct task_struct *p, int hardirq_offset, cputime_t cputime)
+*** kernel/sched.c:
+- 除了在account_user_time()里更新的cpustat成员，其它的成员在这个函数里更新。
+- stime与cpustat里的成员是无关的。hardirq_count() - hardirq_offset的结果会不会忽略掉一个硬
+  中断呢？
+- stime等于cpustat->irq,cpustat->softirq,cpustat->system,cpustat->iowait,cpustat->idle之和。
+  hardirq是优先级最高的，其次是softirq,在进程是idle的时候要分情况，不是idle进程就一定加计到
+  cpustat->idle上，即使现在执行的是idle进程，但若有进程在等待io(runqueue->nr_iowait)，那就
+  加计到cpustat->iowait而不是cpustat->idle。
+** #define jiffies_to_cputime(__hz)
+*** include/asm-generic/cputime.h:
+- 用于将一个时钟中断转换为处理器时间
+** static inline void init_timer(struct timer_list * timer)
+*** include/linux/timer.h:
+- 清base,设magic,初始化lock
+- ULK:Indeed, a sleeping process may be woken up before the time-out is over; in this
+  case, the process may choose to destroy the timer.
+- ULK:Invoking del_timer( ) on a timer already removed from a list does no harm, so
+  removing the timer within the timer function is considered a good practice.在定时器函数里
+  用del_timer()来删除自身。
+** int del_timer(struct timer_list *timer)
+*** kernel/timer.c:
+- ULK:del_timer()和del_timer_sync()之间的区别主要是后者用于多处理器中，以防止某个CPU在使用某个
+  定时器结构时另一个CPU在调用del_timer()来删除它，而del_timer_sync()会等待。
+- ULK:因为del_timer_sync()要考虑定时器自注册的可能所以慢又复杂，如果可以确定被删除的定时器
+  没有自注册，那么就可以用del_singleshort_timer_sync().
+- 因为每个CPU都有一个tvec_base_t的结构体，所以timer在哪个CPU插入就在哪个CPU执行。那如果被
+  mod_timer()了呢？
+- TVR应该是timer vector root的缩写,对应的是TVN。
+- tv1 - 2的8次方-1的ticks, tv2 - 2的8+6次方-1ticks, tv3 - 2的8+6+6次方-1ticks, tv4 - 2的
+  8+6+6+6次方-1ticks.
+- 这些定时器是用软中断执行的,若软中断被禁止的时间长了也可能导致定时器的执行时间不精确。
+- tv1,tv2等这些成员的类型是list_head的数组，所以这个数组的每一个成员就是一个特定的tick的定
+  时器。但为什么还要分tv1,tv2,tv3这几组呢？
+** static void run_timer_softirq(struct softirq_action *h)
+*** kernel/timer.c:
+- run_timer_softirq()这个函数是与TIMER_SOFTIRQ的执行函数.
+- 这个函数里判断base->timer_jiffies小于jiffies就马上调用__run_timers().
+** static inline void __run_timers(tvec_base_t *base)
+*** kernel/timer.c:
+- timer_jiffies开始是初始化为jiffies,接着就会在__run_timers()一直自加,因为timer_jiffies只是
+  用来确定与jiffies的差值,所以不用管是否溢出,time_after_eq()这些函数会解决.
+- 关于定时器这种级联设计是如何工作的:因为timer_jiffies是递增的,假设一开始是0,在大于255之前
+  所有在tv1里的定时器被会被查一次即使没有定时器放在相应的数组中,当timer_jiffies的低8位因为
+  溢出而全又变为0的时候,而第9位变为了1,这一位就是tv2的最低位,在这种情况下会调用cascade()把
+  tv2里的所有定时器按照各自相应的定时时间放到tv1的255个元素里,放到第9位的定时器都有可能是
+  255个里的任意一个,这时__run_timers()又可以在tv1找定时器来运行了,再等到tv1里的定时器又运行
+  完之后,且因为timer_jiffies的第9位已为1,那么再进1就使得第10位为1而所有的位都为0了,所以又到
+  了调用cascade()的时候了,就这样以此类推.用这种算法也不用担心在任何时候在任何地方插入定时器
+  都不会有问题,因为这不是先进先出又不是先进后出.
+- 如果要把一个新的定时器插入,是不是被插的地方要这样计算呢:用当前CPU的timer_jiffies提出从新
+  定时器设定的expires为1的最高一位开始的所有低位值加上新的定时器设定的expires值就是被插入的
+- 应该不是每个HZ的时间就执行一次__run_timer(),就是时钟中断是可能丢失的,而__run_timer()是在
+  时钟中断产生后才会有一次执行的机会.jiffies可能会一次时钟中断加多个数而timer_jiffies是自加
+  的.这样的话会使得所有的定时器的执行都延时.而且很多时候都是禁止中断的.
+- 进入这个函数一般就只会把tv1里的某一个下标的所有定时器执行完,但如果执行的过程中又产生了时
+  钟中断那么就再执行一次.
+- 从这个函数可以看出是如何解决jiffies一次加上大于1的值的,因为这个函数里有一个while循环比较
+  jiffies与timer_jiffies而且在while里会一直自加timer_jiffies,所以到最后timer_jiffies还是会
+  追上jiffies的且也会把因jiffies跳增而遗下的定时器处理完.
+** static void internal_add_timer(tvec_base_t *base, struct timer_list *timer)
+*** kernel/timer.c:
+- 这个函数就是根据定时器的expires和当前的timer_jiffies来确定把指定的定时器插入到相应的tv的
+  下标里.
+- 创建新的定时器时是用jiffies和需要延时的时间来计算expires的,但是在这个函数里的idx的计算却
+  是expires减去timer_jiffies,是不是有点不对呢?因为timer_jiffies会丢失一些是钟.
+- 得出的idx就是其实只是一个时间差,而不是下标,通过这个值判断是哪个区间以确定是在
+  tv1/tv2/tv3/tv4/tv5,确定这个之后再用expries(不是idx)来确定放到哪个下标去.
+- 定时器插入是FIFO形式的.
+- 从这个函数可以看出tv1的组织方式是和tv2/tv3/tv4/tv5很不一样的,tv1里的任何一个元素都对应着
+  一个特定的时间到期的定时器,而其它的tv的一个元素指定的是一个范围时间到期的定时器,如tv2的第
+  2个元素所存放的定时器应该是在2的10次方减去2的9次方时间段内到期的定时器.
+** static int cascade(tvec_base_t *base, tvec_t *tv, int index)
+*** kernel/timer.c:
+- 这个函数的主要功能就是把tv里的下标为index的所有链表结点传给internal_add_timer()来放到相应的位置.
+** static void __devinit init_timers_cpu(int cpu)
+*** kernel/timer.c:
+- timer_jiffies在这里被初始化为jiffies.
 - 在极端的条件下，同时会有多个 TV 需要进行 cascade 处理，会产生很大的时延。这也是为什么说
   timeout 类型的定时器是 timer wheel 的主要应用环境，或者说 timer wheel 是为 timeout 类型的
   定时器优化的。因为 timeout 类型的定时器的应用场景多是错误条件的检测，这类错误发生的机率很
@@ -1404,3 +1510,125 @@
 - 每个CPU都必须定义两个时钟源：REAL和MONOTONIC。REAL代表实时时钟，MONOTONIC代表单调递增时钟。
   两者的区别在于，当用户更改计算机时间时，REAL时钟会收到影响，但MONOTONIC不受影响。
 - wall_to_monotonic 没有被EXPORT_SYMBOL,xtime被EXPORT_SYMBOL
+** asmlinkage long sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
+*** kernel/timer.c:
+- ULK:To be on the safe side, sys_nanosleep( ) adds one tick to the value computed by
+  timespec_to_jiffies( ).加上一个tick来作补尝.
+- 用TASK_INTERRUPTIBLE休眠,用schedule_timeout()
+- 如果没有到时就被退出的话,那么就用当前进程的thread_info->restart_block来重新启动,这个的启
+  去原理是什么呢?
+- ULK:sys_nanosleep( ) system call. If the value returned by schedule_timeout( ) specifies
+  that the process time-out is expired (value zero),the system call terminates. Otherwise,
+  the system call is automatically restarted. 所以要想系统调用自动重启就把它放到
+  restart_block里。
+** fastcall signed long __sched schedule_timeout(signed long timeout)
+*** kernel/timer.c:
+- 原来是用定时器来实现进程切换的,定时器函数是调用wake_up_process()实现把进程切回来的,这样的
+  切回时间会不会不准确呢?
+- 可以指定唤醒某个进程但是不能指定切换到某个进程。
+** #define udelay(n)
+- the built-in function __builtin_constant_p to determine if a value is known to be
+  constant at compile-time and hence that GCC can perform constant-folding on expressions
+  involving that value.
+- i386和arm的实现很不一样，因为i386是有时钟对象一说的，而arm没有。
+** void do_gettimeofday(struct timeval *tv)
+*** arch/i386/kernel/time.c:
+- 这个也有在kernel/time.c里实现，这时是使用time_interpolotor的，但一般的架构都有自已的实现。
+- 因为用到了cur_timer->get_offset()，所以精度比jiffies高。
+- 这个函数主要做的处理是usec的，对于usec除了从xtime.tv_nsec获取之外还要考虑比jiffies更高精
+  度的cur_timer,要考虑NTP的调整；sec就只是从xtime里获取。
+- 因为jiffies/wall_jiffies -> lost -> xtime.tv_nsec,所以wall_jiffies的时间与xtime同步的而不
+  是jiffies.在update_times()可以看出xtime与wall_jiffies.
+** int do_setitimer(int which, struct itimerval *value, struct itimerval *ovalue)
+*** kernel/itimer.c:
+- ULK:interval timers The timerscause Unix signals (see Chapter 11) to be sent
+  periodically to the process. It is also possible to activate an interval timer so that
+  it sends just one signal after a specified delay.
+- setitimer()的时间精度比alarm()和signal()的高。
+- 不知道ovalue什么用。保存旧的timer值？
+- setitimer()不是C的标准库，只是Linux的API。
+- ITIMER_REAL的which收到SIGALRM,如果task_struct->signal->real_timer定时器已在等待，那么就要
+  把它删除重新插入一个新的。ovalue不为0时，会把上一次的task_struct->signal->it_real_incr和
+  task_struct->signal->it_real_value保存在ovalue里.
+- ITIMER_VIRTUAL是用户态下的时间，收到
+- task_struct->signal->real_timer这个timer_list结构体变量原来是给setitimer()和getitimer()使
+  用的
+** static unsigned long it_real_value(struct signal_struct *sig)
+*** kernel/itimer.c:
+- timer_pending()这个方法是通过timer_list->base是否为空来判断。
+- 因为timer_list->expires是一个绝对时间，所以要减去jiffies。如果差值不为正就要为1，这是为什
+  么呢？只有定时器pending的时候才会返回0。
+** static inline void it_real_arm(struct task_struct *p, unsigned long interval)
+*** include/linux/time.h:
+- 这个函数的主要功能就是把task_struct->signal->real_time定时器装上。
+- 把interval赋给task_struct->signal->it_real_value有什么用呢？但是interval经过调整之后才把
+  它赋给signal->real_timer.expries,这个expires还要加1为了防止interval过小
+** void it_real_fn(unsigned long __data)
+*** kernel/itimer.c:
+- 这个函数就只是在copy_singal()里赋给signal->real_timer.function的，因为这个函数调用
+  it_real_arm(),且ti_real_arm()在interval不为0的时候又会把real_timer定时器装上，所以如果
+  interval不为0就会一直按照interval间隔的时间产生信号.
+** asmlinkage unsigned long sys_alarm(unsigned int seconds)
+*** kernel/timer.c:
+- 因为sys_alarm()是以ITIMER_REAL的方式调用do_setitimer()的,所以alarm()和setitimer()不能一起
+  用.
+** void scheduler_tick(void)
+*** kernel/sched.c:
+- 这个函数是在中断处理程序中调用的,所以这个函数内部是不会调用schedule()的.
+- 一定要在调用update_cpu_clock()之后才更新rq->timestamp_last_tick,因为update_cpu_clock()里
+  用到了rq->timestamp_last_tick.
+- 若rq没有进程可执行了（正在执行idle），那么就要rebalance_tick()来移进程。rebalance之后就不
+  执行后面的内容了。
+- 在产生时钟中断的时候，有可能进程已不在rq->active里了,但是不是说这时TIF_NEED_RESCHED一定是
+  没有设置的吗？什么情况下会出现进程正在运行而进程又不在rq->active里且TIF_NEED_RESCHED也没
+  有设置。首先出现进程正在运行而进程又不在rq->active里就不知道怎么解释了,有一种情况就是进程
+  A把自已从active里移出，在调用set_tsk_need_resched()的时候产生了时钟中断，这时就会出现这种
+  情况，出不出现这种情况就要看会在哪里有把进程从active里移出,移出进程主要是调用
+  dequeue_task(),dequeue_task()被
+  deactivate_task(),pull_task(),scheduler_tick()schedule(),set_user_nice(),sys_sched_yield()
+  调用，deactivate_task()又被
+  schedule(),sched_setscheduler(),__migrate_task(),migration_call(),normalize_rt_tasks()调
+  用,pull_task()被move_tasks()调用。
+- 若current是一个实时的SCHED_RR进程就会算算时间片再判断是否调度，而SCHED_FIFO就不管时间片继续执行。
+- 好像只有在这个函数里才会把first_time_slice设为0
+- 在进程时间片用完的时候且expired_timestamp(Insertion time of the eldest process in the
+  expired lists)为0就把expired_timestamp设为jiffies,expired_timestamp在nr_active为0时会设为
+  0，也会在nr_running为0时设为0.但是为什么要在expired_timestamp为0时(就是还没有进程插入
+  rq->expired)且在产生时钟中断时把expired_timestamp设为jiffies呢?这里还有一个前提条件就是进
+  程的时间片已消耗完,但是消耗完了并一定会把它移到rq->expired里去的,但是在expired_timestamp
+  为0时也要设置,不为0就不用,为什么要这样子呢?
+- !TASK_INTERACTIVE(p) || EXPIRED_STARVING(rq) 的意思是若进程不是一个交互进程就插入
+  rq->expired,若进程是一个交互进程但过时进程已经很久没有执行了也把进程插入rq->expired,否则
+  就插入rq->active.
+- 调用这个函数就一定会调用rebalance_tick(),有NOT_IDLE和SCHED_IDLE区别。
+- 若进程的时间片还没有完，那么就要看看这个进程的时间片是否超过了允许的时间，若是就要把它分
+  小片，分小片的方法就是把进程又重新插入到rq->active的尾部并设置需要调度，而不是减小它的时
+  间片，这样的结果就是让rq->active的其它进程有运行的机会而不会使rq->expired的进程有积极或消
+  极的影响。
+** unsigned long long sched_clock(void)
+*** arch/i386/kernel/timers/timer_tsc.c:
+- 这个函数返回的时钟精度至少不比jiffies差.
+** static inline void update_cpu_clock(task_t *p, runqueue_t *rq, unsigned long long now)
+*** kernel/sched.c:
+- 用现在的时间减去p->timestamp和rq->timestamp_last_tick的最大值累加到p->sched_time.
+- p->timestamp和rq->timestamp_last_tick那是绝对的时间.
+- p->timestamp的注释是:Time of last insertion of the process in the runqueue, or time of
+  last process switch involving the process.p->timestamp是有可能大于
+  rq->timestamp_last_tick的,因为进程切换不是在时钟中断里进程切换的,且
+  rq->timestamp_last_tick只有在时钟中断里被调用的scheduler_tick()里更新为sched_clock()。
+- 如果某个进程访问自已timestamp时就一定是切到这个进程执行时的时间,不会是Time of last
+  insertion of the process in the runqueue。
+- 这个函数在只在scheduler_tick()和schedule()里调用，schedule()里调用时是作用于被切换的进程,所
+  以不管某个进程执行的过程中是否有产生过时钟中断都可以正确地把进程的执行时间计到
+  p->sched_time里。p->sched_time这个时间不是与当前时间同步的。p->sched_time表示的是进程一共
+  执行了多长的时间。而signal->sched_time表示的是已死去的线程组中线程的执行时间。
+** static inline int wake_priority_sleeper(runqueue_t *rq)
+*** kernel/sched.c:
+- 这个函数只被scheduler_tick()在current是idle的时候调用
+- 支持超线程的时候若发现rq->nr_running还有进程调进程调度，为什么要在支持超线程的时候才判断
+  rq->nr_running呢？若不支持超线程这个函数就是没有任何作用的。
+- 若正在执行idle就说明了rq没有可运行的进程了，但当前CPU可能还有正在休眠的进程，放到rq里的进
+  程不包括在休眠的进程。
+** static int try_to_wake_up(task_t * p, unsigned int state, int sync)
+*** kernel/sched.c:
+- p->state的状态要包含在state里才会往下执行。
