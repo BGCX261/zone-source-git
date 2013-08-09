@@ -563,6 +563,9 @@
 - 用来修改父进程的时间片和平均睡眠时间.注意父进程是parent而不是real_parent
 - 有注释:Potentially available exiting-child timeslices are retrieved here - this way the
   parent does not get penalized for creating too many threads.
+- 若进程还没有执行完一次，那么把退出的进程的时间片加回到父进程，以防父进程因创建太多的子进
+  程后马上退出而使得父进程的时间减少。
+- 若进程的平均睡眠时间比父进程的平均睡眠小那么就更新父进程平均睡眠时间
 ** void disable_irq(unsigned int irq)
 *** kernel/irq/manage.c:
 - 这个函数要同步的，看是否正在执行这个中断函数。所以进入中断函数之后不能禁止本中断，这可能是
@@ -1976,3 +1979,734 @@
 ** void set_user_nice(task_t *p, long nice)
 *** kernel/sched.c:
 - 要加上运行队列的锁，因为进程可能正在另一个CPU调度中被调度。
+- 如果是一个实时进程，那么就调用PRIO_TO_NICE来修改它的优先级,因为NICE_TO_PRIO是这样定义
+  的#define NICE_TO_PRIO(nice) (MAX_RT_PRIO + (nice) + 20)，所以调用之后原来是实时的进程就
+  不再是实时进程了。但是有这样的注释：but as expected it wont have any effect on
+  scheduling until the task is not SCHED_NORMAL.
+- 因为会修改进程优先级，所以要先把进程从运行队列里删除，修改完之后再插入到合适的优先级。
+- 其实nice值是可以通过静态优先级来换算的，所以进程描述符里没有类似nice这样的成员。修改nice
+  值就是修改进程的静态优先级。
+- 通过nice值修改进程的动态优先级和静态优先级的时是不同的，但是从代码的结果看修改的结果是一
+  样的啊，为什么要多此一举呢？修改后动态优先级和静态优先级是一样的。
+- nice()系统调用是修改当前进程的.但这个函数是可以指定不同的进程的.所以在sys_nice()系统调用
+  里调用的set_user_nice()是以current作为参数调用的.
+- 如果被修改的进程的动态优先级被改小了,那么就要把被修改进程所在的运行队列正在运行的的进程调
+  度一下而不管被修改的进秵的动态优先级是否比当前执行的进程的优先级高.或如果动态优先级被改大
+  了同时被修改的完程正在执行那么也对自已进行调度.
+** #define rt_task(p)		(unlikely((p)->prio < MAX_RT_PRIO))
+*** include/linux/sched.h:
+- 通过优先级来判断就可以了，就是那么简单。
+** asmlinkage long sys_getpriority(int which, int who)
+*** kernel/sys.c:
+- PRIO_PROCESS:Selects the processes according to their process ID,找出指定进程的nice,范围
+  是40-1.
+- PRIO_PGRP:Selects the processes according to their group ID,找出指定进程所在的进程组的
+  nice值最大的进程.
+- PRIO_USER:Selects the processes according to their user ID,因为用户的进程没有用链表链起
+  来,所以要遍整个进程链表才可以找出所有的进程.
+** asmlinkage long sys_setpriority(int which, int who, int niceval)
+*** kernel/sys.c:
+- 结构上与sys_getproirity()类似,只是不是比较而是调用了set_one_prio()修改nice.
+** static int set_one_prio(struct task_struct *p, int niceval, int error)
+*** kernel/sys.c:
+- 若进程的用户id(uid)不等于当前进程的有效用户id(euid)且进程的有效用户id(euid)不等于当前进程
+  的有效用户id(euid),那就不允许修改除非是超级用户.
+- 最后还是与sys_nice()一样调用set_user_nice()来修改进程的nice.
+** asmlinkage long sys_sched_getaffinity(pid_t pid, unsigned int len, unsigned long __user *user_mask_ptr)
+*** kernel/sched.c:
+- 主要是调用了sched_getaffinity()
+** long sched_getaffinity(pid_t pid, cpumask_t *mask)
+*** kernel/sched.c:
+- 找出进程pid可以被调度到的CPU的掩码,就是task->cpus_allowed.
+** asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len, unsigned long __user *user_mask_ptr)
+*** kernel/sched.c:
+- 就是调用sched_setaffinity()
+** long sched_setaffinity(pid_t pid, cpumask_t new_mask)
+*** kernel/sched.c:
+- 主要是调用cpuset_cpus_allowed()找出允许执行该进程的CPU，再用参数掩码相与,最后的结果给
+  set_cpus_allowed()
+** int set_cpus_allowed(task_t *p, cpumask_t new_mask)
+*** kernel/sched.c:
+- 新的掩码不在cpu_online_map里的话就返回。
+** asmlinkage long sys_sched_getscheduler(pid_t pid)
+*** kernel/sched.c:
+- 就只是返回task->policy.
+- SCHED_FIFO, SCHED_RR , or SCHED_NORMAL (the latter is also called SCHED_OTHER)
+** asmlinkage long sys_sched_getparam(pid_t pid, struct sched_param __user *param)
+*** kernel/sched.c:
+- 获取的是实时进程的优先级，就是task->rt_priority,把task->rt_priority放到参数的
+  param->sched_priority.
+** 
+- ULK:Child process stopped or terminated, or got signal if traced.所以在停止或终于或被跟踪
+  时收到。
+- 常规信号与中断一样是不会排队的，但是POSIX的实时信号是会排队的。
+- 信号在处理时是不可以被其它的信号中断的
+- 从用户态切到内核态时会检查是否有信号在挂起
+- ULK:If a process receives a signal while it is being traced, the kernel stops the
+  process and notifies the tracing process by sending a SIGCHLD signal to it. The tracing
+  process may, in turn, resume execution of the traced process by means of a SIGCONT
+  signal.被跟踪的进程收到信号时将会停止进程接着会发SIGCHLD给跟踪进程，若要恢复被跟踪进程的
+  执行，那么跟踪进程就要发SIGCONT给被跟踪进程。
+- 进程描述符的ptrace的PT_PTRACED为0就说明进程没有被跟踪。
+- 信号的阻塞和怱略是不一样的，ULK:A signal is not delivered as long as it is blocked; it
+  is delivered only after it has been unblocked. An ignored signal is always delivered,
+  and there is no further action.原来怱略的信号总是被递送的。
+- 多线程间，信号的处理函数要共享，但有各自的挂起和阻塞掩码，调用kill()和sigqueue()时，按
+  POSIX的要求要把信号发给线程组里所有的进程；发给一个线程的信号可以任意选择一个线程,但若信
+  号是致命的那么要杀死线程组中所有的线程。
+- 信号的处理函数结构体只在进程描述符里，没有在signal_sturct里，因为多线程里信号处理函数是可
+  以共享的，线程的进程描述符的信号处理函数指针指向领头线程的就可以了。
+- 关于进程描述符的notifier的说明是:Pointer to a function used by a device driver to block
+  some signals of the process.
+- 进程描述符的real_blocked的解释是Temporary mask of blocked signals (used by the
+  rt_sigtimedwait( ) system call)。
+- 几个信号相关的结构体之间的关系：进程描述符struct task_struct(1)包含struct
+  sigpending(2),struct signal_struct(3),struct sighand_struct(4);struct sigpending(2)不包含
+  struct sigqueue(5)但是它的list成员是链到struct sigqueue的;struct signal_struct(3)包含
+  struct sigpending(2);struct sighand_struct(4)包含struct k_sigaction(6),struct
+  sigqueue(5)包含struct siginfo_t结构体
+- 一个信号处理时可以指定是否mask该信号，在k_sigaction的sa_flags域的SA_NODEFER, SA_NOMASK标
+  志。但同样是k_sigaction还一个类似的成员sa_mask指定当运行信号处理程序时被mask的信号。
+- pending的信号是用struct sigpending链起来的.
+- struct sigpending里的signal成员是sigset_t类型的，只是一个挂起信号的掩码，具体的挂起信号的
+  信息还要通过struct sigpending里的list成员链起来的sigqueue的si_signo来标识具体是那个信号。
+** static inline int signal_pending(struct task_struct *p)
+*** include/linux/sched.h:
+- 检查了TIF_SIGPENDING标志。
+- 这个函数不会检查进程描述符的pending和signal->shared_pending之类的东西的，这些在
+  recalc_sigpending_tsk()里进程。
+** fastcall void recalc_sigpending_tsk(struct task_struct *t)
+*** kernel/signal.c:
+- 为什么要检查进程描述符的signal->group_stop_count呢？
+- 还检查进程描述符的pending和signal->shared_pending，从检查的方法可以知道
+  PENDING(&t->pending, &t->blocked)，被block的信号是可以放在sigpending的队列里的，但是要看
+  这个信号是否真的pending中，就要与block掩码相对比。
+** static int rm_from_queue(unsigned long mask, struct sigpending *s)
+*** kernel/signal.c:
+- 从这个函数可以看出siginfo_t->si_signo不是以从1-32这32个数字来标识信号的，而是用位掩码的方
+  式来标识的。
+- 要删除一个挂起的信口，就要删除signal_struct->signal里的掩码，把相应的sigqueue从链表里删除，
+  释放相应的sigqueue结构体。
+** static void flush_sigqueue(struct sigpending *queue)
+*** kernel/signal.c:
+- 与rm_from_queue的相类似。
+** void flush_signals(struct task_struct *t)
+*** kernel/signal.c:
+- 这个函数会清掉进程的TIF_SIGPENDING，再对进程的pending调用flush_sigqueue(),再对进程的
+  signal->shared_pending调用flush_sigqueue().
+** int send_sig(int sig, struct task_struct *p, int priv)
+*** kernel/signal.c:
+- 以priv是否等于0作为info的参数调用send_sig_info()
+** int send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+*** kernel/signal.c:
+- 以相同的参数调用specific_send_sig_info()
+- 关于specific_send_sig_info()的info的参数：ULK:0 means that the signal has been sent by a User Mode process, 1
+  means that it has been sent by the kernel, and 2 means that is has been sent by the
+  kernel and the signal is SIGSTOP or SIGKILL.
+** void force_sig(int sig, struct task_struct *p)
+*** kernel/signal.c:
+- 以1的info调用force_sig_info()
+- 这是对进程私有的信号的处理，不是共享的信号.
+- 如果信号是被阻塞的或信号是被怱略的(SIG_IGN)，那么就要把信号的处理函数改为SIG_DFL且改成不
+  阻塞，接着还要设置TIF_SIGPENDING。最后还是以相同的参数调用specific_send_sig_info().
+** void force_sig_specific(int sig, struct task_struct *t)
+*** kernel/signal.c:
+- 和force_sig()差不多，有点不同的是force_sig()会在信号被阻塞的情况下也把信号的处理程序改成
+  SIG_DFL。
+- 和force_sig()最主要的区别是调用specific_send_sig_inof()时是以info为2来调用的。
+** int send_group_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+*** kernel/signal.c:
+- 以相同的参数调用group_send_sig_info()
+** int kill_pg(pid_t pgrp, int sig, int priv)
+*** kernel/signal.c:
+- 以priv是否为0的结果作为参数调用kill_pg_info()
+** int kill_pg_info(int sig, struct siginfo *info, pid_t pgrp)
+*** kernel/signal.c:
+- 以相同的参数调用__kill_pg_info()
+** int kill_proc(pid_t pid, int sig, int priv)
+*** kernel/signal.c:
+- 以priv是否为0的结果作为参数调用kill_proc_info()
+** int kill_proc_info(int sig, struct siginfo *info, pid_t pid)
+*** kernel/signal.c:
+- 先用find_task_by_pid()再用找到的进程描述符调用group_send_sig_info()
+** static int specific_send_sig_info(int sig, struct siginfo *info, struct task_struct *t)
+*** kernel/signal.c:
+- 若info是真实分配空间的且si_code是SI_TIMER那么就要把返回值设成
+  info->si_sys_private,SI_TIMER表示信号的发送者是Timer expiration
+- 若信号是被怱略就退出，但返回值可能在SI_TIMER的情况下被修改了。同样在信号已在挂起的时候也
+  退出。
+- 用send_signal()把信号加上.
+- 若信号没有被block就调用signal_wake_up()
+- 在调用signal_wake_up()时,若信号是SIGKILL那么就以resume为1的参数调用signal_wake_up().
+- 若成功给进程发送了一个信号,那么就会把这个进程唤醒,让它处于可执行的状态,但是
+  signal_wake_up()里调用的kick_process()有一个不足,就是若被唤醒的进程是本地CPU的进程且被唤
+  醒之后的优先级比current的高,但这时不会进行进程切换.而不是本地CPU的进程时就不是这样处理,而
+  是不管优先级都会给所在的进程发一个切换中断.
+** static int sig_ignored(struct task_struct *t, int sig)
+*** kernel/signal.c:
+- 被跟踪(PT_PTRACED)的情况下无论如何是不能怱略信号的，优先级最高.
+- 如果私有的信号block掩码有标上该信号,那么也是不能忽略的.
+- 只有在处理函数指定是SIG_IGN或是SIG_DFL且默认的处理是怱略的时候才可以怱略该信号.
+** void signal_wake_up(struct task_struct *t, int resume)
+*** kernel/signal.c:
+- 进入这个函数就一定会设置TIF_SIGPENDING
+- 一定会唤醒在TASK_INTERRUPTIBLE状态的进程的
+- 若信号是SIGKILL,那么参数resume就是1,这时也会唤醒在TASK_STOPPED和TASK_TRACED状态下的进程的.
+- 调用wake_up_state()之前不判断进程的状态,因为会出现竞争,所以没有必要.
+** int fastcall wake_up_state(task_t *p, unsigned int state)
+*** kernel/sched.c:
+- 就直接调用try_to_wake_up(),若try_to_wake_up()返回0,那么表示进程已经是可以运行的了.
+** void kick_process(task_t *p)
+*** kernel/sched.c:
+- 这个函数主要的功能就是若进程t不是本地CPU的进程且又不是正在运行的进程,那么就给它所在的CPU
+  发一个调度的中断.不是这样理解的,而是若进程t不是本地CPU的进程且又是正在运行的进程,那么就给
+  它所在的CPU发一个调度中断,因为ULK:each process checks the existence of pending signals
+  when returning from the schedule( ) function, the interprocessor interrupt ensures that
+  the destination process quickly notices the new pending signal.
+** static int send_signal(int sig, struct siginfo *info, struct task_struct *t, struct sigpending *signals)
+*** kernel/signal.c:
+- 若info是2,那么表示信号是SIGKILL或SIGSTOP或是由force_sig_specific()发送的,这时就不用作插入
+  sigqueue的工作,但也要把sigpending->signal相应的位掩码给标上.因为:It is important to let
+  the destination process receive the signal even if there is no room for the
+  corresponding item in the pending signal queue. Suppose, for instance, that a process is
+  consuming too much memory. The kernel must ensure that the kill( ) system call succeeds
+  even if there is no free memory;
+- SI_USER:0:sent by kill(), sigsend(), raise()
+- SI_KERNEL:0x80:sent by the kernel from somewhere
+- SI_QUEUE:-1:sent by sigqueue()
+- 如果调用__sigqueue_alloc()时的最后一个参数为1那么就允许超过限制分配sigqueue.在这个函数里
+  调用时是信号是常规信号且info小于2(这里不可能等于2，因为之前已作判断了，信号不是内核发送的
+  SIGKILL或SIGSTOP)或info是分配了空间时信号是由kill(),sigsend(),raise()或内核发送的
+  (info->si_code>=0就是SI_USER和SI_KERNEL),但是想不通的是为什么由用户态和内核态发送的常规信
+  号可以超过限制。什么情况下才不能超过限制呢？其实超过限制也不一定说明分配就会失败。
+- 如果成功分配了sigqueue,那么就给它的info初始化，若info的参数是0或1，就要单独初始化info里的
+  成员，注意在info为1的情况下si_pid和si_uid是0的.
+- 关于返回EAGAIN的情况：ULK：an item will not be added to the signal pending queue,
+  because there are already too many pending signals, or there is no free memory for the
+  sigqueue data structure, or the signal is immediately enforced by the kernel. If the
+  signal is real-time and was sent through a kernel function that is explicitly required
+  to queue it, the function returns the error code -EAGAIN。注意在这里info不可能为2.不是在
+  SI_USER的情况下发的实时信号就要求重试。
+** int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+*** kernel/signal.c:
+- 主要是调用__group_send_sig_info().
+- 为什么要在p->sighand不为空时才会执行相应的动作呢？
+** static int check_kill_permission(int sig, struct siginfo *info,
+*** kernel/signal.c:
+- ULK:The signal is delivered only if at least one of the following conditions holds: The
+  owner of the sending process has the proper capability (usually, this simply means the
+  signal was issued by the system administrator; see Chapter 20). The signal is SIGCONT
+  and the destination process is in the same login session of the sending process. Both
+  processes belong to the same user.
+- 以下这个是保证发这个信号的肯定是用户态下发的而不是在内核态发的，不管它是不是SIGKILL或
+  SIGSTOP.如果真的是SIGKILL或SIGSTOP那调用了这个函数的__group_send_sig_info()该怎么办呢？
+ #+BEGIN_EXAMPLE
+(!info || ((unsigned long)info != 1 &&
+				   (unsigned long)info != 2 && SI_FROMUSER(info)))
+ #+END_EXAMPLE
+- 以下的保证信号是SIGCONT且是同一个会话才允许发送。
+ #+BEGIN_EXAMPLE
+  ((sig != SIGCONT) ||
+  (current->signal->session != t->signal->session))
+ #+END_EXAMPLE
+- 当前的进程euid和uid分别与别进程t的suid和uid比较。
+ #+BEGIN_EXAMPLE
+  (current->euid ^ t->suid) && (current->euid ^ t->uid)
+  && (current->uid ^ t->suid) && (current->uid ^ t->uid)
+ #+END_EXAMPLE
+- http://zhumeng8337797.blog.163.com/blog/static/10076891420112410364978/ set-user-ID
+  (suid)/set-group-ID(sgid):设置用户ID,这是相对于文件来说的.设置了set-user-ID位的可执行程
+  序,执行时,进程的effective user ID与saved set-uesr-ID都为程序文件所属用户的ID. 时real
+  user ID与effective user ID就不一定相等了.这类程序称之为SUID程序,这类程序有特殊的用途.典型
+  的例子:passwd程序,ping程序等.如果一个文件被设置了SUID或SGID位，会分别表现在所有者或同组用
+  户的权限的可执行位上。
+- 除了一般的user id 和group id外，还有两个称之为effective 的id，就是有效id，上面的四个id表
+  示为：uid，gid，euid，egid。内核主要是根据euid和egid来确定进程对资源的访问权限。一个进程
+  如果没有SUID或SGID位，则euid=uid egid=gid，分别是运行这个程序的用户的uid和gid。例如kevin
+  用户的uid和gid分别为204和202，foo用户的uid和gid为 200，201，kevin运行myfile程序形成的进程
+  的euid=uid=204，egid=gid=202，内核根据这些值来判断进程对资源访问的限制，其实就是kevin用户
+  对资源访问的权限，和foo没关系。如果一个程序设置了SUID，则euid和egid变成被运行的程序的所有
+  者的uid和gid，例如kevin用户运行myfile，euid=200，egid=201，uid=204，gid=202，则这个进程具
+  有它的属主foo的资源访问权限。SUID的作用就是这样：让本来没有相应权限的用户运行这个程序时，
+  可以访问他没有权限访问的资源。passwd就是一个很鲜明的例子。SUID的优先级比SGID高，当一个可
+  执行程序设置了SUID，则SGID会自动变成相应的egid。
+- 而进程的suid是用来因执行一个设置了suid程序文件而用来保存进程的euid的。
+** int __group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+*** kernel/signal.c:
+- 调用的send_singal()是把信号放在共享挂起信号上的.接着调用__group_complete_signal()来选择一
+  个线程处理相应的信号,若是致命信号就调会给所有的线程发SIGKILL信号.
+** static void handle_stop_signal(int sig, struct task_struct *p)
+*** include/linux/sched.h:
+- 是什么样的进程才会有SIGNAL_GROUP_EXIT标志呢？是发起组退出的那个进程吗？
+- 用sig_kernel_stop()检查信号是不是停止信号，若是先把线程组里的共享SIGCONT信号删掉，再把其
+  它线程的私有SIGCONT给删除.所以可以看出给一个组发停止信号就会把所有的线程都continue.
+- SIGNAL_STOP_CONTINUED只是在handle_stop_signal()里赋值，当正在进行组停止的时候收到一个
+  SIGCONT信号。SIGNAL_STOP_CONTINUED有什么用呢？
+- 正在组退出的时候如果信号是SIGCONT且不是被跟踪的话为什么调用do_notify_parent_cldstop()的时
+  候参数是p->group_leader呢？好像也不必要知道为什么，只要记住是这样就可以了：如果一个进程要
+  用SIGCHLD通知它的父进程的话，且这个进程没有被跟踪，那么要通知的进程将是该进程所在的进程组
+  的领头进程的父进程，而不是该进程的父进程。
+- 为什么在信号是SIGCONT且在组退出的时候会把p->signal->group_stop_count清零呢？
+- group_stop_count是记录当前线程组中未停止的线程的个数，在通过tkill系统调用的时候发送给某个
+  线程停止信号（SIGSTOP，SIGTSTP，SIGTTIN，SIGTTOU），这会使得线程组中的所有线程停止。在进
+  程fork线程的时候，如果flag是CLONE_THREAD(复制线程)，多个线程会共用一个signal_struct,如果
+  tkill一个信号到某个线程，但是这个tkill会把信号发送到线程task_struct的pending中，这个字段
+  是属于线程的私有信号结构。按照道理，当这个线程由于系统调用，异常，中断等返回用户态后，会
+  处理线程中的信号，无论是私有的还是共有的信号都会处理。那些信号都是私有信号，那么就tkill对
+  应的线程会，只有那一个线程会采取stop操作。但是实际上，内核中对停止信号（SIGSTOP，SIGTSTP，
+  SIGTTIN，SIGTTOU），会采取特殊的处理方式，就是stop信号会使得线程组中其他线程将状态转换为
+  TASK_STOPED,使得整个线程组停止。就是说一个线程的停止会导致整个线程组的停止。这个特性靠
+  signal_struct的group_stop_count变量来实现，对于一个线程组来说每个线程的使用的都是同一个
+  signal_struct,这个变量来记录，还有多少个线程还未stop。这样可以想到逻辑就是：如果一个线程
+  收到了SIGSTOP信号，group_stop_count的值就是线程组中的线程个数，同时这个线程会通过
+  signal_wake_up来告诉线程组中的线程有信号需要处理，那么线程组中的每个线程都会调用信号处理
+  函数，每个线程都会首先处理stop信号，判断group_stop_count如果大于0就代表当前线程需要被停止
+  了，停止之前将group_stop_count减一，如果线程组中的线程都停止了，group_stop_count=0,那么就
+  通知父进程告诉他子线程组停止了.http://blog.chinaunix.net/uid-27767798-id-3496692.html. 所
+  以在这里把group_stop_count清零表示还没有停止的进程就不要再停止了。接着在下面调用的
+  do_notify_parent_cldstop()是为了用SIGCHLD通知父进程子线程组停止了，父进程可以去做其它的事
+  情了。
+- stop类的信号是对整个线程组起作用的，一个线程收到了stop信号会迫使线程组中其它的线程也停止，
+  如果在这停止线程组过程中收到了SIGCONT信号，那么group stop会立刻停止，使得线程组继续执行，
+  已经停止的进程应该是没有办法通过一个SIGCONT信号来唤醒已经停止的其他线程了，只能tkill每一
+  个线程，发送SIGCONT信号，来唤醒停止的线程。
+  http://blog.chinaunix.net/uid-27767798-id-3496692.html
+- group_stop_count等于1说明其他的线程都已经结束了，还差当前进程未结束。
+  http://blog.chinaunix.net/uid-27767798-id-3496692.html
+- 如果在group stop的过程中，或者get_signal_to_deliver函数已经从信号挂起队列中已经dequeue出
+  了一个stop信号，线程组中的一个线程收到了SIGCONT信号，意味着线程组不用在继续stop了，这时需
+  要将gourp_stop_count变为0。不让线程组再继续stop了，这里前面讲到的signal_struct标志位的
+  SIGNAL_STOP_DEQUEUED，就起到了作用，在dequeue出stop信号的时候，会加上这个标志位。在执行
+  do_signal_stop的之前，也就是第一个stop的进程处理的时候，也会判断这个SIGNAL_STOP_DEQUEUED
+  标志位，这时如果收到了SIGCONT信号，清除标志位SIGNAL_STOP_DEQUEUED是有必要了，起到了避免了
+  收到了SIGCONT，而继续停止第一个线程的作用.  http://blog.chinaunix.net/uid-27767798-id-3496692.html
+- tsk->signal->flags的标志就4个而已:SIGNAL_STOP_STOPPED:job control stop in
+  effect.SIGNAL_STOP_DEQUEUED:stop signal dequeued.SIGNAL_STOP_CONTINUED:SIGCONT since
+  WCONTINUED.SIGNAL_GROUP_EXIT:group exit in progress
+- SIGNAL_STOP_STOPPED说明所有的线程都已经停止了
+  http://blog.chinaunix.net/uid-27767798-id-3496692.html
+- SIGNAL_STOP_DEQUEUED，这个标志位的意思是，从信号队列中已经dequeue了一个stop的信号.
+- SIGNAL_STOP_CONTINUED:当线程组收到SIGCONT信号时,无论是中组停止的过程中还是最近完成了一次
+  组停止(会置上SIGNAL_STOP_STOPPED),那会设置SIGNAL_STOP_CONTINUED.这上可以从这个函数里看出
+  来.这个标志要经过这样一个过程.
+- CLD_CONTINUED:这个基本只在handle_stop_signal()调用do_notify_parent_cldstop()时使用,所以可
+  以从这个使用上找出它有什么用,使用它的情况是当线程组接到一个SIGCONT时且之前线程组已完成了
+  所有线程停止(SIGNAL_STOP_STOPPED)而不是在组停止的过程中时就用do_notify_parent_cldstop()就
+  会使用.那么是不是想用这个标志说明从一个所有线程停止的状态里收到了一个SIGCONT信号.
+- CLD_STOPPED:是在收到SIGCONT信号时且组停止还在进行时调用do_notify_parent_cldstop()时使用,
+  所以它的意思是想告诉父进程线程组已完成停止且是组停止被中断的情况下完成的.
+- 在收到一个SIGCONT时,就算正在组停止中,也要把线程组中的共享stop信号给删掉,再逐个逐个把线程
+  组中的所有的线程的stop类信号给删掉.不管线程私有信号蔽避是否有蔽避SIGCONT,如果组收到
+  SIGCONT信号时就一定唤醒线程组里的所有在TASK_STOPPED线程,若SIGCONT自定义了处理函数且没有被
+  蔽避,那么也会唤醒TASK_INTERRUPTIBLE的进程
+** static void do_notify_parent_cldstop(struct task_struct *tsk, struct task_struct *parent, int why)
+*** kernel/signal.c:
+- 这个函数是在收到一个SIGCONT时调用的。这个函数的一个主要目的就是给父进程发一个SIGCHLD信号，
+  而在发之前要根据不同的情况给info初始化,同时还唤醒父进程。是不是想给父进程发SIGCHLD信号时
+  都会调用这个函数呢？
+- 说明一下这个不好理解的struct siginfo结构体，si_code成员不只ULK上介绍的，除了
+  SI_USER（kill(),raise()）,SI_KERNEL(Generic kernel
+  function),SI_QUEUE(sigqueue()),SI_TIMER(Timer expiration),SI_ASYNCIO (Asynchronous I/O
+  completion),SI_TKILL(tkill( ) and tgkill( ))还有可以是
+  SIGCHLD,SIGILL,SIGFPE,SIGSEGV,SIGBUS,SIGPOLL,SIGTRAP信号产生是的相应的si_code代码,如
+  SIGILL就有ILL_ILLOPC, ILL_ILLOPN, ILL_ILLADR等的si_code值，SIGCHLD的就有CLD_TRAPPED
+  CLD_STOPPED CLD_CONTINUED等。到这里想起之前有一个判断si_code是否大于0的情况，现在发现只有
+  SI_KERNLE和信号为SIGILL,SIGFPE,SIGSEGV,SIGBUS,SIGTRAP,SIGCHLD,SIGPOLL的时候都是大于0的.其
+  实发现struct siginfo结构体里那个联合体也针对不同的类型的si_code作的。所以若
+  info->si_signo是那些特殊的信号的时候就要给info->si_code赋相应的特定的值且还要给那个联合体
+  的相对应的成员做赋值。
+- 在info->si_signo为SIGCHLD的时候可以看这个函数来具体认清相应的联合体里每个成员的作用。
+  si_utime是赋予了子进程的utime,si_stime也是类似。si_status的注释说是exit
+  code,CLD_CONTINUED时是SIGCONT,CLD_STOPPED时是signal->group_exit_code,CLD_TRAPPED时是
+  tsk->exit_code.
+- 在handle_stop_signal()里若信号是SIGCONT时会以CLD_STOPPED来调用do_notify_parent_cldstop()
+  的,这是不是可以推出若进程是在停止状态收到SIGCONT时就会用通知父进程上子进程的上一个状态是
+  停止的。如果上一个状态不是在被跟踪的情况下(CLD_STOPPED)停止的话那么就会把si_status赋予
+  tsk->signal->group_exit_code,这也可以看CLD_STOPPED就是为在组停止时收到SIGCONT信号时服务的。
+- 如果SIGCONT信号是被父进程怱略的或SIGCONT信号设置了SA_NOCLDSTOP(Applies only to SIGCHLD;
+  do not send SIGCHLD to the parent when the process is stopped),那么就调
+  用__group_send_sig_info()给父进程所在的整个线程组发一个SIGCHLD信号，用之前的初始化的
+  info(si_signo是SIGCONT),给整个线程组发信号是不是想用共享的处理函数的意思呢？
+- 无论有没有把信号发成功，都会唤醒父进程。
+- CLD_TRAPPED是在
+- group_exit_code ULK的注释：Process termination code for the thread group.为什么是
+  CLD_STOPPED的时候就要把group_exit_code赋给info->si_status呢？停止时收到SIGCONT信号与组的
+  退出代码有什么关系吗？
+** static void __group_complete_signal(int sig, struct task_struct *p)
+*** kernel/signal.c:
+- EXIT_ZOMBIE, EXIT_DEAD, TASK_TRACED, TASK_STOPPED状态的进程是不可以接收信号的,但是在
+  TASK_STOPPED和TASK_TRACED状态时若信号是SIGKILL把可以接收.
+- wants_signal()就是看p是不是可以作为处理信号的的进程.与进程的信号阻塞有关，与进程的状态有
+  关，与进程是否在退出有关(PF_EXITING和EXIT_DEAD、EXIT_ZOMBIE)进程是否在执行有关，和进程是
+  否有挂起信号有关。
+- 若线程组里只有一个线程，那就不用选了，就用参数进程p.若不是就要扫描整个线程组。若还是没有
+  一个进程想处理这个信号的，那么就直接退出这个函数，这样做有什么后果呢？
+- tsk->real_blocked这个成员好像只有在这个函数和sys_rt_sigtimedwait()里使用。
+- 这个函数不像ULK上说的那么简单，仅仅是收到一个致命信号还不足以杀掉整个线程组，还有很多条件
+  要满足：若是正在组退出那不用管了；不能是real_blocked的成员（这个real_blocked有什么用
+  呢？）；若不是SIGKILL这个致命信号时那么进程就不能被跟踪。
+ #+BEGIN_EXAMPLE
+  (sig_fatal(p, sig) && !(p->signal->flags & SIGNAL_GROUP_EXIT) &&
+	    !sigismember(&t->real_blocked, sig) &&
+	    (sig == SIGKILL || !(t->ptrace & PT_PTRACED)))
+ #+END_EXAMPLE
+- 因为dump的处理方式的信号也会杀死进程，所以在杀死整个组的情况下会考虑信号是不是dump,若是就
+  要转存。
+- sig_fatal()检查信号是否为致命信号不仅仅是检查信号的默认行为是不是dump或terminal，还要检查
+  它的处理方式是不是默认的。
+- 若不能满足作致命信口的处理，那么就用选中的进程调用signal_wake_up()，调用的另一个参数就用
+  信号与SIGKILL比较。
+- 如果不是dump信号，那么就要设置tsk->signal->flags的SIGNAL_GROUP_EXIT。所以设置这个标志之后
+  说明要进行线程组退出了。同时这里还把tsk->signal->group_exit_code退出码置成了信号，看来作
+  用不止一个啊。还把tsk->signal->group_stop_count组停止计数给清零了，为什么要这样做呢？是不
+  是让还在进行组停止的进程组不要再进行组停止了。为什么要把所有的线程都停止了呢？有这样的注
+  释：We make all threads other than the chosen one go into a group stop so that nothing
+  happens until it gets scheduled, takes the signal off the shared queue, and does the
+  core dump.
+- SIGNAL_GROUP_EXIT在do_group_eixt(),在__group_complete_signal(),在zap_other_threads()被置
+  位。
+- 处理这个core dump信号的进程还是被选中的进程。
+- group_exit_task是有两种含义的，注释也说了:overloaded:notify group_exit_task when ->count
+  is equal to notify_count; everyone except group_exit_task is stopped during signal
+  delivery of fatal signals, group_exit_task processes the signal.一个是用于组退出结束后通
+  知group_exit_task进程http://blog.chinaunix.net/uid-27767798-id-3492389.html， 另一个是在递
+  送一个致命信号时希望group_exit_task是停止的，后者的这种情况是在这个函数出现的。
+** int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka, struct pt_regs *regs, void *cookie)
+*** kernel/signal.c:
+- 这个函数会用处理所有的信号.
+- ULK:the do_signal( ) function is usually only invoked when the CPU is going to return in
+  User Mode.不是在进程在切换时做的。
+- 在满足正在进行组停止时才会调用handle_group_stop(),若没有进行组退出，那么是不用调用
+  handle_group_stop()的，为什么有这个特殊的条件呢？这也是为什么handle_group_stop()叫
+  handle_group_stop了
+- 每处理完一个信号就会判断一下是否有组停止,是否应该调用handle_group_stop().组停止切回来后还
+  会马上处理其它所有的挂起信号.
+- 若有信号要处理且信号不是SIGKILL(为什么要排除SIGKILL呢?)且被跟踪,那么就要作跟踪的处理，要
+  调用ptrace_stop(),这个函数下面有讲。
+- 调用ptrace_stop()之后，跟踪进程可能会取消进程的信号，取消的方法是把current->exit_code清零。
+  若不取消那么就继续处理，否则就处理下一个信号。
+- 若跟踪进程修改了信号，就要修改参数info,若进程没有阻塞信号就给它发信号，所以注意是先通知跟
+  踪进程让它处理再根据跟踪进程的反馈让被跟踪进程作相应的处理。但被阻塞的情况下也还会有很多的处理。
+- 若是发现信号的处理方法是SIG_IGN那么就处理下一个信号，若发现信号是SIG_DFL那么就不用与处理
+  下一个信号了，直接退出函数。
+- 因为被跟踪进程可能会修改跟踪进程的信号，所以return_ka和原来的不一样了。若发现不是默认的，
+  且设了SA_ONESHOT那么就把它改回默认的。
+- 之前都已经检查了信号的处理是否是默认的了，但为什么后面又用sig_kernel_ignore来检测呢？而且
+  为真时还处理下一个信号。嗅，知道了，原来之前检查的是SIG_IGN和不为SIG_DFL的情况，而用
+  sig_kernel_ignore()检查的是为SIG_DFL且默认的处理方式是怱略。
+- 在这里判断进程是否是进程1。
+- 一个进程组不是孤儿进程组的条件是，该组中有一个进程，其父进程在属于同一个会话（session）的
+  另一个组中.所以若信号的默认处理方式是停止但信号不是SIGSTOP且进程所在的进程组是一个孤儿进
+  程组，那么就不处理这个信号，处理下一个信号。为什么SIGSTOP这个信号要作特殊处理呢？难道
+  是SIGSTOP时就一定是执行do_signal_stop()不管进程是否在孤儿进程。
+- do_signal_stop()(这个函数后面有讲)是在什么情况下返回0表示没有停止的呢？
+  1.SIGNAL_STOP_DEQUEUED没有设置时，2.在想开始一个新的组停止而进行解加锁时被其它的纯程收了
+  另一个停止信号或SIGCONT时。若返回0就开始处理下一个信号，但无论返回什么，都不能往下执行了，
+  往下执行的情况只有在处理方式是默认的且处理方式是dump或terminate.
+- 若处理方式是默认的且处理方式是dump或terminate，那么设置PF_SIGNALED，原来PF_SIGNALED是这样
+  用的。若是一个dump信号就调用do_coredump(),若不是就调用do_group_exit()
+** static inline int handle_group_stop(void)
+*** kernel/signal.c:
+- 对于get_signal_to_deliver()来说，这个函数返回1表示不用处理任何的信号了。
+- 这个函数的只有被get_signal_to_deliver()调用，调用这个函数时已经表明是在进行了组停止。
+- 当发现tsk->signal->group_exit_task为current时，有这样的注释：Group stop is so we can do
+  a core dump, We are the initiating thread, so get on with it.表明组停止已经结束了，就差
+  current这个进程了。但为什么要正在进行组退出的时候才这样做呢？有什么关系吗？
+- 若group_exit_task为current，无论是否是在进行组退出，都要处理信号，还要把group_exit_task清零。
+- 若group_exit_task不为current，但current->signal->flags置了SIGNAL_GROUP_EXIT，表示current
+  所在的进程组在进行组退出，且处录地组退出的那个进程不是current,这种情况下也要返回0表示要处
+  理信号。所以可以得出只要线程组在进行组退出，那么就要处理信号，不管是否是在进行组停止.
+- 若没有进行组退出且在进行组停止，那么就不能处理信号。
+- 从代码可以看出，组停止是在这里处理的，这也是为什么这个函数叫handle_group_stop,从代码来看，
+  正在进行组停止时处理停止信号很简单，就是把当前进程的退出代码(current->exit_code)设置为组
+  的退出代码(current->signal->group_exit_code)，再设置进程为TASK_STOPPED。为什么要设置退出
+  代码呢？停止跟退出代码有什么关系呢？
+- 结合get_signal_to_deliver()来看，因为是在一开始在get_signal_to_deliver()调用
+  handle_group_stop()的，所以若想进行一个组停止时，一旦把signal->group_stop_count设为不等于
+  0，那么其它的线程就不会处理其它的信号了，因为是在get_signal_to_deliver()一开始调用
+  handle_group_deliver()的。
+- 因为处理了一个线程的停止信号，所以current->signal->group_stop_count要自减，若为0了就表明
+  所有的线程都已进行了一次停止，所以要设置SIGNAL_STOP_STOPPED.
+- 如果一个进程已经处理了自已停止，那么就调用finish_stop()
+** static void finish_stop(int stop_count)
+*** kernel/signal.c:
+- 在这里参数也有可能会为负？这个函数是handle_group_stop()和do_signal_stop()调用的,而
+  handle_group_stop()在被get_signal_to_deliver()调用之前已经验证了group_stop_count大于0，所
+  以在handle_group_stop()里调用finish_stop()时一定可以保证stop_count参数不为负数，所以出现
+  负数的情况应该是在do_signal_stop()里调用。
+- 这个函调用do_notify_parent_cldstop()时都是用CLD_STOPPED的，且都是在stop_count(其实就是
+  group_stop_count)不为正，所以可能看出CLD_STOPPED是在所有的线程都完成了停止之后才可以使用
+  的吗？不是的，可以从handle_stop_signal()函数看出，在信号是SIGCONT且正在进行组停止
+  （group_stop_count>0）的时候也会把CLD_STOPPPED传给do_notify_parent_cldstop()的，所以
+  CLD_STOPPED这个信号的作用应该是组停止结束后就以CLD_STOPPED调用do_notify_parent_cldstop()
+  通知父进程，不管是不是在停止过程中有被SIGCONT中断，若是中断了也算是组停止结束。
+- 为什么要在group_stop_count为负数的时候给current->parent发通知呢?在被踪跟的情况下发还可以理解.
+- group_stop_count为0表示组停止结束,所以给current->group_leader->real_parent发信号.不是
+  current->group_leader->parent.
+- 调用这个函数就一定会调度,因为调用了schedule().这个函数被handle_group_stop()调
+  用,handle_group_stop()是被get_signal_to_deliver()在进行组停止时调用的.所以进行组停止的时
+  候若其中一个线程在执行的时候,处理信号时就会调用get_signal_to_deliver() ->
+  handle_group_stop()(没有进行组退出的情况) -> finish_stop() -> schedule().
+- 等从schedule()切换回来的时候把current->exit_code给清掉了.exit_code有在
+  handle_group_stop()被设置成current->signal->group_exit_code的,所以这个exit_code应该是给
+  schedule()使用的.
+** static void ptrace_stop(int exit_code, int nostop_code, siginfo_t *info)
+*** kernel/signal.c:
+- 这个函数主要功能就是想以CLD_TRAPPED调用do_notify_parent_cldstop()，通知跟踪进程被跟踪的进
+  程已收到一个信号。
+- 通知完之后马上调用schedule()进行切换。
+- 若正在进行组停止，那么就要停止数减1，从被get_signal_to_deliver()的角度看，就是若处理一个
+  非SIGKILL信号且被跟踪时且正在进行组退出，那么就要把group_stop_count自减1。虽然减1了，但是
+  不一定会调用do_notify_parent_cldstop(),就算group_stop_count是0也不会以CLD_STOPPED调用
+  do_notify_parent_cldstop().
+- 要想以CLD_TRAPPED调用do_notify_parent_cldstop()还要先满足一大堆的乱七八糟的条件。不满足就
+  不调用do_notify_parent_cldstop(),不进行进程的切换，不修改进程的执行状态。
+- 把current->last_siginfo设为info和把current->exit_code设为exit_code可能是给
+  do_notify_parent_cldstop()用的。若不能调用do_notify_parent_cldstop()那么
+  current->exit_code要改成nostop_code.在get_signal_to_deliver()调用这个函数的时候exit_code
+  参数和nostop_code参数都是信号编号。
+- tsk->last_siginfo是给跟踪用的。
+** static int do_signal_stop(int signr)
+*** kernel/signal.c:
+- 关于这里为什么要检查SIGNAL_STOP_DEQUEUED信号，上面有讲。
+- 若进程所在的线程组正在进行一个组退出，那么就不用再启动下一个组退出了。
+- 在进行组退出的时候，是不会发一个停止信号给所有线程的而是直接停掉它，所以在个函数里发现有
+  停止信号不是因为有组停止所引起的。
+- 在这里处理组停止的情况与handle_group_stop()函数里后面的类似，就是group_stop_count自减，为
+  0就设置SIGNAL_STOP_STOPPED，把current->signal->group_exit_code赋给current->exit_code，设
+  置set_current_state(TASK_STOPPED)。handle_group_stop()是只在get_signal_to_deliver()一开始
+  处理信号时被调用.而handle_group_stop()在一开始是检查了有没有进行组退出。
+- 若进程没有正在进行一个组退出，且线程组只有一个线程，那么也把current->exit_code和
+  current->signal->group_exit_code赋予信号，为什么要这样做呢？不是不如果进程因一个信号的处
+  理方式是停止的话都会这样设置exit_code和group_exit_code.也把进程状态设置为TASK_STOPPED，也
+  设置SIGNAL_STOP_STOPPED.
+- 若没有在进行组退出，且线程组只有这个线程，那么j说要开始一个新的组停止了。因为
+  tasklist_lock程sighand->siglock要按顺序获得，所以要先放了siglock锁，所以在这个时间窗口里
+  有可能产生一个SIGCONT信号和另一个停止信号，因为在收到一个SIGCONT的时候会设置
+  SIGNAL_STOP_DEQUEUED，这个时候就要直接退出了。在这个函数里还要判断group_stop_count是否为
+  0就是因为刚才解锁后重新上锁可能导致另一个线程开始了一个组停止，若是这样的话说把
+  group_exit_code提出来并以current线程的名义给group_stop_count自减，否则就开始一个新的组停
+  止，开始一个组停止时要把group_exit_code赋以signr,所以从这里可以看出进行一个组停止时
+  group_exit_code是一个因它而停止的信号。接着把exit_code赋以了signr,所以一个进程若因一个组
+  停止而停止，那么它的current->exit_code的值就是存放因它而停止的信号，从这个函数可以看出
+  current->exit_code不一定与group_exit_code相同的吗？这里还要检查该线程是不是最后一个停止的
+  线程是因为可能在之前的解锁再加锁的过程中产生了另一停止信号而使得开始了另一个组进停止并使
+  得该线程是最后一个停止的线程。
+** int fastcall do_signal(struct pt_regs *regs, sigset_t *oldset)
+*** arch/i386/kernel/signal.c:
+- 这个函数会调用get_signal_to_deliver(),返回非零表示有信号被deliver了。在
+  get_signal_to_deliver()函数里可能会改变info和ka。若有信号被deliver,那么就调用
+  handle_signal()
+- do_signal()调用一次只处理一个信号，ULK：Notice how do_signal( ) returns after having
+  handled a single signal. Other pending signals won't be considered until the next
+  invocation of do_signal( ). This approach ensures that real-time signals will be dealt
+  with in the proper order.
+- 一开始要判断是否是一个系统调用，若是就要设置相应的重启方式。
+- 关于如何在内核态和用户态之间切换ULK有说：A nonblocked signal is sent to a process. When
+  an interrupt or exception occurs, the process switches into Kernel Mode. Right before
+  returning to User Mode, the kernel executes the do_signal( ) function, which in turn
+  handles the signal (by invoking handle_signal( )) and sets up the User Mode stack (by
+  invoking setup_frame( ) or setup_rt_frame( )). When the process switches again to User
+  Mode, it starts executing the signal handler, because the handler's starting address was
+  forced into the program counter. When that function terminates, the return code placed
+  on the User Mode stack by the setup_frame( ) or setup_rt_frame( ) function is
+  executed. This code invokes the sigreturn( ) or the rt_sigreturn( ) system call; the
+  corresponding service routines copy the hardware context of the normal program to the
+  Kernel Mode stack and restore the User Mode stack back to its original state (by
+  invoking restore_sigcontext( )). When the system call terminates, the normal program can
+  thus resume its execution.
+** asmlinkage long sys_kill(int pid, int sig)
+*** kernel/signal.c:
+- si_signo就是sig,si_code是SI_USER，si_pid是当前进程的tgid,si_uid是uid.si_pid是比较特殊的。
+- 调用kill_something_info().
+** static int kill_something_info(int sig, struct siginfo *info, int pid)
+*** kernel/signal.c:
+- ULK:pid = 0 ,The sig signal is sent to the thread group of the process whose PID is
+  equal to pid .所以是以kill_pg_info()的方式调用的。
+- ULK:pid = -1,The signal is sent to all processes, except swapper (PID 0), init (PID 1),
+  and current.但是看代码时不是这样的，有一个这样的判断:p->tgid != current->tgid,所以
+  current所在的线程组里的所有线程都不能接收信号。这样做是不是因为若给current的线程组发信号，
+  最终可能会在该组中选择current来处理信号。
+- ULK:pid < -1,he signal is sent to all thread groups of the processes in the process
+  group -pid.
+** asmlinkage long sys_tkill(int pid, int sig)
+*** kernel/signal.c:
+- 这个函数的si_pid也是赋以current->tgid,为什么是tgid呢？
+- si_code是SI_TKILL
+** asmlinkage long sys_tgkill(int tgid, int pid, int sig)
+*** kernel/signal.c:
+- ULK:The sys_tgkill( ) service routine performs exactly the same operations as sys_tkill( ),
+  but also checks that the process being signaled actually belongs to the thread group
+  tgid. This additional check solves a race condition that occurs when a signal is sent to
+  a process that is being killed.与sys_tkill()的不同就是多了一个p->tgid == tgid的判断，
+** static inline unsigned int task_timeslice(task_t *p)
+*** kernel/sched.c:
+- 这个函数是通过静态优先级来计算进程的时间片的
+** static inline runqueue_t *task_rq_lock(task_t *p, unsigned long *flags)
+*** kernel/sched.c:
+- 这个函数三个目的：禁止本地变量，获取rq->lock，获取运行队列。但这三个操作要一致性。
+** static inline runqueue_t *this_rq_lock(void)
+*** kernel/sched.c:
+- 这个函数不像task_rq_lock()要用循环使得一致性，因为这个
+** static void dequeue_task(struct task_struct *p, prio_array_t *array)
+*** kernel/sched.c:
+- 把进程从array这个链表里删除，array可以是active或expires.
+- 相关的东西有nr_active, run_list, array->queue, p->prio, array->bitmap.
+** static void enqueue_task(struct task_struct *p, prio_array_t *array)
+*** kernel/sched.c:
+- 把一个进程插入array链表，不判断位图是否设置了，因为这会耗掉时间。
+- 还会把进程的array设成array.
+** static void requeue_task(struct task_struct *p, prio_array_t *array)
+*** include/linux/list.h:
+- 把一个进程从原来链表里删除再插到其它的链表。
+** static inline void enqueue_task_head(struct task_struct *p, prio_array_t *array)
+*** include/linux/list.h:
+- 这个函数与enqueue_task_head()的差别是一个插入头一个插入尾。
+** static int effective_prio(task_t *p)
+*** kernel/sched.c:
+- 根据静态优先级和bonuse来计算优先级。
+** static inline void __activate_task(task_t *p, runqueue_t *rq)
+*** kernel/sched.c:
+- 调用enqueue_task()把进程插入active,并自增nr_running,nr_running与nr_active是不一样的。
+** static inline void __activate_idle_task(task_t *p, runqueue_t *rq)
+*** kernel/sched.c:
+- 这个函数与__activate_task()的区别是调用enqueue_task_head()把进程插入到active
+** static void activate_task(task_t *p, runqueue_t *rq, int local)
+*** kernel/sched.c:
+- 这个函数主要作用是更新进程的动态优先级(recalc_task_prio()),更新task->activated状态，更新
+  task->timestamp,调用__activate_task()把进程插入运行队列的激活链表里.
+- 这个函数被try_to_wake_up()和__migrate_task()调用.
+- 要用sched_clock()来获取时间
+- 若是多核的话且进程不在本地CPU的话就要结合timestamp_last_tick来调整时间。
+** static void deactivate_task(struct task_struct *p, runqueue_t *rq)
+*** kernel/sched.c:
+- 就只是调用dequeue_task()把进程从运行链表里删除,不管是不是active链表还是expires链表.
+- 这个函数没有activate_task()那么复杂.
+- 因为task->timestamp是与插入队列有关的，但是与删除没有关系。所以不用管。
+** static void resched_task(task_t *p)
+*** kernel/sched.c:
+- 还挻多函数调用它的。
+- 这个函数有单多核版，单核版的只是调用set_tsk_need_resched(), 而多核版的话除了设置
+  TIF_NEED_RESCHED之外还要给所在的CPU发一个调度中断。
+** static int migrate_task(task_t *p, int dest_cpu, migration_req_t *req)
+*** kernel/sched.c:
+- 这个函数里有一段检查代码很奇怪，p->array为空了难道task_running()还有可能是真吗？如果条件
+  为真的话就直接调用set_task_cpu()设置进程的cpu,task->thread_info->cpu.若条件为假，那么就用
+  completion原语来实现进程的迁移。
+ #+BEGIN_EXAMPLE
+	if (!p->array && !task_running(rq, p)) {
+ #+END_EXAMPLE
+** void wait_task_inactive(task_t * p)
+*** kernel/sched.c:
+- 这个函数只被在跟踪时调用两次。
+- 这个函数就是等待进程从运行队列里删掉，这个函数有做优化，就是若被等待的进程没有正在运行那
+  么就调用yeild()让进程等待时间长一点。
+** static inline unsigned long source_load(int cpu)
+*** kernel/sched.c:
+- 计算负载的方式就是rq->nr_running乘以一个常量。
+** int fastcall wake_up_process(task_t * p)
+*** kernel/sched.c:
+- 就是调用try_to_wake_up(),唤醒所有在停止状态的进程，包括
+  TASK_STOPPED,TASK_TRACED,TASK_INTERRUPTIBLE,TASK_UNINTERRUPTIBLE的进程,但不是同步唤醒。
+** int fastcall wake_up_state(task_t *p, unsigned int state)
+*** kernel/sched.c:
+- 以state调用try_to_wake_up()
+** void fastcall sched_fork(task_t *p)
+*** kernel/sched.c:
+- 只给copy_process()调用。
+- 注释说了，这个函数是为一个新fork的进程做调度相关的设置。
+- 注释有说，这个函数里把进程标为正在执行的，但是并没有实际插入到运行队列，这可以保证没有谁
+  可以让它运行，就算是一个信号或其它的外部事件不能唤醒和把它插入到一个运行队列。
+- 因为fork一个进程时，那个新的进程其实是有一个自旋锁的，所以要给thread_info->preempt_count
+  补尝1。
+- 上面有关于时间片父进程如何共享的说明。
+- 因为如果current->time_slice的时间为1，那么分享之后的时间就是0了，这时要把它改回1(为什么要
+  改回1呢？)并调用scheduler_tick()
+** unsigned long nr_running(void)
+*** kernel/sched.c:
+- 计算所有的CPU的进程数的总和
+** unsigned long nr_uninterruptible(void)
+*** kernel/sched.c:
+- 计算所有的CPU的不可中断的进程的总和
+** unsigned long long nr_context_switches(void)
+*** kernel/sched.c:
+- 计算所有CPU的切换次数。
+** unsigned long nr_iowait(void)
+*** kernel/sched.c:
+- 计算所有CPU的io等待次数。
+** static int find_idlest_cpu(struct task_struct *p, int this_cpu, struct sched_domain *sd)
+*** kernel/sched.c:
+- 先找出p->cpus_allowed与sd->span的cpu的交集CPU中最低负载CPU，但这个CPU还不是找到的那个，还
+  要和当前CPU用一个公式比较
+** static void sched_migrate_task(task_t *p, int dest_cpu)
+*** kernel/sched.c:
+- 若目的CPU不是允许的CPU(cpus_allowed)就不能移。
+- 移进程到一个CPU是用线程和completion实现的，migrate_task()里有init_completion(),这个函数有
+  wait_for_completion()，migration 线程里应该有complete().migration线程就只有这种时候被用到
+  吗？
+** void sched_exec(void)
+*** kernel/sched.c:
+- 注释说了，执行sched_exec()的时候是平衡的时机，因为进程有最小的有效内存和cache覆盖面。
+- 先找标有SD_BALANCE_EXEC的域,再从中用find_idlest_cpu()找出最不忙的cpu,找到了就调用
+  sched_migrate_task().
+** static int load_balance_newidle(int this_cpu, runqueue_t *this_rq, struct sched_domain *sd)
+*** kernel/sched.c:
+- 这个函数由idle_balance()调用idle_balance()又由schedule()调用.注释说了,当this_rq将成为
+  idle时(NEWLY_IDLE)是被schedule()调用.
+- 这个函数可以说是load_balance()的简化版,先用find_busiest_group()找出最忙的组,再用
+  find_busiest_queue找出最忙的运行队列,最后调用move_tasks()移进程.
+** static inline void idle_balance(int this_cpu, runqueue_t *this_rq)
+*** kernel/sched.c:
+- 注释说了,这个函数在this_rq快成为idle时由schedule()调用,所以要检查SD_BALANCE_NEWIDLE.
+** static void active_load_balance(runqueue_t *busiest_rq, int busiest_cpu)
+*** kernel/sched.c:
+- 把busiest_rq里的进程移到一个idle CPU里。
+- 注释说了,这个函数被migration线程调用,是在rq->active_balance设置时被调用.
+- 因为SD_LOAD_BALANCE的标志有继承性,所以若有发现这个标志没有设置就不用再向更高的层去搜索了.
+- 这个函数主要是三层循环，最外层是循环调度域的，次外层是循环一个调度里的所有组的，最内层是
+  循环一个组内的所有的CPU的。
+- 因为组间的CPU的交集可能不为空，所以要记录下以访问过的CPU（visited_cpus）
+- 最主要的就是找到CPU之后调用move_tasks().
+** static void rebalance_tick(int this_cpu, runqueue_t *this_rq, enum idle_type idle)
+*** kernel/sched.c:
+- 这个函数是遍历所有的域，不是单独某个域。
+- 发现原来rq->cpu_load只在这里更新的，且更新的方法是用现在的负载和旧的负载求平均。
+- 没有设置SD_LOAD_BALANCE就不用再做处理了。
+- 这个函数最主要的就是调用load_balance()，调用load_balance()前要确定调用的时间间隔有没有到，
+  就是sched_domain->balance_interval,但sched_domain->balance_interval不能直接使用，要结合
+  SCHED_IDLE、sched_domain->busy_factor、sched_domain->last_balance. 若有调用
+  load_balance()那么就要更新sched_domain->last_balance.
+** asmlinkage void __sched preempt_schedule(void)
+*** kernel/sched.c:
+- 这个函数里会判断current是否禁止抢占或有禁止中断，若是返回不能调用schedule()
+- 在调用schedule()之前会用PREEMPT_ACTIVE来禁止抢占。
+** void __devinit init_idle(task_t *idle, int cpu)
+*** kernel/sched.c:
+- 初始化idle进程，可以看出一个idle只允许在一个CPU上执行，把运行队列的idle赋以了idle进程。
+** int set_cpus_allowed(task_t *p, cpumask_t new_mask)
+*** kernel/sched.c:
+- 这个函数的主要功能就是设置进程的cpus_allowed
+- 设置前要注意新的CPU mask与cpu_online_map有没有交集
+- 若发现进程当前所在的CPU不包含在新设置的mask里的时候就要调用migrate_task()把进程移过去。
+** static void __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
+*** kernel/sched.c:
+- 把进程从src_cpu中移到dest_cpu里去
+- 移之前要判断进程是不是被移走了，是否是不允许移到那个CPU
+- 如果之前进程已经是插入到一个运行链表里，那么就要重新计算task->timestamp了，还要把进程从原
+  来的运行链表删除再插入到新的运行链表.
+- 移了之后若发现进程可以抢占current，那么就调用resched_task()
+** static int migration_thread(void * data)
+*** kernel/sched.c:
+- 这个函数是一个线程函数。处理本地进程所要求的迁移到其它CPU的任务.
+- 这个函数处理migration_req_t迁移进程的任务链表,若都处理完了就调度。
+- 若发现CPU offline了，那么就不断地调用schedule()
+- 若运行队列要求迁移进程(rq->active_balance)，那么就调用active_load_balance(),把rq运行队列
+  的进程移到域的其它idle cpu里.除了会调用active_load_balance()之外，还会处理迁移进程任务链表里的任务。
+- 迁移任务有两种一个是REQ_MOVE_TASK，这个会调用__migrate_task(),还有一个类型是
+  REQ_SET_DOMAIN，这个只是设置运行队列里的调度域。
+** static int migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+*** kernel/sched.c:
+- 迁移进程是以SCHED_FIFO的调度策略执行的,且是以实时进程的优先级运行。
+** void __devinit cpu_attach_domain(struct sched_domain *sd, int cpu)
+*** kernel/sched.c:
+- 为什么是本地CPU的时候就不用任务链表来改调度域呢？
