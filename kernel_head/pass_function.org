@@ -54,6 +54,43 @@
 - ULK:In the case of a uniprocessor system, the locks themselves are useless, and the spin
   lock primitives just disable or enable the kernel preemption.
 - 可以确定设置PREEMPT_ACTIVE是不能/会抢占的意思。
+- 通过一个虚拟地址访问物理地址时，是不是先判断这时的权限是什么，是内核权限呢还是用户权限？
+  如果是内核权限那么就减去PAGE_OFFSET就是内核地址，如果是用户权限那么就用页表找到物理地址？
+  是这样子的吗？
+- 每个进程都有自已的页表，是吗？应该是的，若只有一个页表，那么不同的进程使用不同的线性地址
+  时会访问到相同的物理地址。
+- 内核访问内存时是不通过MMU的吗？MMU是怎么被使用的呢？使用MMU是要有一个寄存器指向全局页表的
+  物理地址，当进程访问内存时（读写内存），MMU就会用虚拟地址和那个寄存器找到具体的物理地址。
+  所以在打开MMU之前要把页表准备好，之后再把全局页表的地址给那个寄存器。
+  www.cnblogs.com/leaven/archive/2011/04/18/2019696.html
+- http://daimajishu.iteye.com/blog/1080667 这里有说到进程切换时会把那个存放进程全局页表地址
+  的寄存器修改，若不使用MMU就不修改。当系统访问一个32位虚拟地址时，假设cache未命中且TLB（页
+  地址快表）中未存有这个地址页的情况下，MMU将全局页目录存放PGD的地址读出来进行寻址。ARM存储
+  体系支持的页的大小有几种——1M,64KB,4KB,1KB，支持的二级页表大小有两种：粗粒度和细粒度。
+- 虽然内核的线性地址与物理地址是线性关系，差了PAGE_OFFSET,但是这不表明访问内核内存空间时不
+  使用MMU。也因为是线性关系，所以内核在它自已的空间里如果线性地址是连续的，那么对应的物理地
+  址也是连续的。
+- 内核映像并不是可直接运行的目标代码，而是一个压缩过的zImage（小内核）。但是，也并非是
+  zImage映像中的一切均被压缩了，映像中包含未被压缩的部分，这部分中包含解压缩程序，解压缩程
+  序会解压缩映像中被压缩的部分。zImage使用gzip压缩的，它不仅仅是一个压缩文件，而且在这个文
+  件的开头部分内嵌有gzip解压缩代码。http://blog.chinaunix.net/uid-12567959-id-160966.html
+- 如何保证进程不能访问内核数据？http://daimajishu.iteye.com/blog/1080667 有回答。虚拟内存到
+  物理内存的映射真的能保证系统安全稳定吗？也有回答
+- x86在进程切换*前*确实会有类似 movl 新的页表地址，cr3 的处理，新的页表地址即是新的进程的页
+  表基地址。这一点不会有问题，因为此时CPU仍然在系统空间运行，而所有进程的页面目录中与系统空
+  间相对应的目录项都指向相同的页面表，所以，不管换上哪一个进程的页面目录都一样，受影响的只
+  是用户空间，系统空间的映射则永远不变。http://bbs.csdn.net/topics/100049760
+- 所有进程的pgd里的768-1023都是一样，都是拷贝swapper_pg_dir的，且大小刚好是
+  1G.http://bbs.csdn.net/topics/100049760 这个帖子讨论了内核空间使用不使用MMU，和
+  PAGE_OFFSET的关系。我觉得访问内核空间也要用MMU的,为什么要PAGE_OFFSET呢？我觉得这个可以使
+  得在系统启动初始化页表时更方便且在一些时候也方便，如可以在内核DUMP时打印的信息可以判断出
+  错的内存空间是否在与内核相关。
+- 若是内存小于896的话，虽然这些内存都可以映射到内核空间，但肯定不可能全映射到内核空间去的，
+  如果可以确定一个地址是内核空间的线性地址，那么可以用它减去PAGE_OFFSET来获得物理地址，但若
+  是用户空间的地址，那么就算是小于896的内存也不能用它减去PAGE_OFFSET获得物理地址。
+- 页描述符有一个成员叫_mapcount： Number of Page Table entries that refer to the page
+  frame (-1 if none).可以看出一个页框可以被多个Page Table页表项映射。
+
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 没办法，还是要用遍历
 ** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
@@ -2710,3 +2747,403 @@
 ** void __devinit cpu_attach_domain(struct sched_domain *sd, int cpu)
 *** kernel/sched.c:
 - 为什么是本地CPU的时候就不用任务链表来改调度域呢？
+** #define pte_none(x)		(!(x).pte_low)
+*** include/asm-i386/pgtable-2level.h:
+** static inline int pte_none(pte_t pte)
+*** include/asm-i386/pgtable-3level.h:
+- 这个要比较高低位。
+- 只有在打开PAE时才有高低之分。所以在x86里使用3级的页表的时候就是打开了PAE
+- 对于32位页表项（没有打开PAE）是有12位的标志位，剩下的20位是表示一个页框的物地址，要记住这
+  个页表项的20位地址是如何和线性地址结合来找到一个页框的。
+- 要知道page table(pte)和page offset是不一样的
+- 所谓的扩展分页就是offset从12位(4K)变成了22位(4M)
+** #define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
+*** include/asm-i386/pgtable.h:
+** #define set_pmd(pmdptr, pmdval) (*(pmdptr) = (pmdval))
+*** include/asm-i386/pgtable-2level.h:
+** #define pte_same(a, b)		((a).pte_low == (b).pte_low)
+*** include/asm-i386/pgtable-2level.h:
+** #define	pmd_bad(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
+*** include/asm-i386/pgtable.h:
+- 
+** #define PAGE_MASK	(~(PAGE_SIZE-1))
+*** include/asm-i386/page.h:
+- 所以有效位是0的，无效位是1的。
+** #define _KERNPG_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY)
+*** include/asm-i386/pgtable.h:
+- 当前在内存，可读写，已被访问，已被修改的页就是_KERNPG_TABLE了
+** #define	pmd_bad(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
+*** include/asm-i386/pgtable.h:
+- (~PAGE_MASK & ~_PAGE_USER)根据离散里的De Morgan’s laws可以改成~(PAGE_MASK | _PAGE_USER)
+  这样就好看多了
+** static inline int pte_file(pte_t pte)		{ return (pte).pte_low & _PAGE_FILE; }
+*** include/asm-i386/pgtable.h:
+- ULK:Reads the Dirty flag (when the Present flag is cleared and the Dirty flag is set,
+  the page belongs to a non-linear disk file mapping;
+** #define mk_pte_huge(entry) ((entry).pte_low |= _PAGE_PRESENT | _PAGE_PSE)
+*** include/asm-i386/pgtable.h:
+- Sets the Page Size and Present flags of a Page Table entry
+** static inline pte_t pte_wrprotect(pte_t pte)	{ (pte).pte_low &= ~_PAGE_RW; return pte; }
+*** include/asm-i386/pgtable.h:
+** static inline pte_t pte_rdprotect(pte_t pte)	{ (pte).pte_low &= ~_PAGE_USER; return pte; }
+*** include/asm-i386/pgtable.h:
+** static inline pte_t pte_exprotect(pte_t pte)	{ (pte).pte_low &= ~_PAGE_USER; return pte; }
+*** include/asm-i386/pgtable.h:
+** #define pgd_index(address) (((address) >> PGDIR_SHIFT) & (PTRS_PER_PGD-1))
+*** include/asm-i386/pgtable.h:
+- 找到页框所对应的global page table的下标.
+** #define pgd_offset(mm, address) ((mm)->pgd+pgd_index(address))
+*** include/asm-i386/pgtable.h:
+- 从这里可以看出页表和内存描述符结合起来了。
+- 产生的是address对应的pgd的页表项的所在的线性地址。
+** #define pgd_offset_k(address) pgd_offset(&init_mm, address)
+*** include/asm-i386/pgtable.h:
+- 其实就是pgd_offset(init_mm, address)
+** #define pgd_page(pgd)				(pud_page((pud_t){ pgd }))
+*** include/asm-generic/pgtable-nopud.h:
+- ULK:Yields the page descriptor address of the page frame containing the Page Upper
+  Directory referred to by the Page Global Directory entry pgd . In a two- or three-level
+  paging system, this macro is equivalent to pud_page() applied to the folded Page Upper
+  Directory entry.
+- pgd的页表项是pgd_t类型的还是pud_t类型的。
+** #define pmd_offset(pud, address) ((pmd_t *) pud_page(*(pud)) + pmd_index(address))
+*** include/asm-i386/pgtable-3level.h:
+- pud_page()返回的是pud的页表项,也可以看出pud的页表项是pmd_t类型的。
+** #define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
+*** include/asm-i386/pgtable.h:
+- 用页描述符的线性地址和指定的权限来生成一个pte.
+** #define page_to_pfn(page)	((unsigned long)((page) - mem_map))
+*** include/asm-i386/page.h:
+- 这个函数的作用是把某个页的页描述符转为所对应的页号。
+- ULK:All page descriptors are stored in the mem_map array.所以page是某个页框的的页描述符的
+  物理地址。
+** #define pfn_pte(pfn, prot)	__pte(((pfn) << PAGE_SHIFT) | pgprot_val(prot))
+*** include/asm-i386/pgtable-2level.h:
+- 为什么无论是pfn_pte()还是pfn_pmd()，都要移PAGE_SHIFT位呢？因为页表项的最高20位表示一个页
+  框的物理地址，剩下的12位就是PAGE_SHIFT的大小，这个在设计时就要求一定是一致的，因为
+  PAGE_SHIFT是12，所以至少要32-12位才可以表示所有的页框。
+** #define pmd_page(pmd) (pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
+*** include/asm-i386/pgtable-2level.h:
+- 根据参数pmd里的20位页框号来得相应的页框的页描述符的地址。至于这个页描述符的地址是线性地址
+  还是物理地址，就要看mem_map是线性的还是物理的了。但根椐下面的pmd_page_kernel()使用
+  了__va()可以看出是线性地址。所以返回的是页描述符的线性地址。
+** #define pfn_to_page(pfn)	(mem_map + (pfn))
+*** include/asm-i386/page.h:
+- 根据页框号获得页描述地址。
+** #define pmd_page_kernel(pmd) ((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
+*** include/asm-i386/pgtable-2level.h:
+- 注意与pmd_page()的不同，为什么要分pmd_page()和pmd_page_kernel()呢？
+  http://bbs.csdn.net/topics/330112122 所以这个函数是获得内存小于896时，获得内核页表的.
+- 那么是不是pmd_page()是给内存大于896的时候用的,而pmd_page_kernel()是给小于896内存用的呢？
+- pgd/pud/pmd/pte_index/offset/page, mk_pte(), pte_offset_kernel(),pte_offset_map()
+** #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+*** include/asm-i386/page.h:
+- 就只是加上一个PAGE_OFFSET，那么x是物理地址呢还是线性地址呢？
+- ULK:The __pa macro is used to convert a linear address starting from PAGE_OFFSET to the
+  corresponding physical address, while the _ _va macro does the reverse.所以从这句话可以看
+  出pmd_t的高20位的地址表示的是物理地址,ULK也是这么说的。__pa()和__va()是给内存小于896时用的。
+** #define pte_offset_kernel(dir, address) ((pte_t *) pmd_page_kernel(*(dir)) +  pte_index(address))
+*** include/asm-i386/pgtable.h:
+- ULK:Yields the linear address of the Page Table that corresponds to the linear address
+  addr mapped by the Page Middle Directory dir . Used only on the master kernel page
+  tables.
+- 这个宏用了pmd_page_kernel(),说明pte_offset_kernel()也是用于内存小于896的。
+- ULK:The kernel maintains a set of page tables for its own use, rooted at a so-called
+  master kernel Page Global Directory. After system initialization, this set of page
+  tables is never directly used by any process or kernel thread; rather, the highest
+  entries of the master kernel Page Global Directory are the reference model for the
+  corresponding entries of the Page Global Directories of every regular process in the
+  system.所以是不是说明了pmd_page_kernel()和pte_offset_kernel()这些使用PAGE_OFFSET的函数就
+  是访问主内核页表的呢？
+- ULK:If PAE is enabled, the kernel uses three-level paging. When the kernel creates a new
+  Page Global Directory, it also allocates the four corresponding Page Middle Directories;
+  these are freed only when the parent Page Global Directory is released.这句话是不是也暗含
+  着如果没有打开PAE的话是不使用3级页表的呢？
+- ULK:When two or three-level paging is used, the Page Upper Directory entry is always
+  mapped as a single entry within the Page Global Directory.
+** pgd_t *pgd_alloc(struct mm_struct *mm)
+*** arch/i386/mm/pgtable.c:
+- 这个函数分配一个pgd并初始化。
+- 为什么PTRS_PER_PMD为1时不用初始化最后那USER_PTRS_PER_PGD个项呢？因为PTRS_PER_PMD == 1表示
+  不使用PMD，所以不用给pgd的项从pmd_cache那分配pmd,那么PTRS_PER_PMD == 1时是不是要给pgd的项
+  分配pte呢？
+- 从以下代码可以看出PAGE_OFFSET的好处了，因为页表项的高20位是物理地址，而从pmd_cache里分配
+  的内存是在内核范围内的，所以可以通过__pa(pmd)来获得pmd的物理地址，如果不使用PAGE_OFFSET的
+  话而使用普通的虚拟地址那么就很麻烦。
+ #+BEGIN_EXAMPLE
+		set_pgd(&pgd[i], __pgd(1 + __pa(pmd)));
+ #+END_EXAMPLE
+** void pgd_free(pgd_t *pgd)
+*** arch/i386/mm/pgtable.c:
+- 有注释说打开PAE的情况下，用户的pgd项在使用前会被填充重写，就是最后的那1G的空间。所以要释
+  放pgd时要先释放它们。那除了这些项之外的其它项在哪里被释放了呢？
+** static inline pud_t *pud_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address)
+*** include/linux/mm.h:
+- 这个是在有4级页表的时候才使用的.
+- 如果pgd参数所指的pgd项为空的话就分配pud，
+** static inline int pgd_none(pgd_t pgd)		{ return 0; }
+*** include/asm-generic/pgtable-nopud.h:
+- 相应的项是0那么就返回1，就是说如果对应的项是空的那么就返回1，就是说参数pgd为0的话就返回1。
+  pgd_none的检查对象是pgd.
+** #define pud_none(pud)				0
+*** include/asm-i386/pgtable-3level.h:
+- pud为0返回1。
+** #define pmd_alloc_one(mm, address)		NULL
+*** include/asm-generic/pgtable-nopmd.h:
+** #define pmd_alloc_one(mm, addr)		({ BUG(); ((pmd_t *)2); })
+*** include/asm-i386/pgalloc.h:
+- 这是不打开PAE的时候才可以用的。为什么是2的指针呢？
+** static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
+*** include/asm-x86_64/pgalloc.h:
+- 这个就会调用get_zeroed_page()了，所以可以看出是分配一个页的做为一个pmd页表的。
+- 返回的类型是pmd_t的指针,说明一个pmd页表里的项的类型是pmd_t的。
+** pmd_t fastcall *__pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
+*** mm/memory.c:
+- 这个函数只有一个实现，是不未定义__PAGETABLE_PMD_FOLDED时才可以调用的。这个
+** static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
+*** include/linux/mm.h:
+- 这个是在不定义__ARCH_HAS_4LEVER_HACK时才可以调用的。
+- 这个函数调用了__pmd_alloc()
+** pte_t fastcall *pte_alloc_map(struct mm_struct *mm, pmd_t *pmd, unsigned long address)
+*** mm/memory.c:
+- 这个函数是用于从kmap那里分配一个页表.
+- 先用pmd_present()来判断Present标志看pmd所指向的page middle页表项所描述的page table是否存
+  在。若存在就没有必要再分配了，但是如果被回收了又怎么处理呢？难道被回收ULK：If the entry of a Page
+  Table or Page Directory needed to perform an address translation has the Present flag
+  cleared, the paging unit stores the linear address in a control register named cr2 and
+  generates exception 14: the Page Fault exception.原来访问一个不存在页时分页单元是这样来处
+  理来发出Page Fault。
+- mm->nr_ptes只在这里增加，说明要给进程分一个页表就要通过这个函数。
+- 在ULK里没有介绍struct page_state结构体,这个结构体被声明成了一个per-cpu变量,所以会对每个
+  CPU的所有页的状态进行跟踪,但是页不会属于特定的CPU,那么这种跟踪有什么用呢?而这个
+  pte_alloc_map()是用来分配一个page table页表的,所以每分配一个页表就会増加
+  nr_page_table_pages.这就可以通过把所有CPU的这个值加起来得到.
+- pmd_populate(mm, pmd, new)就是把一个值赋给pmd,mm没有用到,对于new是由alloc_pages()分配的，
+  应该是一个页描述符的虚拟地址，但是可以通过page_to_pfn()来找到它的页框号。对于
+  pmd_populate()是用_PAGE_TABLE作为它的标志，就是(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER |
+  _PAGE_ACCESSED | _PAGE_DIRTY)，所以这个是使用了_PAGE_USER标志，也就是说使用
+  pte_alloc_map()函数分配的页表是给用户空间使用的。
+- 最后还调用了pte_offset_map()，就是调用kmap_atomic()(如果没有使用高端内存就使用
+  page_address())，所以就是作为高端内存映射的。
+** struct page *pte_alloc_one(struct mm_struct *mm, unsigned long address)
+*** arch/i386/mm/pgtable.c:
+- 这个函数只有pte_alloc_map()调用。
+- 这个函数是分配一个页作为一个page table.
+- 只是调用了alloc_pages(),用__GFP_HIGHMEM表示可以在高端内存分配，本应该这样的，因为页表是属
+  于进程的。用了__GFP_REPEAT表示可能会休眠。用了__GFP_ZERO表示会清零。
+** pte_t fastcall * pte_alloc_kernel(struct mm_struct *mm, pmd_t *pmd, unsigned long address)
+*** mm/memory.c:
+- 这个与pte_alloc_map()不同了，不是通过高端内存来分配,所以调用了pte_alloc_one_kernel()
+** pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+*** arch/i386/mm/pgtable.c:
+- 使用了__get_free_page()来获取一个页表，所以不能分配高端内存，这也是因为内核不能访问高端内
+  存.所以这个函数返回的内存是内核可以访问的。
+** #define pmd_populate_kernel(mm, pmd, pte) set_pmd(pmd, __pmd(_PAGE_TABLE + __pa(pte)))
+*** include/asm-i386/pgalloc.h:
+- 这个函数被pte_alloc_kernel()调用
+- 这个函数用来设置pmd项的值的。
+- 与pmd_populate()的主要的不同是物理地址的计算不同了，因为是低端地址，所以可以用__pa()来获
+  取物理地址。
+** static inline void pte_free(struct page *pte)
+*** include/asm-i386/pgalloc.h:
+- 这个是调用__free_page()的，那么被释放的内存应该是不分高低端内存的。
+** static inline void pte_free_kernel(pte_t *pte)
+*** include/asm-i386/pgalloc.h:
+- 这个函数调用了free_page(),转而调用free_pages(),转而调用__free_pages(),里面有一个用
+  virt_to_page()的调用
+** #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+*** include/asm-i386/page.h:
+- 这个宏的意思就是把一个地址转为struct page *的地址, 而被转的地址是一个低端地址.
+** void __init paging_init(void)
+*** arch/i386/mm/init.c:
+- 这个函数是用来初始化主内核全局页表的，主要就是调用pagetable_init()
+** static void __init pagetable_init (void)
+*** arch/i386/mm/init.c:
+- 为什么要在打开PAE的情况下要把页表项指向empty_zoro_page呢?
+- cpu_has_pse检测pse,是从boot_cpu_data那里来的,转而从new_cpu_data那里来的,有注释这样说:cpu
+  data as detected by the assembly code in head.S.若设置这个标志那么就设置cr4寄存器的
+  PSE位.pse的全称是page size extern.
+- 与cpu_has_pse相似,有一个cpu_has_pge,但是为什么会设置_PAGE_GLOBAL而不设置_PAGE_GLOBAL呢?
+- 然后调用kernel_physical_mapping_init()
+** static void __init kernel_physical_mapping_init(pgd_t *pgd_base)
+*** arch/i386/mm/init.c:
+- 这个函数会把主内核页表里的全局页表从虚拟地址PAGE_OFFSET开始的页表项到最后一个页表项都分配
+  相应的pud,pmd和pte(只要存在相应的级页表存在)。
+- 注释这样说它的作用: This maps the physical memory to kernel virtual address space, a
+  total of max_low_pfn pages, by creating page tables starting from address PAGE_OFFSET.
+- max_low_pfn : Page frame number of the last page frame directly mapped by the kernel
+  (low memory)
+- 因为要映射的线性地址是从PAGE_OFFSET开始的,所以要用pgd_index()来找到对应的项的下
+- 为什么会出现pfn不小于max_low_pfn后再continue的情况呢？在max_low_pfn小于1G(896M)的时或在使
+  用3级页表时(因为只要1个pgd页表的项就可以表示1G了)，但是因为还要给后面的pgd页表项分配pmd页
+  表，所以还要continue来调用one_md_table_init().
+- 如果在80x86（32bit）上使用扩展页表，那么只使用一级一页表，就是pgd,因为offset要用22位才可
+  以达到4M的页框，如果80x86上使用扩展页表且打开PAE,那么页框是2M的，使用的是2级页表外加一个
+  PDPT。
+- 这个is_kernel_text()在虚拟地址是大于PAGE_OFFSET且小于__init_end的时候才返回1。
+** static pmd_t * __init one_md_table_init(pgd_t *pgd)
+*** arch/i386/mm/init.c:
+- 在这里可以看出对于打开了PAE的32位x86来说是使用了3级页表的,而不打开PAE的32位x86来说是使用
+  了2级页表.所以在打开了PAE的时候这个函数里会分一个pmd页表, 而使用3级页表的时候的
+  pud_offset()是直接把参数pgd转换pud_t类型后返回的.在不打开PAE的时候因为pud_offset()和
+  pmd_offset()都是返回参数的,所以也不用分配什么页表,所以到最后整个函数返回的就是参数pgd.所
+  以在调用这个函数的kernel_physical_mapping_init()里的最外层的for循环的pmd在使用2级页表的时
+  候就是pgd的值
+** static pte_t * __init one_page_table_init(pmd_t *pmd)
+*** arch/i386/mm/init.c:
+- pmd_page_kernel(pmd)函数返回pmd页表项pmd参数所对于page talbe的页表的页的虚拟地址。
+- pte_offset_kernel(pmd, 0)的意思是从pmd页表项pmd所对应的page talbe页表里找出第二个参数所对
+  应的pte页表项。
+- 总结一下...page...类的函数返回的是参数所对应的页表项的下一级页表的页框；...offset...类的
+  函数返回的是把第一个参数作为页表项找出下一级页表的页框(使用...page...)后再用第二参数作为
+  虚拟地址从页表中找到对应的页表项(使用...index()函数)。
+** static void __init page_table_range_init (unsigned long start, unsigned long end, pgd_t *pgd_base)
+*** arch/i386/mm/init.c:
+- 以参数pgd_base为全局页表的首地址，把start到end之间的虚拟地址都分配相应的pmd页表和pte页表。
+- 如果没有使用pud这一级页表，那么PUD_SHIFT等于PGDIR_SHIFT，又如果没有使用pmd这一级页表，那
+  么PMD_SHIFT等于PUD_SHIFT。所以在这个函数里如果一共使用了2级页表，那么vaddr += PMD_SIZE就
+  是vaddr += PGDIR_SIZE.
+** static void __init permanent_kmaps_init(pgd_t *pgd_base)
+*** arch/i386/mm/init.c:
+- 这个函数用来初始化(给所有的永久映射虚拟地址分配页表和页框(就是调用了
+  page_table_range_init))永久映射页表的。最后把基虚拟地址映射的页框赋给了pkmap_page_table.
+- 先是调用page_table_range_init()来把从PKMAP_BASE开始长度为PAGE_SIZE*LAST_PKMAP的虚拟地址的
+  页表全分配了，再连续调用pud_offset(),pmd_offset(),pte_offset_kernel()来找出PKMAP_BASE地址
+  对应的
+- 永久映射使用的页表是主内核的页表(swapper_pg_dir)，只使用一个pte页表，所以大小就是一个pte
+  页表所能表示的范围。
+- 永久映射也作为内核映射高端内存的其中一种机制。
+** void zap_low_mappings (void)
+*** arch/i386/mm/init.c:
+- 为什么要保存原来的swapper_pg_dir页表保存在swsusp_pg_dir呢？
+- 把swapper_pg_dir里从0到USER_PTRS_PER_PGD的所有页表项那清零了，所以到最后主内核页表的前
+  USER_PTRS_PER_PGD都是空的。
+
+
+
+
+- 内核可以采用三种不同的机制将页框映射到高端内存；分别叫做永久内核映射、临时内核映射以及非
+  连续内存分配。
+- http://www.linuxidc.com/Linux/2012-02/53457.htm
+- 永久内核映射允许内核建立高端页框到内核地址空间的长期映射。使用主内核页表中一个专门的页表，
+  其地址存放在变量pkmap_page_table中，那是不是说明了永久内核映射所能映射的范围是2的22次方的
+  大小呢？（如果Page Table是10位，offset是12位）。页表中的表项数由LAST_PKMAP宏产生。
+- pkmap_count数组包含LAST_PKMAP个计数器，pkmap_page_table页表中的每一项都有一个。
+- 这里由定义可以看出永久内存映射为固定映射下面的4M/2M空间(用了PMD_MASK), 注意是在FIXADDR_BOOT_START处地址减的
+ #+BEGIN_EXAMPLE
+#define PKMAP_BASE ((FIXADDR_BOOT_START - PAGE_SIZE * (LAST_PKMAP + 1)) \   
+            & PMD_MASK)
+ #+END_EXAMPLE
+- 高端映射区逻辑页面的分配结构用分配表(pkmap_count)来描述，它有1024项，对应于映射区内不同的
+  逻辑页面。当分配项的值等于0时为自由项，等于1时为缓冲项，大于1时为映射项。映射页面的分配基
+  于分配表的扫描，当所有的自由项都用完时，系统将清除所有的缓冲项，如果连缓冲项都用完时，系
+  统将进入等待状态。
+- 为了记录高端内存页框与永久内核映射包含的线性地址之间的联系，内核使用了
+  page_address_htable散列表。该表包含一个page_address_map数据结构，用于为高端内存中的每一个
+  页框进行当前映射。而该数据结构还包含一个指向页描述符的指针和分配给该页框的线性地址。
+- page_address()函数返回页框对应的线性地址
+- 有注释这样说：
+ #+BEGIN_EXAMPLE
+/*
+ * Ordering is:
+ *
+ * FIXADDR_TOP
+ * 			fixed_addresses
+ * FIXADDR_START
+ * 			temp fixed addresses
+ * FIXADDR_BOOT_START
+ * 			Persistent kmap area
+ * PKMAP_BASE
+ * VMALLOC_END
+ * 			Vmalloc area
+ * VMALLOC_START
+ * high_memory
+ */
+ #+END_EXAMPLE
+
+** void *kmap_atomic(struct page *page, enum km_type type)
+*** arch/i386/mm/highmem.c:
+- 这个函数用来映射临时内存映射(fix map)的.
+- 为什么要禁止抢占呢？有注释说:even !CONFIG_PREEMPT needs this, for in_atomic in
+  do_page_fault
+- 对于每个类型的内存，不同的CPU都是映射到相同的内存，为什么要这样做呢？
+** #define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
+*** include/asm-i386/fixmap.h:
+- 从这个函数可以看出，参数x是一个km_type的一个下标，一个下标表示一个页框（因为用了
+  PAGE_SHIFT），因为用减法，所以可以看出下标越大那么它的虚拟地址越小，
+- FIXADDR_TOP是一个宏，所以是固定的，是0xfffff000，因为大于0xc0000000，所以是在内核虚拟地址
+  内的。但是为什么不是0xffffffff呢？要把最后的4k的大小的虚拟内存出来呢？
+- 这个宏在ULK里的实现时使用了编译器的特点做到了检查参数。
+** static void set_pte_pfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags)
+*** arch/i386/mm/pgtable.c:
+- 这个函数的作用就是通过vaddr找到相应的page talbe页表项，然后再用参数页框号pfn和标志初始化
+  找到的页表项。
+** void __set_fixmap (enum fixed_addresses idx, unsigned long phys, pgprot_t flags)
+*** arch/i386/mm/pgtable.c:
+- 这个用idx通过__set_fixmap()找到相应的虚拟地址，找到之后再用set_pte_pfn()来设置找到的虚拟
+  地址所对应的Page Talbe页表项。
+** void *page_address(struct page *page)
+*** mm/highmem.c:
+- ULK：returns the linear address associated with the page frame, or NULL if the page
+  frame is in high memory and is not mapped.
+- 这个函数只由内核用来查找一个内核使用的线性地址所对应的页框的页描述符。
+- 通过查页描述符的PG_highmem来判断该页是否在高端内存里。
+- 如果是低端内存那么就调用lowmem_page_address()使用PAGE_SHIFT,PAGE_OFFSET,_va()这些东西找到
+  虚拟地址。
+- 虽然是内核使用的，但内核也可以使用高端内存，因为有内核有3种方式可以将内核虚拟地址映射到高
+  端内存。但是这个函数在找高端内存时只能找永久映射部分的，那么其它的两种方式就找不到了吗？
+- 如果是高端内存，那么就用page_slot()找到该页对应的散列项，找到之后再对找到散列项链表里的所
+  有结点进行遍历找到相应的结点，找到结点之后就返回结点里的virtual成员，这个成员就是要找的虚
+  拟地址，结点还有一个page成员表示该结点对应哪个页描述地址。
+** void fastcall *kmap_high(struct page *page)
+*** mm/highmem.c:
+- 这个函数的作用就是把参数page指向的高端内存页框映射到永久虚拟地址里去。
+- 先用page_address()来找出page所指向的虚拟地址，如果这个地址没有映射，那么就会返回0，每次调
+  用这个函数都会把这个页指向的虚拟地址的使用计数加1，如果小于2，那么就BUG()。如果为0，那么
+  就说明这个页没有被映射，那么就调用map_new_virtual(),
+** static inline unsigned long map_new_virtual(struct page *page)
+*** mm/highmem.c:
+- 这个函数的作用就是为参数page从永久映射区里找一个线性地址来关连起来，并设置相应的页表项。
+- last_pkmap_nr是用来保存上一次调用这个函数时找到的合适的虚拟地址的,累加时使用
+  LAST_PKMAP_MASK相与，所以可以自动处理回绕。
+- 如果last_pkmap_nr为0表示回绕了，可以刷新一下不使用的页表项了，用flush_all_zero_pkmaps()刷
+  新
+- 如果LAST_PKMAP个项都扫描过了,那么就要休眠一下等其它的进程释放内存,这也说明这个函数会休眠,不
+  能作原子操作.
+- 等待释放内存有一个专门等待队列叫pkmap_map_wait,把等待对象插入之后就调度,调度回来就把对象
+  从等待队列里删除,这时还要检查是不是对象又被分配出去了,如果是又被分配出去的话就不用再等待
+  了而是把现在的虚拟地址返回,为什么不用再等待了,难道再次被其它进程分配的就是想要的吗?的确是
+  我们想要的因为调用这个函数就是想把一个页框找一个永久映射的虚拟地址把它给关联起来,所以调用
+  page_address()时发现这个页框已有虚拟地址与它关联,那么就返回这个地址就可以了.
+- 如果休眠回来发现页框没有被映射,那么就再用原来的步骤扫描一次.
+- 若找到了相应的虚拟地址,就用页框号和相应的kmap_prot标志初始化页表项,把在pkmap_count相应的
+  项设为1,再调用set_page_address()在相应的散列表项里加上这个页框相应的结点.
+** static void flush_all_zero_pkmaps(void)
+*** mm/highmem.c:
+- 会用循环遍历所有的永久映射页表项来清除不使用的页表项.
+- 页表项对应的pkmap_count项不为1表示还使用,为1表示没有使用了.为1时就设回0.
+- 用pte_clear()直接把对应的页表项清零就行了.
+** void set_page_address(struct page *page, void *virtual)
+*** mm/highmem.c:
+- 这个函数用于永久内存映射的.ULK:insert a new element in the page_address_htable hash
+  table
+- 有个一叫page_address_pool的内存池,是struct page_address_map的内存池
+- 如果参数virtual不为空,那么就从page_address_pool里取一个struct page_address_map,然后用参数
+  page和virtual初始化struct page_address_map,最后把struct page_address_map加到散列表里去.
+- 如果参数virtual为空,那就以参数page为标准从相应的散列表里找到相应的结点struct
+  page_address_map,找到了之后就从散列表里删除这个结点,再把这个结点加到page_address_pool内存
+  池里,但是没有把删除的结点清零.
+** void fastcall kunmap_high(struct page *page)
+*** mm/highmem.c:
+- 先用page_address()和参数page找到相应的虚拟地址,再用找到虚拟地址和PKMAP_NR()找到对应的下
+  标,再用找到的下标和pkmap_count数组找到使用计数减1,为1就会调用witqueue_active()看
+  pkmap_map_wait队列是否为空,若不为空,就调用wake_up()把pkmap_map_wait把唤醒队列里的进程.
+
+** void *kmap_atomic(struct page *page, enum km_type type)
+*** arch/i386/mm/highmem.c:
+- 临时映射(fix-map)不是把某个页框一直映射到一个页表项来达到不休眠的,而是有一个内核模块使用
+  来达到的,所以不使用时被映射的页框会被释放.
+- 之前对enum fixed_address的理解有错误,以为只对高端内存有用,原来还有其它的使用,就是除了
+  CONFIG_HIGHMEM,还有CONFIG_ACPI_BOOT,CONFIG_X86_IO_APIC这类的东西.而enum km_type里的成员才
+  是一个成员对应一个模块的,那么enum fixed_address里的所有可能的成员的地址的大小是不是是128M呢?
+
