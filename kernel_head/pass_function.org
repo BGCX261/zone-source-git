@@ -3145,5 +3145,9 @@
   来达到的,所以不使用时被映射的页框会被释放.
 - 之前对enum fixed_address的理解有错误,以为只对高端内存有用,原来还有其它的使用,就是除了
   CONFIG_HIGHMEM,还有CONFIG_ACPI_BOOT,CONFIG_X86_IO_APIC这类的东西.而enum km_type里的成员才
-  是一个成员对应一个模块的,那么enum fixed_address里的所有可能的成员的地址的大小是不是是128M呢?
+  是一个成员对应一个模块的,那么enum fixed_address里的所有可能的成员的地址的大小是不是是
+  128M呢?如果是这样子就有疑问了,高端内存只有一个内核模块使用吗?现在又明白一点了,不是高端内
+  存只有一个内核模块使用,而是高端内存有多个内核模块使用,要想知道有谁使用,不是看enum
+  fixed_address,而是看enum km_type,km_type里面的东西才是说明有哪些内核模块使用的,如
+  KM_USER0,KM_PTE0,KM_IRQ0等等.
 
