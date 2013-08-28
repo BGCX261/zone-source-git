@@ -9,7 +9,7 @@
 ;;光标靠近鼠标指针时，让鼠标指针自动让开，别挡住视线
 (mouse-avoidance-mode 'animate)
 ;;去掉工具栏
- (tool-bar-mode nil)
+(tool-bar-mode nil)
 ;;去掉菜单栏，我将F10绑定为显示菜单栏，万一什么东西忘了，需要菜单栏了能摁F10调出，再摁F10就去掉菜单
 (menu-bar-mode nil)
 ;;去掉滚动条
@@ -25,17 +25,16 @@
 ;而用M-w的时候，则会复制光标所在的行，不管光标的位置在行首还是行尾还是行中间的
 ;任意位置。当你有选中区域的时候，C-w和M-w的功能和Emacs自带的没啥两样。
 (defadvice kill-ring-save (before slickcopy activate compile)
- (interactive
- (if mark-active (list (region-beginning) (region-end))
- (list (line-beginning-position)
- (line-beginning-position 2)))))
+(interactive
+(if mark-active (list (region-beginning) (region-end))
+(list (line-beginning-position)
+(line-beginning-position 2)))))
  
 (defadvice kill-region (before slickcut activate compile)
  (interactive
  (if mark-active (list (region-beginning) (region-end))
  (list (line-beginning-position)
  (line-beginning-position 2)))))
-
 
 ;;复制一个单词
 (defun huangq-save-word-at-point()
@@ -48,17 +47,27 @@
 (global-set-key (kbd "C-c w") 'huangq-save-word-at-point)
 
 ;; C-t 设置标记 ;; 
+(global-set-key (kbd "C-z") 'other-window)
+
+;; C-t 设置标记 ;; 
 ;; (global-set-key (kbd "C-t") 'set-mark-command)
 
 ;; C-x b => CRM bufer list
-(global-set-key "\C-xb" 'electric-buffer-list)
+;; (global-set-key "\C-xb" 'electric-buffer-list)
 
 ;;---------- redo
-;; (global-set-key ( kbd "C-.") 'undo) ;; having being C-/
-
+(global-set-key ( kbd "C-.") 'other-window)
 
 ;; F8窗口间跳转
 (global-set-key [f8] 'other-window)
+;; F9切换buffer
+(global-set-key [f9] 'switch-to-buffer)
+
+;; F5调revert-buffer刷新
+(defun revert-buffer-no-confirm ()
+  "Revert buffer without confirmation."
+  (interactive) (revert-buffer t t))
+(global-set-key [f5] 'revert-buffer-no-confirm)
 
 
 ;全屏
@@ -70,52 +79,53 @@ nil 0 nil "_NET_WM_STATE" 32
 (global-set-key [f11] 'my-fullscreen);F11 全屏
 
 
-;鼠标滚轮，默认的滚动太快，这里改为3行
-(defun up-slightly () (interactive) (scroll-up 3))
-(defun down-slightly () (interactive) (scroll-down 3))
-(global-set-key [mouse-4] 'down-slightly)
-(global-set-key [mouse-5] 'up-slightly)
+;鼠标滚轮，默认的滚动太快，这里改为3行，但这个改法只能在光标所在的缓冲区中滚动
+;; 原来是在鼠标所在的缓冲区中滚动的
+;; (defun up-slightly () (interactive) (scroll-up 3))
+;; (defun down-slightly () (interactive) (scroll-down 3))
+;; (global-set-key [mouse-4] 'down-slightly)
+;; (global-set-key [mouse-5] 'up-slightly)
 
 ;;========================================
-;;关闭当前缓冲区 Alt+4  ;; C-x 0
+;; ;;关闭当前缓冲区 Alt+4  ;; C-x 0
 (global-set-key (kbd "M-4") 'delete-window)
-;;关闭其它缓冲区 Alt+1  ;; C-x 1
+;; ;;关闭其它缓冲区 Alt+1  ;; C-x 1
 (global-set-key (kbd "M-1") 'delete-other-windows)
-;;水平分割缓冲区 Alt+2  ;; C-x 2
+;; ;;水平分割缓冲区 Alt+2  ;; C-x 2
 (global-set-key (kbd "M-2") 'split-window-vertically)
-;;垂直分割缓冲区 Alt+3  ;; C-x 3
+;; ;;垂直分割缓冲区 Alt+3  ;; C-x 3
 (global-set-key (kbd "M-3") 'split-window-horizontally)
-;;切换到其它缓冲区 Alt+0 ;; C-x o 
+;; ;;切换到其它缓冲区 Alt+0 ;; C-x o 
 (global-set-key (kbd "M-0") 'other-window)
 
 ;;========================================
 ;; 缓冲区
 ;;========================================
 
-;;设定行距
+;; ;;设定行距
 (setq default-line-spacing 0)
 
-;;页宽 
+;; ;;页宽 
 (setq default-fill-column 90)
 
-;;缺省模式 text-mode
+;; ;;缺省模式 text-mode
 (setq default-major-mode 'text-mode)
 
-;;设置删除纪录
+;; ;;设置删除纪录
 (setq kill-ring-max 200)
 
-;;以空行结束
+;; ;;以空行结束
 (setq require-final-newline t) 
 
 
-;;语法加亮
+;; ;;语法加亮
 (global-font-lock-mode t)
 
 ;;高亮显示区域选择
 (transient-mark-mode t)
 
-;;页面平滑滚动， scroll-margin 3 靠近屏幕边沿3行时开始滚动，可以很好的看到上下文。
-(setq scroll-margin 3
+;;页面平滑滚动， scroll-margin 2 靠近屏幕边沿2行时开始滚动，可以很好的看到上下文。
+(setq scroll-margin 2
       scroll-conservatively 10000)
 
 ;高亮显示成对括号，但不来回弹跳
@@ -185,9 +195,9 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 ;;使用X剪贴板
 (setq x-select-enable-clipboard t) 
 ;;;;;;;; 使用空格缩进 ;;;;;;;;
-;; indent-tabs-mode  t 使用 TAB 作格式化字符  nil 使用空格作格式化字符
+;;indent-tabs-mode  t 使用 TAB 作格式化字符  nil 使用空格作格式化字符
 (setq indent-tabs-mode nil)
-(setq tab-always-indent nil)
+(setq tab-always-indent t)
 (setq tab-width 4)
 ;;设置默认路径
 (setq default-directory "~/")
@@ -204,7 +214,7 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 (set-foreground-color "gainsboro")
 (set-background-color "black")
 (set-border-color "black")
-;; 语法高亮显示，区域选择，二次选择 ;;前景和背景色
+;;语法高亮显示，区域选择，二次选择 ;;前景和背景色
 (set-face-foreground 'highlight "white")
 (set-face-background 'highlight "blue")
 (set-face-foreground 'region "cyan")
@@ -212,12 +222,12 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 (set-face-foreground 'secondary-selection "skyblue")
 (set-face-background 'secondary-selection "darkblue")
 
-;;显示行好
+;;显示行号
 ;; (global-linum-mode t)
 
 
 ;; Load CEDET
-(add-to-list 'load-path "~/emacs-23.3/site-lisp/cedet/common")
+(add-to-list 'load-path "/usr/share/emacs-23.3/site-lisp/cedet/common")
 (require 'cedet)
 (require 'semantic-ia)
  
@@ -227,30 +237,30 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 ;; Enable SRecode (Template management) minor-mode.
 ;(semantic-load-enable-minimum-features)
 (semantic-load-enable-code-helpers)
-;(semantic-load-enable-guady-code-helpers)
-;(semantic-load-enable-excessive-code-helpers)
-(semantic-load-enable-semantic-debugging-helpers)
-;(semantic-idle-completions-mode)
+(semantic-load-enable-guady-code-helpers)
+;; (semantic-load-enable-excessive-code-helpers)
+;; (semantic-load-enable-semantic-debugging-helpers)
+;; (semantic-idle-completions-mode)
 ;(setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
 ;                                  global-semanticdb-minor-mode
 ;                                  global-semantic-idle-summary-mode
 ;                                  global-semantic-mru-bookmark-mode))
 ;(semantic-mode 1)
-(global-srecode-minor-mode 1)
+;; (global-srecode-minor-mode 1)
 ;; (setq semanticdb-project-roots (list (expand-file-name "/")))
-;;;; CC-mode配置  http://cc-mode.sourceforge.net/
+;;CC-mode配置  http://cc-mode.sourceforge.net/
 (require 'cc-mode)
 (c-set-offset 'inline-open 0)
 (c-set-offset 'friend '-)
 (c-set-offset 'substatement-open 0)
-(setq-default indent-tabs-mode  nil)
+(setq-default indent-tabs-mode  t)
 (setq tab-width 4
       c-basic-offset 4)
 
 ;;添加头文件目录
 (defconst cedet-user-include-dirs
   (list ".." "../include" "../inc" "../common" "../public"
-        "../.." "../../include" "../../inc" "../../common" "../../public" "/usr/include/" "/usr/local/include/"))
+        "../.." "../../include" "../../inc" "../../common" "../../public"))
 (defconst cedet-win32-include-dirs
   (list "H:/Keil/ARM/INC/Samsung"
         ))
@@ -289,51 +299,53 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;以上是CEDET的配置;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;setup ecb
-(add-to-list 'load-path "~/emacs-23.3/site-lisp/ecb-2.40/")
-;(load-file "/usr/share/emacs/site-lisp/ecb-2.32/ecb.el")
+(add-to-list 'load-path "/usr/share/emacs-23.3/site-lisp/ecb-2.40/")
+     ;(load-file "/usr/share/emacs/site-lisp/ecb-2.32/ecb.el")
 (require 'ecb)
 
 
 
-(add-to-list 'load-path "~/emacs-23.3/site-lisp/color-theme-6.6.0") 
+(add-to-list 'load-path "/usr/share/emacs-23.3/site-lisp/color-theme-6.6.0") 
 (require 'color-theme) 
 (color-theme-initialize) 
-(color-theme-pok-wog)
-;(color-theme-oswald)
+(color-theme-calm-forest)
+;; (color-theme-pok-wog)
+     ;; (color-theme-oswald)
 
 
-;; ;; 给Emacs添加Tab功能: http://emhacks.sourceforge.net/
-;; (load-file "~/.emacs.d/tabbar.el")
+      ;; 给Emacs添加Tab功能: http://emhacks.sourceforge.net/
+;; (load-file "/usr/share/emacs-23.3/site-lisp/tabbar.el")
 ;; (require 'tabbar)
 ;; (tabbar-mode 1)
-;; ;; (setq tabbar-buffer-groups-function
-;; ;; (lambda (buffer)
-;; ;; (list "All buffers")))
+;;(setq tabbar-buffer-groups-function   ;这个会使所有的标签不分组
+     ;; (lambda (buffer)
+    ;; (list "All buffers")))
 ;; (global-set-key (kbd "M-[") 'tabbar-backward-group)
 ;; (global-set-key (kbd "M-]") 'tabbar-forward-group)
-;; (global-set-key (kbd "M-p") 'tabbar-backward-tab)
-;; (global-set-key (kbd "M-n") 'tabbar-forward-tab)
+;; (global-set-key (kbd "M-9") 'tabbar-backward-tab)
+;; (global-set-key (kbd "M-0") 'tabbar-forward-tab)
 ;; (global-set-key [(control tab)] 'tabbar-forward-tab)
+
+   ;;cscope http://fhf25.blog.sohu.com/74454393.html
+(load-file "/usr/share/emacs-23.3/site-lisp/cscope-15.7a/contrib/xcscope/xcscope.el")
+(require 'xcscope)
 
 ;; Use this mode for editing files in the dot-language (www.graphviz.org and
 ;; http://www.research.att.com/sw/tools/graphviz/).
-;; To use graphviz-dot-mode, add 
-(load-file "~/.emacs.d/graphviz-dot-mode.el") 
-;; http://emacser.com/emacs_graphviz_ds.htm
-;; (load "graphviz-dot-mode.el" nil t t)
-;; (add-hook 'find-file-hook (lambda()
-;;                             (if (string= "dot" (file-name-extension
-;;                                                 buffer-file-name))
-;;                                 (progn
-;;                                   (message "Enabling Setings for dot-mode")
-;;                                   (setq fill-column 1000)
-;;                                   (base-auto-pair)
-;;                                   (local-set-key (kbd "<C-f6>") 'compile)
-;;                                   )
-;;                               )))
+;;
+;; To use graphviz-dot-mode, add
+(load-file "~/.emacs.d/graphviz-dot-mode.el")
+;; to your .emacs or ~/.xemacs/init.el
 
-;; (put 'downcase-region 'disabled nil)
+;; 使ecb的file-symboldef的窗口不打开对话框
+;; (setq use-file-dialog nil)
 
+(setq default-tab-width 4)
+
+(setq indent-tabs-mode t)
+
+;;(setq default-tab-width 4)这一行起作用，下面那行不起作用。
+(setq tab-width 4)
 
 (setq gnus-select-method '(nntp "comp.os.linux.answers"))
  ;; or news.cn99.com; news.yaako.com 
@@ -425,7 +437,7 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 (setq smtpmail-auth-credentials
     '(("smtp.126.com";; SMTP 服务器
        25
-       "vpcrg")))          ;; 用户名
+       "vcprg")))          ;; 用户名
        ;; "")))   ;; 密码
 (setq smtpmail-default-smtp-server "smtp.126.com")
 (setq smtpmail-smtp-server "smtp.126.com")
@@ -457,4 +469,44 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 	"cn.bbs.comp.linux"
 	"cn.comp.os.linux")) ;; 这里也有一个 emacs 小团伙，
                          ;; 有空去凑个热闹吧，中文的哟 
+
+;; (setq scheme-program-name "mit-scheme")
+(load-file "~/.emacs.d/quack.el")
+(require 'quack)
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(display-time-mode t)
+ '(ecb-layout-name "left9")
+ '(ecb-options-version "2.40")
+ '(ecb-windows-width 0.18)
+ '(menu-bar-mode nil)
+ '(quack-programs (quote ("mzscheme" "bigloo" "csi" "csi -hygienic" "gosh" "gracket" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "racket" "racket -il typed/racket" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
+ '(show-paren-mode t)
+ '(tool-bar-mode nil))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "gray12" :foreground "green" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))))
+
+(setq org-latex-to-pdf-process '("pdftexi2dvi --pdf --clean --verbose --batch %f"))
+
+(fset 'node-label
+	  "\341\C-k\C-y[]\C-blabel=\"\"\C-b\C-y\C-e;\C-j")
+(global-set-key (kbd "C-2") 'node-label)
+
+(fset 'subgraph-cluster
+   [tab ?\C-. ?\C-s ?\( ?\C-r ?\C-m ?\C-r ?  ?\C-s ?\C-m ?\M-z ?\( ?\C-y ?\C-/ ?\C-/ ?\C-. ?s ?u ?b ?g ?r ?a ?p ?h ?  ?c ?l ?u ?s ?t ?e ?r ?_ ?\C-y backspace ?\{ return ?\} ?\C-a ?\C-o tab ?l ?a ?b ?e ?l ?= ?\" ?\" ?\C-b ?\C-. ?\C-a ?\M-z ?\{ ?\C-/ ?\C-. ?\C-y backspace backspace ?\C-e ?\; ?\C-j ?\C-x ?\C-s])
+(global-set-key (kbd "C-1") 'subgraph-cluster)
+
+(fset 'narrow
+	  "\C-r \C-s\C-m\C-k\C-y;\C-y -> ")
+
+(global-set-key (kbd "C-3") 'narrow)
+
 

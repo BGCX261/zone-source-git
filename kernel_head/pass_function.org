@@ -3151,3 +3151,112 @@
   fixed_address,而是看enum km_type,km_type里面的东西才是说明有哪些内核模块使用的,如
   KM_USER0,KM_PTE0,KM_IRQ0等等.
 
+
+** static void __init kmap_init(void)
+*** arch/i386/mm/init.c:
+- 这个函数被paging_init()调用,paging_init()被setup_arch()调用,在paging_init()里是先调用
+  pagetable_init()再调用kmap_init()的.
+- 调用完pagetable_init()之后,fix-mapping的线性地址(对于特定的模块已经是固定的了)已经指向了
+  特定的Page Table.所以以虚拟地址调用kmap_get_fixmap_pte()(用pte_offset_kernel()实现)返回就
+  是对应的页表项了.
+- kmap_pte指向开头的Page Table页表项,这个在kmap_atomic()里使用,kmap_prot为所有fix-mapping页
+  表项的权限,这个也在kmap_atomic()里使用.这个函数就只是初始化这两个变量而已.而相应的页表项
+  在paging_init()里被初始化了.
+** void *kmap_atomic(struct page *page, enum km_type type)
+*** arch/i386/mm/highmem.c:
+- 这个函数为什么要禁止抢占呢?在这里禁止抢占而在kunmap_atomic()使能抢占.
+- 因为fix-mapping的页表paging_init()里被初始化,所以在这个函数里只要把页框号填到相应的页表项
+  就可以了,而不用分配页表项,所以这个函数执行起来也很快.
+
+- mem_map包含了所有的页框,而每个zone包含了其中的一段,zone结构体里的zone_mem_map指向了所包含
+  的那段的开头的下标,size表示包含段的大小.free_area是一个结构体,而zone结构体里的free_area成
+  员是一个free_area结构体数组.
+- zone结构体里的free_area数组包含了11个不同页大小的链表.页表描述符的lru把链表里的页描述符连
+  起来.
+- struct free_zone结构体里的free_list成员是页描述符的链表头.
+- 页描述符的private表明了该页被链在哪个free_area元素下,就是下标.
+** static struct page *__rmqueue(struct zone *zone, unsigned int order)
+*** mm/page_alloc.c:
+- 这个函数从伙伴系统里分配页.
+- 如果对应order的那个链表没有结点了的话那么就要从其它的更大的order的链表里拆分了.拆分之后的
+  合并在expand()函数里处理.
+- 因为是在一组连续的页框里的第一个页框设置了页描述符的private成员为order而其它的页没有设置,所
+  以要把找到的连续的页框的第一个页框的页描述符的private给设为0,还要把该页的页描述符的flags
+  标志的PG_private给清掉.
+- zone->nr_free减1
+- zone->free_pages要减去order对应的页的大小,而不管是否从其它更大的order里拆出页来.
+** static inline struct page *expand(struct zone *zone, struct page *page,int low, int high, struct free_area *area)
+*** mm/page_alloc.c:
+- 这个函数被__rmqueue()调用来处理因不满足分配大小的要求而拆其它更大的页组.
+- 用循环来处理拆页合页操作,low是要求的order,high是实际被分到的order,要循环high-low次.
+** static inline void __free_pages_bulk (struct page *page, struct zone *zone, unsigned int order)
+*** mm/page_alloc.c:
+- 一个order为x的链表里的一个结点就是一个页描述符,而这个页描述符对应的页框之后连续2^x个页框
+  就是一组的,那么结点的那个页的页框地址是不是一定是2^x*2^12的倍数呢?而在这个页的后面连续页
+  框就不能是这个的倍数了.这也就是为什么合并两个块时要ULK说的这个条件:The physical address
+  of the first page frame of the first block is a multiple of 2 x b x 2^12.
+- 还要注意一个问题,就是被链接到free_area的页描述符所对应的页框号的最低11位不能全为0
+- 每个循环里page局部变量只会减小或不变,不会增大因为combined_idx不会比page_idx大,但这样的设
+  计是有问题的吧?因为这样的设计只能让page为头的这一block不能与之前的block合并,只能与后面的
+  合并.这句话中的后面那部分说错了,page的确是只能减小不能增大,
+- 在ULK里很好的说明了buddy这个变量,但是没有说明combined_idx这个变量.
+- 其实在合并时就两种情况:
+ #+BEGIN_EXAMPLE
+  1, page_idx的order位为0时有以下情况
+
+  __find_combined_index()返回的值等于page_idx,返回的值是赋给combined_idx的,所以在后面执行
+  page=page+(combined_idx-page_idx)之后page其实不变.
+
+  __page_find_buddy()返回的值是page+order_size就是page+(1<<order),返回的值是赋给buddy的,所
+  以在执行完page=page+(combined_idx-page_idx)之后,page < buddy的.所以也可以得出如果两个块合
+  并,那么是物理地址最小的那页作为块头被链到块链表里.
+
+  这种情况就是与比page地址大的地址合并.
+
+  --------------------------------------------------------------------
+  2, page_idx的order位为1时有以下情况
+
+  __find_combined_index()返回的值小于(这个与情况1不同)page_idx,返回的值是赋给
+  combined_idx的,所以在后面执行page=page+(combined_idx-page_idx)之后page变小,小了
+  (1<<order)(与1不同).
+
+  __page_find_buddy()返回的值是page-order_size(这个与情况1不同)就是page-(1<<order),返回的值
+  是赋给buddy的,所以在执行完page=page+(combined_idx-page_idx)之后,page = buddy的.所以也可以
+  得出如果两个块合并,那么是物理地址最小的那页作为块头被链到块链表里.
+
+  这种情况就是与比page地址小的地址合并.
+
+  -----------------------------------------------------------------
+  这两种情况下的page都会指向该块的最小的地址.
+
+ #+END_EXAMPLE
+** static int rmqueue_bulk(struct zone *zone, unsigned int order,unsigned long count, struct list_head *list)
+*** mm/page_alloc.c:
+- 这个函数的作用就是从zone区里分配count个大小为2^order的块,把这些块插到list链表里去,是用
+  page->lru链起来的.
+** static struct page *buffered_rmqueue(struct zone *zone, int order, unsigned int __nocast gfp_flags)
+*** mm/page_alloc.c:
+- 如果order是大于0的话,那么就和调用__rmqueue()一样,如果order为0那么就是从per-CPU page
+  frame caches里获取了,
+- 虽然__rmqueue()也可以分配order为0的页框,但是在分配时有可能会拆更大的块,而且在释放时很可
+  能又会把这页框合并,如果是是频繁分配和释放的话就会很浪费时间.所以需要这样的单页cache.
+** static void fastcall free_hot_cold_page(struct page *page, int cold)
+*** include/linux/page-flags.h:
+- 这个函数是把页释放到per-CPU caches里,所以order肯定是0.
+- 这个函数的会增加page_state->pgfree
+- per-CPU cache是放在zone->pageset链表里的,而且是每个CPU都有,每个zone都有自已的pageset.
+- struct per_cpu_cpuset里就只有一个struct per_cpu_pages 类型的2元数组pcp,一个是hot cache一
+  个是cold cache.
+- 这个函数会调用free_pages_bulk()来释放所有的页框.但是这个函数不只是释放order为0的块.
+** static int free_pages_bulk(struct zone *zone, int count, struct list_head *list, unsigned int order)
+*** mm/page_alloc.c:
+- 这个函数会把count个order为order的块放到zone里,而这些链表是放在list链表里的.
+- zone->pages_scanned在这里清零,为什么要这样做呢?pages_scanned的解释ULK:Counter used when
+  doing page frame reclaiming in the zone.
+- zone->pages_unreclaimable也清0,ULK:Flag set when the zone is full of unreclaimable
+  pages.
+
+- per-CPU cache分配器所得到的页是以order为0调用buffered_rmqueue()来分配的,转而调用
+  rmqueue_bulk(),再转而调用__rmqueue();zone分配器是通过__alloc_pages()来分得页的,转而以
+  order可能不为0调用buffered_rmqueue(),转而有可能调用__rmqueue()或rmqueue_bulk().所以可以得
+  出这两个分配器最终都是调用__rmqueue()分配页的.
