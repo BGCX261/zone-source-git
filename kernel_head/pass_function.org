@@ -3260,3 +3260,602 @@
   rmqueue_bulk(),再转而调用__rmqueue();zone分配器是通过__alloc_pages()来分得页的,转而以
   order可能不为0调用buffered_rmqueue(),转而有可能调用__rmqueue()或rmqueue_bulk().所以可以得
   出这两个分配器最终都是调用__rmqueue()分配页的.
+
+- zone->pages_low:Low watermark for page frame reclaiming; also used by the zone allocator
+  as a threshold value.
+
+** int zone_watermark_ok(struct zone *z, int order, unsigned long mark, int classzone_idx, int can_try_harder, int gfp_high)
+*** mm/page_alloc.c:
+- 这个函数返回1表示有足够的页.
+- can_try_harder为1表示可以在更难的情况下来分配,所以min会比较大,gfp_high表示min可以小一点.
+- 首先要确的如果真的分配了(1<<order)+1个页之后,那么保留页框(zone->lowmem_reserve[])和
+ #+BEGIN_EXAMPLE
+	if (free_pages <= min + z->lowmem_reserve[classzone_idx])
+ #+END_EXAMPLE
+- 但是第二个条件是什么意思呢?ULK里的看不明白,到底与zone->pages_low有什么关系呢?
+** struct page * fastcall __alloc_pages(unsigned int __nocast gfp_mask, unsigned int order, struct zonelist *zonelist)
+*** mm/page_alloc.c:
+- 第一次扫描zone->zonelist里的区时不用can_try_harder和gfp_high,所以第一次扫描时调用的
+  zone_watermark_ok()的最后两个参数为0.
+ #+BEGIN_EXAMPLE
+		if (!zone_watermark_ok(z, order, z->pages_low,
+				       classzone_idx, 0, 0))
+ #+END_EXAMPLE
+- 扫描完第一次之后如果没有可用的页就要唤醒所有zone的回收页框线程了。
+- 第二次扫描的时候调用zone_watermark_ok()时比第一次加上can_try_harder和__GFP_HIGH.还有一个
+  和第一次扫描不一样的地方是加多一个是等待的判断，不知道这个判断有什么用。
+- ULK：and it is trying to reclaim page frames (either the PF_MEMALLOC flag or the
+  PF_MEMDIE flag of current is set)。TIF_MEMDIE只有select_bad_process()和__alloc_pages()读
+  取来判断，只有__oom_kill_task()设置。
+ #+BEGIN_EXAMPLE
+	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+ #+END_EXAMPLE
+- 若进程想回收页框且不在中断(软硬)中就执行第三次扫描，buffer_rmqueue()这个函数是不休眠的.但
+  是第三次的扫描是不管wait的,但是已经不用zone_watermark_ok()了。zone_watermark_ok()只有第一
+  次和第二次的时候使用。
+- 第三次扫描完之后如果不能等待那么不再做什么了，而是直接退出。唤醒进程是在第一次扫描时。
+ #+BEGIN_EXAMPLE
+	if (!wait)
+		goto nopage;
+ #+END_EXAMPLE
+- 第三次扫描完之后如果可以等待就马上调用cond_resched()看是不是可以调度以其它进程可以回收内
+  存。
+ #+BEGIN_EXAMPLE
+  rebalance:
+	cond_resched();
+ #+END_EXAMPLE
+- 调度回来之后就设置PF_MEMALLOC，表明该进程开始回收内存了,同时也要设置一个reclaim_state,之
+  后就调用try_to_free_pages()
+ #+BEGIN_EXAMPLE
+	p->flags |= PF_MEMALLOC;
+	reclaim_state.reclaimed_slab = 0;
+	p->reclaim_state = &reclaim_state;
+	did_some_progress = try_to_free_pages(zones, gfp_mask, order);
+	p->reclaim_state = NULL;
+	p->flags &= ~PF_MEMALLOC;
+ #+END_EXAMPLE
+- try_to_free_pages()之后还要还要看看是不是需要调度。
+ #+BEGIN_EXAMPLE
+	cond_resched();
+ #+END_EXAMPLE
+- 调度回来之后若try_to_free_pages()返回成功就再以第二次相同的方法扫描。
+ #+BEGIN_EXAMPLE
+	if (likely(did_some_progress)) {
+ #+END_EXAMPLE
+- 若try_to_free_pages()没有成功返回，且__GFP_FS设置了，__GFP_NORETRY没设，那么就以第一次扫
+  描的方式来扫描。且在这种情况下若没找到内存，那么就回到这个函数的开头重新执行。
+
+** int __sched cond_resched(void)
+*** kernel/sched.c:
+- 如果TIF_NEED_RESCHED设置了，那么就会禁止抢点然后调度再使能中断，如果调度回来之后发现
+  TIF_NEED_RESCHED还设置，那么再禁止抢点然后调度再使能中断。
+- 如果__GFP_NORETRY没有设置且order不大于3或__GFP_REPEAT设置了，那么就调用
+  blk_congestion_wait()来等待。如果__GFP_NORETRY没有设置且__GFP_NOFAIL设置了，那么就调用也
+  blk_congestion_wait()
+- 这个函数一共有5个地方来扫描zone.
+** fastcall void __free_pages(struct page *page, unsigned int order)
+*** mm/page_alloc.c:
+- 如果是保留的页就不用释放页，那么保留页怎么处理呢？
+- 如果是page->_count减1之后不为0，那么也不能释放页，因为还有其它进程在使用。
+- 如果order为0，那么调用free_hot_page()放到per-CPU cache里。
+- 如果order不为0，那么就调用__free_pages_ok()
+** void __free_pages_ok(struct page *page, unsigned int order)
+*** mm/page_alloc.c:
+- 要修改page_state->pgfree.
+- 为什么使用MMU才会递减page->_count计数器呢？
+ #+BEGIN_EXAMPLE
+#ifndef CONFIG_MMU
+	if (order > 0)
+		for (i = 1 ; i < (1 << order) ; ++i)
+			__put_page(page + i);
+#endif
+ #+END_EXAMPLE
+- 要把这个块插到一个空的链表头里去。
+ #+BEGIN_EXAMPLE
+	list_add(&page->lru, &list);
+ #+END_EXAMPLE
+- 最后调用free_pages_bulk()把页释放。
+
+
+
+- slab allocator是属于Memory Area Management这一部分的。
+- 在slab分配器里一个cache有多个slab，一个slab有多个object
+- ULK:A first cache called kmem_cache whose objects are the cache descriptors of the
+  remaining caches used by the kernel. The cache_cache variable contains the descriptor of
+  this special cache.
+- 关于对齐因子的解释，ULK：The objects managed by the slab allocator are aligned in
+  memorythat is, they are stored in memory cells whose initial physical addresses are
+  multiples of a given constant, which is usually a power of 2. This constant is called
+  the alignment factor.最大的对齐因子是一个页的大小
+- ULK:microcomputers access memory cells more quickly if their physical addresses are
+  aligned with respect to the word size (that is, to the width of the internal memory bus
+  of the computer).Thus, by default, the kmem_cache_create( ) function aligns objects
+  according to the word size specified by the BYTES_PER_WORD macro.
+- ULK:When creating a new slab cache, it's possible to specify that the objects included in it
+  be aligned in the first-level hardware cache. To achieve this, the kernel sets the
+  SLAB_HWCACHE_ALIGN cache descriptor flag. The kmem_cache_create( ) function handles the
+  request as follows: If the object's size is greater than half of a cache line, it is
+  aligned in RAM to a multiple of L1_CACHE_BYTESthat is, at the beginning of the
+  line. eOtherwise, the object size is rounded up to a submultiple of L1_CACHE_BYTES; this
+  ensures that a small object will never span across two cache lines.
+- Slab中引用着色机制是为了提高L1缓冲的效率。我们知道linux是一个兼容性很高的平台，但现在处理
+  器的缓冲区方式多种多样，有的每个处理器有自己的独立缓存。有的很多处理器共享一个缓存。有的
+  除了一级缓存（L1）外还是二级缓存（L2），因此，linux为了更好的兼容处理平台，只优化了一级缓
+  存.http://blog.chinaunix.net/uid-9543173-id-1988997.html
+- 使用着色的原因的一个是让不相同大小的对象尽量不放在同一个cache line里，另一个原因是
+
+** void __init kmem_cache_init(void)
+*** mm/slab.c:
+- 这个函数的注释我喜欢，先来个总的说明，
+- cache_chain这个是所有kmem_cache_t的链表头。cache_cache是第一个结点。
+  https://www.ibm.com/developerworks/cn/linux/l-linux-slab-allocator/ 有图说明
+** kmem_cache_t *kmem_cache_create (const char *name, size_t size, size_t align, unsigned long flags, void (*ctor)(void*, kmem_cache_t *, unsigned long), void (*dtor)(void*, kmem_cache_t *, unsigned long))
+*** mm/slab.c:
+- size的大小是指object的大小。
+- 开始要调整参数size,不足一个字的要补足一个字
+ #+BEGIN_EXAMPLE
+	if (size & (BYTES_PER_WORD-1)) {
+		size += (BYTES_PER_WORD-1);
+		size &= ~(BYTES_PER_WORD-1);
+	}
+ #+END_EXAMPLE
+- 处理对齐的那段代码还是看不明白。
+- 要在cache的大小小于512M或内部碎片的有足够的空间放slab描述符时才放在外部，这时会设置CFLGS_OFF_SLAB.
+ #+BEGIN_EXAMPLE
+Slab descriptors can be stored in two possible places:
+External slab descriptor
+Stored outside the slab, in one of the general caches not suitable for ISA DMA pointed to by
+cache_sizes (see the next section).
+Internal slab descriptor
+Stored inside the slab, at the beginning of the first page frame assigned to the slab.
+The slab allocator chooses the second solution when the size of the objects is smaller than 512MB or
+when internal fragmentation leaves enough space for the slab descriptor and the object descriptors
+(as described later)inside the slab. The CFLGS_OFF_SLAB flag in the flags field of the cache descriptor
+is set to one if the slab descriptor is stored outside the slab; it is set to zero otherwise.
+ #+END_EXAMPLE
+- 为什么要在对象的大小大于页大小的1/8时就把slab描述符放在外部呢？难道是因为对象太大以至于没
+  有多余的碎片了吗？有一个这样的注释:Size is large, assume best to place the slab management obj off-slab
+  (should allow better packing of objs).所以这样做也只是一个猜想的结果。
+ #+BEGIN_EXAMPLE
+	/* Determine if the slab management is 'on' or 'off' slab. */
+	if (size >= (PAGE_SIZE>>3))
+		/*
+		 * Size is large, assume best to place the slab management obj
+		 * off-slab (should allow better packing of objs).
+		 */
+		flags |= CFLGS_OFF_SLAB;
+ #+END_EXAMPLE
+- cache->gfporder: Logarithm of the number of contiguous page frames included in a single
+  slab. ULK:If the slab cache has been created with the SLAB_RECLAIM_ACCOUNT flag set, the
+  page frames assigned to the slabs are accounted for as reclaimable pages when the kernel
+  checks whether there is enough memory to satisfy some User Mode requests.就是说设置了
+  SLAB_RECLAIM_ACCOUNT标志,那么表示这个slab里的页框在当内核检查是否有足够的内存来满足用户模
+  式请求时可以回收这个slab.
+- 在SLAB_RECLAIM_ACCOUNT设置且对象的大小小于页大小时,就把cache->gfporder设为0,这样做是不是
+  因为页可以被轻易回收所以就把gfporder设置尽量小,且又因为一个对象的大小小于一个页大小,所以
+  可以把cache->gfporder设成最小0.
+- 第一个do{}while循环主要的作用是确定cache->gfporder,cache->num和内部碎片(left_over局部变
+  量).cache->gfporder一开始是0,在这个循环的过程中会不断地增加.
+
+ #+BEGIN_EXAMPLE
+			cachep->gfporder++;
+ #+END_EXAMPLE
+  如果cache->gfporder在增加的过程中超过了MAX_GFP_ORDER,那么就要退出循环
+
+ #+BEGIN_EXAMPLE
+			if (cachep->gfporder >= MAX_GFP_ORDER)
+				break;
+ #+END_EXAMPLE
+  在这里cache->num一定不能等于0
+
+ #+BEGIN_EXAMPLE
+			if (!cachep->num)
+				goto next;
+ #+END_EXAMPLE
+  关于offslab_limit的注释：Max number of objs-per-slab for caches which use off-slab
+  slabs. Needed to avoid a possible looping condition in cache_grow().所以有做这样的处理：
+ #+BEGIN_EXAMPLE
+			if (flags & CFLGS_OFF_SLAB &&
+					cachep->num > offslab_limit) {
+				/* This num of objs will cause problems. */
+				cachep->gfporder--;
+				break_flag++;
+				goto cal_wastage;
+			}
+ #+END_EXAMPLE
+- slab_break_gfp_order就只有0或1这两种值，所以一个cache里最多只能有1个页或2个页。
+ #+BEGIN_EXAMPLE
+			if (cachep->gfporder >= slab_break_gfp_order)
+				break;
+ #+END_EXAMPLE
+- 可允许的内部碎片是这样子计算的
+ #+BEGIN_EXAMPLE
+			if ((left_over*8) <= (PAGE_SIZE<<cachep->gfporder))
+				break;	/* Acceptable internal fragmentation. */
+ #+END_EXAMPLE
+- 如果设了CFLGS_OFF_SLAB且内部碎片不小于slab描述符和所有对象描述符的大小,那么就清掉CFLGS_OFF_SLAB
+
+ #+BEGIN_EXAMPLE
+	/*
+	 * If the slab has been placed off-slab, and we have enough space then
+	 * move it on-slab. This is at the expense of any extra colouring.
+	 */
+	if (flags & CFLGS_OFF_SLAB && left_over >= slab_size) {
+		flags &= ~CFLGS_OFF_SLAB;
+		left_over -= slab_size;
+	}
+ #+END_EXAMPLE
+- 内部和外部的存放不同那么计算slab_size的大小也不一样。
+ #+BEGIN_EXAMPLE
+	slab_size = ALIGN(cachep->num*sizeof(kmem_bufctl_t)
+				+ sizeof(struct slab), align);
+	if (flags & CFLGS_OFF_SLAB) {
+		/* really off slab. No need for manual alignment */
+		slab_size = cachep->num*sizeof(kmem_bufctl_t)+sizeof(struct slab);
+	}
+
+ #+END_EXAMPLE
+- cache->colour_off，ULK:Basic alignment offset in the slabs.
+- cache->colour,ULK：Number of colors for the slabs 
+- cache->colour_off就是cache_line_size()，就是cache行的大小。
+  http://hi.baidu.com/zengzhaonong/item/52a529a5371a86248919d38b
+ #+BEGIN_EXAMPLE
+	cachep->colour_off = cache_line_size();
+ #+END_EXAMPLE
+- 原来cache->colour是这样计算的，就left_over直接除cache->colour_off.
+ #+BEGIN_EXAMPLE
+	cachep->colour = left_over/cachep->colour_off;
+ #+END_EXAMPLE
+- cache->slab_size就是slab描述符加上所有的object描述符，如果是在内部，那么还要加上最后一个
+  对象的后面的对齐字节
+ #+BEGIN_EXAMPLE
+	slab_size = ALIGN(cachep->num*sizeof(kmem_bufctl_t)
+				+ sizeof(struct slab), align);
+ #+END_EXAMPLE
+ #+BEGIN_EXAMPLE
+	if (flags & CFLGS_OFF_SLAB) {
+		/* really off slab. No need for manual alignment */
+		slab_size = cachep->num*sizeof(kmem_bufctl_t)+sizeof(struct slab);
+	}
+ #+END_EXAMPLE
+- cache->flags,ULK:flags Set of flags that describes permanent properties of the cache.
+- cache->gfpflags,ULK:gfpflags Set of flags passed to the buddy system function when
+  allocating page frames.在这个函数里只会设置GFP_DMA
+ #+BEGIN_EXAMPLE
+	if (flags & SLAB_CACHE_DMA)
+		cachep->gfpflags |= GFP_DMA;
+ #+END_EXAMPLE
+- cache->slabp_cache,ULK:Pointer to the general slab cache containing the slab descriptors
+  (NULL if internal slab descriptors are used;)
+ #+BEGIN_EXAMPLE
+	if (flags & CFLGS_OFF_SLAB)
+		cachep->slabp_cache = kmem_find_general_cachep(slab_size,0);
+ #+END_EXAMPLE
+- 看到最后一个函数alloc_slabmgmt的最后一段注释，说效果甚微，这是为什么呢？这其实就是最终撤
+  销slab着色的原因之一。我们看到如果slab的数目只有cachep->colour个的话，这个slab着色的效果
+  就 太好了，但是这往往不太现实，slab的数目有时是相当大的，这样的话，slab着色实际上只是帮了
+  一点点小忙而已，它仅仅保证了最开始的几个slab不会map到同一个cpu cache line，但是待slab逐渐
+  增加以后，后面的slab将还是会无情的打仗，从而造成cpu访问cache频频失效，这种能救几个算几个
+  的思想可能对于人类救灾是有效的，毕竟生命高于一切(当然不包括三氯氰胺事件)，但是对于系统设
+  计，这种效果的机制不如不要，因为我们用大量的代码维持了一个效果甚微的方案，这是不值得的，
+  软件设计就是这样，每笔账都要算清，赔本的生意绝对不做，内核开发者的慧眼识别出了这个滥竽充
+  数的所谓的巧妙算法，绝然地移除了它，在分配器从slab发展到slub以后，这个问题相对简单了许多，
+  slub的思想就是简单，不要那么多花里胡哨的算法，就是简单，简单就是美，这确实是一句真理，冲
+  突就冲突呗，只要我们带来的益处超过了冲突带来的麻烦，这就是值得的，鸵鸟算法在这种情况下就
+  是有效的，确实是这样。hi.baidu.com/zengzhaonong/item/52a529a5371a86248919d38b
+
+
+** static void cache_estimate(unsigned long gfporder, size_t size, size_t align, int flags, size_t *left_over, unsigned int *num)
+*** mm/slab.c:
+- 一开始cache->gfporder是0,因为cache是在这个函数分配的且分配之后马上清零.所以cal_wastage处
+  的循环一开始的cache->gfporder是0的.
+- http://oss.org.cn/kernel-book/ch06/6.3.3.htm 说明了着色区和补尝着色区是如何分布的,这篇文
+  章对我理解着色的具体实现有很大的帮助。对于一个cache里的第一个slab,它是这样分布的：一开始
+  一个cache->colour_off的大小(在alloc_slabmgmt()可以看出),紧接着是slab描述符，紧接着是一连串的
+  object描述符，这些object描述符中间不用添加对齐字节，紧接着是因为要对齐cpu cache line所添
+  加的字节，紧接着是cache->colour_off*cache->colour_next个字节，紧接着是一堆连续的object，
+  但是这些object之间要添加上对齐字节。cache->colour_off是一个cpu cache line所占的字节数，对
+  于第一个slab，cache->colour_next是0，第二个就是1，以此类推，cache->colour_next在
+  cache_grow()里自增。
+ #+BEGIN_EXAMPLE
+	while (i*size + ALIGN(base+i*extra, align) <= wastage)
+		i++;
+ #+END_EXAMPLE
+- cache_estimate:指定slab的大小后，返回slab中的对像个数以及剩余空间数
+- 因为对象的描述符是放在slab描述符之后的,所以如果slab描述符放在内部,那么对象的结构体也是放
+  在内部的.
+ #+BEGIN_EXAMPLE
+	if (!(flags & CFLGS_OFF_SLAB)) {
+		base = sizeof(struct slab);
+		extra = sizeof(kmem_bufctl_t);
+	}
+ #+END_EXAMPLE
+- 
+
+** static void *kmem_getpages(kmem_cache_t *cachep, unsigned int __nocast flags, int nodeid)
+*** mm/slab.c:
+- When the slab allocator creates a new slab, it relies on the zoned page frame allocator
+  to obtain a group of free contiguous page frames. For this purpose, it invokes the
+  kmem_getpages( ) function,所以这个函数是给
+- 参数flags要加上cache->gfpflags的标志
+- 用alloc_pages()分配页之后要用page_address()来获取虚拟地址。
+- 如果设置了SLAB_RECLAIM_ACCOUNT，那么就增加slab_reclaim_pages,这个变量表示有多少个
+  slab_pages页可以在页少时可以回收。
+- page_state->nr_slab也要增加
+- 还要修改page描述符的PG_slab。
+** static void kmem_freepages(kmem_cache_t *cachep, void *addr)
+*** mm/slab.c:
+- 相对于kmem_getpages()来说，这个函数就是释放的。
+- 因为通过virt_to_page()来获得页描述符，所以可以确定slab不会在高端内存。
+- 如果current->reclaim_state不为空，表示current要回收页，所以要增加
+  current->reclaim_state->reclaimed_slab.
+- 这里会调用free_pages()释放页
+- 若设了SLAB_RECLAIM_ACCOUNT,那么就要减slab_reclaim_pages
+
+** static int cache_grow(kmem_cache_t *cachep, unsigned int __nocast flags, int nodeid)
+*** mm/slab.c:
+- the slab allocator assigns a new slab to the cache by invoking cache_grow( ) . 
+- 这段代码计算了当前要分配的slab里的第一个对象要比第一个slab里的第一个对象的位置偏移多少.
+ #+BEGIN_EXAMPLE
+    offset = cachep->colour_next;
+	cachep->colour_next++;
+	if (cachep->colour_next >= cachep->colour)
+		cachep->colour_next = 0;
+	offset *= cachep->colour_off;
+ #+END_EXAMPLE
+
+
+** static struct slab* alloc_slabmgmt(kmem_cache_t *cachep, void *objp, int colour_off, unsigned int __nocast local_flags)
+*** mm/slab.c:
+- 如果cache->dtor不为空就要对每个对象调用dtor(),
+ #+BEGIN_EXAMPLE
+	if (cachep->dtor) {
+		int i;
+		for (i = 0; i < cachep->num; i++) {
+			void* objp = slabp->s_mem+cachep->objsize*i;
+			(cachep->dtor)(objp, cachep, 0);
+		}
+ #+END_EXAMPLE
+- 释放一个slab也可以用rcu来释放
+ #+BEGIN_EXAMPLE
+	if (unlikely(cachep->flags & SLAB_DESTROY_BY_RCU)) {
+		struct slab_rcu *slab_rcu;
+
+		slab_rcu = (struct slab_rcu *) slabp;
+		slab_rcu->cachep = cachep;
+		slab_rcu->addr = addr;
+		call_rcu(&slab_rcu->head, kmem_rcu_free);
+ #+END_EXAMPLE
+** void *kmem_cache_alloc(kmem_cache_t *cachep, unsigned int __nocast flags)
+*** mm/slab.c:
+- 调用__cache_alloc()
+** static inline void *__cache_alloc(kmem_cache_t *cachep, unsigned int __nocast flags)
+*** mm/slab.c:
+- kmem_bufctl_t类型原来就是一个整型而已,因为它是存放一个地址的而已.
+- cache->array的元素存放不同CPU的可用的空闲的对象
+
+** static void *cache_alloc_refill(kmem_cache_t *cachep, unsigned int __nocast flags)
+*** mm/slab.c:
+- 若共享链表里有空闲的,那么就把空闲的对象移到相应的链表,而不是在共享链表里使用分配,就是说共
+  享链表里的所有对象都是空闲的.拷贝过去的只是一个地址而已,也就是说在紧跟struct array_cache
+  后面的是对象的地址,不是对象本身.
+ #+BEGIN_EXAMPLE
+			memcpy(ac_entry(ac), &ac_entry(shared_array)[shared_array->avail],
+					sizeof(void*)*batchcount);
+ #+END_EXAMPLE
+- 无论如何,都可以通过以下的代码找到slab->list所指向的在slabs_partial或在slabs_free里的结点.
+ #+BEGIN_EXAMPLE
+		entry = l3->slabs_partial.next;
+		if (entry == &l3->slabs_partial) {
+			l3->free_touched = 1;
+			entry = l3->slabs_free.next;
+			if (entry == &l3->slabs_free)
+				goto must_grow;
+		}
+		slabp = list_entry(entry, struct slab, list);
+ #+END_EXAMPLE
+- array_cache->avail的最大值是batchcount,说明紧跟array_cache后面的只有batchcount个对象地址.
+- slab描述符是怎样被链起来的呢?应该是通过slab->list,又因为slab->list是kmem_list3结构体里的
+  slabs_full或slabs_partail或slabs_free链表里的一个结点,又因为kmem_cache_t->lists是
+  kmem_list3结构体,这样子就可以把kmem_cache_t和所有的slab关联起来了.
+** static inline void __cache_free(kmem_cache_t *cachep, void *objp)
+*** mm/slab.c:
+- 若array_cache->avail还没有到限制(array_cache->limit)的话就把对象放到array_cache结构体的后
+  面可以了,array_cache->limit一定是不小于array_cache->batchcount的.这是不是说明array_cache
+  结构体后面的对象在地址上不一定是连续的呢?是不是也有可能后面的对象不在同一个slab上?
+- array_cache结构体后的对象因为在空时才分配batchcount个,没有超过array_cache->limit,而会因为
+  释放过多而超过array_cache->limit.
+- 虽然每个CPU都有自已的array_cache结构体,但是不能保证回收到某个CPU的array_cache的对象一定是
+  从该个CPU的array_cache分配出去的.因为进程会被迁移到不同的CPU执行.
+- 若array->avail大于array_cache->limit就要调用cache_flusharray()来释放batchcount个对象。
+ #+BEGIN_EXAMPLE
+		cache_flusharray(cachep, ac);
+ #+END_EXAMPLE
+- 若array->avail小于array_cache->limit，那么就要把对象放回array_cache结构体后面。
+ #+BEGIN_EXAMPLE
+		ac_entry(ac)[ac->avail++] = objp;
+ #+END_EXAMPLE
+** static void cache_flusharray(kmem_cache_t *cachep, struct array_cache *ac)
+*** mm/slab.c:
+- 如果cache->lists->shared不为空且还有空余的空间来存放新的对象，就一定会把对象放到共享队列
+  里，直到填满整个共享队列。但是因为共享队列剩余的空间可以小于batchcount，且在这种情况下是
+  不会处理多余的对象，那么就可能释放的对象数小于batchcount。所以调用free_block()的
+  batchcount参数不一定是array_cache->batchcount。
+- 释放array_cache结构体后面的对象是紧跟在结构体后面的，而不是离结构体最远的那个。所以要把
+  batchount之后的所有对象移到紧跟结构体后面。
+** static void free_block(kmem_cache_t *cachep, void **objpp, int nr_objects)
+*** mm/slab.c:
+- Remember that the lru.prev field of the descriptor of the slab page points to the
+  corresponding slab descriptor.
+ #+BEGIN_EXAMPLE
+		slabp = GET_PAGE_SLAB(virt_to_page(objp));
+ #+END_EXAMPLE
+- 这个函数是对一个对象一个对象独立释放的,不是一起释放的,这也说明了array_cache结构体后面的对
+  象的地址不一定是连续的,更有可能的是这些对象不一定在同一个slab里.
+- 传给这个函数的objpp是array_cache结构体后面的地址,因为objpp是指针的指针,所以是指向结构体后
+  面连续的对象.所以可以用循环来释放
+ #+BEGIN_EXAMPLE
+	for (i = 0; i < nr_objects; i++) {
+ #+END_EXAMPLE
+- 现在才知道slab结构体后面的对象描述符原来是这个作用的,和slab->free结合在一起就实现了一个空
+  闲对象的链表。slab->free存放的是第一个空闲的对象索引，而slab结构体后面的对象描述符是存放
+  对于该对象下一个空闲对象的索引。就是如果slab->free是1，那么索引为1的对象是空闲的，而下一
+  个空闲对象是这样获取的：因为slab->free为1，所以下一个空闲对象的索引存放在紧跟在slab描述符
+  后面的第1个对象描述符里，注意对象描述符是一个整型而已。
+ #+BEGIN_EXAMPLE
+		slab_bufctl(slabp)[objnr] = slabp->free;
+		slabp->free = objnr;
+ #+END_EXAMPLE
+- 以下的代码找到对象的索引
+ #+BEGIN_EXAMPLE
+		objnr = (objp - slabp->s_mem) / cachep->objsize;
+ #+END_EXAMPLE
+- 释放一个对象slab->inuse就要自减
+- 当某个slab里的所有对象为空闲时
+ #+BEGIN_EXAMPLE
+		if (slabp->inuse == 0) {
+ #+END_EXAMPLE
+  且整个cache的空闲对象超过了上限，就要destroy这个slab了
+ #+BEGIN_EXAMPLE
+			if (cachep->lists.free_objects > cachep->free_limit) {
+ #+END_EXAMPLE
+  释放时要把free_objects减去cache->num(一个slab的对象数)
+ #+BEGIN_EXAMPLE
+				cachep->lists.free_objects -= cachep->num;
+ #+END_EXAMPLE
+  若没有超过上限，就要把这个slab插到slabs_free链表里。
+ #+BEGIN_EXAMPLE
+				list_add(&slabp->list,
+				&list3_data_ptr(cachep, objp)->slabs_free);
+ #+END_EXAMPLE
+- 若inuse不为0，那就直接插到slabs_partial里
+ #+BEGIN_EXAMPLE
+			list_add_tail(&slabp->list,
+				&list3_data_ptr(cachep, objp)->slabs_partial);
+ #+END_EXAMPLE
+** void *__kmalloc(size_t size, unsigned int __nocast flags)
+*** mm/slab.c:
+- 这个函数是用来分配2^n大小的slab对象的。
+- 被这个函数分配的对象大小为2^n的cache是在kmem_cache_init()建立的。这个cache就general
+  cache.
+- 这个函数先调用__find_general_cachep()来找出应该哪个cache来分配。再调用__cache_alloc()来分
+  配对象。
+** static inline kmem_cache_t *__find_general_cachep(size_t size, int gfpflags)
+*** mm/slab.c:
+- 所有的general cache都存放在malloc_sizes里。
+- 通过对比大小找到合适cache。
+ #+BEGIN_EXAMPLE
+	while (size > csizep->cs_size)
+		csizep++;
+ #+END_EXAMPLE
+- 因为一个大小的cache有分DMA和非DMA两种对象，所以要通过gfpflags参数来判断
+ #+BEGIN_EXAMPLE
+	if (unlikely(gfpflags & GFP_DMA))
+		return csizep->cs_dmacachep;
+	return csizep->cs_cachep;
+ #+END_EXAMPLE
+** void kfree(const void *objp)
+*** mm/slab.c:
+- 这个函数对应kmalloc()的
+** 
+- ULK:a memory pool allows a kernel componentsuch as the block device subsystemto allocate
+  some dynamic memory to be used only in low-on-memory emergencies.
+- reserved page frames是与memory pool不一样的，前者用于满足中断处理程序和临界区请求的原子分
+  配而建立的，而后者为某个特定的内核部分而保留的动态内存，memory pool 一般不使用。
+- 从memory pool里分配内存可能是要等待的,在mempool_alloc()里休眠。
+- memory pool只是做为slab对象里的一个缓冲区，memory pool的元素有可能是特殊slab里的对象，有
+  可能是general cache里的对象。当是特殊slab时，那么mempool_t->alloc是
+  mempool_alloc_slab(),mempool_t->free是mempool_free_slab(),里面对分别调用
+  kmem_cache_alloc()和kmem_cache_free(), 这时mempool_t->pool_data指向的是cache 描述符。
+** mempool_t * mempool_create(int min_nr, mempool_alloc_t *alloc_fn, mempool_free_t *free_fn, void *pool_data)
+*** mm/mempool.c:
+- mempool_t->min_nr是在创建时确定的，不是所有的mempool都是一样的。
+- mempool_t结构体是用kmalloc()来分配的，没有用特殊的cache.
+- mempool_t->elements原来是一个指针的指针，它指向的是一堆连续的指针
+ #+BEGIN_EXAMPLE
+	pool->elements = kmalloc(min_nr * sizeof(void *), GFP_KERNEL);
+ #+END_EXAMPLE
+- 所有在memory pool里的元素都是从参数pool_data那里来的。
+ #+BEGIN_EXAMPLE
+		element = pool->alloc(GFP_KERNEL, pool->pool_data);
+ #+END_EXAMPLE
+- 这个函数会创建mempool_t->min_nr个元素，对于mempool_t->min_nr，ULK是这样解释的：min_nr
+  Maximum number of elements in the memory pool，注意是maximum
+- 用一个类似array_cache结构体后面来存储对象地址的方式来实现mempool_t->element，那怎么正确的
+  分配与释放的问题呢？
+** static void add_element(mempool_t *pool, void *element)
+*** mm/mempool.c:
+- mempool_t->curr_nr就是内存池第一个空闲元素的位置。那是不是在被回收的元素就要是最近被分配
+  的元素呢？原来理解错了mempool_t->curr_nr意思了，ULK:curr_nr Current number of elements
+  in the memory pool.所以和array_cache->avail相似。
+** void * mempool_alloc(mempool_t *pool, unsigned int __nocast gfp_mask)
+*** mm/mempool.c:
+- 要分配到内存池的元素，就要调用这个函数。
+- 一开始分配元素时没有直接从内存池里分配的，所以一开始是调用mempoolt->alloc来分配的。
+- 第一次调用mempool_t->alloc时是不想等待的，
+ #+BEGIN_EXAMPLE
+	gfp_temp = gfp_mask & ~(__GFP_WAIT|__GFP_IO);
+
+repeat_alloc:
+
+	element = pool->alloc(gfp_temp, pool->pool_data);
+ #+END_EXAMPLE
+- 每次休眠回来都是先从mempool_t->alloc里分配的，
+ #+BEGIN_EXAMPLE
+	prepare_to_wait(&pool->wait, &wait, TASK_UNINTERRUPTIBLE);
+	smp_mb();
+	if (!pool->curr_nr)
+		io_schedule();
+	finish_wait(&pool->wait, &wait);
+
+	goto repeat_alloc;
+ #+END_EXAMPLE
+  且休眠回来之后调用mempool_t->alloc可能会阻塞
+ #+BEGIN_EXAMPLE
+	/* We must not sleep in the GFP_ATOMIC case */
+	if (!(gfp_mask & __GFP_WAIT))
+		return NULL;
+
+	/* Now start performing page reclaim */
+	gfp_temp = gfp_mask;
+ #+END_EXAMPLE
+- 若从mempool_t->alloc里分配不到元素时就会从内存池里分配
+ #+BEGIN_EXAMPLE
+	if (likely(pool->curr_nr)) {
+		element = remove_element(pool);
+		spin_unlock_irqrestore(&pool->lock, flags);
+		return element;
+	}
+ #+END_EXAMPLE
+** void mempool_free(void *element, mempool_t *pool)
+*** mm/mempool.c:
+- 若内存池的元素数没有超过限制就把它放回内存池，并唤醒等待队列
+ #+BEGIN_EXAMPLE
+		if (pool->curr_nr < pool->min_nr) {
+			add_element(pool, element);
+			spin_unlock_irqrestore(&pool->lock, flags);
+			wake_up(&pool->wait);
+			return;
+        }
+ #+END_EXAMPLE
+  否则就释放这个元素
+ #+BEGIN_EXAMPLE
+	pool->free(element, pool->pool_data);
+ #+END_EXAMPLE
+
+- 非连续内存的使用场合：Linux uses noncontiguous memory areas in several ways for
+  instance, to allocate data structures for active swap areas (see the section "Activating
+  and Deactivating a Swap Area" in Chapter 17), to allocate space for a module (see
+  Appendix B), or to allocate buffers to some I/O drivers. Furthermore, noncontiguous
+  memory areas provide yet another way to make use of high memory page frames (see the
+  later section "Allocating a Noncontiguous Memory Area").
+- 原来非连续内存的线性地址是PAGE_OFFSET到0xffffffff这段地址的。这段地址还夹杂着固定映段和临
+  时映射的线性地址。关于这段地址的解释8.3.1节开头有解释。
+
+
+** void *__vmalloc_area(struct vm_struct *area, unsigned int __nocast gfp_mask, pgprot_t prot)
+*** mm/vmalloc.c:
+- 这个函数是一个页一个页地分配给整个连续的线性地址的
+ #+BEGIN_EXAMPLE
+		area->pages[i] = alloc_page(gfp_mask);
+ #+END_EXAMPLE
