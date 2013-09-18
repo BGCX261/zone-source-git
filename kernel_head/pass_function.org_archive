@@ -1,0 +1,14 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/yj/zone-source/kernel_head/pass_function.org
+* mm/mmap.c:
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2013-09-17 二 10:56
+  :ARCHIVE_FILE: ~/zone-source/kernel_head/pass_function.org
+  :ARCHIVE_OLPATH: question/answer:/struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
+  :ARCHIVE_CATEGORY: pass_function
+  :END:
+- 在配置了CONFIG_STACK_GROWSUP时，是用find_vma_prev()来找被extend的vma_area_struct
+
+

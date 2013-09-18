@@ -3175,6 +3175,8 @@
   起来.
 - struct free_zone结构体里的free_list成员是页描述符的链表头.
 - 页描述符的private表明了该页被链在哪个free_area元素下,就是下标.
+- 从pte_offset_map()的实现来看，kmap_atomic()返回的是一个pte页表的起始地址,因为传给
+  kmap_atomic()的page是pmd_page()返回的地址。
 ** static struct page *__rmqueue(struct zone *zone, unsigned int order)
 *** mm/page_alloc.c:
 - 这个函数从伙伴系统里分配页.
@@ -3859,3 +3861,577 @@ repeat_alloc:
  #+BEGIN_EXAMPLE
 		area->pages[i] = alloc_page(gfp_mask);
  #+END_EXAMPLE
+- vm_struct->size的大小是包括安全区的，所以要减去一页的大小
+ #+BEGIN_EXAMPLE
+	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
+ #+END_EXAMPLE
+  但是vm_struct->nr_pages是没有包括安全区的。
+- vm_struct->pages存放的是保存(nr_pages * sizeof(struct page *))个页的地址，
+  vm_struct->pages是一个指针的指针。vm_struct->size是4095的倍数。
+ #+BEGIN_EXAMPLE
+	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
+	array_size = (nr_pages * sizeof(struct page *));
+	/* Please note that the recursion is strictly bounded. */
+	if (array_size > PAGE_SIZE)
+		pages = __vmalloc(array_size, gfp_mask, PAGE_KERNEL);
+	else
+		pages = kmalloc(array_size, (gfp_mask & ~__GFP_HIGHMEM));
+	area->pages = pages;
+ #+END_EXAMPLE
+   从kmalloc()分配到的内存有可能在高端吗？但是有分DMA区和非DMA区的，这个区是用GFP_DMA来区分
+   的。所以这个函数的大部分代码就是为vm_struct->pages分配空间，再分配页框并把页框对应的页描
+   述符地址放到vm_struct->pages指向的空间里。
+- 分配好页之后，就调用map_vm_area()来把vm_struct->addr和这些页框关联起来，就是要建立页表。
+** int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page ***pages)
+*** mm/vmalloc.c:
+- 在这个函数里处理的是pgd页表一级的，通过调用vmap_pud_range()来处理pud一级的页表。
+- 因为整个被映射的虚拟地址有可能超过一个pgd页表项所能表示的最大范围，所以要用循环来处理多个
+  pgd页表项。
+ #+BEGIN_EXAMPLE
+	do {
+		next = pgd_addr_end(addr, end);
+		err = vmap_pud_range(pgd, addr, next, prot, pages);
+		if (err)
+			break;
+	} while (pgd++, addr = next, addr != end);
+ #+END_EXAMPLE
+  任何一个页表里的项所映射的虚拟地址一定是连续的.就是说如果两个页表项是连续的,那么它们所表
+  示的虚拟地址就是连续的.
+** static inline int vmap_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end, pgprot_t prot, struct page ***pages)
+*** mm/vmalloc.c:
+- 这个函数处理的是pud一级的页表.它调用vmap_pmd_range()来处理pmd一级的页表.
+** static inline int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end, pgprot_t prot, struct page ***pages)
+*** mm/vmalloc.c:
+- 这个函数处理的是pmd一级的页表,这调用vmaap_pte_range()处理pte一级的页表.
+** static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end, pgprot_t prot, struct page ***pages)
+*** mm/vmalloc.c:
+- 这个函数处理的是pte一级的页表,用set_pte_at()来填充pte页表项.
+- 比较关键的一点就是如何处理pages这个参数了.
+** void *vmap(struct page **pages, unsigned int count,unsigned long flags, pgprot_t prot)
+*** mm/vmalloc.c:
+- 这个函数就是先调用get_vm_area(),再调用map_vm_area().而vmalloc()调用__vmalloc(),转而调用
+  get_vm_area()到这里与vmap()还是一样的,但是转而调用的__vmalloc_area()不一样
+  了,再__vmalloc_area()里在调用map_vm_area()之前多做了一些事情,就是设置了
+  vm_struct->nr_pages和vm_struct->pages,还分配了页框并把页框对应的描述符地址放到了
+  vm_struct->pages里.所以在调用vmap()之前要把在__vmalloc_area()函数里调用map_vm_area()之前
+  所做的事情做了才可以调用vmap().
+- 所以vmap()的适用场合是:很多个页已经分配好了,这些页可以连续也可以不连续,而且这些的页的页描
+  述地址是已放在参数pages里了,调用这个函数的目的就是把这些页映射到一段连续的线性地址去.
+- 但要注意无论是vmap()还是vmalloc()都不会把vm_struct这个结构体返回给调用者,这个结构体只是内
+  部使用,返回给调用者的是vm_struct->addr这个线性地址.在解除映射时也只接收虚拟地址,而不接收
+  vm_strcut这个结构体,但是不是用container_of()这个宏来用vm_structt->addr找到vm_struct这个结
+  构体的,而是用扫描vmlist这个链表来找到vm_struct的,在__remove_vm_area()里有这段代码
+ #+BEGIN_EXAMPLE
+	for (p = &vmlist ; (tmp = *p) != NULL ;p = &tmp->next) {
+		 if (tmp->addr == addr)
+			 goto found;
+	}
+ #+END_EXAMPLE
+** void vfree(void *addr)
+*** mm/vmalloc.c:
+- 就是直接调用__vunmap(),但是第二个参数是以1调用的,
+** void vunmap(void *addr)
+*** mm/vmalloc.c:
+- 也就是直接调用__vumap(),但是第二个参数是以0调用的,这个参数的作用是在__vumap()里体现的.
+** void __vunmap(void *addr, int deallocate_pages)
+*** mm/vmalloc.c:
+- 无论是又于vfree()还是vunmap(),都要调用remove_vm_area()把虚拟地址对应的页表项给清掉.
+- 接下来的工作是把页框给释放掉,但这个对于vunmap()是不用做的这个工作的,因为调用
+  vmap()时,vmap()所使用的页框不是在vmap()内部分配的,是由外部分配后传给vmap()的.
+
+
+- All memory descriptors are stored in a doubly linked list. Each descriptor stores the
+  address of the adjacent list items in the mmlist field. The first element of the list is
+  the mmlist field of init_mm,
+- The mm_users field stores the number of lightweight processes that share the mm_struct
+  data structure
+- The mm_count field is the main usage counter of the memory descripto
+- We'll try to explain the difference between the use of mm_users and mm_count with an
+  example.Consider a memory descriptor shared by two lightweight processes. Normally, its
+  mm_users field stores the value 2, while its mm_count field stores the value 1 (both
+  owner processes count as one).If the memory descriptor is temporarily lent to a kernel
+  thread (see the next section), the kernel increases the mm_count field. In this way,
+  even if both lightweight processes die and the mm_users field becomes zero, the memory
+  descriptor is not released until the kernel thread finishes using it because the
+  mm_count field remains greater than zero.
+- task_struct->mm_struct->mmap把该进程所有的内存区描述符vm_area_struct给链起来了.
+- Figure 9-1说明是添加一个内存区时的两种不同插入方式(是否有相同的杈限),删除一个内存区时的两
+  种不同的情况(在中间删除或在边上删除).
+- We have already discussed two kinds of flags associated with a page: A few flags such as
+  Read/Write, Present, or User/Supervisor stored in each Page Table entry.A set of flags
+  stored in the flags field of each page descriptor.We now introduce a third kind of flag:
+  those associated with the pages of a memory region.
+- The initial values of the Page Table flags (which must be the same for all pages in the
+  memory region, as we have seen) are stored in the vm_ page_ prot field of the
+  vm_area_struct descriptor. When adding a page, the kernel sets the flags in the
+  corresponding Page Table entry according to the value of the vm_ page_ prot field.
+- When a User Mode process asks for dynamic memory, it doesn't get additional page frames;
+  instead, it gets the right to use a new range of linear addresses, which become part of
+  its address space. This interval is called a "memory region."
+
+** struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr)
+*** mm/mmap.c:
+- 这个函数只是通过地址addr找合适的vm_area_struct而已,找不到也不会分配.
+- 首先是看mm_struct->mmap_cache是不是要找的,因为这个是最近访问的.若不是就要搜索红黑树了.
+- 这个函断要找的vm_area_struct是vm_end大于addr就可以了，与vm_start无关。
+** static inline struct vm_area_struct * find_vma_intersection(struct mm_struct * mm, unsigned long start_addr, unsigned long end_addr)
+*** include/linux/mm.h:
+- 这个函数简单，就是直接用start_addr调用find_vma()来找到包含start_addr地址的区间，再看
+  end_addr是不是在个区间内，若是就是找到区间，否则就是没有这样的区间。
+** unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags)
+*** mm/mmap.c:
+- 一些架构有自已的实现，如ARM。
+- 这个函数是给用户进程分配用户态空间的区域的。
+- 这个函数是从0x40000000的线性地址开始往上增加来分配的，与arch_get_unmapped_area_topdown()相反。
+- mm_struct->mmap_cache是给find_vma()找区间用的，mm_struct->free_area_cache是给
+  arch_get_unmapped_area()用的
+- 先看addr到addr+len这一段是否是空的区间，
+ #+BEGIN_EXAMPLE
+	if (addr) {
+		addr = PAGE_ALIGN(addr);
+		vma = find_vma(mm, addr);
+		if (TASK_SIZE - len >= addr &&
+		    (!vma || addr + len <= vma->vm_start))
+			return addr;
+	}
+ #+END_EXAMPLE
+  不为0表示尽量在addr处开始获得空间，先是用find_vma()找一个vm_end比addr大的vm_area_struct,
+  若找到且addr到addr+len这个区间内的地址都不在vm_area_struct里的话就从addr到addr+len这个区
+  间里有空间可以使用了。
+- 如果上一步没有找到或addr为0就要搜索整个进程的线性地址了。注意是从mm->free_area_cache这个
+  vm_area_struct区间开始找的
+ #+BEGIN_EXAMPLE
+	start_addr = addr = mm->free_area_cache;
+
+full_search:
+	for (vma = find_vma(mm, addr); ; vma = vma->vm_next) {
+ #+END_EXAMPLE
+- 跳到下一个vm_area_struct的操作就是利用vm_area_struct->vm_next,这种方式的话能保证地址是连
+  续搜索的，就是红黑树维护了这一点。
+- 有了一个vm_area_struct，那么开始地址就是从vm_area_struct->vm_end开始的
+ #+BEGIN_EXAMPLE
+		addr = vma->vm_end;
+ #+END_EXAMPLE
+- 判断一个区间是否有存在就是用后一个vm_area_struct->start_addr的地址减去关前一个
+  vm_area_struct->end_addr是否大于addr+len,若是，就表明存在区间了。
+ #+BEGIN_EXAMPLE
+		if (!vma || addr + len <= vma->vm_start) {
+			/*
+			 * Remember the place where we stopped the search:
+			 */
+			mm->free_area_cache = addr + len;
+			return addr;
+		}
+ #+END_EXAMPLE
+** int insert_vm_struct(struct mm_struct * mm, struct vm_area_struct * vma)
+*** mm/mmap.c:
+- vm_area_struct->vm_pgoff，ULK：Offset in mapped file (see Chapter 16). For anonymous
+  pages, it is either zero or equal to vm_start/PAGE_SIZE (see Chapter 17).为什么要这样做呢？
+  有一段这样的注释：The vm_pgoff of a purely anonymous vma should be irrelevant until its
+  first write fault, when page's anon_vma and index are set.  But now set the vm_pgoff it
+  will almost certainly end up with (unless mremap moves it elsewhere before that first
+  wfault), so /proc/pid/maps tells a consistent story. By setting it to reflect the
+  virtual start address of the vma, merges and splits can happen in a seamless way, just
+  using the existing file pgoff checks and manipulations. Similarly in do_mmap_pgoff and
+  in do_brk.
+- 
+** static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev, struct rb_node **rb_link, struct rb_node *rb_parent)
+*** mm/mmap.c:
+- 为什么要把vm_area_struct->vm_truncate_count设成
+  vm_area_struct->vm_file->f_mapping->truncate_count呢？
+- ULK:vm_truncate_count Used when releasing a linear address interval in a non-linear file
+  memory mapping.
+** static inline unsigned long do_mmap(struct file *file, unsigned long addr,unsigned long len, unsigned long prot,	unsigned long flag, unsigned long offset)
+*** include/linux/mm.h:
+- 主要调用了do_mmap_pgoff()
+- 这个函数只是分配一个页大小的虚拟地址
+** unsigned long do_mmap_pgoff(struct file * file, unsigned long addr, unsigned long len, unsigned long prot,unsigned long flags, unsigned long pgoff)
+*** mm/mmap.c:
+- 若file->f_op不为空表示文件操作函数不为空，但是file->f_op->mmap为空就会返回ENODEV
+ #+BEGIN_EXAMPLE
+		if (!file->f_op || !file->f_op->mmap)
+			return -ENODEV;
+ #+END_EXAMPLE 
+- 通过调用get_unmapped_area()来获取地址
+ #+BEGIN_EXAMPLE
+	addr = get_unmapped_area(file, addr, len, pgoff, flags);
+ #+END_EXAMPLE 
+- mm->def_flags,VM_MAYREAD,VM_MAYWRITE, VM_MAYEXEC这几个标志一定是有的,
+ #+BEGIN_EXAMPLE
+	vm_flags = calc_vm_prot_bits(prot) | calc_vm_flag_bits(flags) |
+			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
+ #+END_EXAMPLE 
+- ULK关于参数prot的说明：This parameter specifies the access rights of the pages included
+  in the memory region.Possible flags are PROT_READ, PROT_WRITE, PROT_EXEC, and
+  PROT_NONE. The first three flags mean the same things as the VM_READ, VM_WRITE , and
+  VM_EXEC flags. PROT_NONE indicates that the process has none of those access rights.
+- 关于flags参数有MAP_GROWSDOWN, MAP_LOCKED, MAP_DENYWRITE, and MAP_EXECUTABLE是与VM_有对应
+  的，还有一些不是与VM_对应的，所以对应的那些要转为VM_
+ #+BEGIN_EXAMPLE
+	vm_flags = calc_vm_prot_bits(prot) | calc_vm_flag_bits(flags) |
+			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
+  #+END_EXAMPLE 
+  但MAP_LOCKED还是要特殊处理一下的.先是允许mlock操作才会设置VM_LOCKED
+ #+BEGIN_EXAMPLE
+	if (flags & MAP_LOCKED) {
+		if (!can_do_mlock())
+			return -EPERM;
+		vm_flags |= VM_LOCKED;
+	}
+ #+END_EXAMPLE 
+  接着还要看有没有超限
+
+ #+BEGIN_EXAMPLE
+	if (vm_flags & VM_LOCKED) {
+		unsigned long locked, lock_limit;
+		locked = len >> PAGE_SHIFT;
+		locked += mm->locked_vm;
+		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+		lock_limit >>= PAGE_SHIFT;
+		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+			return -EAGAIN;
+	}
+ #+END_EXAMPLE 
+- MAP_SHARED:The former flag specifies that the pages in the memory region can be shared
+  among several processes; the latter flag has the opposite effect.
+- 对于MAP_SHARED和MAP_PRIVATE也要做处理,对于file是否为空会做出不同的处理:
+ #+BEGIN_EXAMPLE
+	if (file) {
+		switch (flags & MAP_TYPE) {
+		case MAP_SHARED:
+			if ((prot&PROT_WRITE) && !(file->f_mode&FMODE_WRITE))
+				return -EACCES;
+
+			/*
+			 * Make sure we don't allow writing to an append-only
+			 * file..
+			 */
+			if (IS_APPEND(inode) && (file->f_mode & FMODE_WRITE))
+				return -EACCES;
+
+			/*
+			 * Make sure there are no mandatory locks on the file.
+			 */
+			if (locks_verify_locked(inode))
+				return -EAGAIN;
+
+			vm_flags |= VM_SHARED | VM_MAYSHARE;
+			if (!(file->f_mode & FMODE_WRITE))
+				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
+
+			/* fall through */
+		case MAP_PRIVATE:
+			if (!(file->f_mode & FMODE_READ))
+				return -EACCES;
+			break;
+
+		default:
+			return -EINVAL;
+		}
+	} else {
+		switch (flags & MAP_TYPE) {
+		case MAP_SHARED:
+			vm_flags |= VM_SHARED | VM_MAYSHARE;
+			break;
+		case MAP_PRIVATE:
+			/*
+			 * Set pgoff according to addr for anon_vma.
+			 */
+			pgoff = addr >> PAGE_SHIFT;
+			break;
+		default:
+			return -EINVAL;
+		}
+	}
+ #+END_EXAMPLE 
+- 若是映射文件的,在MAP_SHARED情况下,设了PROT_WRITE但file->f_mode没有设FMODE_WRITE是错误的.不
+  允许向一个只能append的文件设置FMODE_WRITE.该file不能有强制锁.
+ #+BEGIN_EXAMPLE
+			if ((prot&PROT_WRITE) && !(file->f_mode&FMODE_WRITE))
+				return -EACCES;
+
+			/*
+			 * Make sure we don't allow writing to an append-only
+			 * file..
+			 */
+			if (IS_APPEND(inode) && (file->f_mode & FMODE_WRITE))
+				return -EACCES;
+
+			/*
+			 * Make sure there are no mandatory locks on the file.
+			 */
+			if (locks_verify_locked(inode))
+				return -EAGAIN;
+ #+END_EXAMPLE 
+- 若file不为空,且设置了MAP_SHARED,那么就一定会设置VM_MAYSHARE,且如果设了FMODE_WRITE,那么就
+  设置VM_SHARED,否则就不能设置VM_SHARED,还要把VM_MAYWRITE清掉.
+ #+BEGIN_EXAMPLE
+			vm_flags |= VM_SHARED | VM_MAYSHARE;
+			if (!(file->f_mode & FMODE_WRITE))
+				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
+ #+END_EXAMPLE 
+- 对file为空时处理MAP_SHARED就简单一点了,就是把VM_SHARED和VM_MAYSHARE给设置了,这个
+  VM_MAYSHARE有什么用呢?如果是MAP_PRIVATE的做法有点不理解
+ #+BEGIN_EXAMPLE
+			/*
+			 * Set pgoff according to addr for anon_vma.
+			 */
+			pgoff = addr >> PAGE_SHIFT;
+ #+END_EXAMPLE 
+- 不用find_vma_intersection()函数的原因是除了找到一个空区间,还想找出这个空区间的前一个
+  vm_area_struct,所以没有用find_vma_intersection()因为find_vma_intersection()不能找出前一
+  个_vm_area_struct.
+ #+BEGIN_EXAMPLE
+munmap_back:
+	vma = find_vma_prepare(mm, addr, &prev, &rb_link, &rb_parent);
+	if (vma && vma->vm_start < addr + len) {
+		if (do_munmap(mm, addr, len))
+			return -ENOMEM;
+		goto munmap_back;
+	}
+ #+END_EXAMPLE 
+- 对于为什么要做下的检查,ULK:Notice that the check is done here and not in step 1 with the
+  other checks, because some memory regions could have been removed in step 4.
+ #+BEGIN_EXAMPLE
+	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
+		return -ENOMEM;
+ #+END_EXAMPLE 
+- ULK:VM_ACCOUNT Check whether there is enough free memory for the mapping when creating
+  an IPC shared memory region (see Chapter 19). ULK:MAP_NORESERVE The function doesn't
+  have to do a preliminary check on the number of free page
+  frames.http://book.2cto.com/201302/16309.html : 下面介绍overcommit_memory的不同取值对应的
+  不同虚拟空间分配。  OVERCOMMIT_GUESS overcommit_memory的默认值为OVERCOMMIT_GUESS。指定这
+  个参数时，预测将空闲内存、页面缓存量、空闲交换区量、可回收slab（长字节）量等回收的页面数，
+  虚拟空间要求分配的量比这个数小时，分配成功。  （请注意，在多个进程同时要求大量的虚拟空间
+  时是无法正确预测的。下面所述的OVERCOMMIT_NEVER中就没有这种问题。） 在OVERCOMMIT_GUESS的情
+  况下，可分配的虚拟空间大小基本就是物理内存大小和交换区大小的合计值。物理内存为2GB，交换区
+  为2GB，当前消耗1GB时，还可以分配约3GB的虚拟空间。  OVERCOMMIT_ALWAYS 在OVERCOMMIT_ALWAYS
+  的情况下，虚拟空间分配总是成功。即使对于过大的虚拟空间要求，也会分配虚拟空间。可以在与实
+  际安装的物理内存量完全无关的形态下使用虚拟空间，如前面所述的散列表等。  OVERCOMMIT_NEVER
+  在OVERCOMMIT_NEVER的情况下，对可分配虚拟空间量的管理更加严格。  首先，记录下整个系统内已
+  分配的虚拟空间量。这个值严格由系统进行集中管理，在分配或释放虚拟空间时重新计算。这个值为
+  /proc/meminfo的Committed_AS。  对于虚拟空间大小的计算也比其他参数严格。例如，在
+  OVERCOMMIT_GUESS的情况下，对mmap系统调用设置了MAP_NORESERVE的虚拟空间量不添加到
+  Committed_AS中。但是，在OVERCOMMIT_NEVER的情况下会添加到Committed_AS中。指定了
+  MAP_NORESERVE的区域也作为可能分配物理内存的虚拟空间处理。
+ #+BEGIN_EXAMPLE
+	if (accountable && (!(flags & MAP_NORESERVE) ||
+			    sysctl_overcommit_memory == OVERCOMMIT_NEVER)) {
+		if (vm_flags & VM_SHARED) {
+			/* Check memory availability in shmem_file_setup? */
+			vm_flags |= VM_ACCOUNT;
+		} else if (vm_flags & VM_WRITE) {
+			/*
+			 * Private writable mapping: check memory availability
+			 */
+			charged = len >> PAGE_SHIFT;
+			if (security_vm_enough_memory(charged))
+				return -ENOMEM;
+			vm_flags |= VM_ACCOUNT;
+		}
+	}
+ #+END_EXAMPLE 
+ 这个段代码最终影响的就是VM_ACCOUNT标志.在要求对页要做一个初步的检查或设置OVERCOMMIT_NEVER
+ 就作处理,在这种情况下若设置了VM_SHARED就设VM_ACCOUNT,表里作于IPC的内存时要检查是否有足够的
+ 内存,若是私有的可写的内存,就要用security_vm_enough_memory()检查,通过检查就设置
+ VM_ACCOUNT.所以只有共享时或私有可写时才有可能设置VM_ACCOUNT.
+- ULK:If the new interval is private (VM_SHARED not set) and it does not map a file on
+  disk, it invokes vma_merge( ) to check whether the preceding memory region can be
+  expanded in such a way to include the new interval.
+ #+BEGIN_EXAMPLE
+	/*
+	 * Can we just expand an old private anonymous mapping?
+	 * The VM_SHARED test is necessary because shmem_zero_setup
+	 * will create the file object for a shared anonymous map below.
+	 */
+	if (!file && !(vm_flags & VM_SHARED) &&
+	    vma_merge(mm, prev, addr, addr + len, vm_flags,
+					NULL, NULL, pgoff, NULL))
+		goto out;
+ #+END_EXAMPLE 
+  这面这段代码的注释也说了,检查VM_SHARED的必要的,因为shmem_zero_setup会为一个共享的匿名区创
+  建一个文件对象,且因为映射文件的内存区是不可以被合并的.vma_merge()函数首先会检查能不能合并.
+  
+  到这里为止,之前的代码做的工作有:处理了vm_flags,找出了在有合适大小空闲内存区前的vm_area_struct,检查了合并.处理了pgoff
+- ULK:If the MAP_SHARED flag is set (and the new memory region doesn't map a file on
+  disk), the region is a shared anonymous region: invokes shmem_zero_setup( ) to
+  initialize it. Shared anonymous regions are mainly used for interprocess communications;
+  see the section "IPC Shared Memory" in Chapter 19.
+ #+BEGIN_EXAMPLE
+	} else if (vm_flags & VM_SHARED) {
+		error = shmem_zero_setup(vma);
+		if (error)
+			goto free_vma;
+	}
+ #+END_EXAMPLE 
+- 不知道这段代码是干什么的
+ #+BEGIN_EXAMPLE
+	/* We set VM_ACCOUNT in a shared mapping's vm_flags, to inform
+	 * shmem_zero_setup (perhaps called through /dev/zero's ->mmap)
+	 * that memory reservation must be checked; but that reservation
+	 * belongs to shared memory object, not to vma: so now clear it.
+	 */
+	if ((vm_flags & (VM_SHARED|VM_ACCOUNT)) == (VM_SHARED|VM_ACCOUNT))
+		vma->vm_flags &= ~VM_ACCOUNT;
+ #+END_EXAMPLE 
+- 下面一段代码也不知道干什么的
+ #+BEGIN_EXAMPLE
+	/* Can addr have changed??
+	 *
+	 * Answer: Yes, several device drivers can do it in their
+	 *         f_op->mmap method. -DaveM
+	 */
+	addr = vma->vm_start;
+	pgoff = vma->vm_pgoff;
+	vm_flags = vma->vm_flags;
+
+	if (!file || !vma_merge(mm, prev, addr, vma->vm_end,
+			vma->vm_flags, NULL, file, pgoff, vma_policy(vma))) {
+		file = vma->vm_file;
+		vma_link(mm, vma, prev, rb_link, rb_parent);
+		if (correct_wcount)
+			atomic_inc(&inode->i_writecount);
+	} else {
+		if (file) {
+			if (correct_wcount)
+				atomic_inc(&inode->i_writecount);
+			fput(file);
+		}
+		mpol_free(vma_policy(vma));
+		kmem_cache_free(vm_area_cachep, vma);
+	}
+ #+END_EXAMPLE 
+- 调用__vm_stat_account()
+** void __vm_stat_account(struct mm_struct *mm, unsigned long flags, struct file *file, long pages)
+*** mm/mmap.c:
+- 若file不为空,就说明这个vma是映射到文件的,对于映射到文件的页要加到mm->shared_mm里去.对于设
+  置了VM_GROWUP或VM_GROWSDOWN的页要加到mm->stack_vm里去.对于设置了VM_RESERVED或VM_IO的页要
+  加到mm->reserved_vm里去.而mm->locked_vm已经在do_mmap_pgoff()处理了,还在一个mm->exec_vm不
+  知道在哪处理了.
+- VM_RESERVED:The region is special (for instance, it maps the I/O address space of a
+  device), so its pages must not be swapped out.说明这个页不能被交换出去
+- VM_IO: The region maps the I/O address space of a device.一个设备的I/O地址映射是不能被交
+  换出去的.
+** int make_pages_present(unsigned long addr, unsigned long end)
+*** mm/memory.c:
+- 这个函数是在do_mmap_pgoff()里设置VM_LOCKED时调用的.
+- 这个函数主要是调用了get_user_pages()
+** int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start, int len, int write, int force, struct page **pages, struct vm_area_struct **vmas)
+*** mm/memory.c:
+- ULK:The get_user_pages( ) function cycles through all starting linear addresses of the
+  pages between addr and addr+len ; for each of them, it invokes follow_page( ) to check
+  whether there is a mapping to a physical page in the current's Page Tables. If no such
+  physical page exists, get_user_pages( ) invokes handle_mm_fault( ) , which, as we'll see
+  in the section "Handling a Faulty Address Inside the Address Space," allocates one page
+  frame and sets its Page Table entry according to the vm_flags field of the memory region
+  descriptor.这个函数还可以把在用户页的内容拷贝到内核.pages ：存放获取的struct page的指针数
+  组,vms ： 返回各个页对应的struct vm_area_struct，可以传入NULL表示不获取.start ：要获取其
+  页面的起始虚拟地址，它是用户空间使用的一个地址.
+- write表示什么意思呢?在从make_pages_present()的调用来看,若vm_area_struct->vm_flags设置了
+  VM_WRITE,那么write参数就为1.
+- 从以下的代码来看,write参数使得flags设置了VM_WRITE和VM_MAYWRITE或VM_READ和VM_MAYREAD.而
+  force参数会把VM_MAY给去掉,这样做有什么用呢?
+- get_page()里把page->private赋给参数指针是怎么回事呢？
+- 为什么要花这么大的劲来映射一个高端内存页到内核之后，好像又不怎么用呢？应该没那么简单
+ #+BEGIN_EXAMPLE
+			if (pg > TASK_SIZE)
+				pgd = pgd_offset_k(pg);
+			else
+				pgd = pgd_offset_gate(mm, pg);
+			BUG_ON(pgd_none(*pgd));
+			pud = pud_offset(pgd, pg);
+			BUG_ON(pud_none(*pud));
+			pmd = pmd_offset(pud, pg);
+			BUG_ON(pmd_none(*pmd));
+			pte = pte_offset_map(pmd, pg);
+			BUG_ON(pte_none(*pte));
+			if (pages) {
+				pages[i] = pte_page(*pte);
+				get_page(pages[i]);
+			}
+			pte_unmap(pte)
+ #+END_EXAMPLE 
+  还是有一点不同的，因为pg这个地址是一个用户空间的地址，这样的话是不是就可以在内核态访问到
+  用户态的空间了。一个pgd页表其实可以映射所有的4G内存，所以主内核页表也可以映射到用户态的地
+  址，但是在映射用户态的空间时不能用pte_offset_kernel(),因为这个是映射内核空间用的，而
+  pte_offset_map()是通过kmap_atomic()来映射用的,而kmap_atomic()返回的是一个pte页表的首地址,也
+  就是说内核若想通过固定内核映射在主内核页表里映射一个用户态的空间，那么就要通过
+  pte_offset_map(),在调用pte_offset_map()之前，要用pgd_offset(),pud_offset(),pmd_offset()建
+  立不同级的页表，最后调用pte_offset_map().直接调用kmap_atomic()返回其实还只是一个pte页表的
+  起始地址而已，pte_offset_map()还要通过一个pte_index()找到相应的下标来找出被映射地址的pte
+  项.kmap_atomic接收的page的参数是一个pmd页表项所指的包含pte页表的页框的struct page指针。再
+  结合kmap_atomic()来重新理解kmap_atomic(),FIX_KMAP_BEGIN到FIX_KMAP_END =
+  FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1这之间没有指定那些模块的地址，只是有一个下标而已，下
+  标就在enum km_type里，要想通过这个下标找出该下标所使用的内核虚拟地址，就要通
+  过__fix_to_virt()和FIXADDR_TOP这个最顶端的虚拟地址和下标来找，__fix_to_virt()返回的是一个
+  页对齐的内核线性地址，且在kmap_atomic()里返回的就是__fix_to_virt()所返回的地址，由些可见
+  kmap_atomic()返回的是一个页大小可用的内核线性地址，kmap_atomic()返回的这个页大小的线性地
+  址是做什么用的呢？FIXADDR_TOP这个虚拟地址是与enum fixed_addresses里所有的元素相关的，不是
+  单与FIX_KMAP_BEGIN相关，其实enum km_type里的所有成员都是可以插到FIX_KMAP_BEGIN和
+  FIX_KMAP_END之间的，这个从kmap_atomic()里调用__fix_to_virt()时使用的是FIX_KMAP_BEGIN +
+  idx可以看出.所以pte_offset_map()会把一个高端地址的所在的pte页表通过KM_PTE0窗口来映射。要
+  注意若地址是高端地址，那么在get_user_pages()里用的pgd是当前进程的pgd,而不是主内核页表,(这
+  个说法是错的，用的是主内核页表的，好像也不对，其实用哪个都无所谓，因为所有的pgd的第4G都是
+  一样的映射的,应该是用户态的pgd,因为ULK也说过系统初始化完之后就主内核页表是没有使用的，只
+  是用来拷贝第4G的页表而已,又有新发现，因为在get_user_pages()函数里有一个通过判断传入的虚拟
+  地址来确定是使用主内核页表还是用户态的内核页表)所以在get_user_pages()里通过
+  pud_offset(),pmd_offset()这些获得的页表都在都在用户态空间，但是可以通过pte_offset_map()把
+  在用户态空间的pmd页表项所指向的整个pte页表映射到KM_PTE0所对应的pte页表项里去再通过
+  pte_index()在这个被映射的整个pte页表里找出相应的页表项。到底pte_offset_map()是如何实现它
+  的功能的呢？再说一次：dir参数要是一个pmd的页表项，且这个pmd页表项是映射用户态空间的，
+  address这个地址也是用户态空间的，更重要的是address这个地址要在这个pmd页表项所映射的范围内，
+  先用pmd_page(* (dir))获取dir这个pmd页表项所指向的包含pte页表的页框的struct page,再调用
+  kmap_atomic(),调用完之后就会把KM_PTE0所对应的pte页表项映射到了pmd_page()返回的那个页框上
+  去了，就是说KM_PTE0这个pte页表项映射的那个页其实是用户态空间使用的一个pte页表，又因为
+  kmap_atomic()返回的是KM_PTE0相应的pte所对应的4k大小(一页)地址范围的起始地址，所以可以把它
+  转成(pte * )的类型，因为这个起始地址就是pte页表的起始地址，这样就可以再结合pte_index()找
+  出address这个用户态的虚拟地址所对应的pte页表项。但是为什么对于访问用户态空间地址时要这样
+  做呢？
+** struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
+*** mm/mmap.c:
+- 在配置了CONFIG_STACK_GROWSUP时，是用find_vma_prev()来找被extend的vma_area_struct的，而设
+  CONFIG_STACK_GROWSDOWN时是用find_vma()来找的。因为如果找到的vma_area_struct若不包含参数
+  addr,那么调用expand_stack()时使用的参数就不一样了，CONFIG_STACK_GROWSUP是用前一个区间调用
+  expand_stack()的,而CONFIG_STACK_GROWSDOWN无论是否包含addr,都会用find_vma()找到的
+  vm_area_struct来调用expand_stack().就如expand_stack()的注释所写的，在
+  CONFIG_STACK_GROWSUP时： vma is the first one with address > vma->vm_end.  Have to
+  extend vma.否则vma is the first one with address < vma->vm_start.  Have to extend vma.
+ #+BEGIN_EXAMPLE
+	vma = find_vma_prev(mm, addr, &prev);
+	if (vma && (vma->vm_start <= addr))
+		return vma;
+ #+END_EXAMPLE 
+ #+BEGIN_EXAMPLE
+	vma = find_vma(mm,addr);
+	if (!vma)
+		return NULL;
+	if (vma->vm_start <= addr)
+		return vma;
+ #+END_EXAMPLE 
+- 这个函数的功能就是先找出一个包含addr地址的区间，若没有区间包含这个地址，那么就把一个附近
+  地区间的范围扩展到addr,因为addr附近有两个不同区间，至于选哪个就要看地址是向上还是向下増长
+  的了。
+** int expand_stack(struct vm_area_struct *vma, unsigned long address)
+*** mm/mmap.c:
+- 与上一个函数一样也有两个版本。
+- 无论是向下还是向上增长，但是vma->vm_end还是大于vma->vm_start的
+- 若是向下増长，参数address要这样对齐
+ #+BEGIN_EXAMPLE
+	address &= PAGE_MASK;
+ #+END_EXAMPLE 
+  否则是这样,但是为什么要加上一个4呢？
+ #+BEGIN_EXAMPLE
+	address += 4 + PAGE_SIZE - 1;
+	address &= PAGE_MASK;
+ #+END_EXAMPLE 
+- acct_stack_growth()只是修改了统计变量，是调用之后才修改vm_area_struct->vm_start和
+  vm_area_struct->vm_pgoff(向下増长)，vm_area_struct->vm_end(向上増长).
+- 所以这个函数最主要是修改了vm_area_struct->vm_start或vm_area_struct->vm_end.
+** static int acct_stack_growth(struct vm_area_struct * vma, unsigned long size, unsigned long grow)
+*** mm/mmap.c:
+- 这个函数也会做与其它一些函数类似的一系列的检查，如调用may_expand_vm()检查RLIMIT_AS是否超
+  限，RLIMIT_STACK是否超限，RLIMIT_MEMLOCK是否超限。
+- 作完检查之后就可以增加mm->total_vm了，虽然还没有扩展。
+- 因为__vm_stat_account()只是对mm->shared_vm, mm->exec_vm, mm->stack_vm, mm->reserved_vm做
+  处理。所以这个函数也只是修改了这些统计变量。而没有修改vm_area_struct->vm_start和
+  vm_area_struct->vm_end.
