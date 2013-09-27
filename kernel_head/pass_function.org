@@ -4047,14 +4047,21 @@ full_search:
 - 这个函数只是分配一个页大小的虚拟地址
 ** unsigned long do_mmap_pgoff(struct file * file, unsigned long addr, unsigned long len, unsigned long prot,unsigned long flags, unsigned long pgoff)
 *** mm/mmap.c:
+- ULK:the do_mmap( ) function creates and initializes a new memory region for the current
+  process. However, after a successful allocation, the memory region could be merged with
+  other memory regions defined for the process
+- 对于匿名区,主要的工作有:分配vm_area_struct,初始化vm_area_struct里的成员(特别是vm_flags占
+  了很多代码),把是匿名区就链接到vma链表(vma_link()),若页被锁就分配页
 - 若file->f_op不为空表示文件操作函数不为空，但是file->f_op->mmap为空就会返回ENODEV
  #+BEGIN_EXAMPLE
 		if (!file->f_op || !file->f_op->mmap)
 			return -ENODEV;
  #+END_EXAMPLE 
-- 通过调用get_unmapped_area()来获取地址
+- 通过调用get_unmapped_area()来获取空闲的区间,若不能获取就返回.
  #+BEGIN_EXAMPLE
 	addr = get_unmapped_area(file, addr, len, pgoff, flags);
+	if (addr & ~PAGE_MASK)
+		return addr;
  #+END_EXAMPLE 
 - mm->def_flags,VM_MAYREAD,VM_MAYWRITE, VM_MAYEXEC这几个标志一定是有的,
  #+BEGIN_EXAMPLE
@@ -4071,7 +4078,8 @@ full_search:
 	vm_flags = calc_vm_prot_bits(prot) | calc_vm_flag_bits(flags) |
 			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
   #+END_EXAMPLE 
-  但MAP_LOCKED还是要特殊处理一下的.先是允许mlock操作才会设置VM_LOCKED
+  但MAP_LOCKED还是要特殊处理一下的.先是允许mlock操作才会设置VM_LOCKED,VM_LOCKED是不是最终会
+  影响PG_locked呢?
  #+BEGIN_EXAMPLE
 	if (flags & MAP_LOCKED) {
 		if (!can_do_mlock())
@@ -4316,6 +4324,8 @@ munmap_back:
 *** mm/memory.c:
 - 这个函数是在do_mmap_pgoff()里设置VM_LOCKED时调用的.
 - 这个函数主要是调用了get_user_pages()
+- 因为get_user_pages()可以实现把所需要的页都在内存里.若只想这样,而不想得到struct page * 结
+  构,那么调用get_user_pages()时的第二个参数可以为NULL.
 ** int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start, int len, int write, int force, struct page **pages, struct vm_area_struct **vmas)
 *** mm/memory.c:
 - ULK:The get_user_pages( ) function cycles through all starting linear addresses of the
@@ -4353,14 +4363,20 @@ munmap_back:
  #+END_EXAMPLE 
   还是有一点不同的，因为pg这个地址是一个用户空间的地址，这样的话是不是就可以在内核态访问到
   用户态的空间了。一个pgd页表其实可以映射所有的4G内存，所以主内核页表也可以映射到用户态的地
-  址，但是在映射用户态的空间时不能用pte_offset_kernel(),因为这个是映射内核空间用的，而
-  pte_offset_map()是通过kmap_atomic()来映射用的,而kmap_atomic()返回的是一个pte页表的首地址,也
-  就是说内核若想通过固定内核映射在主内核页表里映射一个用户态的空间，那么就要通过
-  pte_offset_map(),在调用pte_offset_map()之前，要用pgd_offset(),pud_offset(),pmd_offset()建
-  立不同级的页表，最后调用pte_offset_map().直接调用kmap_atomic()返回其实还只是一个pte页表的
-  起始地址而已，pte_offset_map()还要通过一个pte_index()找到相应的下标来找出被映射地址的pte
-  项.kmap_atomic接收的page的参数是一个pmd页表项所指的包含pte页表的页框的struct page指针。再
-  结合kmap_atomic()来重新理解kmap_atomic(),FIX_KMAP_BEGIN到FIX_KMAP_END =
+  址，但是在映射用户态的空间时不能用pte_offset_kernel()(里面调用的pmd_offset_kernel()使用
+  了__va())因为这个是映射内核空间用的，而pte_offset_map()是通过kmap_atomic()来映射用的,而
+  kmap_atomic()返回的是一个pte页表的首地址,也就是说内核若想通过固定内核映射在主内核页表里映
+  射一个用户态的空间，那么就要通过pte_offset_map(),在调用pte_offset_map()之前，要用
+  pgd_offset(),pud_offset(),pmd_offset()建立不同级的页表，最后调用pte_offset_map().直接调用
+  kmap_atomic()返回其实还只是一个pte页表的起始地址而已，pte_offset_map()还要通过一个
+  pte_index()找到相应的下标来找出被映射地址的pte项.到这里可以得出，虽然内核的线性地址是物理
+  地址加上PAGE_OFFSET,但这不能说明内核的线性地址不使用MMU，使用PAGE_OFFSET是因为内核有时需
+  要通过线性地址知道相应的物理地址。注意pte_offset_map()和pte_offset_kernel()实现的区别，前
+  者是对参数dir调用pmd_page()返回pte页表地址后再调用kmap_atomic(),再结合pte_index(),后者是
+  对参数dir调用pmd_page_kernel()得到pte页表地址再结合pte_index(),所以可以看出kmap_atomic()
+  通过了一次转换，但是转换后返回到东西还是一个意思，就是返回的还是pte页表的地址。
+  kmap_atomic接收的page的参数是一个pmd页表项所指的包含pte页表的页框的struct page指针。再结
+  合kmap_atomic()来重新理解kmap_atomic(),FIX_KMAP_BEGIN到FIX_KMAP_END =
   FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1这之间没有指定那些模块的地址，只是有一个下标而已，下
   标就在enum km_type里，要想通过这个下标找出该下标所使用的内核虚拟地址，就要通
   过__fix_to_virt()和FIXADDR_TOP这个最顶端的虚拟地址和下标来找，__fix_to_virt()返回的是一个
@@ -4377,16 +4393,294 @@ munmap_back:
   地址来确定是使用主内核页表还是用户态的内核页表)所以在get_user_pages()里通过
   pud_offset(),pmd_offset()这些获得的页表都在都在用户态空间，但是可以通过pte_offset_map()把
   在用户态空间的pmd页表项所指向的整个pte页表映射到KM_PTE0所对应的pte页表项里去再通过
-  pte_index()在这个被映射的整个pte页表里找出相应的页表项。到底pte_offset_map()是如何实现它
-  的功能的呢？再说一次：dir参数要是一个pmd的页表项，且这个pmd页表项是映射用户态空间的，
-  address这个地址也是用户态空间的，更重要的是address这个地址要在这个pmd页表项所映射的范围内，
-  先用pmd_page(* (dir))获取dir这个pmd页表项所指向的包含pte页表的页框的struct page,再调用
-  kmap_atomic(),调用完之后就会把KM_PTE0所对应的pte页表项映射到了pmd_page()返回的那个页框上
-  去了，就是说KM_PTE0这个pte页表项映射的那个页其实是用户态空间使用的一个pte页表，又因为
-  kmap_atomic()返回的是KM_PTE0相应的pte所对应的4k大小(一页)地址范围的起始地址，所以可以把它
-  转成(pte * )的类型，因为这个起始地址就是pte页表的起始地址，这样就可以再结合pte_index()找
-  出address这个用户态的虚拟地址所对应的pte页表项。但是为什么对于访问用户态空间地址时要这样
-  做呢？
+  pte_index()在这个被映射的整个pte页表里找出相应的页表项。所以调用pte_offset_map()之后，对
+  于一个用户态空间的pte页表是被两个不同pmd页表项所映射，一个小于PAGE_OFFSET的线性地址的，另
+  一个是在PTE0所指向的pte页表，在内核这一边就是通过高端地址固定映射来访问，所以有两个不同线
+  性地址映射，且这两个地址互不干扰。所以调用pte_offset_map()得到的pte页表项与之前调用的
+  pud_offset(),pmd_offset()得到的页表项没有关联。pmd_offset()里也会使用PAGE_OFFSET,是不是说
+  用户态虚拟地址的pmd页表在内核的呢？难道是因为pte页表都在用户态空间所以要用
+  pte_offset_map()才可以访问？除了pte_offset_map()就只有pte_offset_kernel()了，而
+  pte_offset_kernel()里使用了PAGE_OFFSET，所以要用高端内存固定映射把用户态的pte页表映射成固
+  定映射才可以找到相应的页表，接着才可以使用pte_page()找到相应的页描述符地址。
+  http://bbs.chinaunix.net/thread-3691966-1-1.html 页表保存在内核态，由内核帮助进程来维护。
+  到底pte_offset_map()是如何实现它的功能的呢？再说一次：dir参数要是一个pmd的页表项，且这个
+  pmd页表项是映射用户态空间的，address这个地址也是用户态空间的，更重要的是address这个地址要
+  在这个pmd页表项所映射的范围内，先用pmd_page(* (dir))获取dir这个pmd页表项所指向的包含pte页
+  表的页框的struct page,再调用kmap_atomic(),调用完之后就会把KM_PTE0所对应的pte页表项映射到
+  了pmd_page()返回的那个页框上去了，就是说KM_PTE0这个pte页表项映射的那个页其实是用户态空间
+  使用的一个pte页表，又因为kmap_atomic()返回的是KM_PTE0相应的pte所对应的4k大小(一页)地址范
+  围的起始地址，所以可以把它转成(pte * )的类型，因为这个起始地址就是pte页表的起始地址，这样
+  就可以再结合pte_index()找出address这个用户态的虚拟地址所对应的pte页表项。但是为什么对于访
+  问用户态空间地址时要这样做呢？
+- 获取的vm_area_struct有点奇怪，调用的get_get_vma()总是返回相同的值，那赋给vmas还有什么用呢？
+- 第一个if()成立的时候是在或即在找不到也扩展不了vma且虚拟地址不在一个范围内。
+- 这下面这一句时vma一定不为空了
+ #+BEGIN_EXAMPLE
+		if (is_vm_hugetlb_page(vma)) {
+ #+END_EXAMPLE
+- 如果follow_page()(下面有介绍)失败，且地址空间不为写且有些级的页表没有就把退出循环
+ #+BEGIN_EXAMPLE
+			while (!(map = follow_page(mm, start, lookup_write))) {
+				/*
+				 * Shortcut for anonymous pages. We don't want
+				 * to force the creation of pages tables for
+				 * insanly big anonymously mapped areas that
+				 * nobody touched so far. This is important
+				 * for doing a core dump for these mappings.
+				 */
+				if (!lookup_write &&
+				    untouched_anonymous_page(mm,vma,start)) {
+					map = ZERO_PAGE(start);
+					break;
+				}
+ #+END_EXAMPLE 
+ 为什么要把map赋予0页呢? 若没有跳出循环,那么以下的情况就是地址对应的pgd,pud,pmd页表项都有
+ 了,但是可能是pte没有或read/write的权限不对.所以接下来就是调用handle_mm_fault()了.
+- 不需要从硬盘拷数据而发生的缺页叫次缺页(tsk->min_flt),需要从硬盘拷数据而发生的缺页叫主缺页
+  (tsk->maj_flt)
+- get_page_map()这个函数很简单,若struct page *超过了最大值就返回NULL,否则就返回参数.若发现
+  有页是不正确的就释放原来已处理好的页
+ #+BEGIN_EXAMPLE
+			if (pages) {
+				pages[i] = get_page_map(map);
+				if (!pages[i]) {
+					spin_unlock(&mm->page_table_lock);
+					while (i--)
+						page_cache_release(pages[i]);
+					i = -EFAULT;
+					goto out;
+ #+END_EXAMPLE 
+- 在这个函数的第一个if成立时是没有start地址对应的vm_area_struct的,为什么会有这种情况出现呢?在
+  这种情况下只是用pte_offset_map()来找到地址对应的页框的struct page,这种情况下不会产生缺页
+  异常?
+** int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct * vma, unsigned long address, int write_access)
+*** mm/memory.c:
+- 这个函数先是用pgd_offset(),pud_offset(),pmd_offset(),pte_alloc_map()来找出相应的页表项,若
+  没有就建立页表,可见页表是在存在内核里的.
+- 被调用的pte_alloc_map是调用pte_alloc_one()来获取一个存放页表的页框的,从pte_alloc_one()实现来看
+ #+BEGIN_EXAMPLE
+#ifdef CONFIG_HIGHPTE
+	pte = alloc_pages(GFP_KERNEL|__GFP_HIGHMEM|__GFP_REPEAT|__GFP_ZERO, 0);
+#else
+	pte = alloc_pages(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
+#endif
+ #+END_EXAMPLE
+ 设置了CONFIG_HIGHPTE才会在就端内存里存放pte页表,不是有高端内存就一定会在高端内存里存放.因
+ 为可能放在高端内存,所以pte_alloc_map()会调用pte_offset_map()来获取这个地址所在的pte页表项
+ 的指针.在这个函数里使用了pte_offset_map()得到的pte要在handle_pte_fault()才unmap()掉.
+
+** static inline int handle_pte_fault(struct mm_struct *mm,	struct vm_area_struct * vma, unsigned long address,	int write_access, pte_t *pte, pmd_t *pmd)
+*** mm/memory.c:
+- 这个函数处理请求调页和写时复制.
+- ULK:An addressed page may not be present in main memory either because the page was
+  never accessed by the process, or because the corresponding page frame has been
+  reclaimed by the kernel.In both cases, the page fault handler must assign a new page
+  frame to the process. How this page frame is initialized, however, depends on the kind
+  of page and on whether the page was previously accessed by the process. In particular:
+  
+  1. Either the page was never accessed by the process and it does not map a disk file, or
+     the page maps a disk file. The kernel can recognize these cases because the Page
+     Table entry is filled with zerosi.e., the pte_none macro returns the value 1.
+
+  2. The page belongs to a non-linear disk file mapping (see the section "Non-Linear
+     Memory Mappings" in Chapter 16). The kernel can recognize this case, because the
+     Present flag is cleared and the Dirty flag is seti.e., the pte_file macro returns the
+     value 1.
+
+  3. The page was already accessed by the process, but its content is temporarily saved on
+     disk. The kernel can recognize this case because the Page Table entry is not filled
+     with zeros, but the Present and Dirty flags are cleared.
+ #+BEGIN_EXAMPLE
+	entry = *pte;
+	if (!pte_present(entry)) {
+		/*
+		 * If it truly wasn't present, we know that kswapd
+		 * and the PTE updates will not touch it later. So
+		 * drop the lock.
+		 */
+		if (pte_none(entry))
+			return do_no_page(mm, vma, address, write_access, pte, pmd);
+		if (pte_file(entry))
+			return do_file_page(mm, vma, address, write_access, pte, pmd);
+		return do_swap_page(mm, vma, address, pte, pmd, entry, write_access);
+	}
+ #+END_EXAMPLE
+   pte_present()返回0时都包含那3种情况,执行do_no_page()是第1种情况,执行do_file_page()是第2
+   种情况,执行do_swap_page()是第3种情况.
+- 对于写时复制的情况就是调用do_wp_page(),是写的请求,但是pte项表示不能写
+ #+BEGIN_EXAMPLE
+	if (write_access) {
+		if (!pte_write(entry))
+			return do_wp_page(mm, vma, address, pte, pmd, entry);
+ #+END_EXAMPLE 
+- 还有其它的情况就是错误了,所以返回VM_FAULT_MINOR.
+- 所以一共有5种情况,而这5种情况分别包含在5个return里.
+- 这个函数可以看出,若页在内存里,且是写访问,且pte项表示能写,那么就有问题了,在这种情况下是不
+  应该调用这个函数的.在这种情况下还是要把页表项给dirty的,还会把pte项给young了,又dirty但又
+  young,那就是不合理的.但是在ULK的Figure 9-5里是没有体现这种情况的.
+** static int do_no_page(struct mm_struct *mm, struct vm_area_struct *vma,unsigned long address, int write_access, pte_t *page_table, pmd_t *pmd)
+*** mm/memory.c:
+- 这个是有两种情况的,若没有是匿名区就调用do_anonymous_page(),否则就是映射到一个文件.
+- 这是用了vm_area_struct->vm_page_prot, ulk:vm_page_prot Access permissions for the page
+  frames of the region.
+- 
+** static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma, pte_t *page_table, pmd_t *pmd, int write_access, unsigned long addr)
+*** mm/memory.c:
+- 要是写访问才会做事情
+- anon_vma_prepare()的作用就是分配一个struct anon_vma结构体
+- 调用alloc_zeroed_user_highpage()转而调用alloc_page_vma()转而直接调用alloc_pages()或独立实
+  现一个函数来分配一个页框,分配时会使用__GFP_ZERO来初始化页为0
+- 在ULK里说了为什么要先pte_unmap()再调用pte_offset_map(),因为alloc_zeroed_user_highpage()可
+  能会休眠.
+- mm->rss在这里増加的
+- 以下的代码最终的作用是,得出一个pte页表项的值,权限是用vma->vm_page_prot,指向的页框是page,
+  还把它dirty,还根据VM_WRITE设置write的权限。
+ #+BEGIN_EXAMPLE
+		entry = maybe_mkwrite(pte_mkdirty(mk_pte(page,
+							 vma->vm_page_prot)),
+				      vma);
+ #+END_EXAMPLE 
+- 设置了Page_Referenced
+- 因为page_table是一个指向这个虚拟地址所映射的一个pte页表项的指针。所以调用
+ #+BEGIN_EXAMPLE
+	set_pte_at(mm, addr, page_table, entry);
+ #+END_EXAMPLE 
+  把entry赋给了page_table所指向的pte页表项.
+- 返回VM_FAULT_MINOR表示成功。
+- 读的时候是不分配页的。
+** static int do_wp_page(struct mm_struct *mm, struct vm_area_struct * vma,	unsigned long address, pte_t *page_table, pmd_t *pmd, pte_t pte)
+*** mm/memory.c:
+- ULK：If only one process owns the page, Copy On Write does not apply, and the process
+  should be free to write the page. Basically, the function reads the _count field of the
+  page descriptor: if it is equal to 0 (a single owner), COW must not be done. Actually,
+  the check is slightly more complicated, because the _count field is also increased when
+  the page is inserted into the swap cache (see the section "The Swap Cache" in
+  Chapter 17) and when the PG_private flag in the page descriptor is set. However, when
+  COW is not to be done, the page frame is marked as writable, so that it does not cause
+  further Page Fault exceptions when writes are attempted
+- PG_locked这个标志的作用好像是把页临时锁定在内存不被交换出去的作用所以调用了TestSetPageLocked()
+ #+BEGIN_EXAMPLE
+	if (!TestSetPageLocked(old_page)) {
+ #+END_EXAMPLE 
+- 在handle_pte_fault()里调用的do_wp_page()所使用的参数中entry的值是pte所指向的pte页表项的值
+- 如果页没有被锁且can_share_swap_page()为真，那么就把这个pte页表项的dirty,young,write标志给
+  设置了
+ #+BEGIN_EXAMPLE
+	if (!TestSetPageLocked(old_page)) {
+		int reuse = can_share_swap_page(old_page);
+		unlock_page(old_page);
+		if (reuse) {
+			flush_cache_page(vma, address, pfn);
+			entry = maybe_mkwrite(pte_mkyoung(pte_mkdirty(pte)),
+					      vma);
+			ptep_set_access_flags(vma, address, page_table, entry, 1);
+			update_mmu_cache(vma, address, entry);
+			lazy_mmu_prot_update(entry);
+			pte_unmap(page_table);
+			spin_unlock(&mm->page_table_lock);
+			return VM_FAULT_MINOR;
+		}
+	}
+ #+END_EXAMPLE
+ 如果执行上面的代码没有执行，那么就页不能共享了，且页被锁住了。所以就应该拷贝了。
+- 为什么PG_reserved没有设置的要増加计数呢？是不是有设置了说明这个页不会被交换，所以就不
+  用_count来计数了？ULK这样说:To avoid race conditions,get_page( ) is invoked to increase
+  the usage counter of old_page before starting the copy operation
+ #+BEGIN_EXAMPLE
+	if (!PageReserved(old_page))
+		page_cache_get(old_page);
+ #+END_EXAMPLE 
+- 先分配一个struct anon_vma 结构体再分配一个页框
+- 分配页框时要判断是不是ZERO_PAGE页，是不是的区别是分配的页有没有用__GFP_ZERO来分，因为
+  alloc_zeroed_user_highpage()就是调用alloc_page_vma()的，但是除了用GFP_HIGHUSER之外还
+  用_GFP_ZERO，若不是ZERO_PAGE就要用copy_user_highpage()(下面有介绍)来拷贝页了。
+- ULK:Because the allocation of a page frame can block the process, the function checks
+  whether the Page Table entry has been modified since the beginning of the function (pte
+  and *page_table do not have the same value). In this case, the new page frame is
+  released, the usage counter of old_page is decreased (to undo the increment made
+  previously), and the function terminates.
+ #+BEGIN_EXAMPLE
+	page_table = pte_offset_map(pmd, address);
+	if (likely(pte_same(*page_table, pte))) {
+		if (PageAnon(old_page))
+			dec_mm_counter(mm, anon_rss);
+		if (PageReserved(old_page))
+			inc_mm_counter(mm, rss);
+		else
+			page_remove_rmap(old_page);
+		flush_cache_page(vma, address, pfn);
+		break_cow(vma, new_page, address, page_table);
+		lru_cache_add_active(new_page);
+		page_add_anon_rmap(new_page, vma, address);
+
+		/* Free the old page.. */
+		new_page = old_page;
+	}
+	pte_unmap(page_table);
+	page_cache_release(new_page);
+	page_cache_release(old_page);
+ #+END_EXAMPLE 
+  PageAnon()检查页是否为匿名页，低位为1时为匿名页.anao_rss:Number of page frames assigned
+  to anonymous memory mappings.为什么PageAnon()为真就要减呢?为什么旧的页若是保留页就增加
+  rss呢?若旧的页是保留页那么新的页也是保留的吗?新页的pte页表项是怎么被建立的呢?下面有
+  page_remove_rmap()的介绍,就是说若旧页是保留的,那么page->_mapcount是不会变的,这是不是说
+  page->_mapcount是对保留页无效的呢?要注意参数page_table是新页所对应的pte页表项,就是
+  address所对应的pte页表项的指针,就是发生缺页异常的pte页表项的指针.所以要调用break_cow()(下
+  页有介绍)来用新页重建page_table页表项.旧页是减了anon_rss,新页是在page_add_anon_rmap()加了
+  anon_rss,但注意新页和旧页不是属于同一个进程的,所以vm_area_struct是不同的.
+** static inline void break_cow(struct vm_area_struct * vma, struct page * new_page, unsigned long address, pte_t *page_table)
+*** mm/memory.c:
+- 重建的页表项是dirty的.写不写要看vm_area_struct
+** void page_add_anon_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address)
+*** mm/rmap.c:
+- 为该匿名页插入反向映射数据结构的内容.
+- 增加了anon_rss
+- 为什么要把vm_area_struct->anon_vma转成(void*)类型之后再加1呢?
+** void page_remove_rmap(struct page *page)
+*** mm/rmap.c:
+- The _mapcount field stores the number of Page Table entries that refer to the page
+  frame. The counter starts from -1: this value means that no Page Table entry references
+  the page frame. Thus, if the counter is zero, the page is non-shared, while if it is
+  greater than zero the page is shared.
+- 这个函数就只是把page->_mapcount减1而已.
+** #define page_cache_release(page)	put_page(page)
+*** include/linux/pagemap.h:
+** void put_page(struct page *page)
+*** mm/swap.c:
+- 若页不是保留的且页没有引用就调用__page_cache_release()
+** void fastcall __page_cache_release(struct page *page)
+*** mm/swap.c:
+- 若页的计数不为空,那么直接把page设为NULL就是释放了.
+- 若页的计数为空,那么就调用free_hot_page()来释放页.
+** static inline void copy_user_highpage(struct page *to, struct page *from, unsigned long vaddr)
+*** include/linux/highmem.h:
+- 在内核态下从一个用户态的页框的数据拷贝到另一个用户态的页框去。
+- 是使用内核的高端内存固定映射来拷贝的。使用了KM_USER0和KM_USER1这两个窗口。
+- 调用了copy_user_page()，转而调用了copy_page()转而调用mmx_copy_page()或memcpy().
+** struct page *follow_page(struct mm_struct *mm, unsigned long address, int write)
+*** mm/memory.c:
+- 这个函数调用
+ #+BEGIN_EXAMPLE
+	return __follow_page(mm, address, /*read*/0, write);
+ #+END_EXAMPLE 
+** static struct page *__follow_page(struct mm_struct *mm, unsigned long address, int read, int write)
+*** mm/memory.c:
+- follow_page函数是从进程的页表中搜索特定地址对应的页面对象。就是得到用户态虚拟地址
+  (0-3G)address所在的页框的struct page指针，若一些权限不符合就不能获取，如要present,要
+  write权限要与参数write对应，read也要对应,就这三个权限。
+- 若已成功获取struct page *了，那么就要结合参数write和页表项和struct page标志来设置dirty
+ #+BEGIN_EXAMPLE
+			if (write && !pte_dirty(pte) && !PageDirty(page))
+				set_page_dirty(page);
+ #+END_EXAMPLE 
+  为什么要pte_dirty()和PageDirty()同时假才可以呢？
+
+  还要修改access位
+- 所以这个函数不仅仅是获取struct page而己，还修改了东西的。
+- 这个函数在某些级的页表没有对应的页表项或是read/write权限不对就会返回NULL
+- 这个函数的开头与get_user_pages()第一个if一样是调用
+  pgd_offset(),pud_offset(),pmd_offset(),pte_offset_map()来得到一个在用户态的pte页表里
+  address所对应的pte页表项。
 ** struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 *** mm/mmap.c:
 - 在配置了CONFIG_STACK_GROWSUP时，是用find_vma_prev()来找被extend的vma_area_struct的，而设
@@ -4435,3 +4729,90 @@ munmap_back:
 - 因为__vm_stat_account()只是对mm->shared_vm, mm->exec_vm, mm->stack_vm, mm->reserved_vm做
   处理。所以这个函数也只是修改了这些统计变量。而没有修改vm_area_struct->vm_start和
   vm_area_struct->vm_end.
+** int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
+*** mm/mmap.c:
+- ULK:The function goes through two main phases. In the first phase (steps 16), it scans
+  the list of memory regions owned by the process and unlinks all regions included in the
+  linear address interval from the process address space. In the second phase (steps 712),
+  the function updates the process Page Tables and removes the memory regions identified
+  in the first phase.
+** static void detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev, unsigned long end)
+*** mm/mmap.c:
+- 这个函数是以参数vma这个内存区开始,一直到end这个虚拟地址所在的内存区为止,把这个范围内的
+  vma都给删掉.但从代码可以看出,无论如何,都要把参数vma这个内存区给删掉.所谓的删掉就是把它从
+  红黑树里删掉,并递减map_count,但是没有把内容给清掉,没有把vma的空间清掉.
+- map_count Number of memory regions
+- 注意要把mmap_cache给清掉
+ #+BEGIN_EXAMPLE
+	mm->mmap_cache = NULL;		/* Kill the cache. */
+ #+END_EXAMPLE 
+- 虽然没有已经把从vma开始到end的内存区从红黑树中删除,但是从vma到end的链接是没有删除的.
+** unsigned long unmap_vmas(struct mmu_gather **tlbp, struct mm_struct *mm, struct vm_area_struct *vma, unsigned long start_addr, unsigned long end_addr, unsigned long *nr_accounted, struct zap_details *details)
+*** mm/memory.c:
+- ULK:to clear the Page Table entries covering the linear address interval and to free the
+  corresponding page frames
+- 这个函数不一定会把参数vma给处理了,若是start_addr大于vma->vm_start.
+ #+BEGIN_EXAMPLE
+	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
+		unsigned long end;
+
+		start = max(vma->vm_start, start_addr);
+		if (start >= vma->vm_end)
+			continue;
+ #+END_EXAMPLE 
+- 还要注意一种情况就是有可能start_addr和end_addr都在一个vma的里.
+- VM_HUGETLB The pages in the region are handled through the extended paging mechanism 
+- 
+** void unmap_hugepage_range(struct vm_area_struct *vma, unsigned long start, unsigned long end)
+*** arch/i386/mm/hugetlbpage.c:
+- 这个函数的作用就是把从虚拟地址address到end之间的pte页表项给清掉,把被清掉的页表项所对应的
+  页框给释放(put_page()在没有被引用时才会真正被释放掉)
+- 这个函数看得比较容易明白,就是先用huge_pte_offset找到要处理的地址的pte页表项的指针,找到之
+  后就通过ptep_get_and_clear()获取pte页表项指针的值并把pte页表项清掉,用获取到的pte页表项的
+  值通过pte_page()找到对应的页框的struct page,再用找到的struct page通过put_page()把这个页框
+  给释放掉.
+- 在这个函数会减mm->rss
+** static void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma, unsigned long addr, unsigned long end, struct zap_details *details)
+*** mm/memory.c:
+- 把所有在addr到end这个范围内的所有pgd页表项都处理一遍，处理一遍就是调用一次zap_pud_range()
+** static inline void zap_pud_range(struct mmu_gather *tlb, pgd_t *pgd, unsigned long addr, unsigned long end, struct zap_details *details)
+*** mm/memory.c:
+- 把所有在addr到end这个范围内的所有pud页表项都处理一遍，处理一遍就是调用一次zap_pmd_range()
+** static inline void zap_pmd_range(struct mmu_gather *tlb, pud_t *pud, unsigned long addr, unsigned long end, struct zap_details *details)
+*** mm/memory.c:
+- 把所有在addr到end这个范围内的所有pte页表项都处理一遍，处理一遍就是调用一次zap_pte_range()
+** static void zap_pte_range(struct mmu_gather *tlb, pmd_t *pmd, unsigned long addr, unsigned long end, struct zap_details *details)
+*** mm/memory.c:
+- 先用pte_offset_map()找到pte页表项的指针。
+- 这个函数所调用的free_swap_and_cache()转而调用page_cache_release()转而调用put_page()最后释放页框。
+- 如果pte_present()为真，那么释放页的地方在tlb_remove_page()
+- 若页是保留页那么这个页是不会被释放的
+ #+BEGIN_EXAMPLE
+			if (pfn_valid(pfn)) {
+				page = pfn_to_page(pfn);
+				if (PageReserved(page))
+					page = NULL;
+			}
+ #+END_EXAMPLE 
+ 但是还是要把pte页表给清掉的
+ #+BEGIN_EXAMPLE
+			ptent = ptep_get_and_clear(tlb->mm, addr, pte);
+ #+END_EXAMPLE 
+- 为什么pte为dirty时还要把page给dirty呢？都要回收了还有什么用呢？
+ #+BEGIN_EXAMPLE
+			if (pte_dirty(ptent))
+				set_page_dirty(page);
+ #+END_EXAMPLE 
+- 若是匿名区就要减anon_rss,否则且pte为young,那么就把页给改成accessed,这是为什么呢？
+ #+BEGIN_EXAMPLE
+			if (PageAnon(page))
+				dec_mm_counter(tlb->mm, anon_rss);
+			else if (pte_young(ptent))
+				mark_page_accessed(page);
+ #+END_EXAMPLE 
+- 如果页不present，且pte没有映射到文件那么就调用free_swap_and_cache()
+** #define pgoff_to_pte(off)
+*** include/asm-i386/pgtable-2level.h:
+- 把一个pte页表项的内容设成这个地址所对应的文件的一个偏移量，一个偏移量表示4k大小。
+- 这个宏有很多内容
+- http://blog.csdn.net/dog250/article/details/5303232
