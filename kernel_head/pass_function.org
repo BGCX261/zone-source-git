@@ -4873,4 +4873,4 @@ munmap_back:
  #+END_EXAMPLE 
 ** struct page *find_or_create_page(struct address_space *mapping, unsigned long index, unsigned int gfp_mask)
 *** mm/filemap.c:
-- 这个函数的设计有点意思,为什么同时需要page和cached_page两个相同的变量呢?
+- 这个函数的设计有点意思,为什么同时需要page和cached_page两个相同的变量呢?s
