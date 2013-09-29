@@ -4816,3 +4816,61 @@ munmap_back:
 - 把一个pte页表项的内容设成这个地址所对应的文件的一个偏移量，一个偏移量表示4k大小。
 - 这个宏有很多内容
 - http://blog.csdn.net/dog250/article/details/5303232
+
+** struct page * find_get_page(struct address_space *mapping, unsigned long offset)
+*** mm/filemap.c:
+- 这个函数的作用是在radix树里找一个页。
+- 先调用radix_tree_lookup()在radix基树里找符合的页
+- 再调用page_cache_get()增加页的使用计数。
+** void *radix_tree_lookup(struct radix_tree_root *root, unsigned long index)
+*** lib/radix-tree.c:
+- 从以下的代码可以看出,radix树最多只有5层,因为RADIX_TREE_MAP_MASK是64,就是占6位，而index是
+  32位的。
+ #+BEGIN_EXAMPLE
+			((*slot)->slots +
+				((index >> shift) & RADIX_TREE_MAP_MASK));
+		shift -= RADIX_TREE_MAP_SHIFT;
+ #+END_EXAMPLE
+** unsigned find_get_pages(struct address_space *mapping, pgoff_t start, unsigned int nr_pages, struct page **pages)
+*** mm/filemap.c:
+- 这个函数作用是从radix树里找一堆连续的页。start是指要找的页的第一个索引，所找的所有页的索
+  引是连续的。
+- 先调用radix_tree_gang_lookup()找页。
+** unsigned int radix_tree_gang_lookup(struct radix_tree_root *root, void **results, unsigned long first_index, unsigned int max_items)
+*** lib/radix-tree.c:
+- 主要是调用__lookup()来找出连续的页,但是因为调用__lookup()一次只能找出在一个叶子结点上的连
+  续的页, 所以若想要找的连续的页有跨过一个叶子节点,那么就要多次调用__lookup().
+** struct page *find_lock_page(struct address_space *mapping, unsigned long offset)
+*** mm/filemap.c:
+- 这个函数与find_get_page()的不同就是获得页之后就把它锁住(PG_locked),锁住的作用就是只有这个
+  进程可以访问该页,与PG_reserved不一样.就只是加多了以下的代码:
+ #+BEGIN_EXAMPLE
+		if (TestSetPageLocked(page)) {
+			read_unlock_irq(&mapping->tree_lock);
+			lock_page(page);
+			read_lock_irq(&mapping->tree_lock);
+
+			/* Has the page been truncated while we slept? */
+			if (page->mapping != mapping || page->index != offset) {
+				unlock_page(page);
+				page_cache_release(page);
+				goto repeat;
+			}
+		}
+ #+END_EXAMPLE 
+- 若发现页以被锁住就调用lock_page()阻塞等待把页锁住.
+- 若发现页已不映射文件或不映到原来的文件或映射到原来文件但不是之前的偏移量就释放页.但不是简
+  单地返回,而是重新执行radix_tree_lookup()来找页.
+ #+BEGIN_EXAMPLE
+			if (page->mapping != mapping || page->index != offset) {
+ #+END_EXAMPLE 
+** struct page *find_trylock_page(struct address_space *mapping, unsigned long offset)
+*** mm/filemap.c:
+- 与find_lock_page()的不同就是以下的代码:
+ #+BEGIN_EXAMPLE
+	if (page && TestSetPageLocked(page))
+		page = NULL;
+ #+END_EXAMPLE 
+** struct page *find_or_create_page(struct address_space *mapping, unsigned long index, unsigned int gfp_mask)
+*** mm/filemap.c:
+- 这个函数的设计有点意思,为什么同时需要page和cached_page两个相同的变量呢?
