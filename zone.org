@@ -6750,3 +6750,5 @@ http://docs.huihoo.com/homepage/shredderyin/emacs_fill.html
 这个模式与toggle-truncate-lines不一样的.
 
 多用搜索来定位,少用C-p之类的移动
+
+我觉得window-number使用C-而不使用M-来作前缀更好用，所以把window-number.el里的M-改成了C-
