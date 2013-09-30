@@ -4932,4 +4932,5 @@ munmap_back:
 ** static struct page *grow_dev_page(struct block_device *bdev, sector_t block, pgoff_t index, int size)
 *** fs/buffer.c:
 - 先调用find_or_create_page()来找到可以放这个buffer的页
-- page_has_buffers()这个函数就是检查
+- page_has_buffers()这个函数就是检查PG_private有没有设置,若有设置就说明指向buffer_head的链
+  表

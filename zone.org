@@ -6740,3 +6740,13 @@ doxygen+graphviz真的不错
 ==============================[2013-09-30 一]==============================
 
 看网页时可以用右键然后点后退。
+
+emacs 永远自动 reload 文件,增加 (global-auto-revert-mode)
+
+使用auto fill 功能
+http://docs.huihoo.com/homepage/shredderyin/emacs_fill.html
+
+为了在org模式下少按M-q来对齐换行,可以打开auto-fill-mode
+这个模式与toggle-truncate-lines不一样的.
+
+多用搜索来定位,少用C-p之类的移动
