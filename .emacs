@@ -47,7 +47,7 @@
 (global-set-key (kbd "C-c w") 'huangq-save-word-at-point)
 
 ;; C-t 设置标记 ;; 
-(global-set-key (kbd "C-z") 'other-window)
+(global-set-key (kbd "C-z") 'undo)
 
 ;; C-t 设置标记 ;; 
 ;; (global-set-key (kbd "C-t") 'set-mark-command)
@@ -56,7 +56,9 @@
 ;; (global-set-key "\C-xb" 'electric-buffer-list)
 
 ;;---------- redo
-(global-set-key ( kbd "C-.") 'other-window)
+;; (global-set-key ( kbd "C-.") 'other-window)
+(global-set-key ( kbd "M-n") 'other-window)
+
 
 ;; F8窗口间跳转
 (global-set-key [f8] 'other-window)
@@ -88,15 +90,15 @@ nil 0 nil "_NET_WM_STATE" 32
 
 ;;========================================
 ;; ;;关闭当前缓冲区 Alt+4  ;; C-x 0
-(global-set-key (kbd "M-4") 'delete-window)
+;; (global-set-key (kbd "M-4") 'delete-window)
 ;; ;;关闭其它缓冲区 Alt+1  ;; C-x 1
-(global-set-key (kbd "M-1") 'delete-other-windows)
+;; (global-set-key (kbd "M-1") 'delete-other-windows)
 ;; ;;水平分割缓冲区 Alt+2  ;; C-x 2
-(global-set-key (kbd "M-2") 'split-window-vertically)
+;; (global-set-key (kbd "M-2") 'split-window-vertically)
 ;; ;;垂直分割缓冲区 Alt+3  ;; C-x 3
-(global-set-key (kbd "M-3") 'split-window-horizontally)
+;; (global-set-key (kbd "M-3") 'split-window-horizontally)
 ;; ;;切换到其它缓冲区 Alt+0 ;; C-x o 
-(global-set-key (kbd "M-0") 'other-window)
+;; (global-set-key (kbd "M-0") 'other-window)
 
 ;;========================================
 ;; 缓冲区
@@ -496,17 +498,20 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 
 (setq org-latex-to-pdf-process '("pdftexi2dvi --pdf --clean --verbose --batch %f"))
 
-(fset 'node-label
-	  "\341\C-k\C-y[]\C-blabel=\"\"\C-b\C-y\C-e;\C-j")
-(global-set-key (kbd "C-2") 'node-label)
 
-(fset 'subgraph-cluster
-   [tab ?\C-. ?\C-s ?\( ?\C-r ?\C-m ?\C-r ?  ?\C-s ?\C-m ?\M-z ?\( ?\C-y ?\C-/ ?\C-/ ?\C-. ?s ?u ?b ?g ?r ?a ?p ?h ?  ?c ?l ?u ?s ?t ?e ?r ?_ ?\C-y backspace ?\{ return ?\} ?\C-a ?\C-o tab ?l ?a ?b ?e ?l ?= ?\" ?\" ?\C-b ?\C-. ?\C-a ?\M-z ?\{ ?\C-/ ?\C-. ?\C-y backspace backspace ?\C-e ?\; ?\C-j ?\C-x ?\C-s])
-(global-set-key (kbd "C-1") 'subgraph-cluster)
+;; (fset 'node-label
+;; 	  "\341\C-k\C-y[]\C-blabel=\"\"\C-b\C-y\C-e;\C-j")
+;; (global-set-key (kbd "C-2") 'node-label)
 
-(fset 'narrow
-	  "\C-r \C-s\C-m\C-k\C-y;\C-y -> ")
+;; (fset 'subgraph-cluster
+;;    [tab ?\C-. ?\C-s ?\( ?\C-r ?\C-m ?\C-r ?  ?\C-s ?\C-m ?\M-z ?\( ?\C-y ?\C-/ ?\C-/ ?\C-. ?s ?u ?b ?g ?r ?a ?p ?h ?  ?c ?l ?u ?s ?t ?e ?r ?_ ?\C-y backspace ?\{ return ?\} ?\C-a ?\C-o tab ?l ?a ?b ?e ?l ?= ?\" ?\" ?\C-b ?\C-. ?\C-a ?\M-z ?\{ ?\C-/ ?\C-. ?\C-y backspace backspace ?\C-e ?\; ?\C-j ?\C-x ?\C-s])
+;; (global-set-key (kbd "C-1") 'subgraph-cluster)
 
-(global-set-key (kbd "C-3") 'narrow)
+;; (fset 'narrow
+;; 	  "\C-r \C-s\C-m\C-k\C-y;\C-y -> ")
 
+;; (global-set-key (kbd "C-3") 'narrow)
 
+(load-file "~/.emacs.d/window-number.el")
+(window-number-mode t)
+(window-number-meta-mode t)

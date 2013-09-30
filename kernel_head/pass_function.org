@@ -4874,3 +4874,62 @@ munmap_back:
 ** struct page *find_or_create_page(struct address_space *mapping, unsigned long index, unsigned int gfp_mask)
 *** mm/filemap.c:
 - 这个函数的设计有点意思,为什么同时需要page和cached_page两个相同的变量呢?
+** int radix_tree_preload(int gfp_mask)
+*** lib/radix-tree.c:
+- 这个函数的作用是把一些radix的节点先分配放到struct radix_tree_preload->nodes数组里作为缓
+  冲,使得需要时不因为缺内存而分不了.
+- radix_tree_preloads这个变量是PER-cpu变量
+- 实现很简单,就是不断地调用kmem_cache_alloc()
+** int add_to_page_cache(struct page *page, struct address_space *mapping, pgoff_t offset, int gfp_mask)
+*** mm/filemap.c:
+- 先调用radix_tree_preload()预先分配好radix结点
+- 再调用radix_tree_insert()把页放到radix结点去.
+- 也要把页锁在内存里
+- 最后就是修改page->mapping,page->index,mapping->nrpages
+** void remove_from_page_cache(struct page *page)
+*** mm/filemap.c:
+- 这个函数从radix树里删除一个页,但是不会释放这个页
+- 调用__remove_from_page_cache()
+** void __remove_from_page_cache(struct page *page)
+*** mm/filemap.c:
+- 这个函数调用radix_tree_delete()把有关page的路径的结点按需删掉
+- 只是把page->mapping设为0,page->index不修改,也不把page给释放掉
+** static inline struct page *__read_cache_page(struct address_space *mapping,unsigned long index,int (*filler)(void *,struct page*),void *data)
+*** mm/filemap.c:
+- 与find_or_create_page()基本相同,只是多了以下的代码
+ #+BEGIN_EXAMPLE
+		err = filler(data, page);
+		if (err < 0) {
+			page_cache_release(page);
+			page = ERR_PTR(err);
+		}
+ #+END_EXAMPLE 
+** void fastcall mark_page_accessed(struct page *page)
+*** mm/swap.c:
+- 有这样的注释
+ #_BEGIN_EXAMPLE
+/*
+ * Mark a page as having seen activity.
+ *
+ * inactive,unreferenced	->	inactive,referenced
+ * inactive,referenced		->	active,unreferenced
+ * active,unreferenced		->	active,referenced
+ */
+ #+END_EXAMPLE 
+ 从这段注释来看,active标志和reference标志是一个二进制进位的关系,就是若是unreferenced,那么就
+ 先设为referenced,若是referenced,就要把referenced改为unreferenced并进一位来修改
+ active.referenced标志总是取反.
+** struct page *read_cache_page(struct address_space *mapping, unsigned long index, int (*filler)(void *,struct page*),void *data)
+*** mm/swap.c:
+- 先调用__read_cache_page(),再调用mark_page_accessed()
+- 如果不是最新的说要调用filler()函数了,但是不是在__read_cache_page()有调用filler()了吗?但是
+  要调用filler()就要先把页给锁住,但是锁页的过程中可能被其它的进程把页给更新了.
+** static inline int grow_buffers(struct block_device *bdev, sector_t block, int size)
+*** fs/buffer.c:
+- In order to add a block device buffer page to the page cache, the kernel invokes the
+  grow_buffers() function,
+- 函数先算好块号,和在radix树的偏移量(index)
+** static struct page *grow_dev_page(struct block_device *bdev, sector_t block, pgoff_t index, int size)
+*** fs/buffer.c:
+- 先调用find_or_create_page()来找到可以放这个buffer的页
+- page_has_buffers()这个函数就是检查
