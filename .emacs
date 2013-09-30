@@ -515,3 +515,27 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 (load-file "~/.emacs.d/window-number.el")
 (window-number-mode t)
 (window-number-meta-mode t)
+
+;; Toggle window dedication
+
+;; http://stackoverflow.com/questions/43765/pin-emacs-buffers-to-windows-for-cscope
+(defun toggle-window-dedicated ()
+
+"Toggle whether the current active window is dedicated or not"
+
+(interactive)
+
+(message 
+
+ (if (let (window (get-buffer-window (current-buffer)))
+
+       (set-window-dedicated-p window 
+
+        (not (window-dedicated-p window))))
+
+    "Window '%s' is dedicated"
+
+    "Window '%s' is normal")
+
+ (current-buffer)))
+(global-set-key [pause] 'toggle-window-dedicated)
