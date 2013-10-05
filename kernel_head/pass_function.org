@@ -4928,15 +4928,55 @@ munmap_back:
 *** fs/buffer.c:
 - In order to add a block device buffer page to the page cache, the kernel invokes the
   grow_buffers() function,
+- 以下的代码算出的sizebits就是说2^sizebits个块才可以填充一个页,为什么要用幂呢?难道与页的大
+  小关系一定是幂的关系吗?注意size是块的大小
+  #+BEGIN_EXAMPLE
+     do {
+		sizebits++;
+	} while ((size << sizebits) < PAGE_SIZE);
+  #+END_EXAMPLE
+- 以下的代码说明若是要以sizebits个块为一组来移动,那么要移index次,所以这个index就是radix的
+  偏移量
+  #+BEGIN_EXAMPLE
+	index = block >> sizebits;
+  #+END_EXAMPLE 
 - 函数先算好块号,和在radix树的偏移量(index)
+- 以下的代码是不是要将块号取个整呢,可以参数block不是buffer page里的第一个块,虽然它要想要找
+  的块,但是因为要页内的第一个块好把这个页的所有块都填充了.
+  #+BEGIN_EXAMPLE
+	block = index << sizebits;
+  #+END_EXAMPLE
+- 到这里之后,block就是页内第一块的逻辑块号,index就是radix树的索引.
 ** static struct page *grow_dev_page(struct block_device *bdev, sector_t block, pgoff_t index, int size)
 *** fs/buffer.c:
 - 先调用find_or_create_page()来找到可以放这个buffer的页
 - page_has_buffers()这个函数就是检查PG_private有没有设置,若有设置就说明指向buffer_head的链
-  表
+  表,page_has_buffers()若没有成立就是ULK说的第一种情况了:The radix tree of the block
+  device does not include a page containing the data of the block: in this case a new page
+  descriptor must be added to the radix tree.
+- 因为调用这个函数之前已经确定radix树里没有一个页是合适要找的页,所以ULK说的三种情况都没有
+  一个是找到合适的页的情况.
+- 以下的代码成立时就是第二种情况:The radix tree of the block device includes a page
+  containing the data of the block, but this page is not a buffer page: in this case new
+  buffer heads must be allocated and linked to the page, thus transforming it into a block
+  device buffer page.但是不明白怎么会出现大小不是想要的呢?一个块设备会同时存在两种不同的块
+  大小吗?
+  #+BEGIN_EXAMPLE
+		if (bh->b_size == size) {
+  #+END_EXAMPLE 
 - 会调用init_page_buffers(),来处理所有的struct buffer_head,但是无论在什么时候,一个buffer
   page都会被填满吗?既使是有一些struct buffer_head的数据没有被访问?
-- 
+- 执行以下的代码就是第三种情况了:The radix tree of the block device includes a buffer page
+  containing the data of the block, but the page has been split in blocks of size
+  different from the size of the requested block: in this case the old buffer heads must
+  be released, and a new set of buffer heads must be allocated and linked to the page.
+  #+BEGIN_EXAMPLE
+		if (!try_to_free_buffers(page))
+  #+END_EXAMPLE
+- 若是第一种情况就要分配一个页了,
+  #+BEGIN_EXAMPLE
+	bh = alloc_page_buffers(page, size, 0);
+  #+END_EXAMPLE 
 ** static void init_page_buffers(struct page *page, struct block_device *bdev,sector_t block, int size)
 *** fs/buffer.c:
 - 结合grow_dev_page()和init_page_buffers()来看,进入init_page_buffers()之前在page里的buffer
@@ -4946,7 +4986,12 @@ munmap_back:
   用循环来处理所有的struct buffer_head的,且因为在grow_dev_page()里调用这个函数来看,一个页
   里的所有的struct buffer_head的b_size是一样的.原来分配struct buffer_head是在grow_dev_page
   里做的,调用了alloc_page_buffers()来分配.
-- 
+- 这个函数是在grow_dev_page()因为buffer head的大小不是想要的才会调用,但是为什么在这个函数
+  里并没有处理buffer_head.b_size呢?
+- 还有一点就是,若是块的大小不一样了,且是变大了,那么一个页的大小可能就不能放原来那么多的
+  buffer_haed了,怎么这一点也没在做处理呢?
+- 这个函数处理为buffer_head的b_end_io,b_private,b_bdev,b_blocknr
+- b_size是在alloc_page_buffers()（下面有介绍）初始化的。
 ** struct buffer_head *alloc_page_buffers(struct page *page, unsigned long size,int retry)
 *** fs/buffer.c:
 - 为一个buffer page分配所有的struct buffer_head结构体
