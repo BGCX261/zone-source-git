@@ -4947,6 +4947,11 @@ munmap_back:
 	block = index << sizebits;
   #+END_EXAMPLE
 - 到这里之后,block就是页内第一块的逻辑块号,index就是radix树的索引.
+- 这里调用的page_cache_release()是为了减在grow_dev_page()转而调用的link_dev_buffer()转而调
+  用的attach_page_buffers()转而调用的page_cache_get()所增加的页使用计数。
+- 这里要调用unlock_page()所对应的lock_page()是在grow_dev_page()转而调用的
+  find_or_create_page()转而调用的find_lock_page()转而调用的lock_page().
+- 
 ** static struct page *grow_dev_page(struct block_device *bdev, sector_t block, pgoff_t index, int size)
 *** fs/buffer.c:
 - 先调用find_or_create_page()来找到可以放这个buffer的页
@@ -4973,12 +4978,33 @@ munmap_back:
   #+BEGIN_EXAMPLE
 		if (!try_to_free_buffers(page))
   #+END_EXAMPLE
-- 若是第一种情况就要分配一个页了,
+- 若是第一种情况就要分配一个页了,错,不是分配一个页,而是给这个页分配buffer_head,但好像在这
+  种情况下没有把这个页插入radix树
   #+BEGIN_EXAMPLE
 	bh = alloc_page_buffers(page, size, 0);
   #+END_EXAMPLE 
+- 还有一点不明白的就是为什么在调用link_dev_buffers()和init_page_buffers()时要加上
+  inode.i_mapping.private_lock锁.ulk:private_lock Usually, spin lock used when managing
+  the private_list list.private_list Usually, a list of dirty buffers of indirect blocks
+  associated with the inode, The private_list field is the head of a generic list that can
+  be freely used by the filesystem for its specific purposes.
+  #+BEGIN_EXAMPLE
+	spin_lock(&inode->i_mapping->private_lock);
+	link_dev_buffers(page, bh);
+	init_page_buffers(page, bdev, block, size);
+	spin_unlock(&inode->i_mapping->private_lock);
+  #+END_EXAMPLE 
+- 这个函数有一段这样的注释
+  #+BEGIN_EXAMPLE
+	 * Link the page to the buffers and initialise them.  Take the
+	 * lock to be atomic wrt __find_get_block(), which does not
+	 * run under the page lock.
+  #+END_EXAMPLE 
+  这段注释与它下面的这代码有什么关系呢?
 ** static void init_page_buffers(struct page *page, struct block_device *bdev,sector_t block, int size)
 *** fs/buffer.c:
+- 这个函数所使用的buffer_XX(),set_buffer_XX()函数是在buffer_head.h文件里使用宏定义的,所以
+  使用cscope是找不到的.还有test_buffer_XX()之类的也是.
 - 结合grow_dev_page()和init_page_buffers()来看,进入init_page_buffers()之前在page里的buffer
   链表的struct buffer_head已经分配好了,但是不知道在哪分配的,在grow_dev_page()里调用的
   find_or_create_page()是没有分配struct buffer_head,所以在分配buffer page时没有分配struct
@@ -5025,13 +5051,208 @@ munmap_back:
   但还没有把它们链到page里去了.
 - 把struct buffer_head弄成循环的
 - 再调用attach_page_buffers()把这个链表赋给页的private.
+- 这个函数还增加了页的使用计数。
 ** int try_to_release_page(struct page *page, int gfp_mask)
 *** fs/buffer.c:
 - 这个函数的作用是单单释放buffer page的吗?还是释放cache page(包含有buffer_page)，看函数名还
   真的是看不出来的
 - 调用address_space->a_ops->releasepage()时释放的应该不是buffer page,而调用
   try_to_free_buffers()这个函数才是释放buffer page的.
+- ulk:releasepage Used by journaling filesystems to prepare the release of a page.the
+  method is usually not defined for block devices. 
+- 在try_to_free_buffers()这个函数里会把页的PG_dirty给清掉,但是又没回写页的内容.这是怎么回
+  事呢?
 ** int try_to_free_buffers(struct page *page)
 *** fs/buffer.c:
 - 这个函数就是释放buffer page的
 - 若PG_writeback设置了就说明这个页正在被页回disk,所以不能释放.
+- 在buffer_busy()这个函数里会一个介绍.
+- 为什么调用两次drop_buffers()时一个要加锁,一个不用呢?因为在drop_buffers()里调用
+  的__remove_assoc_queue()是操作buffer_head.b_assoc_buffers的,所以要private_lock锁
+- 最后就是调用free_buffer_head()把buffer_head给释放掉.
+- 所以这个函数并没有把页给释放掉,而是把page里的buffer_head给释放了,但是把页的PG_dirty给清
+  了.
+** static int drop_buffers(struct page *page, struct buffer_head **buffers_to_free)
+*** fs/buffer.c:
+- BH_Write_EIO:Set if there was an I/O error when writing this block.要设这个标志就要调用
+  set_buffer_write_io_error(),而这个函数就只有在end_buffer_write_sync()里调用.
+- address_space->flags是Error bits and memory allocator flags,而这个error bits只有两
+  个:AS_EIO(IO error on async write),AS_ENOSPC(ENOSPC on async write).而BH_Write_EIO是相关
+  的
+  #+BEGIN_EXAMPLE
+  		if (buffer_write_io_error(bh) && page->mapping)
+			set_bit(AS_EIO, &page->mapping->flags);
+  #+END_EXAMPLE 
+- 若有一个buffer_head是busy的就不能把其它的buffer_head给drop
+- b_assoc_buffers Pointers for the list of indirect blocks associated with an inode
+- 所以函数里的那两个循环的作用就是(1)设置AS_EIO,(2)看buffer_head是不是busy,(3)把bufer_head从
+  b_assoc_buffers链表那里删除,(4)再调用__clear_page_buffers()
+- 所以这个函数并没有把buffer_head的空间释放掉,而是把buffer_head和page的状态改变一下而已
+- 在第一个循环里可以看出,若发现有一个buffer_head是busy的,那么就不会再扫描后面的buffer_head
+  了,也就是说AS_EIO有可能会设置但因为跳出循环了而没有设置.
+** static void __clear_page_buffers(struct page *page)
+*** fs/buffer.c:
+- 这个函数只是处理了page,没有处理buffer_head,
+- 处理了page的private的东西,PG_private,privte成员,还有_count成员
+** static inline int buffer_busy(struct buffer_head *bh)
+*** fs/buffer.c:
+- The b_count field of the buffer head is a usage counter for the corresponding block
+  buffer. The counter is increased right before each operation on the block buffer and
+  decreased right after. The block buffers kept in the page cache are examined both
+  periodically and when free memory becomes scarce, and only the block buffers having null
+  usage counters may be reclaimed.若计数不为0,表示有其它的内核路经在操作这个buffer_head,这
+  也算是busy,在即BH_Dirty又BH_Lock的时候也是busy,所谓的busy就是不能把这个buffer_head给drop
+  掉,若仅仅是BH_Lock是可以把它给drop掉的,若仅仅是BH_Lock也是可以把它drop掉的,但是为什么
+  BH_Lock也可以呢?可能是虽然把buffer_head给释放了,但是只要页的PG_dirty还在就不会把一个脏页
+  给释改掉.但是奇怪的是在try_to_free_buffers()函数里调用完调用这个函数的drop_buffers()之后
+  会调用clear_page_dirty()把页的PG_dirty清掉,这是为什么呢?在try_to_free_buffers()有一段这
+  样的注释
+  #+BEGIN_EXAMPLE
+		/*
+		 * If the filesystem writes its buffers by hand (eg ext3)
+		 * then we can have clean buffers against a dirty page.  We
+		 * clean the page here; otherwise later reattachment of buffers
+		 * could encounter a non-uptodate page, which is unresolvable.
+		 * This only applies in the rare case where try_to_free_buffers
+		 * succeeds but the page is not freed.
+		 */
+  #+END_EXAMPLE 
+  那调用完这个函数之后到底会不会把这个page buffer的内容写回disk呢?
+** static inline struct buffer_head *lookup_bh_lru(struct block_device *bdev, sector_t block, int size)
+*** fs/buffer.c:
+- 注释:
+  #+BEGIN_EXAMPLE
+ * Look up the bh in this cpu's LRU.  If it's there, move it to the head.
+  #+END_EXAMPLE 
+- 每个cpu都有各自的bh_lru。
+- 这个函数是用循环扫描整个lru.bhs数组,一个一个判断当前的buffer_head是不是要找的
+  buffer_head,判断的条件是
+  #+BEGIN_EXAMPLE
+		if (bh && bh->b_bdev == bdev &&
+				bh->b_blocknr == block && bh->b_size == size) 
+  #+END_EXAMPLE 
+  块设备要一样,块号要一样,块大小要一样.但是块大小不是在一个块设备上是固定的呢?
+- 若找到了想要的buffer_head,那么就把它放到lru.bhs数组的第一个元素里,因为是数组,所以只能把
+  其它的元素整体往后移
+  #+BEGIN_EXAMPLE
+				while (i) {
+					lru->bhs[i] = lru->bhs[i - 1];
+					i--;
+				}
+  #+END_EXAMPLE
+- 为什么找到了之后要增加buffer_head的计数呢?
+** static struct buffer_head * __find_get_block_slow(struct block_device *bdev, sector_t block, int unused)
+*** fs/buffer.c:
+- i_blkbits是块大小的2的幂次方,这也说明一个struct block_device同时只能有一个块大小.
+- 下面的代码是找到该块所在radix树的page buffer的索引号,因为一个页可以有多个
+  块,PAGE_CACHE_SHIFT就是PAGE_SHIFT
+  #+BEGIN_EXAMPLE
+	index = block >> (PAGE_CACHE_SHIFT - bd_inode->i_blkbits);
+  #+END_EXAMPLE
+- 会用find_get_page()找页,若找不到就退出,而不会分配页.
+- 若虽然有了页在radix,但是页没有buffer head,也会退出,但是怎么可能在radix里的页没有buffer
+  head呢?有这种情况就是调用try_to_release_page()的时候会把页里的buffer head给释放掉,而页还
+  在radix里.
+  #+BEGIN_EXAMPLE
+	if (!page_has_buffers(page))
+		goto out_unlock;
+  #+END_EXAMPLE
+- 然后用一个循环来从页的buffer_head链表里找出块号等于block的buffer_head,若找到就要增加
+  buffer_head计数并返回相应的buffer_head
+  #+BEGIN_EXAMPLE
+		if (bh->b_blocknr == block) {
+			ret = bh;
+			get_bh(bh);
+			goto out_unlock;
+		}
+  #+END_EXAMPLE 
+- 若找的过程中发现有buffer_head的BH_Mapped没有设置且没有找到相应的块(可能BH_Mapped没设的块
+  不是想要找的块),就会打印出一堆东西说明,这种情况是因为块设备文件io和getblk()之间有竞争,有
+  注释:
+  #+BEGIN_EXAMPLE
+	/* we might be here because some of the buffers on this page are
+	 * not mapped.  This is due to various races between
+	 * file io on the block device and getblk.  It gets dealt with
+	 * elsewhere, don't buffer_error if we had some unmapped buffers
+	 */
+  #+END_EXAMPLE
+- 最后要调用page_cache_release()把页的计数减去,这次的计数是在这个函数里所调用的
+  find_get_page()转而调用的page_cache_get()增加的
+- 所以这个函数的结果就是通过block块号在radix树里先找到buffer page,再在这个页里找到相应的
+  buffer_head返回,不会分配什么也不会释放什么
+** #define touch_buffer(bh)	mark_page_accessed(bh->b_page)
+*** include/linux/buffer_head.h:
+** static void bh_lru_install(struct buffer_head *bh)
+*** fs/buffer.c:
+- 因为每一个cpu都有一个bh_lru,那会不会一个buffer_head会同时出现在多个bh_lru里呢?应该会的
+- 这个函数里调用的__brelse()仅仅是调用了put_bh()来减使用计数器
+- 以下的循环就使得把参数的buffer_head放到第一位,原来的整体往后移,若参数buffer_head原来就在
+  数组里,那么移动的过程中就把它怱略掉
+  #+BEGIN_EXAMPLE
+		bhs[out++] = bh;
+		for (in = 0; in < BH_LRU_SIZE; in++) {
+			struct buffer_head *bh2 = lru->bhs[in];
+
+			if (bh2 == bh) {
+				__brelse(bh2);
+			} else {
+				if (out >= BH_LRU_SIZE) {
+					BUG_ON(evictee != NULL);
+					evictee = bh2;
+				} else {
+					bhs[out++] = bh2;
+				}
+			}
+		}
+  #+END_EXAMPLE 
+  所以这个函数就是把一个buffer_head插入bh_lru.bhs数组开头的一个功能.
+** #define touch_buffer(bh)	mark_page_accessed(bh->b_page)
+*** include/linux/buffer_head.h:
+** struct buffer_head *__find_get_block(struct block_device *bdev, sector_t block, int size)
+*** fs/buffer.c:
+- 这个函数先用lookup_bh_lru()在bh_lru里找有没有这个块号和大小相同的buffer_head,没有就
+  用__find_get_block_slow()在radix树里找,找到了就加到bh_lru_install()里去,若找到就用
+  mark_page_accessed()标记一下.
+** static struct buffer_head *__getblk_slow(struct block_device *bdev, sector_t block, int size)
+*** fs/buffer.c:
+- 这个函数只有__getblk()调用
+- 使用死循环来获得buffer head,就别说这个函数一定会返回buffer head.
+- 先用__find_get_block(),若没找到就grow_buffers()来分配,若分配不成功就调用
+  free_more_memory()释放内存
+- 若是grow_buffers()分配成功就会进入__find_get_block(),返回会这个buffer_head已经在bh_lru里
+  了,计数也增加了.
+** struct buffer_head *__bread(struct block_device *bdev, sector_t block, int size)
+*** fs/buffer.c:
+- 这个函数会调用__getblk()来找到buffer_head,但这个buffer_head不一定是最新的内容,或是因为
+  在__getblk()里调用grow_buffers()分配的,还没有内容,所以BH_Uptodate还有设置.而调
+  用__bread_slow()就是从磁盘读取这个块的数据的.但是从__bread_slow()这个函数来看,返回时不一
+  定是buffer_head,有可能还是null,因为虽然读了数据,但是可能还不是最新的.所以__bread()返回的
+  有可能是null
+** int submit_bh(int rw, struct buffer_head * bh)
+*** fs/buffer.c:
+- BH_Ordered:Set if the block should be written strictly after the blocks submitted before
+  it (used by journaling filesystems )
+- bio.bi_flags的WRITE_BARRIER是在BH_Ordered设置了,且是对该块进得写的时候才会设置的.
+- BH_req:Sets the BH_Req flag of the buffer head to record that the block has been
+  submitted at least one time;
+- 若这个buffer_head之前写时有过io错,且这次又是写,那么就把BH_Write_io_error给清了.
+  #+BEGIN_EXAMPLE
+	if (test_set_buffer_req(bh) && (rw == WRITE || rw == WRITE_BARRIER))
+		clear_buffer_write_io_error(bh);
+  #+END_EXAMPLE 
+  所以代码到这里为止就(1)确定了bio的读写方式和(2)设置BH_req,可能清BH_Write_io_error.
+  
+  之后的代码就是建一个bio并提交它.
+- BH_Write_io_error只有调用set_buffer_write_io_error()才设置,在它又只被
+  end_buffer_write_sync()调用.buffer_head.b_end_io是赋以end_buffer_write_sync()这个函兹为
+  的,而end_bio_bh_io_sync()这个函数又是调用buffer_head.b_end_io()的,而bio.bi_end_io又是赋
+  以end_bio_io_sync()的,所以在写磁盘时,若出现错时就会调用end_bio_bh_io_sync()转而调用
+  end_buffer_write_sync(),转而设置了BH_Write_io_error.
+- 所以是一个buffer_head一个buffer_head来提交的,而不是一个页一个页来提交的,但是上层来说是一
+  个页一个页处理的,若一个页里有一个buffer_head是脏的,那每就认为这个页是脏的,这时对于上层来
+  说这个页是要刷回disk的,但是真真在刷的时候不是把在这个页里的所有buffer_head都刷到disk,而
+  是设置了BH_Dirty的buffer_head才会刷到disk里去.
+** void end_buffer_write_sync(struct buffer_head *bh, int uptodate)
+*** fs/buffer.c:
+- 这个函数就是在写完buffer_head的数据到disk之后调用的函数.
+- 若成功就只是简单设置BH_Uptodate,否则说设置BH_Write_io_error,清BH_Uptodate
