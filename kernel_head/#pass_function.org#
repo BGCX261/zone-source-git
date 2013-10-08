@@ -5322,4 +5322,8 @@ munmap_back:
 - pdflush_work.fn是只执行一次,如果__pdflush()还没有达到退出的要求,那么就把自已的
   pdflush_work重新插入pdflush_list里去,再等待pdflush_operation()的唤醒
 - 什么是__pdflush()的退出条件呢,(1)若pdflush_list为空就一定不会退出,(2)若线程数少于8就一定
-  不会退出,(3)若现在保存在pdflush_list里的时间最长的进程没有超过1s
+  不会退出,(3)若现在保存在pdflush_list里的时间最长的进程没有超过1s.如何判断这个时间有没有
+  超过1s呢?因为pdflush_work在插入的时候是从链表头插进去的,且在pdflush_operation()里是用
+
+sdfjslkdfh 
+sdkf
