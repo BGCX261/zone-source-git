@@ -5322,4 +5322,61 @@ munmap_back:
 - pdflush_work.fn是只执行一次,如果__pdflush()还没有达到退出的要求,那么就把自已的
   pdflush_work重新插入pdflush_list里去,再等待pdflush_operation()的唤醒
 - 什么是__pdflush()的退出条件呢,(1)若pdflush_list为空就一定不会退出,(2)若线程数少于8就一定
-  不会退出,(3)若现在保存在pdflush_list里的时间最长的进程没有超过1s
+  不会退出,(3)若现在保存在pdflush_list里的时间最长的进程没有超过1s.如何判断这个时间有没有
+  超过1s呢?因为pdflush_work在插入的时候是从链表头插进去的,且在pdflush_operation()里是从链
+  表头开始删除的,所以可以通过查看最后一个结点的时间来确过保存在pdflush_list里的时间最长的
+  进程有没有超过1s.
+  #+BEGIN_EXAMPLE
+		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
+		if (jiffies - pdf->when_i_went_to_sleep > 1 * HZ) {
+			/* Limit exit rate */
+			pdf->when_i_went_to_sleep = jiffies;
+			break;					/* exeunt */
+		}
+  #+END_EXAMPLE
+- 所以这个函数大概三个任务(1)执行pdflush_work.fn,(2)判断是否要建一个线程,(3)判断自已是否要
+  退出.
+** int wakeup_bdflush(long nr_pages)
+*** mm/page-writeback.c:
+- 这个函数会委托pdflush_operation()来唤醒pdflush线程来执行background_writeout()把脏页写回
+  磁盘.
+- nr_pages就是要求写回的页数,若是0,那么就把所有的脏页都写回去.如何确定脏页数呢?就是
+  page_state的nr_dirty,但还要加上不稳定的页数nr_unstable.那么到底什么是不稳定页呢?不知道是
+  不是脏的页?
+- 调用这个函数的情况有
+  1,sync(),2,grow_buffer(),3,free_more_memory(),4,try_to_free_pages(),5,mempoll_alloc(),5
+  修改了页之后发现脏页超过了dirty background threshold阀值.
+** static void background_writeout(unsigned long _min_pages)
+*** mm/page-writeback.c:
+- 这个函数就只是被pdflush_operation()作为参数调用而已.
+- writeback_control.bdi:If not NULL, it points to a backing_dev_info structure; in this
+  case, only dirty pages belonging to the underlying block device will be flushed.
+- writeback_control.sync_mode:是对于锁住的inode来说的,Specifies the synchronization mode:
+  WB_SYNC_ALL means that if a locked inode is encountered,it must be waited upon and not
+  just skipped over; WB_SYNC_HOLD means that locked inodes are put in a list for later
+  consideration; and WB_SYNC_NONE means that locked inodes are simply skipped.
+- writeback_control.older_than_this:If not null, it means that inodes younger than the
+  specified value should be skipped. 
+- writeback_control.nr_to_write:Number of dirty pages yet to be written in this run of
+  execution. 
+- writeback_control.nonblocking:If this flag is set, the process cannot be blocked.
+- 通过对writeback_control的设置,(1)可以看出可以回写所有的块设备,(2)要怱略所有被锁住的
+  inode,(3)不管脏多久都要回写,(4)回写时不能被阻塞
+- page_state.nr_writeback是什么意思呢?
+- 使用死循环回写,只有在脏页没有达到某个值时且已回写足够的页(_min_pages)时或ulk:If less
+  than 1,024 pages have been written or if pages have been skipped, probably the request
+  queue of the block device is congested: the function puts the current process to sleep
+  in a special wait queue for 100 milliseconds or until the queue becomes uncongested.这就
+  有问题了,为什么writeback_control.nonblocking设成1了还要进行睡眠呢?为什么体眠之后若发现不
+  是因为遇到队列阻塞造成的那么就退出,搞不明白为什么要这样设计.
+  #+BEGIN_EXAMPLE
+		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+			/* Wrote less than expected */
+			blk_congestion_wait(WRITE, HZ/10);
+			if (!wbc.encountered_congestion)
+				break;
+		}
+  #+END_EXAMPLE 
+- 每一次调用writeback_inodes()回写页的数量都要求是MAX_WRITEBACK_PAGES (1024),所以
+  若_min_pages不是1024的倍数时就有可能回写的页就超过_min_pages.
+
