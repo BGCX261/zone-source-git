@@ -47,10 +47,10 @@
 (global-set-key (kbd "C-c w") 'huangq-save-word-at-point)
 
 ;; C-t 设置标记 ;; 
-(global-set-key (kbd "C-z") 'undo)
+;; (global-set-key (kbd "C-z") 'undo)
 
 ;; C-t 设置标记 ;; 
-;; (global-set-key (kbd "C-t") 'set-mark-command)
+(global-set-key (kbd "C-z") 'set-mark-command)
 
 ;; C-x b => CRM bufer list
 ;; (global-set-key "\C-xb" 'electric-buffer-list)
@@ -539,3 +539,39 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 
  (current-buffer)))
 (global-set-key [pause] 'toggle-window-dedicated)
+
+
+(defun zap-upto-char (arg char)
+  "Kill up to and including ARG'th occurrence of CHAR.
+Goes backward if ARG is negative; error if CHAR not found."
+  (interactive "*p\ncZap upto char: ")
+  (kill-region (point) (progn
+			 (search-backward (char-to-string char) nil nil arg)
+			 (goto-char (if (> arg 0) (point) (1+ (point))))
+			 (point))))
+(global-set-key (kbd "M-,") 'zap-upto-char)
+;; (global-set-key "M-Z" 'zap-upto-char)
+
+
+(defun zap-up-to-char (arg char)
+  "Kill up to, but not including ARGth occurrence of CHAR.
+Case is ignored if `case-fold-search' is non-nil in the current buffer.
+Goes backward if ARG is negative; error if CHAR not found.
+Ignores CHAR at point."
+  (interactive "p\ncZap up to char: ")
+  (let ((direction (if (>= arg 0) 0 -1)))
+    (kill-region (point)
+                 (progn
+                   (forward-char direction)
+                   (unwind-protect
+                       (search-backward (char-to-string char) nil nil arg)
+                     (backward-char direction))
+                    (point)))))
+(global-set-key (kbd "M-Z") 'zap-up-to-char)
+
+
+;; (autoload 'zap-up-to-char "misc"
+;;     "Kill up to, but not including ARGth occurrence of CHAR.(fn arg char)"
+;;     'interactive)
+;; (global-set-key (kbd "M-Z") 'zap-up-to-char)
+;;   ;; (global-set-key "\M-z" 'zap-up-to-char)
