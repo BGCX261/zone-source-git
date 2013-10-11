@@ -5379,4 +5379,208 @@ munmap_back:
   #+END_EXAMPLE 
 - 每一次调用writeback_inodes()回写页的数量都要求是MAX_WRITEBACK_PAGES (1024),所以
   若_min_pages不是1024的倍数时就有可能回写的页就超过_min_pages.
+  #+BEGIN_EXAMPLE
+		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+  #+END_EXAMPLE 
+** void writeback_inodes(struct writeback_control *wbc)
+*** mm/page-writeback.c:
+- wbc.nr_to_write:The nr_to_write field of this descriptor contains the number of pages to
+  be flushed to disk. When the function returns, the same field contains the number of
+  pages remaining to be flushed; if everything went smoothly, this field will be set to 0.
+- 这个函数是被调用来刷脏页的.
+- 这个函数会扫描所有的超级块.
+  #+BEGIN_EXAMPLE
+	for (; sb != sb_entry(&super_blocks); sb = sb_entry(sb->s_list.prev)) {
+  #+END_EXAMPLE 
+- s_io:List of inodes waiting to be written to disk
+- s_dirty:List of modified inodes
+- 在s_io的inode一定在s_dirty吗?应该不一定,因为一个inode虽然是dirty,但是它可能不想被回写,这
+  也是为什么需要s_io与s_inode分开来,所以也说明调用这个函数时,就算一个dirty的inode没有放到
+  s_dirty,那么它也将被回写.
+  #+BEGIN_EXAMPLE
+		if (!list_empty(&sb->s_dirty) || !list_empty(&sb->s_io)) {
+  #+END_EXAMPLE
+- 增加了superblock的使用计数
+  #+BEGIN_EXAMPLE
+			sb->s_count++;
+  #+END_EXAMPLE
+  在这里减
+  #+BEGIN_EXAMPLE
+			if (__put_super_and_need_restart(sb))
+  #+END_EXAMPLE 
+- 关于这里调用的__put_super_and_need_restart(),在函数里会判断当前扫描的superblock有没有从
+  superblock链表里删除
+  #+BEGIN_EXAMPLE
+	if (list_empty(&sb->s_list)) {
+  #+END_EXAMPLE 
+  若删除了就返回1,返回1对writeback_inodes()有什么用呢?因为writeback_inodes()是扫描
+  superblock链表的,而在解开保护superblock链表锁的过程中会把当前扫描的superblock给从链表里
+  删掉
+  #+BEGIN_EXAMPLE
+			spin_unlock(&sb_lock);
+			/*
+			 * If we can't get the readlock, there's no sense in
+			 * waiting around, most of the time the FS is going to
+			 * be unmounted by the time it is released.
+			 */
+			if (down_read_trylock(&sb->s_umount)) {
+				if (sb->s_root) {
+					spin_lock(&inode_lock);
+					sync_sb_inodes(sb, wbc);
+					spin_unlock(&inode_lock);
+				}
+				up_read(&sb->s_umount);
+			}
+			spin_lock(&sb_lock);
+  #+END_EXAMPLE
+  若发现有被删除,那么就使得不能从这个superblock中找到superblock链表的下一个结点,因为它已从
+  链表里删除.若还想扫描没有扫描的结点,那么就只能从新开始扫描superblock链表了
+  #+BEGIN_EXAMPLE
+			if (__put_super_and_need_restart(sb))
+				goto restart;
+  #+END_EXAMPLE 
+- s_umount: Semaphore used for unmounting,为什么是try_lock,而上等待,有注释:
+  #+BEGIN_EXAMPLE
+			/*
+			 * If we can't get the readlock, there's no sense in
+			 * waiting around, most of the time the FS is going to
+			 * be unmounted by the time it is released.
+			 */
+  #+END_EXAMPLE 
+- 有文件系的根目录才可以回写
+  #+BEGIN_EXAMPLE
+				if (sb->s_root) {
+  #+END_EXAMPLE 
+- 调用sync_sb_inodes()才回写,所以这个函数的关键是:(1)判断superblock的s_dirty和s_io,(2)调用
+  sync_sb_inodes()(3)s_umount有没有锁,(4)superblock有没有从链表里删除
+** static void sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
+*** fs/fs-writeback.c:
+- list_splice_init()这个函数就是把第一个参数所指向的表移到第二个参数所指向的链表里去,但是
+  没有把第一参数结点移过去,但是为什么不需要把第一个参数给移过去呢?因为s_dirty这个成员不是
+  一个指针,所以不能把这个结点给移过去
+  #+BEGIN_EXAMPLE
+		list_splice_init(&sb->s_dirty, &sb->s_io);
+  #+END_EXAMPLE 
+- 发现若是wb_kupdate()调用的这个函数时,只有在s_io为空时才会把s_dirty移到s_io,为什么要这样
+  做呢?
+  #+BEGIN_EXAMPLE
+	if (!wbc->for_kupdate || list_empty(&sb->s_io))
+		list_splice_init(&sb->s_dirty, &sb->s_io);
+  #+END_EXAMPLE 
+- list_move就是把第一参数结点移到第二个参数链表里去.
+- bdi_cap_writeback_dirty()函数通过判断BDI_CAP_NO_ACCT_DIRTY这个标志来说明这个inode所对应
+  的红黑树里的所有的页是否能回写到disk,但是若不能的话为什么要把它放回s_dirty呢?回为放到
+  s_io的inode都是脏的,且BDI_CAP_NO_ACCT_DIRTY可能会在将来的某个时间被清掉.
+- http://www.2cto.com/os/201204/126687.html 这个网页有说这个函数.
+- backing_dev_info.BDI_write_congested:The write queue is getting full.
+- 若调用这个函数的进程不想被阻塞且这个块设备的写队列已经将要满了,那么就设置
+  writback_control.encountered_congestion.所以这个标志说明了是遇到了阻塞但是并没有阻塞
+  #+BEGIN_EXAMPLE
+		if (wbc->nonblocking && bdi_write_congested(bdi)) {
+			wbc->encountered_congestion = 1;
+			if (sb != blockdev_superblock)
+				break;		/* Skip a congested fs */
+			list_move(&inode->i_list, &sb->s_dirty);
+			continue;		/* Skip a congested blockdev */
+		}
+  #+END_EXAMPLE
+  struct backing_dev_info这个结构体应该是一个块设备一个的,因为从这个结构体的成员描述和状态
+  描述来看比较像.
+  #+BEGIN_EXAMPLE
+enum bdi_state {
+	BDI_pdflush,		/* A pdflush thread is working this device */
+	BDI_write_congested,	/* The write queue is getting full */
+	BDI_read_congested,	/* The read queue is getting full */
+	BDI_unused,		/* Available bits start here */
+};
 
+typedef int (congested_fn)(void *, int);
+
+struct backing_dev_info {
+	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
+	unsigned long state;	/* Always use atomic bitops on this */
+	unsigned int capabilities; /* Device capabilities */
+	congested_fn *congested_fn; /* Function pointer if device is md/dm */
+	void *congested_data;	/* Pointer to aux data for congested func */
+	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
+	void *unplug_io_data;
+};
+  #+END_EXAMPLE 
+- 若当前的inode是在调用这个函数之前dirty的,那么就不能刷这个inode,这是为什么呢?
+  #+BEGIN_EXAMPLE
+		/* Was this inode dirtied after sync_sb_inodes was called? */
+		if (time_after(inode->dirtied_when, start))
+			break;
+  #+END_EXAMPLE 
+- 若没有在规定的时间之前dirty的也不能刷inode,
+  #+BEGIN_EXAMPLE
+		/* Was this inode dirtied too recently? */
+		if (wbc->older_than_this && time_after(inode->dirtied_when,
+						*wbc->older_than_this))
+			break;
+  #+END_EXAMPLE 
+- 该判断的都判断完了,接下来就是调用__writeback_single_inode()把单个inode刷到disk了.
+** static int __writeback_single_inode(struct inode *inode,struct writeback_control *wbc)
+*** fs/fs-writeback.c:
+- 这个函数是把单个inode回写的,有两个工作:(1)与I_LOCK相关的,(2)调用__sync_single_inode()回
+  写inode.
+- 若writeback_control.sync_mode不等于WB_SYNC_ALL,且这个inode被锁了,就说明现在不能刷这个
+  inode,要把这个inode放回s_dirty
+  #+BEGIN_EXAMPLE
+	if ((wbc->sync_mode != WB_SYNC_ALL) && (inode->i_state & I_LOCK)) {
+		list_move(&inode->i_list, &inode->i_sb->s_dirty);
+		return 0;
+	}
+  #+END_EXAMPLE 
+- 若是一个data-integrity sync,那么就必须等待,设了I_LOCK,就要等待,直到I_LOCK这解锁了,注意这
+  个等待是位等待.在等待的过程中这个inode是被解锁的,也就是说在等待的过程中会清掉I_LOCK,所以
+  要循环来判断
+  #+BEGIN_EXAMPLE
+		do {
+			__iget(inode);
+			spin_unlock(&inode_lock);
+			__wait_on_bit(wqh, &wq, inode_wait,
+							TASK_UNINTERRUPTIBLE);
+			iput(inode);
+			spin_lock(&inode_lock);
+		} while (inode->i_state & I_LOCK);
+  #+END_EXAMPLE 
+** static int __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
+*** fs/fs-writeback.c:
+- 这个函数把单个inode回写disk.
+- 在回写之前要把I_LOCK设置,把I_DIRTY清掉,所以一个inode被锁住时有可能是在被回写.
+- 为什么要保存I_DIRTY呢?进入这个函数时不能保证I_DIRTY是设置的吗?原来I_DIRTY是
+  I_DIRTY_SYNC,I_DIRTY_DATASYNC,I_DIRTY_PAGES的结合.
+- http://tracymacding.blog.163.com/blog/static/2128692992013028114014657/ 这文章写得不错.但
+  是可能版本不对,没有I_SYNC这个标志.为了数据完整性而进行的回写（wbc->sync_mode ==
+  WB_SYNC_ALL）.
+- I_DIRTY_SYNC代表inode被弄脏，但这种弄脏并不是由文件数据被修改而导致的，典型的如文件的访问时间被修改，此时文件数据没有被修改；
+- I_DIRTY_DATASYNC表示由于文件数据被修改而导致文件inode变脏；
+- I_DIRTY_PAGES表示仅仅文件数据被修改，但并未导致文件inode被改动，此时是不需要同步文件元数据的。
+- 其中WB_SYNC_ALL表示回写的模式，表示本次回写是文件完整性回写，不同于为了内存紧张时回收页面而进行的回写。
+- filemap_fdatawait_range等待在所有上面已经发出的请求的页面上，发请求时给页面加上了
+  PG_Writeback，到页面回写完成以后才会清除该标志位，而filemap_fdatawait_range等待在所有文
+  件正回写页面的该标志位，直到该标志位被清除该函数才返回，意味着脏页面的回写已经完成，可以
+  进行接下来的工作了。 
+- do_writepages()最终是通过submit_bh()来写块的,而filemap_fdatawait()只是等待把参数所指定的
+  address_space里所有的页都写回disk的时候才返回,而没有调用submit_bh()来提交,只是等待
+  PG_Writback被清.所以WB_SYNC_ALL包含有同步所写的数据的意思
+  #+BEGIN_EXAMPLE
+	int wait = wbc->sync_mode == WB_SYNC_ALL;
+  #+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+	ret = do_writepages(mapping, wbc);
+
+	/* Don't write the inode if only I_DIRTY_PAGES was set */
+	if (dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) {
+		int err = write_inode(inode, wait);
+		if (ret == 0)
+			ret = err;
+	}
+
+	if (wait) {
+		int err = filemap_fdatawait(mapping);
+		if (ret == 0)
+			ret = err;
+	}
+  #+END_EXAMPLE 
