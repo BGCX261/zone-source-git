@@ -5776,4 +5776,307 @@ struct backing_dev_info {
 			if (size > high)
 				sum += size - high;
   #+END_EXAMPLE 
+** static void wb_kupdate(unsigned long arg)
+*** mm/page-writeback.c:
+- ulk:checks that no page in the page cache remains dirty for too long
+- 所分创建的writeback_control的差别是older_than_this和for_kupdate.
+  background_writeout的:
+  #+BEGIN_EXAMPLE
+	struct writeback_control wbc = {
+		.bdi		= NULL,
+		.sync_mode	= WB_SYNC_NONE,
+		.older_than_this = NULL,
+		.nr_to_write	= 0,
+		.nonblocking	= 1,
+	};
+  #+END_EXAMPLE
+  wb_kupdate的
+  #+BEGIN_EXAMPLE
+	struct writeback_control wbc = {
+		.bdi		= NULL,
+		.sync_mode	= WB_SYNC_NONE,
+		.older_than_this = &oldest_jif,
+		.nr_to_write	= 0,
+		.nonblocking	= 1,
+		.for_kupdate	= 1,
+	};
+  #+END_EXAMPLE
+- 从参数看这两个函数的区别,background_writeout()为前者,wb_kupdate()为后者,前者的参数是至少
+  要回写的页数,后者的参数是没有作用的.
+- 这两个函数都是回写page cache的,不是回收页的.
+- 这两个函数都是调用writeback_inodes()来回写页的.
+- 后者退出while()的回写循环的条件是:(1)要求回写的页数已写完(2)或在调用writeback_inodes()写
+  MAX_WRITEBACK_PAGES个页的时候没有把MAX_WRITEBACK_PAGES个页全都回写且没有遇到阻塞(这种情况
+  说明了所有的old data都被回写了),但是没有考虑跳过的页(这点与前者不同).以上其中一个条件成立
+  就会退出这个函数
+  #+BEGIN_EXAMPLE
+	while (nr_to_write > 0) {
+		wbc.encountered_congestion = 0;
+		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+		writeback_inodes(&wbc);
+		if (wbc.nr_to_write > 0) {
+			if (wbc.encountered_congestion)
+				blk_congestion_wait(WRITE, HZ/10);
+			else
+				break;	/* All the old data is written */
+		}
+		nr_to_write -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
+	}
+  #+END_EXAMPLE
+  所以后者返回时也不一定会把MAX_WRITEBACK_PAGES个页回写,也有可能回写的页大于MAX_WRITEBACK_PAGES.
 
+  前者退出for()的回写循环的条件是:(1)脏页比较少了且已经回写所要求的页数
+  #+BEGIN_EXAMPLE
+		if (wbs.nr_dirty + wbs.nr_unstable < background_thresh
+				&& min_pages <= 0)
+			break;
+  #+END_EXAMPLE
+  (2)或在调用writeback_inodes()写MAX_WRITEBACK_PAGES个页的时候没有把MAX_WRITEBACK_PAGES个
+  页全都回写或有页被跳过且没有遇到阻塞(这种情况说明了所有的old data都被回写了).
+  #+BEGIN_EXAMPLE
+		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+			/* Wrote less than expected */
+			blk_congestion_wait(WRITE, HZ/10);
+			if (!wbc.encountered_congestion)
+				break;
+		}
+  #+END_EXAMPLE
+  前者和后者所要求回写的页是不一样的,后者是:
+  #+BEGIN_EXAMPLE
+	nr_to_write = wbs.nr_dirty + wbs.nr_unstable +
+			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+  #+END_EXAMPLE
+  前者要求回写的页数是参数值.
+  注意前者不是只要所要写的页数够了就可能退出,还要求脏页数少于某个值,所以参数值如果小了也没
+  有多大的用处,要大于这个脏页数阀值才会有效,不然就是多余的.
+  而后者所要求的页数更猛,好像不允许有留下脏页似的,把脏的page buffer,不稳定的page buffer,在
+  内存里的有在使用的inode元数的inode数都加起来,没有什么脏页数阀值且把inode的元数据也算在里
+  面了.
+  #+BEGIN_EXAMPLE
+	nr_to_write = wbs.nr_dirty + wbs.nr_unstable +
+			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+  #+END_EXAMPLE
+  关于调用时间的问题,前者是在被其它进程以调用background_writeout()的方式来唤醒pdflush线程
+  时才会调用,而后者是用定时器来使自已重复执行的.前者每执行一次都要被通调用一次
+  pdflush_operation(),后者的执行一开始也要通过pdflush_operation()但是之后的重复调用就不用
+  了.而且后者是没有struct pdflush_work的概念的,后者的执行是一个定时器,所以它不会像前者那样
+  要以内核线程作为执行它的一个特定的进程.因为定时器是以一个中断来执行的.
+** asmlinkage long sys_sync(void)
+*** fs/buffer.c:
+- 这个函数调用do_sync(),这个函数是作为sync()的系统调用函数.
+- sync( ) Allows a process to flush all dirty buffers to disk.
+
+  fsync( )Allows a process to flush all blocks that belong to a specific open file to
+  disk.
+
+  fdatasync( ) Very similar to fsync( ) , but doesn't flush the inode block of the file.
+- The fdatasync( ) system call is very similar to fsync( ) , but writes to disk only the
+  buffers that contain the file's data, not those that contain inode information. Because
+  Linux 2.6 does not have a specific file method for fdatasync( ), this system call uses
+  the fsync method and is thus identical to fsync( ) .
+** ssize_t generic_file_read(struct file *filp, char __user *buf, size_t count, loff_t *ppos)
+*** mm/filemap.c:
+- 从文件读取数据.
+- 这个函数是同步操作的,调用init_sync_kiocb()在kiocb里指定了(KIOCB_SYNC_KEY)
+- 主要的工作在__generic_file_aio_read()完成
+** ssize_t __generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,unsigned long nr_segs, loff_t *ppos)
+*** mm/filemap.c:
+- 这个函数一开始就是用access_ok()来验证参数iov里所有的段的写的可访问性.
+  #+BEGIN_EXAMPLE
+	for (seg = 0; seg < nr_segs; seg++) {
+		const struct iovec *iv = &iov[seg];
+
+		/*
+		 * If any segment has a negative length, or the cumulative
+		 * length ever wraps negative then return -EINVAL.
+		 */
+		count += iv->iov_len;
+		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
+			return -EINVAL;
+		if (access_ok(VERIFY_WRITE, iv->iov_base, iv->iov_len))
+			continue;
+		if (seg == 0)
+			return -EFAULT;
+		nr_segs = seg;
+		count -= iv->iov_len;	/* This segment is no good */
+		break;
+	}
+  #+END_EXAMPLE
+  要注意如果在iov这个数组里的第n个元素的可访问性出现了问题,那么后面元素都被认为是无效的.
+- 如果是设置了O_DIRECT那么就执行丁面那一段
+  #+BEGIN_EXAMPLE
+	if (filp->f_flags & O_DIRECT) {
+		loff_t pos = *ppos, size;
+		struct address_space *mapping;
+		struct inode *inode;
+
+		mapping = filp->f_mapping;
+		inode = mapping->host;
+		retval = 0;
+		if (!count)
+			goto out; /* skip atime */
+		size = i_size_read(inode);
+		if (pos < size) {
+			retval = generic_file_direct_IO(READ, iocb,
+						iov, pos, nr_segs);
+			if (retval > 0 && !is_sync_kiocb(iocb))
+				retval = -EIOCBQUEUED;
+			if (retval > 0)
+				*ppos = pos + retval;
+		}
+		file_accessed(filp);
+		goto out;
+	}
+  #+END_EXAMPLE
+- 否则就是下面那一段
+  #+BEGIN_EXAMPLE
+	if (count) {
+		for (seg = 0; seg < nr_segs; seg++) {
+			read_descriptor_t desc;
+
+			desc.written = 0;
+			desc.arg.buf = iov[seg].iov_base;
+			desc.count = iov[seg].iov_len;
+			if (desc.count == 0)
+				continue;
+			desc.error = 0;
+			do_generic_file_read(filp,ppos,&desc,file_read_actor);
+			retval += desc.written;
+			if (!retval) {
+				retval = desc.error;
+				break;
+			}
+		}
+	}
+  #+END_EXAMPLE
+- 关于read_descriptor_t这个类型的四个成员中两个是输入(arg.buf,count)与iov相关,另外两个是输
+  出,做为do_generic_file_read()的返回值.会对每个iov里的每一个元素段调用
+  do_generic_file_read().
+- 所以这个函数就是2件事(1)access_ok()一下用户的空间,(2)直接IO就调用
+  generic_file_direct_IO()否则就是do_generic_file_read()
+** static inline void do_generic_file_read(struct file * filp, loff_t *ppos, read_descriptor_t * desc, read_actor_t actor)
+*** include/linux/fs.h:
+- 这个函数就是直接调用do_generic_mapping_read()
+** void do_generic_mapping_read(struct address_space *mapping, struct file_ra_state *_ra,struct file *filp, loff_t *ppos, read_descriptor_t *desc, read_actor_t actor)
+*** mm/filemap.c:
+- index是ppos以页为单位在文件里的索引,offset是ppos以页为单位在页单位里的偏移量,last_index
+  是要被读的最后一个字节所在的以页为单位的索引.
+- nr是可以从当前的index文件页里读多少个字节
+  #+BEGIN_EXAMPLE
+		/* nr is the maximum number of bytes to copy from this page */
+		nr = PAGE_CACHE_SIZE;
+		if (index >= end_index) {
+			if (index > end_index)
+				goto out;
+			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
+			if (nr <= offset) {
+				goto out;
+			}
+		}
+		nr = nr - offset;
+  #+END_EXAMPLE
+- 每读一次之前都会调用cond_resched()调度一下.
+  #+BEGIN_EXAMPLE
+		cond_resched();
+  #+END_EXAMPLE 
+- 如果当前将要读的页是之前预读的页,那么就先预读,而不是先读所要读的页
+  #+BEGIN_EXAMPLE
+		if (index == next_index)
+			next_index = page_cache_readahead(mapping, &ra, filp,
+					index, last_index - index);
+  #+END_EXAMPLE 
+- 如果在address_space里找不到想要的页时说明预读是失败的
+  #+BEGIN_EXAMPLE
+		page = find_get_page(mapping, index);
+		if (unlikely(page == NULL)) {
+			handle_ra_miss(mapping, &ra, index);
+			goto no_cached_page;
+		}
+  #+END_EXAMPLE 
+- 若发现页不是最新的就需要从磁盘里读,现在有一个疑问了,在什么情况下会清掉PG_Uptodate的呢?
+  #+BEGIN_EXAMPLE
+readpage:
+		/* Start the actual read. The read will unlock the page. */
+		error = mapping->a_ops->readpage(filp, page);
+
+  #+END_EXAMPLE 
+- 若发现没有在address_space里找到想要的页就要分配一个并把加到radix树里,
+  #+BEGIN_EXAMPLE
+no_cached_page:
+		/*
+		 * Ok, it wasn't cached, so we need to create a new
+		 * page..
+		 */
+		if (!cached_page) {
+			cached_page = page_cache_alloc_cold(mapping);
+			if (!cached_page) {
+				desc->error = -ENOMEM;
+				goto out;
+			}
+		}
+		error = add_to_page_cache_lru(cached_page, mapping,
+						index, GFP_KERNEL);
+		if (error) {
+			if (error == -EEXIST)
+				goto find_page;
+			desc->error = error;
+			goto out;
+		}
+		page = cached_page;
+		cached_page = NULL;
+		goto readpage;
+	}
+  #+END_EXAMPLE
+  添加到radix树的时候可能会发现这个页被其它的进程给加了,那么就回到find_page那个标签去,在这
+  种情况下先不用把原来分配好的页给释放掉,到了out标签那里才释放掉,为什么要这样做呢?为了效率?因
+  为在这种情况下还是找不到的可能性比较大?
+
+- 这段代码什么意思呢
+  #+BEGIN_EXAMPLE
+
+		/* If users can be writing to this page using arbitrary
+		 * virtual addresses, take care about potential aliasing
+		 * before reading the page on the kernel side.
+		 */
+		if (mapping_writably_mapped(mapping))
+			flush_dcache_page(page);
+  #+END_EXAMPLE
+  i_mmap_writable是在__vma_link_file()里增加的,表示VM_SHARED映射计数器的意思.
+- 不明白下面的代码什么意思
+  #+BEGIN_EXAMPLE
+
+		/*
+		 * When (part of) the same page is read multiple times
+		 * in succession, only mark it as accessed the first time.
+		 */
+		if (prev_index != index)
+			mark_page_accessed(page);
+		prev_index = index;
+  #+END_EXAMPLE 
+- 最后调用参数函数actor()来把页的内容复制到用户地址空间.
+  #+BEGIN_EXAMPLE
+		/*
+		 * Ok, we have the page, and it's up-to-date, so
+		 * now we can copy it to user space...
+		 *
+		 * The actor routine returns how many bytes were actually used..
+		 * NOTE! This may not be the same as how much of a user buffer
+		 * we filled up (we may be padding etc), so we can only update
+		 * "pos" here (the actor routine has to update the user buffer
+		 * pointers and the remaining count).
+		 */
+		ret = actor(desc, page, offset, nr);
+  #+END_EXAMPLE
+  上面的注释说了,在这个actor()函数里要维护文件pos,在这里actor()是file_read_actor()函数
+** int file_read_actor(read_descriptor_t *desc, struct page *page, unsigned long offset, unsigned long size)
+*** mm/filemap.c:
+- 这个函数就是把内核里的page页从offset开始把size个字节拷贝到desc.arg.buf里去.
+- 先用__copy_to_user_inatomic()进行快速的拷贝,若没有完全拷贝成功就
+  用__copy_to_user(),__copy_to_user_inatomic()的返回值就是没有成功拷贝的字节数,若有一个没
+  有拷都要用__copy_to_user().
+- 判断是不是可以快速拷贝,
+** static inline loff_t i_size_read(struct inode *inode)
+*** include/linux/fs.h:
+- 这个函数根据是否是64位的架构和是否是多核来确定怎么读inode.i_size(以字节为单位的文件的大
+  小),因为inode.i_size是loff_t,所以是64位的类型,所以32位的架构读的时候不是原子的.
+- 32位架构和多核时就用顺序锁读,32位架构和单核时就要禁止抢占.
