@@ -5593,16 +5593,4 @@ struct backing_dev_info {
   #+END_EXAMPLE
   若不是wb_kupdate()通过层层调用调用了这个函数(wbc->for_kupdate),那么除了把i_list放到s_dirty
   和设置I_DIRTY_PAGES之外,还要设置inode->dirtied_when为当前时间,不明白为什么有下面一段代码
-  #+BEGIN_EXAMPLE
-				/*
-				 * Otherwise fully redirty the inode so that
-				 * other inodes on this superblock will get some
-				 * writeout.  Otherwise heavy writing to one
-				 * file would indefinitely suspend writeout of
-				 * all the other files.
-				 */
-				inode->i_state |= I_DIRTY_PAGES;
-				inode->dirtied_when = jiffies;
-				list_move(&inode->i_list, &sb->s_dirty);
-  #+END_EXAMPLE
   
