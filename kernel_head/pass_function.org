@@ -5662,7 +5662,6 @@ struct backing_dev_info {
 			ret = err;
 	}
   #+END_EXAMPLE 
-<<<<<<< HEAD
 - 之前调用的do_writepages()可能没有把所有的脏页都回写到disk,这可以用mapping_tagged()的
   PAGECACHE_TAG_DIRTY来查看.
   #+BEGIN_EXAMPLE
@@ -5682,9 +5681,7 @@ struct backing_dev_info {
 				inode->i_state |= I_DIRTY_PAGES;
 				inode->dirtied_when = jiffies;
 				list_move(&inode->i_list, &sb->s_dirty);
-  #+END_EXAMPLE
-  
-=======
+  #+END_EXAMPLE  
 - 若这时有发现I_DIRTY设置了，那么就是在正在回写这个inode的时候又有其它东西把这个inode给弄脏
   了.所发直接把这个inode放回s_dirty,如果不为脏,就要看这个inode有没有被用了,inode->i_count,
   有被用调放到inode_in_use里,没有被用就放到inode_unused里
@@ -5780,4 +5777,3 @@ struct backing_dev_info {
 				sum += size - high;
   #+END_EXAMPLE 
 
->>>>>>> c2aa19db25130f87f53497530b30beebb915d974
