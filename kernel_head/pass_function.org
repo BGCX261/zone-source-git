@@ -5382,6 +5382,17 @@ munmap_back:
   #+BEGIN_EXAMPLE
 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
   #+END_EXAMPLE 
+- 关于下面的代码为什么要调用blk_congestion_wait()之中才判断wbc.encountered_congestion呢?
+  #+BEGIN_EXAMPLE
+		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+			/* Wrote less than expected */
+			blk_congestion_wait(WRITE, HZ/10);
+			if (!wbc.encountered_congestion)
+				break;
+		}
+  #+END_EXAMPLE 
+  这个nr_to_write和pages_skipped之间应该是没有什么关系的,因为如果一个页被skip了,那么不会对
+  nr_to_write做加减的.
 ** void writeback_inodes(struct writeback_control *wbc)
 *** mm/page-writeback.c:
 - wbc.nr_to_write:The nr_to_write field of this descriptor contains the number of pages to
@@ -5506,7 +5517,8 @@ struct backing_dev_info {
 	void *unplug_io_data;
 };
   #+END_EXAMPLE 
-- 若当前的inode是在调用这个函数之前dirty的,那么就不能刷这个inode,这是为什么呢?
+- 若当前的inode是在调用这个函数之前dirty的,那么就不能刷这个inode链表后面的所有inode,如何确
+  定当前后面的所有inode的,这就要保证插入顺序了.
   #+BEGIN_EXAMPLE
 		/* Was this inode dirtied after sync_sb_inodes was called? */
 		if (time_after(inode->dirtied_when, start))
@@ -5520,6 +5532,71 @@ struct backing_dev_info {
 			break;
   #+END_EXAMPLE 
 - 该判断的都判断完了,接下来就是调用__writeback_single_inode()把单个inode刷到disk了.
+- 如果是WB_SYNC_HOLD就把它插入到s_dirty里去,以便稍后再刷,但是同时要修改dirtied_when为当前
+  时间,这是为什么呢?所以我dirtied_when不一定能知道什么时候dirty的.
+- 如果是pdflush线程就要把它bdi.state的BDI_pdflush给清掉,
+  #+BEGIN_EXAMPLE
+		if (current_is_pdflush())
+			writeback_release(bdi);
+  #+END_EXAMPLE 
+  为什么要这样呢?因为在调用__writeback_single_inode()把这个标志给设置了
+  #+BEGIN_EXAMPLE
+		if (current_is_pdflush() && !writeback_acquire(bdi))
+			break;
+
+		BUG_ON(inode->i_state & I_FREEING);
+		__iget(inode);
+		pages_skipped = wbc->pages_skipped;
+		__writeback_single_inode(inode, wbc);
+  #+END_EXAMPLE 
+  这说明是在调用__writeback_single_inode()前不久设置的这个标志
+- 这段代码什么意思
+  #+BEGIN_EXAMPLE
+		if (wbc->pages_skipped != pages_skipped) {
+			/*
+			 * writeback is not making progress due to locked
+			 * buffers.  Skip this inode for now.
+			 */
+			list_move(&inode->i_list, &sb->s_dirty);
+		}
+  #+END_EXAMPLE
+  现在有点明白了,因为pages_skipped的在调用__writeback_single_inode()设置了,
+  #+BEGIN_EXAMPLE
+		pages_skipped = wbc->pages_skipped;
+		__writeback_single_inode(inode, wbc);
+		if (wbc->sync_mode == WB_SYNC_HOLD) {
+			inode->dirtied_when = jiffies;
+			list_move(&inode->i_list, &sb->s_dirty);
+		}
+  #+END_EXAMPLE 
+  所以若在调用__writeback_single_inode()过程中发现有页被skip,那么pages_skipped和
+  wbc->page_skipped就会不相等,这说明了这个inode有页被skip,那么就要把这个inode重新放回到
+  s_dirty.
+- 每写完一个inode就评估一下是不是要调度,在调度的之前已增加了inode的计数器,在调度回来之后才
+  会减这个计数器
+  #+BEGIN_EXAMPLE
+		cond_resched();
+		iput(inode);
+  #+END_EXAMPLE
+- 调用回来之后会马上判断nr_to_write是不是不为正数了,若是就说明没有页要写了,那么就退出,那么
+  会是谁去修改这个东西呢?
+  #+BEGIN_EXAMPLE
+		if (wbc->nr_to_write <= 0)
+			break;
+  #+END_EXAMPLE
+- 有一个不明白的地方,
+  #+BEGIN_EXAMPLE
+		if (wbc->sync_mode == WB_SYNC_HOLD) {
+			inode->dirtied_when = jiffies;
+			list_move(&inode->i_list, &sb->s_dirty);
+		}
+  #+END_EXAMPLE 
+  为什么这段代码不用检查这个inode有没有锁被锁呢?否则的话,若WB_SYNC_HOLD只要设置了,那么不是
+  所有的inode都会又被放回到s_dirty里去了吗?我觉得执行到这里之前会有一个地方把这个标志给清
+  了.
+- 所以这个函数的主要过程就是,循环扫一个superblock的inode,对于每一个inode要(1)检查阻塞问题,
+  检查时间问题(dirty_when,older_than_this)(3)检查pdflush线程(4)调
+  用__writeback_single_inode()(5)检查WB_SYNC_HOLD,(6)检查pages_skipped,(7)调度
 ** static int __writeback_single_inode(struct inode *inode,struct writeback_control *wbc)
 *** fs/fs-writeback.c:
 - 这个函数是把单个inode回写的,有两个工作:(1)与I_LOCK相关的,(2)调用__sync_single_inode()回
@@ -5547,7 +5624,7 @@ struct backing_dev_info {
   #+END_EXAMPLE 
 ** static int __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
 *** fs/fs-writeback.c:
-- 这个函数把单个inode回写disk.
+- 这个函数把单个inode回写disk.这个函数只有__writeback_single_inode()调用
 - 在回写之前要把I_LOCK设置,把I_DIRTY清掉,所以一个inode被锁住时有可能是在被回写.
 - 为什么要保存I_DIRTY呢?进入这个函数时不能保证I_DIRTY是设置的吗?原来I_DIRTY是
   I_DIRTY_SYNC,I_DIRTY_DATASYNC,I_DIRTY_PAGES的结合.
@@ -5585,6 +5662,7 @@ struct backing_dev_info {
 			ret = err;
 	}
   #+END_EXAMPLE 
+<<<<<<< HEAD
 - 之前调用的do_writepages()可能没有把所有的脏页都回写到disk,这可以用mapping_tagged()的
   PAGECACHE_TAG_DIRTY来查看.
   #+BEGIN_EXAMPLE
@@ -5606,3 +5684,100 @@ struct backing_dev_info {
 				list_move(&inode->i_list, &sb->s_dirty);
   #+END_EXAMPLE
   
+=======
+- 若这时有发现I_DIRTY设置了，那么就是在正在回写这个inode的时候又有其它东西把这个inode给弄脏
+  了.所发直接把这个inode放回s_dirty,如果不为脏,就要看这个inode有没有被用了,inode->i_count,
+  有被用调放到inode_in_use里,没有被用就放到inode_unused里
+  #+BEGIN_EXAMPLE
+		} else if (inode->i_state & I_DIRTY) {
+			/*
+			 * Someone redirtied the inode while were writing back
+			 * the pages.
+			 */
+			list_move(&inode->i_list, &sb->s_dirty);
+		} else if (atomic_read(&inode->i_count)) {
+			/*
+			 * The inode is clean, inuse
+			 */
+			list_move(&inode->i_list, &inode_in_use);
+		} else {
+			/*
+			 * The inode is clean, unused
+			 */
+			list_move(&inode->i_list, &inode_unused);
+			inodes_stat.nr_unused++;
+		}
+  #+END_EXAMPLE
+- 因为之前在需要等待的情况下调用了filemap_fdatawait()来等待PG_Writeback清除表示没有正在回
+  写,所以再最后可以调用wake_up_inode()来唤醒等待这个inode的进程.
+** void wake_up_inode(struct inode *inode)
+*** fs/inode.c:
+- 调用wake_up_bit().
+  #+BEGIN_EXAMPLE
+	wake_up_bit(&inode->i_state, __I_LOCK);
+  #+END_EXAMPLE
+** void __init page_writeback_init(void)
+*** mm/page-writeback.c:
+- 这个函数由start_kernel()调用,它设定一个定时器,这个定时器是调用wb_timer_fn函数,转而调用
+  pdflush_operation(),转而调用wb_kupdate()
+- 调用了nr_free_buffer_pages()得到可以被wb_kupdate()回写的页,这些页的特点就是buffer page,
+  在内核态的.所以函数的名字也有buffer_pages()字样
+- wb_timer_fn函数在调用完pdflush_operation()之后会重新注册wb_timer.定时的时间是下1s
+** unsigned int nr_free_buffer_pages(void)
+*** include/linux/gfp.h:
+- 这个函数调用nr_free_zone_pages(),是以GFP_USER&GFP_ZONEMASK为参数.这个参数是什么意思
+  呢?
+  #+BEGIN_EXAMPLE
+  #define GFP_ZONEMASK	0x03
+  #+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+#define ZONE_DMA		0
+#define ZONE_NORMAL		1
+#define ZONE_HIGHMEM		2
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+#define GFP_USER	(__GFP_WAIT | __GFP_IO | __GFP_FS)
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+#define __GFP_WAIT	0x10u	/* Can wait and reschedule? */
+#define __GFP_HIGH	0x20u	/* Should access emergency pools? */
+#define __GFP_IO	0x40u	/* Can start physical IO? */
+#define __GFP_FS	0x80u	/* Can call down to low-level FS? */
+  #+END_EXAMPLE 
+  所以GFP_USER & GFP_ZONEMASK的结果是0,就是ZONE_DMA?好像还不是这种意思,ulk:If the
+  __GFP_DMA flag is set, page frames can be taken only from the ZONE_DMA memory zone. Otherwise, if the __GFP_HIGHMEM flag is not set, page frames can be taken only
+  from the ZONE_NORMAL and the ZONE_DMA memory zones, in order of preference. Otherwise
+  (the __GFP_HIGHMEM flag is set), page frames can be taken from ZONE_HIGHMEM,
+  ZONE_NORMAL, and ZONE_DMA memory zones, in order of preference. 又因为GFP_USER没有设
+  置__GFP_HIGHMEM和__GFP_DMA,所以GFP_USER&GFP_ZONEMASK所涉汲的是ZONE_DMA和ZONE_NORMAL这两
+  个区,这也符合注释所说的
+  #+BEGIN_EXAMPLE
+/*
+ * Amount of free RAM allocatable within ZONE_DMA and ZONE_NORMAL
+ */
+  #+END_EXAMPLE 
+  同时也说明DMA区也有buffer page
+** static unsigned int nr_free_zone_pages(int offset)
+*** mm/page_alloc.c:
+- 这个函数要找出offset区和它的fallback区(就是分配不了时作为后援的区)的所有页.
+- 因为不同的节点可能有相同的区类型,所以要搜所有的结点.
+  #+BEGIN_EXAMPLE
+	for_each_pgdat(pgdat) {
+  #+END_EXAMPLE
+- 要定位到所要找的区的zonelist,因为这个区的fallback区就在zonelist里,zonelist只有一个成员,
+  它是指针数组(struct zone *为数组的成员),该offset区的所有的fallback区都在这数组里,且要分
+  配页时要按照区所有数组的位置,同时第1位元素是offset自已.
+  #+BEGIN_EXAMPLE
+		struct zonelist *zonelist = pgdat->node_zonelists + offset;
+  #+END_EXAMPLE
+- zone.present_pages Total size of zone in pages, excluding holes.
+- zone.pages_high High watermark for page frame reclaiming; also used by the zone
+  allocator as a threshold value.为什么计算时要用present_pages减去pages_high呢?
+  #+BEGIN_EXAMPLE
+			unsigned long size = zone->present_pages;
+			unsigned long high = zone->pages_high;
+			if (size > high)
+				sum += size - high;
+  #+END_EXAMPLE 
+
+>>>>>>> c2aa19db25130f87f53497530b30beebb915d974
