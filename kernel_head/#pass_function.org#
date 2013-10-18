@@ -6417,7 +6417,7 @@ buffer_head.
   buffer_head里的数据是一致的,而且在这种情况下buffer_head的数据是比磁盘还要新的.下面有介绍
 ** void fastcall mark_buffer_dirty(struct buffer_head *bh)
 *** fs/buffer.c:
-
+- 这个
 ** int block_prepare_write(struct page *page, unsigned from, unsigned to, get_block_t *get_block)
 *** fs/buffer.c:
 - 普通文件的prepare_write()函数一般会封装这个函数
