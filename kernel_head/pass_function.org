@@ -6415,9 +6415,49 @@ buffer_head.
 - 这个函数调用__block_commit_write()把在page页的从from到to之间的buffer_head的都设置
   BH_Uptodate和设置BH_Dirty,同时设置这两个标志并不予盾,因为BH_Uptodate并不表示磁盘的数据与
   buffer_head里的数据是一致的,而且在这种情况下buffer_head的数据是比磁盘还要新的.下面有介绍
+** static int __block_commit_write(struct inode *inode, struct page *page, unsigned from, unsigned to)
+*** fs/buffer.c:
+- 这个函数 的作用的对在page页里的所有的buffer_head都扫描一次,若发现有buffer_head的空间部分
+  或全部是落在from到to之间的,那么就设置BH_Uptodate,注意是部分落在那个区间也会设置,那么没有
+  落在这个区间里的数据也是最新的吗?除了设置BH_Uptodate还要调用mark_buffer_dirty(),下面有介
+  绍.
+- 到最后若所有的buffer_head都已是最新的时候,就设置PG_Uptodate.
+- 所以这个函数大概就是设置了buffer_head的一些标志,page的标志,radix树,移动inode.而这些就是
+  commit的全部意思. 
+** static int blkdev_prepare_write(struct file *file, struct page *page, unsigned from, unsigned to)
+*** fs/block_dev.c:
+- 这个函数是块设备文件的prepare_write()函数,与普通文件一样都是调用block_prepare()只是
+  传的get_block()函数是blkdev_get_block()
+** static int blkdev_commit_write(struct file *file, struct page *page, unsigned from, unsigned to)
+*** fs/block_dev.c:
+- 这个函数是块设备的commit_write()方法,里面封装了block_commit_write(),与
+  generic_commit_write()不同是如果扩大了普通文件,那么就要修改inode.i_size且把inode弄成脏.
+  #+BEGIN_EXAMPLE
+	if (pos > inode->i_size) {
+		i_size_write(inode, pos);
+		mark_inode_dirty(inode);
+	}
+  #+END_EXAMPLE 
 ** void fastcall mark_buffer_dirty(struct buffer_head *bh)
 *** fs/buffer.c:
-- 这个
+- (1)这个函数先设置参数buffer_head为BH_Dirty,
+  
+  (2)然后设置它所在的页的PG_Dirty,
+  
+  (3)然后增加page_state.nr_dirty
+  
+  (4)然后设置radix树的PAGECACHE_TAG_DIRTY,
+  
+  (5)然后以I_DIRTY_PAGES调用__mark_inode_dirty()
+
+- 为什么调用 __mark_inode_dirty()时要判断address_space.host呢?而调用radix_tree_tag_set()这
+  些就不呢?注释有说这个判断相当于
+  #+BEGIN_EXAMPLE
+				/* !PageAnon && !swapper_space */
+  #+END_EXAMPLE
+  那么就是说PageAnon或swapper_space时都有radix树吗?都有address_space吗?也就是说radix树不是
+  只针对普通文件的吗?
+
 ** int block_prepare_write(struct page *page, unsigned from, unsigned to, get_block_t *get_block)
 *** fs/buffer.c:
 - 普通文件的prepare_write()函数一般会封装这个函数
@@ -6484,7 +6524,7 @@ return block_prepare_write(page, from, to, ext2_get_block);
 				unmap_underlying_metadata(bh->b_bdev,
 							bh->b_blocknr);
   #+END_EXAMPLE
-  unmap_underlying_metadate()就是被调用来把aliase用等待的方式给回写到disk,
+  unmap_underlying_metadata()就是被调用来把aliase用等待的方式给回写到disk,
 
   为什么老是要检查页的PG_Uptodate,而不把页给锁住呢?
 
@@ -6601,4 +6641,280 @@ return block_prepare_write(page, from, to, ext2_get_block);
 
 		if (*pos + *count > isize)
 			*count = isize - *pos;
+  #+END_EXAMPLE 
+** int mpage_writepages(struct address_space *mapping, struct writeback_control *wbc, get_block_t get_block)
+*** fs/mpage.c:
+- ulk:When the kernel wants to effectively start the I/O data transfer, it ends up
+  invoking the writepages method of the file's address_space object, which searches for
+  dirty pages in the radix-tree and flushes them to disk. 所以要真的传一个块的时候就会调用
+  address的writepages方法.所以调用这个函数一定会把数据写回磁盘,只是看它在写时会不会被阻塞.
+- ext2的writepages方法就是用这个函数实现的
+  #+BEGIN_EXAMPLE
+
+static int
+ext2_writepages(struct address_space *mapping, struct writeback_control *wbc)
+{
+	return mpage_writepages(mapping, wbc, ext2_get_block);
+}
+  #+END_EXAMPLE
+- if a filesystem does not define the writepages method, the kernel invokes directly
+  mpage_writepages( ) passing NULL as third argument.
+- 如果不想写时阻塞,且现在的写队列是阻塞的,那么就退出
+  #+BEGIN_EXAMPLE
+	if (wbc->nonblocking && bdi_write_congested(bdi)) {
+		wbc->encountered_congestion = 1;
+		return 0;
+	}
+  #+END_EXAMPLE
+- 那个scanned局部量是什么意思呢?
+- 关于index的初始化:为什么设置了WB_SYNC_NONE就从address_space.writeback_index开始回写页呢?
+  #+BEGIN_EXAMPLE
+	if (wbc->sync_mode == WB_SYNC_NONE) {
+		index = mapping->writeback_index; /* Start from prev offset */
+	} else {
+		index = 0;			  /* whole-file sweep */
+		scanned = 1;
+	}
+  #+END_EXAMPLE
+  为什么没有设置WB_SYNC_NONE就要设置scanned呢?
+  这还没有完,还要根据writeback_control.start来设置index
+  #+BEGIN_EXAMPLE
+	if (wbc->start || wbc->end) {
+		index = wbc->start >> PAGE_CACHE_SHIFT;
+		end = wbc->end >> PAGE_CACHE_SHIFT;
+		is_range = 1;
+		scanned = 1;
+	}
+  #+END_EXAMPLE
+  这时也会设置scanned,也会设置is_range,那么这个is_range的意思就是指这次的回写是被指定的范
+  围的,若是指定了范围,那么就要设置address_space.writeback_index为最后一个回写的页的index
+  #+BEGIN_EXAMPLE
+	if (!is_range)
+		mapping->writeback_index = index;
+  #+END_EXAMPLE
+- pagevec_lookup_tag()的介绍下面有.
+- 因为end的初始值是-1,所以就算writeback_control里没有要求回写的页的范围,那个while循环的判
+  断也不会有问题
+  #+BEGIN_EXAMPLE
+	while (!done && (index <= end) &&
+			(nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
+			PAGECACHE_TAG_DIRTY,
+			min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1)))
+  #+END_EXAMPLE
+- 一进入while()就会设置scanned,且在里面不再会有改变,所以结合上面可以看出,在
+  writeback_control.sync_mode为WB_SYNC_NONE且writeback_contro.start和writeback_control.end
+  没有设置且在radix树里找到了脏页,那么scanned还是会设置为0的,为什么要这么做呢?而在没有设置
+  WB_SYNC_NONE时不管有没有脏页,都会设置scanned,不管有没有设置writeback_control.start和end
+  都会设置scanned.
+- 关于done变量,是在while()里的for()循环里被修改以告诉外面的while()循环等这次的for()循环把
+  所有的页全都循环一次之后就不用循环了(for()里是没有break的只有continue).在什么情况下会设
+  置呢?(1)在writeback_control设置了范围,且从当前在开始已超过了设置的范围
+  #+BEGIN_EXAMPLE
+
+			if (unlikely(is_range) && page->index > end) {
+				done = 1;
+				unlock_page(page);
+				continue;
+			}
+  #+END_EXAMPLE
+  觉得没有必要用continue了,应该是break.从pagevec_lookup_tag()返回的页是有可能会超出范围的,
+  因为这个页只是找出指定个数的脏页,而不管这些页是否在某一个范围内.
+  
+  (2)在写一个页时有错或writeback_control.nr_to_write要求写的页数已经被够了,那么就设置done
+  #+BEGIN_EXAMPLE
+			if (ret || (--(wbc->nr_to_write) <= 0))
+				done = 1;
+  #+END_EXAMPLE 
+  要求被写的页数和要求被写的页所在的范围并不冲突.
+  (3)writeback_control.nonblocking设置了且遇到了阻塞
+  #+BEGIN_EXAMPLE
+			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+				wbc->encountered_congestion = 1;
+				done = 1;
+			}
+  #+END_EXAMPLE
+- 在for()循环里若发现将要被写的页是正在回写的且设置了WB_SYNC_NONE,那么就要等待
+  #+BEGIN_EXAMPLE
+			if (wbc->sync_mode != WB_SYNC_NONE)
+				wait_on_page_writeback(page);
+  #+END_EXAMPLE
+- 现在在for()里剩下的就只有调用函数写页了.若参数get_block()为空,就说明调用这个函数的函数不
+  是address_space.a_ops.writepages,ulk:If the get_block parameter is NULL (no writepages
+  method defined), it invokes the mapping->writepage method of the address_space object of
+  the file to flush the page to disk. Otherwise, if the get_block parameter is not NULL,
+  it invokes the mpage_writepage()function.
+  #+BEGIN_EXAMPLE
+
+	writepage = NULL;
+	if (get_block == NULL)
+		writepage = mapping->a_ops->writepage;
+  #+END_EXAMPLE
+- 
+** static int ext2_writepage(struct page *page, struct writeback_control *wbc)
+*** fs/ext2/inode.c:
+- 这个函数就是直接调用block_write_full_page(),但是调用block_write_full_page()时也会用到
+  get_block()函数
+
+** unsigned pagevec_lookup_tag(struct pagevec *pvec, struct address_space *mapping,pgoff_t *index, int tag, unsigned nr_pages)
+*** mm/swap.c:
+- 这个函数的最终结果是把在mapping这个address_space里从index开始打算找出nr_pages个在radix树
+  里有tag标签的页,并把这些页的描述符按顺序放到pvec.page数组里,但真正找到的页数是
+  pvec.nr,pvec.nr也等于返回值.同时还把*index修改成pvec.page数组里的最后一个页的page.index.
+** static struct bio *__mpage_writepage(struct bio *bio, struct page *page, get_block_t get_block,sector_t *last_block_in_bio, int *ret, struct writeback_control *wbc,	writepage_t writepage_fn)
+*** fs/mpage.c:
+- 这个函数被mpage_writepages()和mpage_writepage()调用
+- 先看看注释
+  #+BEGIN_EXAMPLE
+/*
+ * Writing is not so simple.
+ *
+ * If the page has buffers then they will be used for obtaining the disk
+ * mapping.  We only support pages which are fully mapped-and-dirty, with a
+ * special case for pages which are unmapped at the end: end-of-file.
+ *
+ * If the page has no buffers (preferred) then the page is mapped here.
+ *
+ * If all blocks are found to be contiguous then the page can go into the
+ * BIO.  Otherwise fall back to the mapping's writepage().
+ * 
+ * FIXME: This code wants an estimate of how many pages are still to be
+ * written, so it can intelligently allocate a suitably-sized BIO.  For now,
+ * just allocate full-size (16-page) BIOs.
+ */
+  #+END_EXAMPLE
+  可以看出这个函数是使用page里的buffer_head来从disk里读数据的,只支持全部都是
+  mapped-and-dirty的页和没有映射到文件尾的页.若页没有buffer_head那么就在这个函数里作映射.
+  
+  若发现这个页里的所有的buffer_head之间是连续的,就进入BIO,否则就调用
+  address_space.a_ops.writepage()
+- 若这个页是有buffer_head的,那么要么就跳到confused,要么就跳到page_is_mapped.因为在这里还有
+  bio的处理,所以从里跳到confused时是不会执行mpage_bio_submit()的,这时若是
+  mpage_writepages()而不是mpage_writepage()调用__mpage_writepage(),那么就会执行参数
+  writepage_fn函数,这个函数就是address_space.a_ops.writepage.在ext2里
+  address_space.a_ops.writepage是由把block_write_full_page()封装起来的ext2_writepage()实现
+  的.
+- 从下面这段代码可以看出,只要发现有一个buffer_head是没有设置BH_Mapped的,那么就一定会跳到
+  confused的,且在接下来循环处理其它的buffer_head时是没有什么意义的,但是为什么还要做呢?
+  #+BEGIN_EXAMPLE
+			if (!buffer_mapped(bh)) {
+				/*
+				 * unmapped dirty buffers are created by
+				 * __set_page_dirty_buffers -> mmapped data
+				 */
+				if (buffer_dirty(bh))
+					goto confused;
+				if (first_unmapped == blocks_per_page)
+					first_unmapped = page_block;
+				continue;
+			}
+
+			if (first_unmapped != blocks_per_page)
+				goto confused;	/* hole -> non-hole */
+  #+END_EXAMPLE 
+  那个hole -> non-hole的注释是什么意思呢?
+  
+  在没有设置BH_Mapped但是设了BH_Dirty时是什么情况下做呢?有注释
+  #+BEGIN_EXAMPLE
+				/*
+				 * unmapped dirty buffers are created by
+				 * __set_page_dirty_buffers -> mmapped data
+				 */
+  #+END_EXAMPLE 
+  
+  可以看出first_unmapped指的是第一个没有设置BH_Mapped且没有设置BH_Dirty的buffer_head的页内
+  块号.
+- 不为脏或为脏但不是Uptodated就跳到confused，这是为什么呢?
+- 从下面的代码可以看出放在blocks数组里的块要是连续的
+  #+BEGIN_EXAMPLE
+			if (page_block) {
+				if (bh->b_blocknr != blocks[page_block-1] + 1)
+					goto confused;
+			}
+  #+END_EXAMPLE 
+- 所以blocks数组是存放的是设置了BH_Mapped的块，且是脏的和Uptodated的,且块是连续的
+- 不知道下面的代码有什么用
+  #+BEGIN_EXAMPLE
+			if (boundary) {
+				boundary_block = bh->b_blocknr;
+				boundary_bdev = bh->b_bdev;
+			}
+  #+END_EXAMPLE
+- first_unmapped为0表里blocks数组里没有有效的元素,那么它就跳到confused,若是里有有效的元素,
+  那么它就跳到page_is_mapped.那么什么情况下会出现跳到page_is_mapped呢?
+  
+  在做么情况下会while()循环后面的goto confused呢?有注释
+  #+BEGIN_EXAMPLE
+		} while ((bh = bh->b_this_page) != head);
+
+		if (first_unmapped)
+			goto page_is_mapped;
+
+		/*
+		 * Page has buffers, but they are all unmapped. The page was
+		 * created by pagein or read over a hole which was handled by
+		 * block_read_full_page().  If this address_space is also
+		 * using mpage_readpages then this can rarely happen.
+		 */
+		goto confused;
+  #+END_EXAMPLE 
+  所以while循环里的continue是有用的,如果对于所有的buffer_head都执行到了continue,那么就会最
+  后就会执行goto confused.
+  
+  注释里的pagein是指换入页的意思吗?
+  
+  在while循环里能把所有的buffer_head都处理一次,那么first_unmapped要么是0要么是
+  blocks_per_page.所以跳到page_is_mapped是指页里的所有的buffer_head都是被映射的,且都符合存
+  放在blocks数组里的条件,因为都已放到blocks数组里了.
+- 第二个for循环比较简单,在页没有buffer_head映射的情况下才会执行到这里,到这里也没有必要给页
+  分配buffer_head,这个for循环的目的就是把该页里所映射的块的块号按顺序放到blocks数组里,注意
+  要么执行第一个while循环要么执行第二个for循环,不可能执行完第一个while循环又执行第二个for
+  循环.
+  
+  如果在块设备里找不到相应的块号,那么就跳到confused,不再找后面的块了.
+  #+BEGIN_EXAMPLE
+		map_bh.b_state = 0;
+		if (get_block(inode, block_in_file, &map_bh, 1))
+			goto confused;
+  #+END_EXAMPLE
+  
+  若buffer_head是新的,那么就把它的aliase块回写,但是为什么要检查BH_New呢?不是都会设置的吗?
+  #+BEGIN_EXAMPLE
+		if (buffer_new(&map_bh))
+			unmap_underlying_metadata(map_bh.b_bdev,
+						map_bh.b_blocknr);
+  #+END_EXAMPLE 
+  
+  不知道下面是什么意思
+  #+BEGIN_EXAMPLE
+		if (buffer_boundary(&map_bh)) {
+			boundary_block = map_bh.b_blocknr;
+			boundary_bdev = map_bh.b_bdev;
+		}
+  #+END_EXAMPLE
+  
+  若发现当前块不与上一个块连续,就跳到confused,怎么可能会不连续,在一个页里的块不是都是连续
+  的吗?
+  
+  #+BEGIN_EXAMPLE
+		if (page_block) {
+			if (map_bh.b_blocknr != blocks[page_block-1] + 1)
+				goto confused;
+		}
+  #+END_EXAMPLE 
+  所以没有把这个页的所有的块放到blocks数组都会跳到confused,若页里的所有的块都放到了blocks
+  数组里了,那么就会往下执行到page_is_mapped处,注意是有可能page_block不与blocks_per_page的,
+  因为这个页映射到了文件尾.
+- 到page_is_mapped标签这里主要是看这个页是不是文件页的最后一页,若是最后一页那么就要处理映
+  射文件结尾处之后的空间,要把没有用的页空间给清0.是不是page.index是从1开始计数的,不然为什
+  么在page.index大于end_index时就跳到confused而不清0呢?
+- 下面的这段代码中,若bio不为空的情况是在mpage_writepaegs()里调用这个函数时出现
+  的,__mpage_writepage()趴有mpage_writepages()和mpage_writepage()调用,代码里的那个判断是什
+  么意思吗?
+  #+BEGIN_EXAMPLE
+
+	/*
+	 * This page will go to BIO.  Do we need to send this BIO off first?
+	 */
+	if (bio && *last_block_in_bio != blocks[0] - 1)
+		bio = mpage_bio_submit(WRITE, bio);
   #+END_EXAMPLE 
