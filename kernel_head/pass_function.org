@@ -6096,6 +6096,8 @@ no_cached_page:
 - 32位架构和多核时就用顺序锁读,32位架构和单核时就要禁止抢占.
 ** int mpage_readpage(struct page *page, get_block_t get_block)
 *** fs/mpage.c:
+** static struct bio *do_mpage_readpage(struct bio *bio, struct page *page, unsigned nr_pages, sector_t *last_block_in_bio, get_block_t get_block)
+*** fs/mpage.c:
 - address_space的readpage方法的作用是:The readpage method of the address_space object
   stores the address of the function that effectively activates the I/O data transfer from
   the physical disk to the page cache. 所以readpage有在do_generic_mapping_read()里调用.对
@@ -6210,6 +6212,77 @@ buffer_head.
   调用do_mpage_readpage()的nr_pages是1.
 - 到底要读磁盘的那一块数据,最原始的根据是page.index.
 - 如果页内的块不是连续的,且不是最新的,那么就调用block_read_full_page()
+
+- 这个函数结合mpage_readpages()讲解可以看
+  http://blog.csdn.net/dog250/article/details/5303564
+- 原来块寻址也有直接和间接寻址的
+- 对于bio,在mpage_readpages()里会用循环来处理参数传进来的所有页,有一个原则,就是尽可能地用
+  最少的bio来转输数据,要想用最少的bio,那么就要在bio里尽最大可能地放入连续的块,若传入的
+  nr_pages个页的块都是连续的,那么就可以用一个bio就可以了
+- 在mpage_readpages()这个函数里调用do_mpage_readpage()返回的bio若是NULL,那么说明在
+  do_mpage_readpage()函数里因为调用了mpage_bio_submit()来传输.mpage_bio_submit()这个函数是
+  一定返回NULL的.
+- 在什么情况下会调用mpage_bio_submit()呢?这个情况还不好判断
+
+  (1)发现在bio里的最后一个块不与blocks数组里的第一个块是连续的,那么就要先调用
+  mpage_bio_submit()来把bio提交了,因为不连续,所以不能把blocks数组里的块放到,要先提交.
+  #+BEGIN_EXAMPLE
+	if (bio && (*last_block_in_bio != blocks[0] - 1))
+		bio = mpage_bio_submit(READ, bio);
+  #+END_EXAMPLE 
+
+  (2)如果bio_add_page()没有成功把页添加bio里去,bio_add_page()返回的不是0就是length
+  #+BEGIN_EXAMPLE
+	length = first_hole << blkbits;
+	if (bio_add_page(bio, page, length, 0) < length) {
+		bio = mpage_bio_submit(READ, bio);
+		goto alloc_new;
+	}
+  #+END_EXAMPLE 
+
+  http://blog.chinaunix.net/uid-24774106-id-3266816.html 这个文章讲了ext2文件系统在磁盘上
+  的结构.讲了整个ext2文件系统的结构图,超级块的分布,超级块里的数据和超级块结构体的对应,超级
+  块的备份,块组描述符的分布,块组描述符的备份,块组里块的个数的原因.
+
+  Inode中有个长度为15的数组指向文件的数据存储的块。前12个为直接指针，指向了数据所在的block
+  块。第13 个数组元素是1级间接指针，第14个数组元素为二级间接指针，第15个元素为三级间接指针，
+  通过间接指针，ext2支持的文件最大长度获得了极大的扩展。
+  http://blog.chinaunix.net/uid-24774106-id-3267190.html
+
+  其实关于ext2在ulk的第18章里有介绍,可以看看ext2_block_to_path()是如何得到间接寻址的深度并
+  且填充offsets索引数组的,在ext2_block_to_path()里设置的boundary就会影响BH_Boundary的设置.关
+  于boundary:比如当前的i_block为11，那么此时的boundary就会被设置为1，表示下面就要间接寻址
+  了，正如它的名字所谓，final是一个边界，如果i_block到达了一个边界，那么就将这个值设置
+  为1.
+
+  现在再看下面这两段话就明白为什么要设置BH_Boundary了(先要明白一点就是若一个文件块是要通过
+  间接寻址才可以读取的话,那么它先要获取间接指针块,所谓的间接指针块也是存储在磁盘上的一个
+  块,所以当使用get_block()这个函数来获取间接块的块号时,就要先获取存储这个间接块号的存储间接指
+  针的块,所以get_block()函数会作一次磁盘的io操作):如果bh的boundary被设置了，那么说明马
+  上就要进行额外的io了，这个额外的io就是 间接寻址，这个间接寻址要在下一次进入
+  do_mpage_readpage函数以后的第一次get_block回调函数里面进行，其实就是读一个 block而已。
+
+  设置boundary是因为下一次get_block就要间接寻址了，因此下一次 get_block的时候就要进行一次额
+  外的io了，这次额外的io将会使磁盘莫名其妙的移动磁头到这个间接寻址块并且开始读取数据，我们
+  知道mpage 利用bio的聚集方式操作磁盘很有效，因为它可以最大限度减少磁头的移动，因为操作的块
+  连续嘛，但是具体的操作是bio被提交以后才进行的，我们假设读取 一个大文件的前16块，并且为了
+  方便讨论特定文件的块号页面内连续，这样只用一个bio就可以了，如果在提交所有的page的bio之前
+  的 get_block中有io的话，那么磁头会移动到间接寻址块开始读取数据，然后等块号读回来以后将页
+  面加入bio，最终提交bio的时候磁头会拐回来到 第一个直接寻址块，mpage的优势将部分失效，正如
+  注释中说，io的顺序将是：12 0 1 2 3 4 5 6 7 8 9 10 11 13 14 15 16，这样会很不好，如果可以
+  做到连续操作磁盘就好了，虽然直接寻址指针11指向的块和间接寻址指针指向的块不一定连续，但是
+  很多时候都是连续的，就算不 连续也不会离很远，于是就有了boundary一说，也就是说当映射完第
+  11块以后，发现下一块就要间接寻址了，那么就设置该bh的boundary标 志，这样返回的时候，一旦发
+  现设定了boundary标志就知道该间接寻址，对于我们的例子在下一次的get_block的时候就要操作第
+  12块间接指针 了，为了使得磁头的移动最小化，那么首先将积累的bio提交，这样磁头在移动到12块
+  之前就完成了以前的从0到11块的io操作，磁头再也不会是莫名其妙 的移动到12块了，而是很有意义
+  的移动到了12块。
+  
+  
+  
+  (3)
+
+
 ** static int blkdev_readpage(struct file * file, struct page * page)
 *** fs/block_dev.c:
 - 这个函数就是块设备文件的address_space_operations.readpage方法.
@@ -6918,3 +6991,59 @@ ext2_writepages(struct address_space *mapping, struct writeback_control *wbc)
 	if (bio && *last_block_in_bio != blocks[0] - 1)
 		bio = mpage_bio_submit(WRITE, bio);
   #+END_EXAMPLE 
+- 接下来就是分配bio了,现在分配bio这一段还是看不懂,
+  #+BEGIN_EXAMPLE
+  	if (bio == NULL) {
+		bio = mpage_alloc(bdev, blocks[0] << (blkbits - 9),
+				bio_get_nr_vecs(bdev), GFP_NOFS|__GFP_HIGH);
+		if (bio == NULL)
+			goto confused;
+	}
+
+	/*
+	 * Must try to add the page before marking the buffer clean or
+	 * the confused fail path above (OOM) will be very confused when
+	 * it finds all bh marked clean (i.e. it will not write anything)
+	 */
+	length = first_unmapped << blkbits;
+	if (bio_add_page(bio, page, length, 0) < length) {
+		bio = mpage_bio_submit(WRITE, bio);
+		goto alloc_new;
+	}
+  #+END_EXAMPLE
+
+  注意执行到alloc_new这里之后就不会再有可能执行confused了,除非分配不到bio.
+
+  http://blog.csdn.net/yunsongice/article/details/6171260
+  对于普通文件，假设没有遇到文件的洞，那么一个页面所包含的4个块总是连续的，mpage_alloc调用
+  的bio_alloc_bioset函数就只分配一个bio_vec结构。随后do_mpage_readpage通过调用bio_add_page
+  将这个结构的bv_page指向对于的页描述符，bv_len设置为4个块的大小4096字节，bv_offset为0。
+  bio_add_page还有一些合并段的工作，即不同的段在RAM中相应的页框正好是连续的并且在磁盘上相应
+  的数据块也是相邻的，那么就合并它们。
+
+  如果blocks数组里有一个块是设置了BH_Boundary的了,那么bio_add_page()这个函数会不会也把这个
+  块给认为与后面的块不是连续的而把它们加到同一个bio里呢?
+  
+- 现在开始清掉已经加到blocks数组里的buffer_head的BH_Dirty,
+  #+BEGIN_EXAMPLE
+
+		do {
+			if (buffer_counter++ == first_unmapped)
+				break;
+			clear_buffer_dirty(bh);
+			bh = bh->b_this_page;
+		} while (bh != head);
+  #+END_EXAMPLE
+
+		
+- 不明白下面的代码什么意思
+  #+BEGIN_EXAMPLE
+		/*
+		 * we cannot drop the bh if the page is not uptodate
+		 * or a concurrent readpage would fail to serialize with the bh
+		 * and it would read from disk before we reach the platter.
+		 */
+		if (buffer_heads_over_limit && PageUptodate(page))
+			try_to_free_buffers(page);
+  #+END_EXAMPLE
+
