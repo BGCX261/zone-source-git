@@ -7047,3 +7047,259 @@ ext2_writepages(struct address_space *mapping, struct writeback_control *wbc)
 			try_to_free_buffers(page);
   #+END_EXAMPLE
 
+
+
+
+** not function
+*** 17CHARPT
+- 什么是映射的页:a page is said to be mapped if it maps a portion of a file. For instance,
+  all pages in the User Mode address spaces belonging to file memory mappings are mapped,
+  as well as any other page included in the page cache. In almost all cases, mapped pages
+  are syncable: in order to reclaim the page frame, the kernel must check whether the page
+  is dirty and, if necessary, write the page contents in the corresponding disk file.用户
+  态地址空间中的文件内存映射页是mapped,page cache里的页是mapped,要回收这种页就可能要回写磁
+  盘
+- 什么是匿名的页:a page is said to be anonymous if it belongs to an anonymous memory
+  region of a process (for instance, all pages in the User Mode heap or stack of a process
+  are anonymous). In order to reclaim the page frame, the kernel must save the page
+  contents in a dedicated disk partition or disk file called "swap area" (see the later
+  section "Swapping"); therefore, all anonymous pages are swappable.
+
+** int try_to_unmap(struct page *page)
+*** mm/rmap.c:
+- 这个函数是给撤销内存映射用的,在反向映射这一节介绍.
+- 注释:try to remove all page table mappings to a page
+- 从返回值都是以SWAP开头的,所以这个函数应该是在页交换的时候调用的.
+  #+BEGIN_EXAMPLE
+ * SWAP_SUCCESS	- we succeeded in removing all mappings
+ * SWAP_AGAIN	- we missed a mapping, try again later
+ * SWAP_FAIL	- the page is unswappable
+ */
+  #+END_EXAMPLE
+- 这些页表的映射是在哪些函数建立的呢?
+- ulk:First of all, the PFRA must have a way to determine whether the page to be reclaimed
+  is shared or non-shared, and whether it is mapped or anonymous.因为这个函数会处理匿名页
+  和映射页的撤销映射,所以这个函数都能处理无论是共享的还是非共享的,还是匿名页还是映射页.
+- 关于PageAnon的原理,ulk:The mapping field of the page descriptor determines whether the
+  page is mapped or anonymous, as follows:
+
+  If the mapping field is NULL, the page belongs to the swap cache (see the section "The
+  Swap Cache" later in this chapter).
+
+  If the mapping field is not NULL and its least significant bit is 1, it means the page
+  is anonymous and the mapping field encodes the pointer to an anon_vma descriptor (see
+  the next section, "Reverse Mapping for Anonymous Pages").
+
+  If the mapping field is non-NULL and its least significant bit is 0, the page is mapped;
+  the mapping field points to the address_space object of the corresponding file (see the
+  section "The address_space Object" in Chapter 15).
+
+  Every address_space object used by Linux is aligned in RAM so that its starting linear
+  address is a multiple of four. Therefore, the least significant bit of the mapping field
+  can be used as a flag denoting whether the field contains a pointer to an address_space
+  object or to an anon_vma descriptor. This is a dirty programming trick, but the kernel
+  uses a lot of page descriptors, thusthese data structures should be as small as
+  possible. The PageAnon( ) function receives as its parameter the address of a page
+  descriptor and returns 1 if the least significant bit of the mapping field is set, 0
+  otherwise. 
+** static int try_to_unmap_anon(struct page *page)
+*** mm/rmap.c:
+- 这个函数是给try_to_unmap()调用来unmap一个匿名区的.
+- ulk有一句话even if an anonymous memory region includes different pages, there always is
+  just one reverse mapping list for all the page frames in the region.
+- ulk:When the kernel assigns the first page frame to an anonymous region, it creates a
+  new anon_vma data structure, which includes just two fields: lock, a spin lock for
+  protecting the list against race conditions, and head, the head of the doubly linked
+  circular list of memory region descriptors. Then, the kernel inserts the vm_area_struct
+  descriptor of the anonymous memory region in the anon_vma 's list; to that end, the
+  vm_area_struct data structure includes two fields related to this list: anon_vma_node
+  stores the pointers to the next and previous elements in the list, while anon_vma points
+  to the anon_vma data structure. Finally, the kernel stores the address of the anon_vma
+  data structure in the mapping field of the descriptor of the anonymous page, as
+  described previously.
+
+  ulk说了,是在给一个匿名区分配 _第一个_ 页框时 _就_ (_才_)会分配一个anan_vma结构体,为了以
+  后给这个匿名区的页的共享做反向映射的打算.
+
+  anon_vma.head, vm_area_struct.anon_vma_node, vm_area_struct.anon_vma, page.mapping这三个
+  成员是如何组成一个完整的反向映射链表的.anon_vma.head是该链表的链表头,这个链表是把
+  vm_area_struct这个结构体给链起来的,要想把这个结构体给链起来,就要把
+  vm_area_struct.anon_vma_node这个结点插到该链表里去,有时想通过vm_area_struct这个结构体找
+  到被链到那个反向映射链表的表头,所以就要vm_area_struct.anon_vma指向链表头了,要想知道匿名
+  区里哪个页使用了反向映射,那么这个页就要用page.mapping来标明了,page.mapping指向被链到的链
+  表的表头,就是anon_vma结构体.只要看明白ulk的图17-1就可以了.
+
+  有一个问题,就是若一个匿名区里共享了其它不同的匿名区的页框,但是一个匿名区只能链到一个
+  vma_anon链表里去,那么这种情况该如何处理呢?可能是会把这个匿名区拆分开来.
+- 这个函数就是对每个在page.mapping里所存放的anon_vma链表里的每一个vm_area_struct调用一次
+  try_to_unmap_one().
+** static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma)
+*** mm/rmap.c:
+- 用vma_address()来计算page在内存区所对应的线性地址,下面有介绍
+- 调用page_check_address()检查address这个线性地址是不是与page这个页是对应的,若是对应就返回
+  指向该页的pte页表项.但是为什么会出现用address找到的pte项所指向的页框不是page页框呢?ulk有
+  说:
+  (1)The Page Table entry refers to a page frame assigned with COW , but the anonymous
+  memory region identified by vma still belongs to the anon_vma list of the original page
+  frame.
+
+  (2)The mremap( ) system call may remap memory regions and move the pages into the User
+  Mode address space by directly modifying the page table entries. In this particular
+  case, object-based reverse mapping does not work, because the index field of the page
+  descriptor cannot be used to determine the actual linear address of the page.
+  
+  (3)The file memory mapping is non-linear (see the section "Non-Linear Memory Mappings"
+  in Chapter 16).
+
+  第(1)种情况是因为之前是共享page来读的,但是因为要写了,所以要做COW操作来创建一个新的页框来
+  写,所以就把指向原来共享page的pte页表项给修改以指向新的页框,但还没有来得及把这个
+  vm_area_struct从因共享原来page而链到anon_vma链表里删除.
+
+  第(2)(3)还不太懂
+- 锁住和保留的匿名区是不可以被交换出去的,而调用这个函数就是在想交换页时调用的,所以发现这样
+  的页就不可以了.
+- 若这个页的Accessed位设置了,那么就说明这个页在使用,也就说明这个页不可以被交换,但是为什么
+  要清掉这个标志呢?要返回SWAP_FAIL.ulk:Checks that the Accessed bit inside the Page Table
+  entry is cleared; if not, the function clears the bit and returns SWAP_FAIL. If the
+  Accessed bit is set, the page is considered in-use, thus it should not be reclaimed.
+  #+BEGIN_EXAMPLE
+	if ((vma->vm_flags & (VM_LOCKED|VM_RESERVED)) ||
+			ptep_clear_flush_young(vma, address, pte)) {
+		ret = SWAP_FAIL;
+		goto out_unmap;
+	}
+  #+END_EXAMPLE
+- ulk:Checks whether the page belongs to the swap cache (see the section "The Swap Cache"
+  later in this chapter) and it is currently being handled by get_user_pages( ) (see the
+  section "Allocating a Linear Address Interval" in Chapter 9); in this case, to avoid a
+  nasty race condition, the function returns SWAP_FAIL.
+
+  上面的这段话对应的代码是
+  #+BEGIN_EXAMPLE
+
+	/*
+	 * Don't pull an anonymous page out from under get_user_pages.
+	 * GUP carefully breaks COW and raises page count (while holding
+	 * page_table_lock, as we have here) to make sure that the page
+	 * cannot be freed.  If we unmap that page here, a user write
+	 * access to the virtual address will bring back the page, but
+	 * its raised count will (ironically) be taken to mean it's not
+	 * an exclusive swap page, do_wp_page will replace it by a copy
+	 * page, and the user never get to see the data GUP was holding
+	 * the original page for.
+	 *
+	 * This test is also useful for when swapoff (unuse_process) has
+	 * to drop page lock: its reference to the page stops existing
+	 * ptes from being unmapped, so swapoff can make progress.
+	 */
+	if (PageSwapCache(page) &&
+	    page_count(page) != page_mapcount(page) + 2) {
+		ret = SWAP_FAIL;
+		goto out_unmap;
+	}
+  #+END_EXAMPLE
+  为什么要加2呢?
+- 下面的代码,页表项的dirty位和PG_Dirty是什么关系呢?
+  #+BEGIN_EXAMPLE
+
+	/* Move the dirty bit to the physical page now the pte is gone. */
+	if (pte_dirty(pteval))
+		set_page_dirty(page);
+  #+END_EXAMPLE 
+
+
+ 
+** static inline unsigned long vma_address(struct page *page, struct vm_area_struct *vma)
+*** mm/rmap.c:
+- 好像vm_area_struct.start是页的大小的倍数,是吗?
+- 在传入的page是一个文件映射页而不是一个匿名映页时,page.index是该页在以页大小为单位时的文件
+  的索引,vm_area_struct.vm_pgoff是vm_area_struct.vm_start这个地址在以页大小为单位的文件的
+  索引.所以要想知道page在线性地址是多少,只要先用这两个索引得出vm_start和页的起始线性地址的
+  差值
+  #+BEGIN_EXAMPLE
+  ((pgoff - vma->vm_pgoff) << PAGE_SHIFT)
+  #+END_EXAMPLE 
+  再用vm_start来加上差值.
+- 但对于page是一个匿名映页的时又是怎么回事呢?ulk:For anonymous pages, the vma->vm_pgoff
+  field is either zero or equal to vm_start/PAGE_SIZE ; correspondingly,the page->index
+  field is either the index of the page inside the region or the linear address of the
+  page divided by PAGE_SIZE.
+
+  所以(1)在vm_pgoff为0时,那么page.index就是相对于vm_start这个线性地址的偏移量除以PAGE_SIZE的
+  值,(2)若vm_pgoff是vm_start/PAGE_SIZE,那么page.index就是页的线性地址除以PAGE_SIZE的值.为
+  什么会有这两种情况呢?
+- 对于为什么要做以下的检查
+  #+BEGIN_EXAMPLE
+	if (unlikely(address < vma->vm_start || address >= vma->vm_end)) {
+		/* page should be within any vma from prio_tree_next */
+		BUG_ON(!PageAnon(page));
+		return -EFAULT;
+	}
+  #+END_EXAMPLE
+  ulk有解释:If the target page is anonymous, it checks whether its linear address falls
+  inside the memory region; if not, it terminates by returning SWAP_AGAIN. (As explained
+  when introducing reverse mapping for anonymous pages, the anon_vma 's list may include
+  memory regions that do not contain the target page.)
+
+  那么又为什么会出现anon_vma链表里的内存区不会包含目标页呢?可能是因为一个页里即有被其它匿名
+  区共享的页,也有主动去共享其它匿名区的页.比如匿名区A有X1和Y1页,其中X1是与匿名区B共享的,所
+  以anon_vma把A和B两个链起来做成了一个循环链表了,而这时A用Y1是共享了C的Y3页,对于A来说是主动
+  共享了别人的页,但是要想把A和C链起来,有可能会把原来的anon_vma结构体删掉,而把A和B链接到因C
+  创建第一个页框时而建立的anon_vma链表里去,这样A,B和C就链到了同一个anon_vma里去了,但是A,B
+  和C并没有共享同一个页框. 
+- 之前有看过一个文章说一个页表项的指向的页框被交换出去时页表项存放的是swap cache的索引.下
+  面的代码就是做这个工作的
+  #+BEGIN_EXAMPLE
+
+	if (PageAnon(page)) {
+		swp_entry_t entry = { .val = page->private };
+		/*
+		 * Store the swap location in the pte.
+		 * See handle_pte_fault() ...
+		 */
+		BUG_ON(!PageSwapCache(page));
+		swap_duplicate(entry);
+		if (list_empty(&mm->mmlist)) {
+			spin_lock(&mmlist_lock);
+			list_add(&mm->mmlist, &init_mm.mmlist);
+			spin_unlock(&mmlist_lock);
+		}
+		set_pte_at(mm, address, pte, swp_entry_to_pte(entry));
+		BUG_ON(pte_file(*pte));
+		dec_mm_counter(mm, anon_rss);
+	}
+  #+END_EXAMPLE
+  这个是在匿名区才有的.
+
+  关于swap_duplicate()
+
+  http://blog.csdn.net/cxylaf/article/details/1626534
+  swp_type() 和swp_offset()函数根据页槽索引和交换区号得到type和offset值，函数
+  swp_entry(type,offset)得到交换槽。最后一位总是清0表示页不在RAM上。槽最大224(64G)。第一个
+  可用槽索引为1。槽索引不能全为0。一个页面可能被多个进程共用，它可能被从一个进程地址空间换
+  出但仍然在物理内存上，因此一个页面可能被多次换出。但物理上仅第一次被换出并存储在交换区上，
+  接下来的换出操作只是增加swap_map的引用计数。swap_duplicate(swp_entry_t entry)的功能正是用
+  户尝试换出一个已经换出的页面。
+
+  swap_duplicate()主要就是增加swap_map的计数而已.
+
+  page.private是什么时候保存了swap cache的index了呢?
+
+  对于文件映射的unmap并没有使用swap cache.
+
+  对匿名页并没有因为换出而做磁盘操作.
+- 调用page_remove_rmap()减page->_mapcount计数,表示少一个pte引用这个页框.page->_mapcount为
+  负数的时候表示没有pte引用这个页框时就会减page_state.nr_mapped,但是有一段注释看不懂
+  #+BEGIN_EXAMPLE
+		/*
+		 * It would be tidy to reset the PageAnon mapping here,
+		 * but that might overwrite a racing page_add_anon_rmap
+		 * which increments mapcount after us but sets mapping
+		 * before us: so leave the reset to free_hot_cold_page,
+		 * and remember that it's only reliable while mapped.
+		 * Leaving it set also helps swapoff to reinstate ptes
+		 * faster for those pages still in swapcache.
+		 */
+  #+END_EXAMPLE 
+- 最后减page的计数(_count),用的是page_cache_release(),所以_count为0时会释放页.
+
