@@ -1,0 +1,26 @@
+/* digraph diff_page_relation{ */
+user_mode_address_space[label="user_mode_address_space:这个地址空间有匿名区,\l匿名区包含的叫匿名页,\l匿名区可以是进程的堆栈,\l匿名区是可以被回收的"];
+anonymous_page[label="anonymous_page"];
+anonymous_memory_region[label="anonymous_memory_region"];
+user_process_stack[label="user_process_stack"];
+user_process_head[label="user_process_head"];
+can_reclaim[label="can_reclaim"];
+anonymous_memory_region_not_locked[label="anonymous_memory_region_not_locked"];
+zone_inactive_list[label="zone_inactive_list:(1)这个链表里可以放page cache 和 the pages of user mode address space"];
+zone_active_list[label="zone_active_list"];
+kernel_mode_page[label="kernel_mode_page:page cache是属于这类页的,"];
+page_cache[label="page_cache:(1)这类页是可以回收的"];
+
+
+anonymous_memory_region -> user_mode_address_space;
+anonymous_page -> anonymous_memory_region[label="belong to"];
+anonymous_memory_region -> anonymous_page;
+user_process_stack -> anonymous_memory_region;
+user_process_head -> anonymous_memory_region;
+anonymous_memory_region_not_locked -> can_reclaim;
+user_mode_address_space -> zone_inactive_list;
+user_mode_address_space -> zone_active_list;
+page_cache -> kernel_mode_page;
+page_cache -> can_reclaim;
+page_cache -> zone_inactive_list;
+page_cache -> zone_active_list;

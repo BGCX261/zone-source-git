@@ -7303,3 +7303,339 @@ ext2_writepages(struct address_space *mapping, struct writeback_control *wbc)
   #+END_EXAMPLE 
 - 最后减page的计数(_count),用的是page_cache_release(),所以_count为0时会释放页.
 
+** not function
+*** 17.2.2
+- 为什么文件映射页要用优先搜索树呢?而匿名页不用类似的方法提高效率呢?ulk:We have seen in
+  the previous section that descriptors for anonymous memory regions are collected in
+  doubly linked circular lists; retrieving all page table entries referencing a given page
+  frame involves a linear scanning of the elements in the list. The number of shared
+  anonymous page frames is never very large, hence this approach works well. Contrary to
+  anonymous pages, mapped pages are frequently shared, because many different processes
+  may share the same pages of code. For instance, consider that nearly all processes in
+  the system share the pages containing the code of the standard C library (see the
+  section "Libraries" in Chapter 20). For this reason, Linux 2.6 relies on special search
+  trees, called "priority search trees ," to quickly locate all the memory regions that
+  refer to the same page frame. 
+
+** static int try_to_unmap_file(struct page *page)
+*** mm/rmap.c:
+- 先找出页在文件里的索引号
+  #+BEGIN_EXAMPLE
+	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+  #+END_EXAMPLE 
+- 接着就是搜索搜索树对找到的所有vm_area_struct来调用try_to_unmap_one()这一段与
+  try_to_unmap_anon()类似
+  #+BEGIN_EXAMPLE
+	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
+		ret = try_to_unmap_one(page, vma);
+		if (ret == SWAP_FAIL || !page_mapped(page))
+			goto out;
+	}
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
+		ret = try_to_unmap_one(page, vma);
+		if (ret == SWAP_FAIL || !page_mapped(page))
+			break;
+	}
+  #+END_EXAMPLE 
+- 下面就是搜索非线性链表的优先搜索树了.这个要结合优先搜索树和非线性映射来看.
+** static inline void add_page_to_active_list(struct zone *zone, struct page *page)
+** static inline void add_page_to_inactive_list(struct zone *zone, struct page *page)
+** static inline void del_page_from_active_list(struct zone *zone, struct page *page)
+** static inline void del_page_from_inactive_list(struct zone *zone, struct page *page)
+** static inline void del_page_from_lru(struct zone *zone, struct page *page)
+*** include/linux/mm_inline.h:
+- 前4个从zone.active_list或zone.inactive_list里添加或删除page
+- 最后一个函数先查看page是放在active_list还是inactive_list,然后再删除.还多一点就是清掉
+  PG_active.
+** void fastcall activate_page(struct page *page)
+*** mm/swap.c:
+- 若页已设了PG_lru(页在lru里),且页没有设置(PG_active),那么就从incative_list里删除,设置
+  PG_active,把页加到active_list里.
+** void fastcall lru_cache_add(struct page *page)
+*** mm/swap.c:
+- 这个函数是把一个页放到lru里去,所谓的lru就是zone里的active_lru和inactive_lru这两个成员和
+  每个CPU都有的lru_add_pvecs数组,这三者的关系是若想把一个页放到lru里去,那么就先放到
+  lru_add_pvecs里去,等到lru_add_pvecs数组满了,就放到inactive_list里去
+- 先调用pagevec_add()把页放到lru_add_pvecs里去,返回值就是lru_add_pvecs还可以放多少个的page
+- 若lru_add_pvecs数组满了,那么就调用__pagevec_lru_add()把lru_add_pvecs里的页用
+  add_page_to_inactive_list()放到inactive_list里去.
+- 放到inactive_list之后就会调用release_pages()来释放页,所以可以得出放到inactive_list之后可
+  能会出现该页没有被引用而释放.release_page()下面有介绍
+- 这就是为什么要lru的原因,ulk:The PFRA collects the pages that were recently accessed in
+  the active list so that it will not scan them when looking for a page frame to
+  reclaim. Conversely, the PFRA collects the pages that have not been accessed for a long
+  time in the inactive list. Of course, pages should move from the inactive list to the
+  active list and back, according to whether they are being accessed.
+** void release_pages(struct page **pages, int nr, int cold)
+*** mm/swap.c:
+- 该函数释放存放在pages数组里的页.
+- 先把要释放的页放到pages_to_free里去.最后再调用__pagevec_free()或pagevec_free()来释放
+  pages_to_free里的页.
+- 若该页是保留的或这个页的计数没为0,就跳过这个页
+  #+BEGIN_EXAMPLE
+		if (PageReserved(page) || !put_page_testzero(page))
+			continue;
+  #+END_EXAMPLE
+  为什么不检查这个页是不是被锁住了呢?
+- 接着就是把PG_lru给去掉,所以在page._count为0时不表明这个页不在lru里
+  #+BEGIN_EXAMPLE
+		if (TestClearPageLRU(page))
+			del_page_from_lru(zone, page);
+  #+END_EXAMPLE
+- 为什么还要检查一次page._count呢?执行到这里不是已经确过是0了吗?
+  #+BEGIN_EXAMPLE
+		if (page_count(page) == 0) {
+			if (!pagevec_add(&pages_to_free, page)) {
+				spin_unlock_irq(&zone->lru_lock);
+				__pagevec_free(&pages_to_free);
+				pagevec_reinit(&pages_to_free);
+				zone = NULL;	/* No lock is held */
+			}
+		}
+  #+END_EXAMPLE 
+** void fastcall lru_cache_add_active(struct page *page)
+*** mm/swap.c:
+- 与lru_cache_add()不同的是用__pagevec_lru_add_active()替代__pagevec_lru_add(),所以也可以
+  看出这个函数与lru_cache_add()不同的是把页加到了active_list里了
+- 还有一个地方是不同的,就是不是用lru_add_pvecs里的页加到active_list,而是使用
+  lru_add_active_pvecs里的页.所以lru_add_pvecs是对的inactive的页,lru_add_active_pvecs是对
+  于active里的面.
+** void __pagevec_lru_add_active(struct pagevec *pvec)
+*** mm/swap.c:
+- 与__pagevec_lru_add()不同的是(1)多设置了PG_active,(2)调用add_page_to_active_list()而不是
+  add_page_to_inactive_list().可以看出这个函数是把页放到active_list
+- 这个函数也会把加入到zone.active_list里的页调用release_pages()来减计数,但是有可能会被释放
+  吗?
+** void lru_add_drain(void)
+*** mm/swap.c:
+- 这个函数的作用其实就是lru_cache_add()和lru_cache_add_active()函数的结合,但与它们不同的是
+  不用等到lru_add_pvecs和lru_add_active_pvecs满,只要它们里有页就放到zone.inactive_list和
+  zone.active_list里去.
+** int page_referenced(struct page *page, int is_locked, int ignore_token)
+*** mm/rmap.c:
+- 这个函数就是(1)把PG_referenced给清了,(2)计算有多少个pte引用这个页,那这个函数是不是与反向
+  映射有关呢?要想知道有多少个pte引用这个页,page._mapcount不就是了吗?返回的值一般会比
+  page._mapcount的大.
+- 这个函数就只有shrink_list使用来获取有多少个pte引用该页.
+- ulk说了这个函数的作用:The page_referenced( ) function, which is invoked once for every
+  page scanned by the PFRA, returns 1 if either the PG_referenced flag or some of the
+  Accessed bits in the Page Table entries was set; it returns 0 otherwise. This function
+  first checks the PG_referenced flag of the page descriptor; if the flag is set, it
+  clears it. Next, it makes use of the object-based reverse mapping mechanism to check and
+  clear the Accessed bits in all User Mode Page Table entries that refer to the page
+  frame. To do this, the function makes use of three ancillary functions;
+  page_referenced_anon( ) , page_referenced_file( ) , and page_referenced_one( ), which
+  are analogous to the try_to_unmap_xxx( ) functions described in the section "Reverse
+  Mapping" earlier in this chapter. The page_referenced( ) function also honors the swap
+  token; see the section "The Swap Token" later in this chapter.
+
+  所以这个函数的结果是(1)把page的PG_referenced给清了,(2)用反向映射来找出映射这个页的pte页
+  表项并把这个页的页表项的accessed位给清掉.
+
+- 清PG_referenced是在page_referenced里直接完成的
+  #+BEGIN_EXAMPLE
+	if (TestClearPageReferenced(page))
+		referenced++;
+  #+END_EXAMPLE 
+
+- 清pte的accessed位是在page_referenced()调用的page_referenced_anon()调用的
+  page_referenced_one()里清和page_referenced()调用的page_referenced_file()调用的
+  page_referenced_one()里清掉.
+** static int page_referenced_anon(struct page *page, int ignore_token)
+*** mm/rmap.c:
+- 在page_referenced()里对于匿名页就调用该函数来得出有多少到匿名区reference这个页.
+- 这个函数就是遍历所有的在page.mapping这个anon_vma链表里的匿名区,对链表里的每个匿名区调用
+  page_referenced_one(),因为page_referenced_one()的返回值可能是0,1或2.
+** static int page_referenced_one(struct page *page, struct vm_area_struct *vma, unsigned int *mapcount, int ignore_token)
+*** mm/rmap.c:
+- 这个函数是被page_referenced_anon()和page_referenced_file()调用的.
+- 通过vma_address()找出page在vma里的线性地址,再用这个地址来调用page_check_address()得到pte
+  页表项.
+- 若页表项的accessed位设置了,就清掉这个位,并且返回值加1.所以page_referenced()函数会把引用
+  这个页的accessed位清掉,清一个加1次计数.
+- 若vma的mm不是当前进程的mm,且不能忽略swap token,且mm里有swap_token,返回值还加1.这个是什么
+  意思呢?
+** static int page_referenced_file(struct page *page, int ignore_token)
+*** mm/rmap.c:
+- 这个函数是被page_referenced_anon()调用用来看文件映射页的引用情况.
+- 文件映射页的反向映射用page.mapping.i_mmap这个搜索树来查找的.这点与page_referenced_anon()
+  不同.
+- 一旦发现有一个内存区是同时设置了VM_LOCKED和VM_MAYSHARE,那么就给返回值加1并退出搜索了,为
+  什么要这样做呢?那为什么page_referenced_anon()不作这种检查呢?
+- 对每个内存区调用page_referenced_one()
+
+** not function
+*** 17.3.1.4
+- ulk:The LRU lists include two kinds of pages: those belonging to the User Mode address
+  spaces, and those included in the page cache that do not belong to any User Mode
+  process. 所以lru链表有两种类型.
+
+** static void refill_inactive_zone(struct zone *zone, struct scan_control *sc)
+*** mm/vmscan.c:
+- 这个函数就是把zone.active_list里的页放到zone.inactive_list.
+- 先调用lru_add_drain()这个函数把lru_add_pvecs和lru_add_active_pvecs里的页放到
+  zone.inactive和zone.active
+- 再调用isolate_lru_pages()(下面有介绍)把zone.active_list里的nr_pages个页放到
+  l_hold里
+- pgscanned就是在isolate_lru_pages()里扫了个页.这个数是要加到zone.pages_scanned的,这个成员
+  还有且只有shrink_cache()里被加,只有在balance_pgdat()里读取.
+  #+BEGIN_EXAMPLE
+	zone->pages_scanned += pgscanned;
+  #+END_EXAMPLE 
+- isolate_lru_pages()的返回值是移了多少个页,所以要从zone.nr_active里减去
+  #+BEGIN_EXAMPLE
+	zone->nr_active -= pgmoved;
+  #+END_EXAMPLE 
+- 下面是计算swap_tendency,小于100就个page cache里收页,否则就是从用户态里收页.
+  #+BEGIN_EXAMPLE
+
+	/*
+	 * `distress' is a measure of how much trouble we're having reclaiming
+	 * pages.  0 -> no problems.  100 -> great trouble.
+	 */
+	distress = 100 >> zone->prev_priority;
+
+	/*
+	 * The point of this algorithm is to decide when to start reclaiming
+	 * mapped memory instead of just pagecache.  Work out how much memory
+	 * is mapped.
+	 */
+	mapped_ratio = (sc->nr_mapped * 100) / total_memory;
+
+	/*
+	 * Now decide how much we really want to unmap some pages.  The mapped
+	 * ratio is downgraded - just because there's a lot of mapped memory
+	 * doesn't necessarily mean that page reclaim isn't succeeding.
+	 *
+	 * The distress ratio is important - we don't want to start going oom.
+	 *
+	 * A 100% value of vm_swappiness overrides this algorithm altogether.
+	 */
+	swap_tendency = mapped_ratio / 2 + distress + vm_swappiness;
+  #+END_EXAMPLE 
+- 接下来就是把l_hold里的页分配到l_inactive和l_active里了.
+  #+BEGIN_EXAMPLE
+
+	while (!list_empty(&l_hold)) {
+		cond_resched();
+		page = lru_to_page(&l_hold);
+		list_del(&page->lru);
+		if (page_mapped(page)) {
+			if (!reclaim_mapped ||
+			    (total_swap_pages == 0 && PageAnon(page)) ||
+			    page_referenced(page, 0, sc->priority <= 0)) {
+				list_add(&page->lru, &l_active);
+				continue;
+			}
+		}
+		list_add(&page->lru, &l_inactive);
+	}
+  #+END_EXAMPLE
+
+  ulk:total_swap_pages variable contains the total number of nondefective page slots.
+
+  在什么情况下会放到l_active里呢?首先必须是有pte页表项引用了这个页(page_mapped()大于0).为什
+  么首先要有这个条件呢?难道会出现这个条件不成立时下面的条件会成立的情况吗?
+
+  (1)不可以回收用户态的页,(2)total_swap_pages为0,且页是匿名页(3)页的page_referenced()返回1
+
+  ulk:A page belonging to the User Mode address space of some processthat is, a page whose
+  page->_mapcount is nonnegative.
+
+  ulk:If the page is in the User Mode address space of some process (the _mapcount field
+  in the page descriptor is greater than or equal to zero)但是为什么在try_to_unmap_one()这
+  个函数里时,无论是用户态的页还是page cache的页都会调用page_remove_rmap()来减
+  page._mapcount呢?还是说放到zone.active_list里的页若是用户态的那么page._mapcount就是不为0
+  的,若是page cache的页就是为0的?
+
+  第(2)种情况就是ulk:if the page is anonymous but no swap area is active.为什么
+  total_swap_pages为0就表示没有swap area激活呢?难道是page cache页的时候就算在swap area没有
+  被激活也可以回收吗?这个是没问题的,因为在page cache的内容是不会用来交换的.所以若swap area
+  没有激活了,且页是匿名页,那么就要放到l_active里去.
+
+  在反向映射中涉及的是匿名页和映射页(mapped page),这里的映射页是page cache吗?
+
+  ulk:the page_referenced( )function applied to the page returns a positive value, which
+  means that the page has been recently accessed.
+
+  
+  就是说一个页的page->_mapcount不为0就表示这个页是用户态下的页,这有点不对吧,但是可能有前提的,因为在这里出现的页要么是page cache的页要么是用户态的
+  页,所以可以用page._count判断,但是这个判断不能确定页是匿名的页,所以还要有一个PageAnon的判
+  断.所以是不是也可以确定
+
+
+  为什么不可以回收用户态页时且有pte引用这个页就把它放回active呢?难道说因为有pte引用就说明
+  这个不是page cahce页了吗?要判断是不是匿名页还是要用PageAnon()这个来判断的.
+** static int isolate_lru_pages(int nr_to_scan, struct list_head *src, struct list_head *dst, int *scanned)
+*** include/linux/mm.h:
+- 这个函数就是把src链表里的页放到dst链表里,打算放nr_to_scan个,但实际放了scanned个.
+- src 是lru链表来的
+- page._count:_count A usage reference counter for the page. If it is set to -1, the
+  corresponding page frame is free and can be assigned to any process or to the kernel
+  itself. If it is set to a value greater than or equal to 0, the page frame is assigned
+  to one or more processes or is used to store some kernel data structures.
+- lru_to_page()就是通过链表里的第一个页结点来获取struct page*
+- prefetchw_prev_lru_page()这个函数是提高执行效率的,因为这个函数会被经常调用.注释有说
+  #+BEGIN_EXAMPLE
+ * For pagecache intensive workloads, this function is the hottest
+ * spot in the kernel (apart from copy_*_user functions).
+  #+END_EXAMPLE
+- 为什么page._count为0就表示这个页在其它地放正在回收呢?这句的意思是不是说还有其它的进程在
+  调用了这个函数?但是zone.lru_lock不是已经都获取了吗?
+  #+BEGIN_EXAMPLE
+		if (get_page_testone(page)) {
+			/*
+			 * It is being freed elsewhere
+			 */
+			__put_page(page);
+			SetPageLRU(page);
+			list_add(&page->lru, src);
+			continue;
+  #+END_EXAMPLE 
+- 接下来又是执行一个循环把l_inactive里的页移到zone.inactive_list里去,在移的过程中,发现
+  lru_add_pvecs里有页满了就也把这些页放到zone.inactive_list里去,接着再移.
+  #+BEGIN_EXAMPLE
+	pagevec_init(&pvec, 1);
+	pgmoved = 0;
+	spin_lock_irq(&zone->lru_lock);
+	while (!list_empty(&l_inactive)) {
+		page = lru_to_page(&l_inactive);
+		prefetchw_prev_lru_page(page, &l_inactive, flags);
+		if (TestSetPageLRU(page))
+			BUG();
+		if (!TestClearPageActive(page))
+			BUG();
+		list_move(&page->lru, &zone->inactive_list);
+		pgmoved++;
+		if (!pagevec_add(&pvec, page)) {
+			zone->nr_inactive += pgmoved;
+			spin_unlock_irq(&zone->lru_lock);
+			pgdeactivate += pgmoved;
+			pgmoved = 0;
+			if (buffer_heads_over_limit)
+				pagevec_strip(&pvec);
+			__pagevec_release(&pvec);
+			spin_lock_irq(&zone->lru_lock);
+		}
+	}
+	zone->nr_inactive += pgmoved;
+	pgdeactivate += pgmoved;
+  #+END_EXAMPLE
+  可以看出,从l_inactive移到了zone.inactive_list里的页数加到了zone.nr_inactive去了.
+
+  pgdeactivate也表示从l_inactive移到zone.inactive_list里的页数.但是为什么还要有pgmoved这个
+  变量呢?因为在释放zone.lru_lock这个锁的时候要保证zone.nr_inactive表示的页数要与在
+  zone.inactive_list里的页数一致.
+
+  inactive_list链接的是最近有一段时间没有访问了的页.而active_list链连接的是最近刚访问过的页.
+  
+  每把一定的页数(pvec.nr)放到zone.inactive_list里,且发现buffer_head超限,就会调用
+  pagevec_strip()来把放在pvec里的页的buffer_head给释放掉,不用保证页是有buffer_head的,因为
+  在pagevec_strip()(下面有介绍)里有检查
+
+** void pagevec_strip(struct pagevec *pvec)
+*** mm/swap.c:
+- 这个函数
