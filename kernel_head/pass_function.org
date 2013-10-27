@@ -7633,9 +7633,206 @@ ext2_writepages(struct address_space *mapping, struct writeback_control *wbc)
   inactive_list链接的是最近有一段时间没有访问了的页.而active_list链连接的是最近刚访问过的页.
   
   每把一定的页数(pvec.nr)放到zone.inactive_list里,且发现buffer_head超限,就会调用
-  pagevec_strip()来把放在pvec里的页的buffer_head给释放掉,不用保证页是有buffer_head的,因为
-  在pagevec_strip()(下面有介绍)里有检查
+  pagevec_strip()来把放在pvec里的页的buffer_head给释放掉,不用保证页是有buffer_head的,因为在
+  pagevec_strip()(下面有介绍)里有检查。要想在这释放页的buffer_head,就要有buffer_head超限的
+  条件.
+  
+  调用__pagevec_release()来释放pvec的页.在__pagevec_release()里又会调用lru_add_drain()移页
+  到zone.active/inactive,且会调用release_pages()来释放页,现在有一个疑问就是若没有出现
+  buffer_head超限的情况下调用release_pages()释放有buffer_head的页是怎么做的?会不会因为要给
+  页添加buffer_head链表而增加页的计数器呢?若有,那么在release_pages()就不会释放了.通过查看
+  源码,可以得出删除页里的buffer_head时是会减计数
+  的:pagevec_strip()->try_to_release_page()->try_to_free_buffers() -> drop_buffers() ->
+  __clear_page_buffer() -> page_cache_release() -> put_page() -> put_page_testzero().
+  所以这里的__pagevec_release()不一定会释放pvec里的所有页.现在又发现计数器的一个特点:对于
+  释放buffer_head时,是先减计数器再释放,但是可能还有其它的东西在使用页而还不能释放页,那么就
+  会出现虽然把buffer_head的那个计数值减了,但是不一定会把buffer_head给释放了,所以页的计数可
+  能会出现小于-1的计数值.
+  
+  从这里可以看出页是一批一批释放的,而不是等收集到所有的页之后在这个函数的最后一下子全部释
+  放掉.我觉得这可以尽快地释放出一些页好让其它程序使用.
+  
+  从这里也可以看出被释放的页也会在zone->inactive_list里,真的是这样子的吗?不敢相信.
+- 第三个循环是把l_active里的页移到zone.active_list里去.与第二个循环基本相同,只是少了
+  pgdeactivate这样的一个变量,少了释放buffer_head的语句.但是也调用了__pagevec_release(),所
+  以我觉得调用__pagevec_release()是不可能释放掉页的,只是起到一个减计数的效果,但是这个计数
+  为谁减的呢?难道是因为放到了zone.inactive/active而减的.好像知道为谁减的了,是为了在前面调
+  用的isolate_lru_pages()而减的,因为在isolate_lru_pages()里加了一个计数.
 
 ** void pagevec_strip(struct pagevec *pvec)
 *** mm/swap.c:
-- 这个函数
+- 这个函数释放pvec里的页的里的buffer_head结构体.
+- 调用try_to_release_page()来释放里的buffer_head,所以要先看这个页有没有buffer_head链表.
+  #+BEGIN_EXAMPLE
+  		if (PagePrivate(page) && !TestSetPageLocked(page)) {
+			try_to_release_page(page, 0);
+			unlock_page(page);
+		}
+  #+END_EXAMPLE
+** static void free_more_memory(void)
+*** fs/buffer.c:
+- 这个函数先调用wakeup_bdflush()来把1024个页回写到磁盘.
+- 这个函是用来释放所有结点的ZONE_NORMAL区的内存
+- 调用try_to_free_pages()来释放内存.
+** int try_to_free_pages(struct zone **zones, unsigned int gfp_mask, unsigned int order)
+*** mm/vmscan.c:
+- 这个函数是直接回收页的主要入口.
+  #+BEGIN_EXAMPLE
+  This is the main entry point to direct page reclaim.
+  #+END_EXAMPLE
+  
+  调用者没有用__GFP_FS时若失败可以推出是因为zone可能充满了脏页或正在写的页.
+  #+BEGIN_EXAMPLE
+  If the caller is !__GFP_FS then the probability of a failure is reasonably
+  high - the zone may be full of dirty or under-writeback pages, which this
+  caller can't do much about.  We kick pdflush and take explicit naps in the
+  hope that some of these pages can be written.  But if the allocating task
+  holds filesystem locks which prevent writeout this might not work, and the
+  allocation attempt will fail.
+  #+END_EXAMPLE
+
+- 在page_state里有一个调用该函数的次数计数allocstall
+  #+BEGIN_EXAMPLE
+	inc_page_state(allocstall);
+  #+END_EXAMPLE
+- 第一个循环就是把临时的优先级存到zone.temp_priority和收集所有区的active和inactive链表里的
+  页
+  #+BEGIN_EXAMPLE
+		zone->temp_priority = DEF_PRIORITY;
+		lru_pages += zone->nr_active + zone->nr_inactive;
+  #+END_EXAMPLE
+- 关于scan_control.nr_mapped的解释:Number of pages referenced in the User Mode address
+  spaces.注意是用户态的空间,而代码是
+  #+BEGIN_EXAMPLE
+		sc.nr_mapped = read_page_state(nr_mapped);
+  #+END_EXAMPLE
+  所以可以看出其实对于page_state.nr_mapped的解释应该也是一样的.
+  
+  page_state.nr_mapped只有在page_add_file_rmap()和page_add_anon_rmap()才加,且是只有
+  在该页已是至少有两个pte引用时才加.
+  
+  用户态下的页也有map成file的?
+** static void shrink_caches(struct zone **zones, struct scan_control *sc)
+*** include/linux/mmzone.h:
+- 这个函数只被try_to_free_pages()调用.
+- 这个函数主要是对传入的每一个zone调用shrink_zone(),在调用之前要做一些检查:
+  (1)检查这个区是不是有页在
+  #+BEGIN_EXAMPLE
+		if (zone->present_pages == 0)
+			continue;
+  #+END_EXAMPLE
+  (2)看这个cpu可以不可以访问这个区
+  #+BEGIN_EXAMPLE
+		if (!cpuset_zone_allowed(zone))
+			continue;
+  #+END_EXAMPLE
+- 接下来就是处理zone.temp_prioprity和zone.prev_prioprity.
+  #+BEGIN_EXAMPLE
+		zone->temp_priority = sc->priority;
+		if (zone->prev_priority > sc->priority)
+			zone->prev_priority = sc->priority;
+  #+END_EXAMPLE 
+  关于zone.prev_prioprity的注释:
+  #+BEGIN_EXAMPLE
+	  prev_priority holds the scanning priority for this zone.  It is
+	  defined as the scanning priority at which we achieved our reclaim
+	  target at the previous try_to_free_pages() or balance_pgdat()
+	  invokation.
+	 
+	  We use prev_priority as a measure of how much stress page reclaim is
+	  under - it drives the swappiness decision: whether to unmap mapped
+	  pages.
+  #+END_EXAMPLE 
+  就是(1)上次达到回收目标调用try_to_free_pages()或balance_pgdat(),(2)该明这个区的页有难回
+  收(3)用来给交换确定是否unmap映射页.
+  关于zone.temp_prioprity的注释:
+  #+BEGIN_EXAMPLE
+	  temp_priority is used to remember the scanning priority at which
+	  this zone was successfully refilled to free_pages == pages_high.
+  #+END_EXAMPLE 
+  temp_priority是用来成功使得free_pages == pages_high时扫描用的prioprity.但是看代码看不出来
+  啊.pages_high是页框回收的最高阀值.
+  
+  原来有present_pages这个成员,那么nr_active加nr_inactive不是这个区的总页数咯?
+- 为什么没有可回收的页时且当前的优先级不等于DEF_PRIORITY时就不调用shrink_zone()呢?按道理是
+  优先级等于DEF_PRIOPRITY时更难收页的啊.
+  #+BEGIN_EXAMPLE
+		if (zone->all_unreclaimable && sc->priority != DEF_PRIORITY)
+			continue;	/* Let kswapd poll it */
+  #+END_EXAMPLE 
+** static void shrink_zone(struct zone *zone, struct scan_control *sc)
+*** mm/vmscan.c:
+- 这个函数其实对于active的页和inactive的页是分开处理的.而前面大部分处理是相同的(1)把页数放
+  到zone.nr_scan_active/nr_scan_inactive(2)初始化nr_active/nr_inactive(3)给
+  scan_control.nr_to_scan赋值.不同的是active的页是调用refill_inactive_zone()把用active填充
+  inactive而inactive调用的是shrink_cache().
+- 关于zone.nr_scan_active/nr_scan_inactive,ulk:The nr_scan_active and nr_scan_inactive
+  fields of the zone descriptor play a special role here. To be efficient, the function
+  works on batches of 32 pages. Thus, if the function is running at a low privilege level
+  (high value of sc->priority) and one of the LRU lists does not contain enough pages, the
+  function skips the scanning on that list. However, the number of active or inactive
+  pages thus skipped is recorded in nr_scan_active or nr_scan_inactive, so that the
+  skipped pages will be considered in the next invocation of the function.
+  
+  代码是
+  #+BEGIN_EXAMPLE
+
+	/*
+	 * Add one to `nr_to_scan' just to make sure that the kernel will
+	 * slowly sift through the active list.
+	 */
+	zone->nr_scan_active += (zone->nr_active >> sc->priority) + 1;
+	nr_active = zone->nr_scan_active;
+	if (nr_active >= sc->swap_cluster_max)
+		zone->nr_scan_active = 0;
+	else
+		nr_active = 0;
+
+	zone->nr_scan_inactive += (zone->nr_inactive >> sc->priority) + 1;
+	nr_inactive = zone->nr_scan_inactive;
+	if (nr_inactive >= sc->swap_cluster_max)
+		zone->nr_scan_inactive = 0;
+	else
+		nr_inactive = 0;
+  #+END_EXAMPLE
+  
+  所以这个代码的意思就是先按照优先级计算出要从active/inactive链表里回收多少页,若页数大于
+  32(scan_control.swap_cluster_max(就是32,就是SWAP_CLUSTER_MAX),注释有说明),那么就把页数保
+  存到nr_active/nr_inactive里把zone.nr_scan_active/nr_scan_inactive清0,否则就把页数保存到
+  nr_active/nr_inactive里把清0,这样就达到了下次再进入这个函数时就会把上一次没有扫描而保存
+  在zone.nr_scan_active/nr_scan_inactive里的页数在这次扫描里处理(因为计算出页数之后是自加
+  到zone.nr_scan_active/nr_scan_inactive里的.).
+- 每调用这个函数一次就打算回收32页
+  #+BEGIN_EXAMPLE
+	sc->nr_to_reclaim = sc->swap_cluster_max;
+  #+END_EXAMPLE
+- 若nr_active或nr_inactive没有为0,那就在事干了.对于nr_active的页说调用
+  refill_inactive_zone(),每调用一次refill_inactive_zone()最多处理32页,若nr_active没有被处
+  理完就再循环一次.
+  
+  而nr_inactive的处理就是调用shrink_cache().
+** static void shrink_cache(struct zone *zone, struct scan_control *sc)
+*** mm/vmscan.c:
+- max_scan最大是32,因为scan.nr_to_scan在shrink_zone里计算时最大是32,结合shrink_zone()来看,
+  在shrink_zone()里的nr_inactive就是指在shrink_cache()里要扫描多少页.在shrink_cache()里最
+  外层的while()循环是以所扫描的页数为条件的,而不管有多少页被释放(scan.nr_to_reclaim),而在
+  shrink_zone()里初始化scan.nr_to_reclaim是用32的,而nr_inactive至少是32,所以到最后
+  scan.nr_to_reclaim可能在shrink_cache()被减成负数.
+- 函数先用isolate_lru_pages()把打算32个页实际是返回值的数的页从zone.inactive_list移到
+  page_lists
+  #+BEGIN_EXAMPLE
+		nr_taken = isolate_lru_pages(sc->swap_cluster_max,
+					     &zone->inactive_list,
+					     &page_list, &nr_scan);
+  #+END_EXAMPLE 
+  因为从zone.inactive_list里移出了页,所以在解锁之前要从zone.nr_inactive里减相应的页
+  #+BEGIN_EXAMPLE
+		zone->nr_inactive -= nr_taken;
+  #+END_EXAMPLE 
+  关于zone.pages_scanned的注释是:since last reclaim.所以这个成员会的释放页时清零.清零是在
+  free_pages_bulk()里,shrink_list()->pvecs_release()....->free_pages_bulk().
+
+  zone.inactive还有一个地方被加就是在refill_inactive_zone()里,同时也是在调用
+  isolate_lru_pages(),但是在refill_inactive_zone()里调用的isolate_lru_pages()是从
+  zone.active_list里移出页的,而不是zone.inactive_list.而且用isolate_lru_pages()移出的页可
+  能在之后的处理中又被移回去,但是没有把zone.pages_scanned给减回去.
