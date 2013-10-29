@@ -11,7 +11,19 @@ zone_active_list[label="zone_active_list"];
 kernel_mode_page[label="kernel_mode_page:page cache是属于这类页的,"];
 page_cache[label="page_cache:(1)这类页是可以回收的"];
 
+active_pages[label="active_pages:zone.active_list里的页"];
+inactive_pages[label="inactive_pages:zone.active_list里的页"];
+referenced_pages[label="referenced_pages:就是page_referenced()返回值大于0的页"];
 
+inuse_pages[label="inuse_pages:就是page_mapping_inuse()返回真的页"];
+unused_pages[label="unused_pages:在分析page_mapping_inuse()时可以得出"];
+non_mapped[label="non_mapped:没有被pte引用"];
+page_mapping_null[label="page_mapping_null:page.mapping为NULL"];
+
+
+active_pages -> zone_active_list[label="belong to"];
+inactive_pages -> zone_inactive_list[label="belong to"];
+inuse_pages -> active_pages[label="belong to; 在shrink_list()里得出"];
 anonymous_memory_region -> user_mode_address_space;
 anonymous_page -> anonymous_memory_region[label="belong to"];
 anonymous_memory_region -> anonymous_page;
@@ -24,3 +36,20 @@ page_cache -> kernel_mode_page;
 page_cache -> can_reclaim;
 page_cache -> zone_inactive_list;
 page_cache -> zone_active_list;
+/* unused page (1) */
+non_mapped_anon_page_page_mapping[label="and"];
+non_mapped_anon_page_page_mapping -> unused_pages;
+non_mapped -> non_mapped_anon_page_page_mapping;
+anon_page_page_mapping[label="or"];
+anonymous_page -> anon_page_page_mapping[style=dotted];
+page_mapping_null -> anon_page_page_mapping[style=dotted];
+anon_page_page_mapping -> non_mapped_anon_page_page_mapping;
+/* unused page (2) */
+non_mapped_i_mmap_i_mmap_nonlinear[label="and"];
+non_mapped_i_mmap_i_mmap_nonlinear -> unused_pages;
+i_mmap_i_mmap_nonlinear[label="or"];
+i_mmap_i_mmap_nonlinear -> non_mapped_i_mmap_i_mmap_nonlinear;
+non_mapped -> non_mapped_i_mmap_i_mmap_nonlinear;
+address_space_i_mmap_set -> i_mmap_i_mmap_nonlinear[style=dotted];
+address_space_i_mmap_nonlinear -> i_mmap_i_mmap_nonlinear[style=dotted];
+/* } */

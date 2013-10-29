@@ -6908,3 +6908,31 @@ Sunday
        9:07pm Coffee break
       12:00pm Lunch
 
+
+	{
+		int a[5] = {1,2,3,4,5};
+		int *ptr = (int*)(&a+1);
+		printf("%d %d\n" , *(a+1), *(ptr-1) );
+	}
+这个输出的结果是2 1.要注意&a的意思。
+
+
+	{
+		int a, b,c, d; 
+		a=3; 
+		b=5; 
+		c=a,b; 
+		d=(a,b); 
+		printf("c=%d\n" ,c); 
+		printf("d=%d\n" ,d); 
+	}
+这个的结果又是多少呢?
+
+
+	{
+		int i=3; 
+		int j; 
+		j = sizeof(++i+ ++i); 
+		printf("i=%d j=%d\n", i ,j); 
+	}
+这个又是多少.是3 4

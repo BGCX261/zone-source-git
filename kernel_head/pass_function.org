@@ -7832,7 +7832,149 @@ ext2_writepages(struct address_space *mapping, struct writeback_control *wbc)
   关于zone.pages_scanned的注释是:since last reclaim.所以这个成员会的释放页时清零.清零是在
   free_pages_bulk()里,shrink_list()->pvecs_release()....->free_pages_bulk().
 
-  zone.inactive还有一个地方被加就是在refill_inactive_zone()里,同时也是在调用
+  zone.nr_inactive还有一个地方被加就是在refill_inactive_zone()里,同时也是在调用
   isolate_lru_pages(),但是在refill_inactive_zone()里调用的isolate_lru_pages()是从
   zone.active_list里移出页的,而不是zone.inactive_list.而且用isolate_lru_pages()移出的页可
   能在之后的处理中又被移回去,但是没有把zone.pages_scanned给减回去.
+- 接下来就是调用shrink_list()来收调用isolate_lru_pages()获取的页了.
+** static int shrink_list(struct list_head *page_list, struct scan_control *sc)
+*** mm/vmscan.c:
+- 每回收一个页就调度一次
+  #+BEGIN_EXAMPLE
+
+	pagevec_init(&freed_pvec, 1);
+	while (!list_empty(page_list)) {
+		struct address_space *mapping;
+		struct page *page;
+		int may_enter_fs;
+		int referenced;
+
+		cond_resched();
+
+		page = lru_to_page(page_list);
+		list_del(&page->lru);
+  #+END_EXAMPLE 
+- 若发现若是被锁住的话,那么就把它放回原来的链表.
+  #+BEGIN_EXAMPLE
+
+		if (TestSetPageLocked(page))
+			goto keep;
+  #+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+keep:
+		list_add(&page->lru, &ret_pages);
+  #+END_EXAMPLE
+- 关于scan_control.nr_scanned,它是在shrink_caches()里初始化为0,然后通过
+  shrink_zone()->shrink_cache()->shrink_list()过程中都没在动过.
+  所以scan_control.nr_scanned只有在这个函数里加
+  #+BEGIN_EXAMPLE
+		sc->nr_scanned++;
+		/* Double the slab pressure for mapped and swapcache pages */
+		if (page_mapped(page) || PageSwapCache(page))
+			sc->nr_scanned++;
+  #+END_EXAMPLE
+  只要这个页不被锁,那么就必定会增加nr_scanned,但是为什么在有pte引用这个页或PG_swapcache设置
+  时就会再加一次呢?那么对于scan_control.nr_scanned的解释是不是有点不对
+  呢,scan_control.nr_scanned:Number of inactive pages scanned in the current iteration?
+- 如果发现这个页正在被回写(PG_writeback),那么就清在循环一开始就设置的PG_locked
+  #+BEGIN_EXAMPLE
+		if (PageWriteback(page))
+			goto keep_locked;
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+keep_locked:
+		unlock_page(page);
+  #+END_EXAMPLE
+  unlock_page()就是清PG_locked
+- 若这个页有被引用且这个页正在使用(page_mapping_inuse()(下面有介绍))就会设置页的PG_active并把页返回去
+  #+BEGIN_EXAMPLE
+
+		referenced = page_referenced(page, 1, sc->priority <= 0);
+		/* In active use or really unfreeable?  Activate it. */
+		if (referenced && page_mapping_inuse(page))
+			goto activate_locked;
+  #+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+activate_locked:
+		SetPageActive(page);
+		pgactivate++;
+keep_locked:
+		unlock_page(page);
+keep:
+		list_add(&page->lru, &ret_pages);
+  #+END_EXAMPLE
+  若这个页只是被referenced了但是没有正在使用,那会怎么样呢?若被referenced且页是脏的,那么也把
+  它放到返回去,但是没有设置PG_active,因为要设置PG_active的时候要这个页被正在使用才可以.
+- 
+** static inline int page_mapping_inuse(struct page *page)
+*** mm/vmscan.c:
+- 调用时不加锁所以这个函数的返回值不稳定
+  #+BEGIN_EXAMPLE
+  /\* Called without lock on whether page is mapped, so answer is unstable */
+  #+END_EXAMPLE 
+- 注意page_mapped()返回的是page._mapcount是不是不为负.page_mapping()返回是的swapper_space
+  或页被映射文件时的page.mapping,所以在page.mapping为NULL或页是匿名页时就会返回NULL.
+- 若这个页真的是映射到了一个匿名区,那么就会有pte引用它,所以page_mapped()返回真,且若
+  pageSwapCache()也返回真,那么还进入page_mapping()函数,那么只有一种page_mapping()的返回值
+  为NULL,就是在page.mapping为NULL.
+- 若page_mapping()返回的不是NULL,那么这情况下这个页的状态是没有被pte映射,也不是swap cache,
+  因为page_mapping()的返回值不是NULL,所以可能推出页不是匿名页且page.mapping不为NULL,所以这
+  个页要么是文件映射的页要么是swap cache的页,又因为调用page_mapping()已确定页不是swap
+  cache的页,所以最后的推断是这个页是文件映射的页.注释也是这样说的
+  #+BEGIN_EXAMPLE
+	mapping = page_mapping(page);
+	if (!mapping)
+		return 0;
+
+	/* File is mmap'd by somebody? */
+	return mapping_mapped(mapping);
+  #+END_EXAMPLE
+  但是若页映射为文件,也不一定会返回1,这个还要看mapping_mapped()的返回值.在mapping_mapped()
+  这个函数里主要是判断address_space.i_mmap和address_space.i_mmap_nonlinear是否为空,只要一
+  个不为空就会返回1.那是不是说page.mapping指向了address_space但是address_space.i_mmap和
+  address_space.i_mmap_nonlinear可以为空.address_space.i_mmap是反向查找的优先树,若是非线性
+  映射的话在i_mmap里可能找不到这个页,所以要用i_mmap_nonlinear这个链表.所以若一个页是文件映
+  射,那么就可以用address_space.i_mmap和address_space.i_mmap_nonlinear来判断这个映射页是不
+  是正在使用.
+
+  还可以得到一个信息:就是该页在没有被任何pte引用的情况下但page.mapping.i_mmap或
+  page.mapping.i_mmap_nonlinear可以不为空.
+
+  以上的说法有错误,因为page.mapping.i_mmap这个优先搜索树里不一定会包含这个页.且
+  i_mmap_nonlinear也不一定包含这个页.那么是不是若这个页在i_mmap或i_mmap_nonlinear里就一定
+  会有pte引用这个页是吗?为什么要有一个这么粗慥的判断呢?为了效率,因为在优先搜索树里找出这个
+  页或在i_mmap_nonlinear找出一个页是费时的.真的是这样子的吗?
+
+  所以若一个页没有被pte引用且这个页是匿名页或page.mapping为NULL那么就一定是unused的.还有一
+  个不一定的情况就是没有pte引用且还是映射页,这时要判断是不是unused就要看i_mmap和
+  i_mmap_nonlinear了.
+- 在什么情况下回收页时会引起磁盘操作呢?(1)若是因为分配页时不够页而引起的回收页操作时指定了
+  分配页标志有__GFP_FS时是允许磁盘操作的(2)若是该页是swap cache里的页且分配标志指定
+  了__GFP_IO也允许磁盘操作.
+
+  但是若这个页是映射文件的页且脏时可不可以引起磁盘操作呢?
+- 若页有被pte引用且页是swap cache的页或是文件映射页,那么就调用try_to_unmap()来取消映射.
+  若不能取消映射就不能释放这个页,若是返回SWAP_FAIL就放到PG_active.
+
+  为什么不考虑匿名页来调用try_to_unmap()呢?
+
+  关于匿名区共享的情况:ulk:Anonymous pages are often shared among several processes. The
+  most common case occurs when forking a new process: as explained in the section "Copy On
+  Write" in Chapter 9, all page frames owned by the parentincluding the anonymous pagesare
+  assigned also to the child. Another (quite unusual) case occurs when a process creates a
+  memory region specifying both the MAP_ANONYMOUS and MAP_SHARED flag: the pages of such a
+  region will be shared among the future descendants of the process.那进程之间的共享内存(shmem)是
+  不是也是一种情况呢?按照上面的ulk的说法,回收共享的匿名页是不是效率不高,因为回收了可能很快
+  又被访问了?
+- 为什么在这个页是脏时且有被referenced或不能操作磁盘或在laptop模式但scan_control不允许在
+  laptop下回写时就不回收这个页呢?
+  #+BEGIN_EXAMPLE
+		if (PageDirty(page)) {
+			if (referenced)
+				goto keep_locked;
+			if (!may_enter_fs)
+				goto keep_locked;
+			if (laptop_mode && !sc->may_writepage)
+				goto keep_locked;
+  #+END_EXAMPLE 
+
