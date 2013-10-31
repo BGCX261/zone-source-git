@@ -7905,7 +7905,153 @@ keep:
   #+END_EXAMPLE
   若这个页只是被referenced了但是没有正在使用,那会怎么样呢?若被referenced且页是脏的,那么也把
   它放到返回去,但是没有设置PG_active,因为要设置PG_active的时候要这个页被正在使用才可以.
-- 
+- 在什么情况下回收页时会引起磁盘操作呢?(1)若是因为分配页时不够页而引起的回收页操作时指定了
+  分配页标志有__GFP_FS时是允许磁盘操作的(2)若是该页是swap cache里的页且分配标志指定
+  了__GFP_IO也允许磁盘操作.
+
+  但是若这个页是映射文件的页且脏时可不可以引起磁盘操作呢?
+- 若页有被pte引用且页是swap cache的页或是文件映射页,那么就调用try_to_unmap()来取消映射.
+  若不能取消映射就不能释放这个页,若是返回SWAP_FAIL就放到PG_active.
+
+  为什么不考虑匿名页来调用try_to_unmap()呢?
+
+  关于匿名区共享的情况:ulk:Anonymous pages are often shared among several processes. The
+  most common case occurs when forking a new process: as explained in the section "Copy On
+  Write" in Chapter 9, all page frames owned by the parentincluding the anonymous pagesare
+  assigned also to the child. Another (quite unusual) case occurs when a process creates a
+  memory region specifying both the MAP_ANONYMOUS and MAP_SHARED flag: the pages of such a
+  region will be shared among the future descendants of the process.那进程之间的共享内存(shmem)是
+  不是也是一种情况呢?按照上面的ulk的说法,回收共享的匿名页是不是效率不高,因为回收了可能很快
+  又被访问了?
+- 为什么在这个页是脏时且有被referenced或不能操作磁盘或在laptop模式但scan_control不允许在
+  laptop下回写时就不回收这个页呢?
+  #+BEGIN_EXAMPLE
+		if (PageDirty(page)) {
+			if (referenced)
+				goto keep_locked;
+			if (!may_enter_fs)
+				goto keep_locked;
+			if (laptop_mode && !sc->may_writepage)
+				goto keep_locked;
+  #+END_EXAMPLE 
+- 如果这个页是dirty的且可允许回写,那么就调用pageout()回写.
+  #+BEGIN_EXAMPLE
+  #+END_EXAMPLE 
+- 若收到的是PAGE_SUCCESS,那么页正在被回写,那么就不能释放这个页,要返回去.
+  #+BEGIN_EXAMPLE
+			case PAGE_SUCCESS:
+				if (PageWriteback(page) || PageDirty(page))
+					goto keep;
+  #+END_EXAMPLE
+  不明白为什么还要检测PG_dirty,从pageout()里看,能返回PAGE_SUCCESS的情况之前都会把PG_dirty给
+  清的.除非writepage()会又设置.通过看__block_write_full_page()的代码可以确定是有可能的,因为
+  若发现有页里有一buffer_head是锁住的,就有可以调用redirty_page_for_writepage()来设置
+  PG_dirty.
+- 在writepage()是用ramdisk_writepage()实现的时候,是把PG_dirty设置的.所以返回PAGE_SUCCESS时
+  也有可能还设置PG_dirty.但是这就不符合注释所说的了
+  #+BEGIN_EXAMPLE
+			case PAGE_SUCCESS:
+				if (PageWriteback(page) || PageDirty(page))
+					goto keep;
+				/*
+				 * A synchronous write - probably a ramdisk.  Go
+				 * ahead and try to reclaim the page.
+				 */
+				if (TestSetPageLocked(page))
+					goto keep;
+				if (PageDirty(page) || PageWriteback(page))
+					goto keep_locked;
+				mapping = page_mapping(page);
+  #+END_EXAMPLE
+  能执行到TestSetPageLocked()这里不应该是ramdisk.但有一点是可以理解的,就是若这个页没设
+  PG_writeback(说明是同步写)且没有dirty,且这个页没有被锁,那么这个页是可以被回收的了,不用再
+  跳到keep把页返回给shrink_cache().
+- 无论进不进入下面的判断,要想往下执行来释放这个页,那么这个页就一定是清PG_dirty的
+  #+BEGIN_EXAMPLE
+		if (PageDirty(page)) {
+  #+END_EXAMPLE
+  但是下面有注释说还是有可能设置PG_dirty的.
+  #+BEGIN_EXAMPLE
+		 * We do this even if the page is PageDirty().
+		 * try_to_release_page() does not perform I/O, but it is
+		 * possible for a page to have PageDirty set, but it is actually
+		 * clean (all its buffers are clean).  This happens if the
+		 * buffers were written out directly, with submit_bh(). ext3
+		 * will do this, as well as the blockdev mapping. 
+		 * try_to_release_page() will discover that cleanness and will
+		 * drop the buffers and mark the page clean - it can be freed.
+		 *
+  #+END_EXAMPLE
+  又不对了,注释好像是说执行到这里时PG_dirty是清掉的.在ext3和blockdev mapping里就会直接把脏
+  页给回写到disk,但是没有把buffer_head给释放,所以下面要想回收这个页时就要先释放这个页的
+  buffer_head
+  #+BEGIN_EXAMPLE
+		if (PagePrivate(page)) {
+			if (!try_to_release_page(page, sc->gfp_mask))
+				goto activate_locked;
+			if (!mapping && page_count(page) == 1)
+				goto lfree_it;
+		}
+  #+END_EXAMPLE 
+  如果返回try_to_release_page()返回0就表示没有成功释放buffer_head,那么就把页放回active链表.
+- 为什么下面还要检测页是不是脏的呢?之前不是已经确定不为脏了吗?难道设置PG_locked之后不能保
+  证PG_dirty不能修改吗?
+  #+BEGIN_EXAMPLE
+		write_lock_irq(&mapping->tree_lock);
+
+		/*
+		 * The non-racy check for busy page.  It is critical to check
+		 * PageDirty _after_ making sure that the page is freeable and
+		 * not in use by anybody. 	(pagecache + us == 2)
+		 */
+		if (page_count(page) != 2 || PageDirty(page)) {
+			write_unlock_irq(&mapping->tree_lock);
+			goto keep_locked;
+		}
+  #+END_EXAMPLE
+  注释说明了page._count为2的情况是page cache的一个计数和回收这个页时加的计数.
+
+  要注意到了这里这个页要么是page cache里的,要么是swap cache的,因为只有这两种情况下mapping
+  才不会为空.mapping为空是不会执行到这里的.
+- 下面就该把页放到freed_pvec这个链表里以在最后释放了,这时要分两种情况
+
+  (1)swap cache的页
+  #+BEGIN_EXAMPLE
+
+#ifdef CONFIG_SWAP
+		if (PageSwapCache(page)) {
+			swp_entry_t swap = { .val = page->private };
+			__delete_from_swap_cache(page);
+			write_unlock_irq(&mapping->tree_lock);
+			swap_free(swap);
+			__put_page(page);	/* The pagecache ref */
+			goto free_it;
+		}
+#endif /* CONFIG_SWAP */
+  #+END_EXAMPLE
+  (2)page cache的页
+  #+BEGIN_EXAMPLE
+		__remove_from_page_cache(page);
+		write_unlock_irq(&mapping->tree_lock);
+		__put_page(page);
+
+free_it:
+		unlock_page(page);
+		reclaimed++;
+		if (!pagevec_add(&freed_pvec, page))
+			__pagevec_release_nonlru(&freed_pvec);
+		continue;
+  #+END_EXAMPLE
+
+  那么匿名页最后是怎么给释放的呢?这种页应该是先放到swap cache里.
+- ulk里17-5那个图可以记住.
+- 通过看17-5图知道了匿名页是怎么被释放的了,若是匿名页,那么就调用add_to_swap()把这个页加到
+  swap cache里,那么匿名页就变成了swap cache的页了,那么这个被添加到swap cache的页就有可能回
+  收了.
+- ulk:If the page is in the User Mode address space of some process (the _mapcount field
+  in the page descriptor is greater than or equal to zero), shrink_list( ) invokes the
+  try_to_unmap( ) function to locate all User Mode Page Table entries that refer to the
+  page frame.可以看出_mapcount增加都是与用户态的进程有关的.
 ** static inline int page_mapping_inuse(struct page *page)
 *** mm/vmscan.c:
 - 调用时不加锁所以这个函数的返回值不稳定
@@ -7948,33 +8094,203 @@ keep:
   所以若一个页没有被pte引用且这个页是匿名页或page.mapping为NULL那么就一定是unused的.还有一
   个不一定的情况就是没有pte引用且还是映射页,这时要判断是不是unused就要看i_mmap和
   i_mmap_nonlinear了.
-- 在什么情况下回收页时会引起磁盘操作呢?(1)若是因为分配页时不够页而引起的回收页操作时指定了
-  分配页标志有__GFP_FS时是允许磁盘操作的(2)若是该页是swap cache里的页且分配标志指定
-  了__GFP_IO也允许磁盘操作.
-
-  但是若这个页是映射文件的页且脏时可不可以引起磁盘操作呢?
-- 若页有被pte引用且页是swap cache的页或是文件映射页,那么就调用try_to_unmap()来取消映射.
-  若不能取消映射就不能释放这个页,若是返回SWAP_FAIL就放到PG_active.
-
-  为什么不考虑匿名页来调用try_to_unmap()呢?
-
-  关于匿名区共享的情况:ulk:Anonymous pages are often shared among several processes. The
-  most common case occurs when forking a new process: as explained in the section "Copy On
-  Write" in Chapter 9, all page frames owned by the parentincluding the anonymous pagesare
-  assigned also to the child. Another (quite unusual) case occurs when a process creates a
-  memory region specifying both the MAP_ANONYMOUS and MAP_SHARED flag: the pages of such a
-  region will be shared among the future descendants of the process.那进程之间的共享内存(shmem)是
-  不是也是一种情况呢?按照上面的ulk的说法,回收共享的匿名页是不是效率不高,因为回收了可能很快
-  又被访问了?
-- 为什么在这个页是脏时且有被referenced或不能操作磁盘或在laptop模式但scan_control不允许在
-  laptop下回写时就不回收这个页呢?
+** static pageout_t pageout(struct page *page, struct address_space *mapping)
+*** mm/vmscan.c:
+- ulk:The pageout( ) function is invoked by shrink_list( ) when a dirty page must be
+  written to disk.这个函数只有shrink_list()调用.
+- 只有在回写时不阻塞才会回写,注释:
   #+BEGIN_EXAMPLE
-		if (PageDirty(page)) {
-			if (referenced)
-				goto keep_locked;
-			if (!may_enter_fs)
-				goto keep_locked;
-			if (laptop_mode && !sc->may_writepage)
-				goto keep_locked;
+	 * If the page is dirty, only perform writeback if that write
+	 * will be non-blocking.
+  #+END_EXAMPLE
+  但是若当前进程若正在generic_file_write()里against this page's queue时,就算会被阻塞也可以
+  回写.
+  #+BEGIN_EXAMPLE
+	 * If this process is currently in generic_file_write() against
+	 * this page's queue, we can perform writeback even if that
+	 * will block.
   #+END_EXAMPLE 
 
+  还有一种阻塞时可以回写的就是页是swap cahce页,注释有说:
+  #+BEGIN_EXAMPLE
+	 * If the page is swapcache, write it back even if that would
+	 * block, for some throttling. This happens by accident, because
+	 * swap_backing_dev_info is bust: it doesn't reflect the
+	 * congestion state of the swapdevs.  Easy to fix, if needed.
+	 * See swapfile.c:page_queue_congested().
+  #+END_EXAMPLE 
+- is_page_cache_freeable()在ulvmm的解释是:is page cache freeable() will return true if it
+  is not mapped by any process and has no buffers.但从代码上还是看不出来
+  #+BEGIN_EXAMPLE
+	return page_count(page) - !!PagePrivate(page) == 2;
+  #+END_EXAMPLE
+  是不是说没有进程引用但是有buffer时因为PagePrivate()不是0所以page_count() - 1 == 1?
+
+  在调用is_page_cache_freeable()时是不是在确保页是文件映射页呢?
+
+  要看有没有进程引用不是通过page._mapcount的?因为_mapcount指的是有pte指向这个页,进程会访问
+  这个页的内容,而_count是指进程对这个页的struct page结构体有多少个引用.
+- 若映射页有进程引用或有buffer_head在,就不能回写
+  #+BEGIN_EXAMPLE
+	if (!is_page_cache_freeable(page))
+		return PAGE_KEEP;
+  #+END_EXAMPLE 
+- 通过在shrink_list()分析的page_mapping()这个函数,可以确定若mapping不为NULL,那么就可以确定
+  page要么是在swap cache里的,要么是文件映射页.
+- 因为这个页是要回写页的内容成磁盘,所以要保证mapping不为NULL的,所以
+  #+BEGIN_EXAMPLE
+	if (!mapping) {
+		/*
+		 * Some data journaling orphaned pages can have
+		 * page->mapping == NULL while being dirty with clean buffers.
+		 */
+		if (PagePrivate(page)) {
+			if (try_to_free_buffers(page)) {
+				ClearPageDirty(page);
+				printk("%s: orphaned page\n", __FUNCTION__);
+				return PAGE_CLEAN;
+			}
+		}
+		return PAGE_KEEP;
+	}
+  #+END_EXAMPLE
+  若mapping为NULL就不会回写,要么是PAGE_CLEAN表示这个是Some data journaling orphaned pages,
+  要么返回PAGE_KEEP.
+
+  返回PAGE_KEEP给shrink_list()后就会跳到keep_locked.
+- 若mapping.a_ops.writepage为NULL,那么给shrink_list()返回PAGE_ACTIVATE让它跳到
+  activate_locked来设置页的PG_actived.
+
+  在什么情况下会出现writepage为NULL的情况呢?
+- 在什么情况下可以从入队列呢?may_write_to_queue()
+  (1) 当前进程是kswapd,不是再看下面
+  (2) 当前进程是pdflush,不是再看下面,注释说这不可能,为什么呢?
+  (3) 队列不拥挤,不行再看下面.为什么队列拥挤就不行呢?所以当进程是kswapd或pdflush时,就算拥
+  挤也可以插入,所以队列拥挤不代表队列已满.
+  (4) 为什么bdi是当前进程的bdi就可以呢?因为是当前进程的bdi阻塞了,所以再添加一个也不要紧.
+  其它的情况都不可以.所以对于一个普通的进程只有在队列不拥挤时才可以回写.
+
+  不可以时要返回PAGE_KEEP给shrink_list()
+- 下面有关于clear_page_dirty_for_io()
+- 若PG_dirty设置了,那么就可以调用address_space.a_ops.writepage()了.调用之前要先设置
+  PG_reclaim,PG_reclaim只有在这个函数设置和清除.PG_reclaim:ulk:The page has been marked to
+  be written to disk in order to reclaim memory.
+- 调用writepage()有错就要调用handle_write_error()来设置page.flags的AS_ENOSPC或AS_EIO.这个
+  东西是不会在writepage()里设置的.
+
+  还有一点要注意的就是调用这个函数是要设置PG_locked的,又因为在调用pageout()之前已经在
+  shrink_list()设置PG_locked了,但是到这里又设置PG_locked时不会死锁呢?因为在writepage()函数
+  里已释清了PG_locked了,writepage()一般由block_write_full_page()实
+  现,block_write_full_page()又调用__block_write_full_page(),__block_write_full_page()在调
+  用完submit_bh()之后就是解锁了.真是一个整体啊.
+- 关于PG_reclaim,从代码上看调用完writepage()之后不一定会清掉PG_reclaim的,不清掉会有什么影
+  响吗?writepage()是同步写吗?
+- 调用完writepage()之后若没有返回WRITEPAGE_ACTIVATE来要求把页放回active_list都会返回
+  PAGE_SUCCESS表示写成功了,就算有error出现,为什么要WRITEPAGE_ACTIVATE那么特别呢?
+
+  WRITEPAGE_ACTIVATE这个值只有在shmem_writepage()返回,而shmem_writepage()有什么用呢?ulk:The
+  shmem_writepage( ) function, which implements the writepage method for IPC shared memory
+  regions' pages, essentially allocates a new page slot in a swap area, and moves the page
+  from the page cache to the swap cache.所以这个函数的功能就是把page cache的页放到swap
+  cache里.从注释上也可以看出来
+  #+BEGIN_EXAMPLE
+/*
+ * ->writepage() return values (make these much larger than a pagesize, in
+ * case some fs is returning number-of-bytes-written from writepage)
+ */
+#define WRITEPAGE_ACTIVATE	0x80000	/* IO was not started: activate page */
+  #+END_EXAMPLE
+  发现还有一个地方设置了WRITEPAGE_ACTIVATE,就是randisk_writepage(),这个回写也是不用磁盘操
+  作的.
+- 返回PAGE_CLEAN就说明这个页的PG_dirty已清掉,所以也没有必要回写.但是不是在shrink_list()里
+  设置了PG_locked了且发现设了PG_dirty了才调用pageout()的吗?
+
+  返回PAGE_SUCCESS就说明这个页也清了PG_dirty,且是也回写disk了.
+
+  返回PAGE_KEEP说明这个页是回写 _失败_ 的
+
+  返回PAGE_ACTIVATE说明这个页不是回写 _失败_ 的,是因为writepage()的问题,要么是为空,要么是
+  shmem_writepage()
+
+  shrink_list()收到pageout()的返回值之后就分别对上面的4个返回值做处理.
+** int clear_page_dirty_for_io(struct page *page)
+*** mm/page-writeback.c:
+- 这个函数清除页的PG_dirty的,还返回没清之前的状态,说白了就是TestClearPageDirty()的功能,但是
+  若页是文件映射页且PG_dirty也设置了且bdi有计数page_state.nr_dirty的能力,那么就减小
+  page_state.nr_dirty.
+- 这个函数只是清PG_dirty而已,没有清掉radix树的PAGECACHE_TAG_DIRTY,为什么可以这样呢?
+  #+BEGIN_EXAMPLE
+ * This is for preparing to put the page under writeout.  We leave the page
+ * tagged as dirty in the radix tree so that a concurrent write-for-sync
+ * can discover it via a PAGECACHE_TAG_DIRTY walk.  The ->writepage
+ * implementation will run either set_page_writeback() or set_page_dirty(),
+ * at which stage we bring the page's dirty flag and radix-tree dirty tag
+ * back into sync.
+  #+END_EXAMPLE
+  注释说了这个函数是为了回写页而调用的(回写单个页是一定调用address.a_ops.writepage的吗?),
+  不清PAGECACHE_TAG_DIRTY是为了可能有进程来扫描radix树找PAGECACHE_TAG_DIRTY的页,所以不能清.但
+  是等调用完writepage之后PAGECACHE_TAG_DIRTY和PG_dirty就可以又同步了(调用
+  set_page_writeback()或set_page_dirty()).
+
+  为什么PAGECACHE_TAG_DIRTY和PG_dirty不同步也可以出现呢?因为设置了PG_locked,所以这个页的
+  struct page不能并发访问.
+  #+BEGIN_EXAMPLE
+ * This incoherency between the page's dirty flag and radix-tree tag is
+ * unfortunate, but it only exists while the page is locked.
+  #+END_EXAMPLE 
+** not function
+*** 17.3.3
+- When the PFRA tries to reclaim page frames, it should also check whether some of these
+  disk caches can be shrunk.
+  
+  Every disk cache that is considered by the PFRA must have a shrinker function registered
+  at initialization time. The shrinker function expects two parameters: the target number
+  of page frames to be reclaimed, and a set of GFP allocation flags; the function does
+  what is required to reclaim the pages from the disk cache, then it returns the number of
+  reclaimable pages remaining in the cache.
+  
+  The set_shrinker( ) function registers a shrinker function with the PFRA. This function
+  allocates a descriptor of type shrinker , stores the address of the shrinker function in
+  the descriptor, and then inserts the descriptor in a global list rooted at the
+  shrinker_list global variable. The set_shrinker( ) function also initializes the seeks
+  field of the shrinker descriptor: informally, it is a parameter that indicates how much
+  it costs to re-create one item of the cache once it is removed.
+
+  In Linux 2.6.11 there are few disk caches registered with the PFRA: besides the dentry
+  cache and the inode   cache, only the disk quota layer, the filesystem meta information
+  block cache (mainly   used for filesystems' extended attributes), and the XFS journaling
+  filesystem register   shrinker functions .
+
+  The PFRA's function that reclaims pages from the shrinkable disk caches is called
+  shrink_slab( ) (the name is a bit misleading, because the function has   little to do
+  with the slab allocator caches).  This function is invoked by   TRy_to_free_pages( ), as
+  explained in the earlier section "Low On Memory Reclaiming,"   and by balance_pgdat( ),
+  which is described in the later section "Periodic Reclaiming." 
+- 以上就说明了shrink_slab()的由来,就是回收disk cache的(dentry cache, inode cache等),而
+  shrink_caches()是回收LRU里的页的.
+
+** static int shrink_slab(unsigned long scanned, unsigned int gfp_mask,unsigned long lru_pages)
+*** mm/vmscan.c:
+- scanned参数是调用者的scan_control.nr_scanned:Number of inactive pages scanned in the
+  current iteration.
+- 这里用到do_div()处理64位的数除以32位的数.
+  http://blog.csdn.net/lanmanck/article/details/7622861
+- 这个函数的原理是这样的,扫描注册到shrinker_list链表里的所有struct shrinker结构体,扫描到的
+  每一个struct shrinker都要调用shrinker.shrinker()两次,第一次调用是为了得到可以从该
+  shrinker对应的某个disk cache里回收多少个页,并根据这个数计算出shrinker.nr表示最终可以回收
+  多少个页;第二次调用就是回收之前算出的最终应该收的页数.为什么shrinker.shrinker()可以有两
+  种功能呢?因为使用了第一个参数来表示,为0就返回多少个页可以回收.
+- 每第二次调用shrinker.shrinker()就调度一次.
+** static int shrink_dcache_memory(int nr, unsigned int gfp_mask)
+*** fs/dcache.c:
+- ulk:The shrink_dcache_memory( ) function is the shrinker function for the dentry cache;
+- 主要是调用prune_dcache()来释放cache
+- 若设置了__GFP_FS,那么就不能回收dcache页.为什么呢?注释说这会引起死锁
+  #+BEGIN_EXAMPLE
+ * We need to avoid reentering the filesystem if the caller is performing a
+ * GFP_NOFS allocation attempt.  One example deadlock is:
+ *
+ * ext2_new_block->getblk->GFP->shrink_dcache_memory->prune_dcache->
+ * prune_one_dentry->dput->dentry_iput->iput->inode->i_sb->s_op->put_inode->
+ * ext2_discard_prealloc->ext2_free_blocks->lock_super->DEADLOCK.
+  #+END_EXAMPLE 
