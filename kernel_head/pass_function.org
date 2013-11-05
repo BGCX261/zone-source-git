@@ -8293,4 +8293,192 @@ free_it:
  * ext2_new_block->getblk->GFP->shrink_dcache_memory->prune_dcache->
  * prune_one_dentry->dput->dentry_iput->iput->inode->i_sb->s_op->put_inode->
  * ext2_discard_prealloc->ext2_free_blocks->lock_super->DEADLOCK.
+  #+END_EXAMPLE
+** static int __init kswapd_init(void)
+*** mm/vmscan.c:
+- 这个函数给每一个内存结点注册一个执行相同的kswapd()的内核线程来回收内存.
+- 每个结点的kswapd成员都保存结点对应的kswapd线程.
+** static int kswapd(void *p)
+*** mm/vmscan.c:
+- 为什么要用线程来回收内存呢?ulk:Some memory allocation requests are performed by
+  interrupt and exception handlers, which cannot block the current process waiting for a
+  page frame to be freed; moreover, some memory allocation requests are done by kernel
+  control paths that have already acquired exclusive access to critical resources and
+  that, therefore, cannot activate I/O data transfers. In the infrequent case in which all
+  memory allocation requests are done by such sorts of kernel control paths, the kernel is
+  never able to free memory. The kswapd kernel threads also have a beneficial effect on
+  system performance by keeping memory free in what would otherwise be idle time for the
+  machine; processes can thus get their pages much faster.
+
+  总结就两点:1,一些情况不允许调度和休眠, 2,可以在idle时回收提高效率.
+- __alloc_pages()在发现内存少的时候会唤醒kswapd线程.用zone.pages_low和zone.pages_min来判断.
+- kswap线程的reclaim_state要把reclaimed_slab给清掉.
+- task.flags要设置PF_KSWAP说明这个线程是kswapd线程,设置PF_MEMALLOC说明这个线程可以使用所有
+  的保留的内存.
+- pg_dat_t.kswapd_max_order:kswapd线程要释放内存块大小取对数后的值。
+- kswapd线程只有__alloc_pages()会唤醒.
+- 关于kswapd_max_order,__alloc_pages()调用wakeup_kswapd()来唤醒kswapd线程,wakeup_kswapd()的
+  第二参数是order,第二个参数order在wakeup_kswapd()里在order到于kswapd_max_order的时候赋给
+  kswapd_max_order.kswapd()执行后就判断上一次执行这个函数时的kswapd_max_order是否有比现在
+  的kswapd_max_order大,若大的话就不用休眠,而是直接调用balance_pgdat()来回收内存,接着再休眠.为
+  什么要这样做呢?
+** static int balance_pgdat(pg_data_t *pgdat, int nr_pages, int order)
+*** mm/vmscan.c:
+- 这个函数的最外层循环是遍历12个优先级的.
+- 以下的这段代码的作用是找出所在位置最高的且空闲页低于阀值的zone(这是在参数nr_pages为0的时
+  候,若是nr_pages不为0就不用找这样的zone了,而是就从最后一个zone开始.)
+  #+BEGIN_EXAMPLE
+		if (nr_pages == 0) {
+			/*
+			 * Scan in the highmem->dma direction for the highest
+			 * zone which needs scanning
+			 */
+			for (i = pgdat->nr_zones - 1; i >= 0; i--) {
+				struct zone *zone = pgdat->node_zones + i;
+
+				if (zone->present_pages == 0)
+					continue;
+
+				if (zone->all_unreclaimable &&
+						priority != DEF_PRIORITY)
+					continue;
+
+				if (!zone_watermark_ok(zone, order,
+						zone->pages_high, 0, 0, 0)) {
+					end_zone = i;
+					goto scan;
+				}
+			}
+			goto out;
+		} else {
+			end_zone = pgdat->nr_zones - 1;
+		}
+  #+END_EXAMPLE
+  若zone.present_pages是0表示这个zone没有页,那么就不可能有页被回收了.
+- 为什么要从最高位置的内存区开始扫描内存区呢?因为分配内存的时候是从高位置的内存区往低位置
+  的内存区分配,所以若先扫描低位置的zone时,且同时又有很多地方在分配内存,且所有的zone都缺内
+  存,那么就会把低位置的zone刚释放的内存给分配出去了,而紧接着释放的高端内存反而没有被分配,
+  而分配的原则是从高端内存开始.有注释说:
+  #+BEGIN_EXAMPLE
+		/*
+		 * Now scan the zone in the dma->highmem direction, stopping
+		 * at the last zone which needs scanning.
+		 *
+		 * We do this because the page allocator works in the opposite
+		 * direction.  This prevents the page allocator from allocating
+		 * pages behind kswapd's direction of progress, which would
+		 * cause too much scanning of the lower zones.
+		 */
+  #+END_EXAMPLE 
+- nr_pages只有在kswapd()调用时才是0,
+- balance_pgdat()只有两个函数调用,一个是kswapd()一个是
+  shrink_all_memory(),shrink_all_memory()调用时的nr_pages不是0,shrink_all_memory()只有被
+  free_some_memory()调用,free_some_memory()只有被prepare_processes()调
+  用,prepare_processes()被kernel/power/disk.c里的pm_suspend_disk()和software_resume()调用,
+  所以可以看出nr_pages不为0就在系统体眠到disk时调用用来释放页的.在prepare_processes()里调
+  用的free_some_memory()时的注释是
+  #+BEGIN_EXAMPLE
+	/* Free memory before shutting down devices. */
+  #+END_EXAMPLE 
+- scan_control.swap_cluster_max会根据nr_pages来赋值.接着就是调用shrink_zone()来回收页
+- 关于struct reclaim_state和reclaim_state.reclaimed_slab,ulk:If the current process is
+  performing memory reclaiming (current->reclaim_state field not NULL), the reclaimed_slab
+  field of the reclaim_state structure is properly increased, so that the pages just freed
+  can be accounted for by the page frame reclaiming algorithm.
+
+  reclaim_state.reclaim_slab只有在kmem_freepages()里增加,kmem_freepages()是用来释改slab的.
+- 设置reclaim_state.reclaim_slab之后再调用shrink_slab().要把reclaim_state.reclaimed_slab的
+  页加到scan_control.nr_reclaimed
+  #+BEGIN_EXAMPLE
+			reclaim_state->reclaimed_slab = 0;
+			shrink_slab(sc.nr_scanned, GFP_KERNEL, lru_pages);
+			sc.nr_reclaimed += reclaim_state->reclaimed_slab;
+  #+END_EXAMPLE
+- 关于zone.all_unreclaimable. 只在free_pages_bulk()里清零,只在balance_pgdat()里设置1.
+- 在回收页的过程中有可能会设置zone.all_unreclaimable
+  #+BEGIN_EXAMPLE
+			if (zone->all_unreclaimable && priority != DEF_PRIORITY)
+				continue;
+
+			if (nr_pages == 0) {	/* Not software suspend */
+				if (!zone_watermark_ok(zone, order,
+						zone->pages_high, end_zone, 0, 0))
+					all_zones_ok = 0;
+			}
+			zone->temp_priority = priority;
+			if (zone->prev_priority > priority)
+				zone->prev_priority = priority;
+			sc.nr_scanned = 0;
+			sc.nr_reclaimed = 0;
+			sc.priority = priority;
+			sc.swap_cluster_max = nr_pages? nr_pages : SWAP_CLUSTER_MAX;
+			shrink_zone(zone, &sc);
+			reclaim_state->reclaimed_slab = 0;
+			shrink_slab(sc.nr_scanned, GFP_KERNEL, lru_pages);
+			sc.nr_reclaimed += reclaim_state->reclaimed_slab;
+			total_reclaimed += sc.nr_reclaimed;
+			total_scanned += sc.nr_scanned;
+			if (zone->all_unreclaimable)
+				continue;
+  #+END_EXAMPLE 
+  但是又只有一个地方设置all_unreclaimable,难道是zone会嵌套被扫描.
+- 要在回收时扫描的页数大于或等于nr_active和nr_inactive的和的4倍时才会设置zone.all_unreclaimable.
+- 关于scan_control.may_writepage:ulk:may_writepage If set, writing a dirty page to disk is
+  allowed (only for laptop mode).
+- 接下来要设置scan_control.may_writepage,设置是有条件的
+  #+BEGIN_EXAMPLE
+			/*
+			 * If we've done a decent amount of scanning and
+			 * the reclaim ratio is low, start doing writepage
+			 * even in laptop mode
+			 */
+			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
+			    total_scanned > total_reclaimed+total_reclaimed/2)
+				sc.may_writepage = 1;
+  #+END_EXAMPLE
+  什么情况是做了大量的扫描呢?
+  #+BEGIN_EXAMPLE
+  			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
+  #+END_EXAMPLE
+  什么情况是回收率很低呢?
+  #+BEGIN_EXAMPLE
+			    total_scanned > total_reclaimed+total_reclaimed/2)
+  #+END_EXAMPLE 
+- scan_control.nr_reclaimed会一直在循环里累加的,不是循环一次就清0一次,
+- 对以下的注释不清楚:
+  #+BEGIN_EXAMPLE
+		/*
+		 * We do this so kswapd doesn't build up large priorities for
+		 * example when it is freeing in parallel with allocators. It
+		 * matches the direct reclaim path behaviour in terms of impact
+		 * on zone->*_priority.
+		 */
+		if ((total_reclaimed >= SWAP_CLUSTER_MAX) && (!nr_pages))
+			break;
+  #+END_EXAMPLE
+  nr_pages为0时是kswapd()调用的,在回收的页数大于32时就要退出这个优先级的循环.
+- 如果结点里所有的区有少空闲页的情况,那么就回到开始再回一次页.
+  #+BEGIN_EXAMPLE
+	if (!all_zones_ok) {
+		cond_resched();
+		goto loop_again;
+	}
+  #+END_EXAMPLE
+  all_zones_ok是在回收页的那个循环清的,表示还有少空闲页的区
+  #+BEGIN_EXAMPLE
+			if (nr_pages == 0) {	/* Not software suspend */
+				if (!zone_watermark_ok(zone, order,
+						zone->pages_high, end_zone, 0, 0))
+					all_zones_ok = 0;
+			}
+  #+END_EXAMPLE
+  只有在kswapd()调用的时候才会有回到开头,因为nr_pages为0时才会清all_zones_ok.
+
+  在重新回到开始再回收页的时候已保存了上一次扫描的优先级.
+  #+BEGIN_EXAMPLE
+	for (i = 0; i < pgdat->nr_zones; i++) {
+		struct zone *zone = pgdat->node_zones + i;
+
+		zone->prev_priority = zone->temp_priority;
+	}
   #+END_EXAMPLE 
