@@ -6955,3 +6955,39 @@ http://www.docin.com/p-299963142.html
 肚子是不是压得太厉害了?胃粘膜会不会压坏了
 
 长期处于高度紧张的状态会损坏胃粘膜
+
+==============================[2013-11-06 三]==============================
+
+在svn的diff窗口里用C-x v v 来提交就不会关闭窗口了.
+
+一个.c文件有一个全局变量A,这个.c文件可以包含一个有extern修辞的变量A
+
+普通办公室每人大于或等于4㎡，单间办公室净面积大于或等于1O㎡，另设计绘图室，每人使用面积大于
+或等于6㎡；研究工作室每人使用面积大于或等于5㎡.
+所以以后选公司就看它的办公室大小
+
+办公室老是讨论,而且又有火气的,就不要去了
+
+==============================[2013-11-07 四]==============================
+
+招人时,看简历要看项目经验符合的,不但是上手快,经验更贴近,还有一点就是比较符合应聘者的意向,比
+较稳定.
+
+可以在一个联合体里定义一个结构体类型:
+union swap_header {
+	struct {
+		char reserved[PAGE_SIZE - 10];
+		char magic[10];			/* SWAP-SPACE or SWAPSPACE2 */
+	} magic;
+	struct {
+		char	     bootbits[1024];	/* Space for disklabel etc. */
+		unsigned int version;
+		unsigned int last_page;
+		unsigned int nr_badpages;
+		unsigned int padding[125];
+		unsigned int badpages[1];
+	} info;
+};
+
+http://tieba.baidu.com/p/1512767226
+向前倾的坐姿不仅能安抚整个神经系统，还能使大脑镇定下来。

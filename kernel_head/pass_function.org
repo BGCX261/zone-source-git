@@ -8482,3 +8482,281 @@ free_it:
 		zone->prev_priority = zone->temp_priority;
 	}
   #+END_EXAMPLE 
+** static void cache_reap(void *unused)
+*** mm/slab.c:
+- cache_reap()这个函数是属于PFRA的一部分,但是这个函数只是一个工作队列的回调函
+  数.cache_reap()这个工作是放在keventd_wq这个工作队列里的.
+- 这个函数是用来回收slab allocate cache的.
+- 这个函数会在最后又重新注册自已到工作队列里.
+- 一开始先获取把所有cache链在一起的链表的信号量,这里只是trylock,所以可以知道这个函数不想体
+  眠,但是工作队列的回调函数是可以体眠的.
+
+  如果不成功获取就重新插入到工作队列.
+  #+BEGIN_EXAMPLE
+	if (down_trylock(&cache_chain_sem)) {
+		/* Give up. Setup the next iteration. */
+		schedule_delayed_work(&__get_cpu_var(reap_work), REAPTIMEOUT_CPUC + smp_processor_id());
+		return;
+	}
+  #+END_EXAMPLE
+- 接着就循环所有的在cache_chain里的kmem_cache_t
+- 若kmem_cache_t.flags的SLAB_NO_REAP设置了,那么就不能回收这个cache的slab
+- 先调用drain_array_locked()把array_cache的slab放回cache,同时修改了array_cache.avail的值.这
+  样就可以在回收cache的页时可以多回收一点页.
+- kmem_cache_t里有一个kmem_list3,kmem_list3里有一个next_reap,这个next_reap就是说若要回收这
+  个kmem_cache_t里的slab,那么回收的时间就要晚于next_reap里的时间,这个时间是jiffies值.
+  #+BEGIN_EXAMPLE
+		if(time_after(searchp->lists.next_reap, jiffies))
+			goto next_unlock;
+  #+END_EXAMPLE
+
+  若回收时发现时间已过了,那么就要重新设置往后REAPTIMEOUT_LIST3,就是4s.要注意调用cache_reap
+  的定时时间是REAPTIMEOUT_CPUC,说是2s
+  #+BEGIN_EXAMPLE
+		searchp->lists.next_reap = jiffies + REAPTIMEOUT_LIST3;
+  #+END_EXAMPLE 
+- 除了把本地cache里的一些slab放回到cache之外,还要把共享cache里slab放回到cache.
+  #+BEGIN_EXAMPLE
+
+		if (searchp->lists.shared)
+			drain_array_locked(searchp, searchp->lists.shared, 0);
+  #+END_EXAMPLE
+  只有多核系统lists.shared才会不会为空,ulk:In multiprocessor systems, the function drains
+  the slab shared cache (see the section "Local Caches of Free Slab Objects" in Chapter
+  8);
+- kmem_list3.free_touched设置了表示最近有新的slab加到这个cache里来,ulk:If a new slab has
+  been recently added to the cachethat is, if the free_touched flag of the kmem_list3
+  structure inside the cache descriptor is set.
+
+  若free_touched设置了就不能又马上回收了
+  #+BEGIN_EXAMPLE
+
+		if (searchp->lists.free_touched) {
+			searchp->lists.free_touched = 0;
+			goto next_unlock;
+		}
+  #+END_EXAMPLE
+  free_touched只有在这里清0.所以可以知道在一个cache新加入slab的时候,要第二次回收这个cache
+  时才可以真正能够回收cache里的slab.
+- 从当前的cache里释放大于kmem_cache_t.free_limit/(5*kmem_cache_t.num)的最小整数个
+  slab,kmem_cache_t.num指的是一个slab里有多少个对象,kmem_cache_t.free_limit指的是cache里空
+  闲的slab上限,为什么要这样计算释放的slab数呢?
+- 是从kmem_list3.slabs_free里释放slab的,在之前从drain_array_locked()收回slab是可能通过
+  drain_array_locked()里调用的free_block()来放回slabs_free链表.
+
+  从slabs_free里释放一个slab的步骤就是(1)从slabs_free把该slab删除
+  #+BEGIN_EXAMPLE
+			list_del(&slabp->list);
+  #+END_EXAMPLE
+  (2)从kmem_list3.free_objects里把单个slab所包含的对象数减去.
+  #+BEGIN_EXAMPLE
+			searchp->lists.free_objects -= searchp->num;
+  #+END_EXAMPLE
+  (3)调用slab_destroy()
+- 每处理完一个cache就要调度一次
+  #+BEGIN_EXAMPLE
+next:
+		cond_resched();
+  #+END_EXAMPLE 
+- 把cache_chain链表里所有的cache都处理完之后就会把这个函数重新插入工作队列
+  #+BEGIN_EXAMPLE
+	schedule_delayed_work(&__get_cpu_var(reap_work), REAPTIMEOUT_CPUC + smp_processor_id());
+  #+END_EXAMPLE 
+** void out_of_memory(unsigned int __nocast gfp_mask)
+*** mm/oom_kill.c:
+- 这个函数在少内存时调用来选一进程来杀死
+- 用select_bad_process()找出一个合适的进程.
+- 调用oom_kill_process()把进程杀死.
+** static struct task_struct * select_bad_process(void)
+*** mm/oom_kill.c:
+- 这个函数选一个合适的进程给oom_kill_process()杀死.
+- 有什么条件呢?ulk有说,在select_bad_process()调用的badness()里有判断
+  (1)拥有大量页框
+  #+BEGIN_EXAMPLE
+	/*
+	 * Processes which fork a lot of child processes are likely
+	 * a good choice. We add the vmsize of the childs if they
+	 * have an own mm. This prevents forking servers to flood the
+	 * machine with an endless amount of childs
+	 */
+	list_for_each(tsk, &p->children) {
+		struct task_struct *chld;
+		chld = list_entry(tsk, struct task_struct, sibling);
+		if (chld->mm != p->mm && chld->mm)
+			points += chld->mm->total_vm;
+	}
+  #+END_EXAMPLE
+  (2)不能丢失大量的工作,可以用运行时间判断
+  #+BEGIN_EXAMPLE
+	/*
+	 * CPU time is in tens of seconds and run time is in thousands
+         * of seconds. There is no particular reason for this other than
+         * that it turned out to work very well in practice.
+	 */
+	cpu_time = (cputime_to_jiffies(p->utime) + cputime_to_jiffies(p->stime))
+		>> (SHIFT_HZ + 3);
+
+	if (uptime >= p->stlart_time.tv_sec)
+		run_time = (uptime - p->start_time.tv_sec) >> 10;
+	else
+		run_time = 0;
+
+	s = int_sqrt(cpu_time);
+	if (s)
+		points /= s;
+	s = int_sqrt(int_sqrt(run_time));
+	if (s)
+		points /= s;
+  #+END_EXAMPLE
+  (3)优先级比较低的
+  #+BEGIN_EXAMPLE
+
+	/*
+	 * Niced processes are most likely less important, so double
+	 * their badness points.
+	 */
+	if (task_nice(p) > 0)
+		points *= 2;
+  #+END_EXAMPLE
+  (4)最好不是超级用户的进程
+  #+BEGIN_EXAMPLE
+	/*
+	 * Superuser processes are usually more important, so we make it
+	 * less likely that we kill those.
+	 */
+	if (cap_t(p->cap_effective) & CAP_TO_MASK(CAP_SYS_ADMIN) ||
+				p->uid == 0 || p->euid == 0)
+		points /= 4;
+  #+END_EXAMPLE
+  (5)进程最好不是访问硬件的
+  #+BEGIN_EXAMPLE
+	/*
+	 * We don't want to kill a process with direct hardware access.
+	 * Not only could that mess up the hardware, but usually users
+	 * tend to only have this flag set on applications they think
+	 * of as important.
+	 */
+	if (cap_t(p->cap_effective) & CAP_TO_MASK(CAP_SYS_RAWIO))
+		points /= 4;
+  #+END_EXAMPLE
+
+  以上的条件是通过加权来确定这个进程是合适程度.加权值返回给select_bad_process()
+- select_bad_process()通过遍历所有的进程找出badness()返回加权值最大的进程来返回给
+  out_of_memory().
+- 进程0(swapper)和进程1(init)是不能被杀死的,task_struct.oomkilladj为OOM_DISABLE时也不能杀
+  死
+  #+BEGIN_EXAMPLE
+		if (p->pid > 1 && p->oomkilladj != OOM_DISABLE) {
+  #+END_EXAMPLE 
+** static struct mm_struct *oom_kill_process(struct task_struct *p)
+*** mm/oom_kill.c:
+- The oom_kill_process( )function also kills all clones that share the same memory
+  descriptor with the selected victim.
+- 这个函数不会先把进程p给杀死,而是找一个子进程来杀死,
+- 因为杀一个子进程是与其父进程共享内存描述符的,那么就不选择这个子进程
+  #+BEGIN_EXAMPLE
+		if (c->mm == p->mm)
+			continue;
+  #+END_EXAMPLE 
+** void grab_swap_token(void)
+*** mm/thrash.c:
+- 调用这个函数是用来获取swap token的,以使该进程的页不被换出去.
+- 关于swap token,swap token只有一个,在同一时刻只有一个进程可以获取它.
+
+  在初始化的时候是把swap token给了init进程
+  #+BEGIN_EXAMPLE
+struct mm_struct * swap_token_mm = &init_mm;
+  #+END_EXAMPLE 
+  可以通过判断进程的task_struct.mm是否等于swap_token_mm就可以知道该进程有没有获取swap
+  token了.
+- 这个函数只有filemap_nopage()和do_swap_page()调用
+- 如果在已获得swap token的情况下还去获取swap token,那么就会设置task_struct.recent_pagein.
+  task_struct.recent_pagein只在should_release_swap_token()里清
+  零,should_release_swap_token()清零的原因,0表示就仅仅清零,1表示没有两次连续调用
+  grab_swap_token()时都是该进程来获取swap token,2表示获取的时间过长了.
+- 注意这个函数是给当前进程获取swap token的,所以要通过看正在拥有swap token的mm是否能够释放
+  swap token,这要看should_release_swap_token()的返回值,若是返回0就不会释放swap token,若是
+  返回1或2就会释放swap token并给当前的进程.
+
+  所以只有在已获得swap token的进程连续两次获取swap token且没有超过swap token的持有时间就不
+  会把swap token给当前进程.
+- 关于swap_token_check这个全局变量,只有一个这个函数会读取这个值来使用,就是只有时间超过
+  swap_token_check的时间才可以去对swap_token_mm操作.
+
+  swap_token_check在这个函数修改和在__put_swap_token()修改.
+- 关于swap_token_timeout,只有在修改了swap_token_mm时才会修改
+  #+BEGIN_EXAMPLE
+			swap_token_timeout = jiffies + swap_token_default_timeout;
+			swap_token_mm = current->mm;
+  #+END_EXAMPLE
+- 关于task_struct.mm.swap_token_time,通过分析代码,swap_token_time的意思是进程交出(释
+  放)swap_token_mm的时间
+  #+BEGIN_EXAMPLE
+		if ((reason = should_release_swap_token(mm))) {
+			unsigned long eligible = jiffies;
+			if (reason == SWAP_TOKEN_TIMED_OUT) {
+				eligible += swap_token_default_timeout;
+			}
+			mm->swap_token_time = eligible;
+  #+END_EXAMPLE
+  为什么在超时的时候释放会加多一个swap_token_default_timeout呢?可能是为了惩罚吧.所以释改时
+  间是有可能大于当前时间的.
+
+  所以若一个进程想获得swap_token_mm,但是它不久前是在超时的情况下释放swap_token_mm的,且释放
+  的时间还没有到当前获得swap_token_mm的进程的超时时间
+  #+BEGIN_EXAMPLE
+		/* ... or if we recently held the token. */
+		if (time_before(jiffies, current->mm->swap_token_time))
+			return;
+  #+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+			swap_token_timeout = jiffies + swap_token_default_timeout;
+			swap_token_mm = current->mm;
+  #+END_EXAMPLE 
+- 在两个地方调用这个函数,
+
+  一个是filemap_nopage()发现的页不是page cache里要从disk去读,
+
+  另一个是do_swap_page()从swap area里读一个新的页.
+
+  所以都是从disk里读数据时才会获得swap token.
+
+** not function
+*** 17.4
+- 有三种页是要用到swap的,
+
+  1.进程的匿名页(在匿名区里的页)(用户态的堆和栈)
+
+  2.进程的 _私有_ 内存映射的 _脏_ 页
+
+  3.IPC共享内存区的页
+
+- swapping是使用页表项的Present位来确定页不在内存里的,若页不在内存里,那么页表项里的其它位
+  就给swapping用来确定页是放在swapping里的哪个地方.
+- 什么是swap area:The pages swapped out from memory are stored in a swap area, which may
+  be implemented either as a disk partition of its own or as a file included in a larger
+  partition.
+- swap area的第一页是保存swap area信息的,这些信息保存在union swap_header里,这个联合体的大
+  小是一个页的大小,回为联合体里的magic结构体的大小是一个页的大小.
+
+  至于为什么要用联合体来表示呢?可能是因为想达到在一个页的最后10个字节保存10个字符来说明这
+  个swap area是以一个文件的形式存在还是以一个分区的形式存在;
+
+  那又为什么要在页的最后保存而不是在开头保存呢?可能是因为当一个swap area是一个分区的时候要
+  用到前面的1024个字节作特殊的用途
+  #+BEGIN_EXAMPLE
+union swap_header {
+	struct {
+		char reserved[PAGE_SIZE - 10];
+		char magic[10];			/* SWAP-SPACE or SWAPSPACE2 */
+	} magic;
+	struct {
+		char	     bootbits[1024];	/* Space for disklabel etc. */
+		unsigned int version;
+		unsigned int last_page;
+		unsigned int nr_badpages;
+		unsigned int padding[125];
+		unsigned int badpages[1];
+	} info;
+};
+  #+END_EXAMPLE 
