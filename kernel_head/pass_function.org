@@ -8759,4 +8759,125 @@ union swap_header {
 		unsigned int badpages[1];
 	} info;
 };
+  #+END_EXAMPLE
+
+  bootbits:Not used by the swapping algorithm; this field corresponds to the first 1,024
+  bytes of the swap area, which may store partition data, disk labels, and so on.
+
+  version是swapping算法的版本号.
+
+  nr_badpages:因为disk是有可能有坏块的,所以要用这个成员来说明swap area里有多少个坏块.
+
+  struct swap_extent指定了从哪个页到哪个页是连续的.是不是用来处理坏块的呢?好像也不是,ulk:An
+  ordered list of the extents that compose a swap area is created when activating the swap
+  area itself. A swap area stored in a disk partition is composed of just one extent;
+  conversely, a swap area stored in a regular file can be composed of several extents,
+  because the filesystem may not have allocated the whole file in contiguous blocks on
+  disk.
+
+  swapping算法最重要的是在换出时能尽量把页放到连续的块里.
+
+  swapping算法是这样把页分布到不同的swap area的:先在具有相同的且是最高优先级的swap area里
+  扫描来找空slot,找不到再到低优先级的swap area里找.在同级里循环是不让其中一个过载.
+
+  应该是按swap area的快慢来定优先级的.
+
+  swap_info是一个数组,包含了所有的用来描述 _激活_ 的swap area的swap_info_struct.
+
+  nr_swapfiles:因为swap_info这个数组是固定分配的,所以要用nr_swapfiles来说明数组里有多少个
+  有效的元素.
+
+  swap_info_struct.next的作用是在换出页时要把next表示的swap_info数组下标里的元素作为下一个
+  换出页的swap area.
+
+  swap_list不知道用来作什么的.
+
+  swap_info_struct.max指swap area总的页数,swap_info_struct.pags指swap area可用的slot,不同
+  是因为第一个slot不用且有一些坏块.
+
+  nr_swap_pages这个全局变量包含的是在所有swap area里free的且没有坏的slot的个数.
+
+  total_swap_pages这个全局变量包含的是在所有的swap area里所有没有坏的slot的个数.
+
+  所以要定位一个slot,只要两个东西,一个是在swap_info的索引,一个是在swap area的slot的索引.
+** int swap_duplicate(swp_entry_t entry)
+*** mm/swapfile.c:
+- ulk:The swap_duplicate( ) function is usually invoked while trying to swap out an
+  already swapped-out page.因为一个页框可能是属于多个地址空间的,所以有可能被多次换出.
+
+  页被正真换出到disk是第一次被换出时,而接下来的换出只是增加该页在swap_info_struct.swap_map
+  数组里对应的值.
+- 这个函数就是找到entry对应的slot的swap_map的元素递增
+** asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
+*** mm/swapfile.c:
+- 这个函数是打开一个swap area,这个swap area是由specialfile指定的文件或分区.
+- 至于打开的这个swap area是在swap_info的哪个元素呢?就是下标最小的,没有被使用的元素
+  #+BEGIN_EXAMPLE
+	for (type = 0 ; type < nr_swapfiles ; type++,p++)
+		if (!(p->flags & SWP_USED))
+			break;
+  #+END_EXAMPLE
+  注意是不超过nr_swapfiles的,若第nr_swapfiles被使用了,所面会使用第nr_swapfiles+1个.
+  #+BEGIN_EXAMPLE
+	if (type >= nr_swapfiles)
+		nr_swapfiles = type+1;
   #+END_EXAMPLE 
+  现在发现nr_swapfiles只有加没有减的.
+
+- 不明白下面的检查有什么作用
+  #+BEGIN_EXAMPLE
+	/*
+	 * Test if adding another swap device is possible. There are
+	 * two limiting factors: 1) the number of bits for the swap
+	 * type swp_entry_t definition and 2) the number of bits for
+	 * the swap type in the swap ptes as defined by the different
+	 * architectures. To honor both limitations a swap entry
+	 * with swap offset 0 and swap type ~0UL is created, encoded
+	 * to a swap pte, decoded to a swp_entry_t again and finally
+	 * the swap type part is extracted. This will mask all bits
+	 * from the initial ~0UL that can't be encoded in either the
+	 * swp_entry_t or the architecture definition of a swap pte.
+	 */
+	if (type > swp_type(pte_to_swp_entry(swp_entry_to_pte(swp_entry(~0UL,0))))) {
+		swap_list_unlock();
+		goto out;
+	}
+  #+END_EXAMPLE 
+- 参数swap_flags的作用是指定所打开的这个swap area是不是使用了优先级且指定了优先级是多
+  少:swap_flags用一个位指定使用不使用优先级,其它的31个位指定优先级.
+  #+BEGIN_EXAMPLE
+	if (swap_flags & SWAP_FLAG_PREFER) {
+		p->prio =
+		  (swap_flags & SWAP_FLAG_PRIO_MASK)>>SWAP_FLAG_PRIO_SHIFT;
+  #+END_EXAMPLE
+  若没有设置SWAP_FLAG_PREFER,那么就使用这个函数的静态变量least_prioprity来确定它的优先级是
+  多少.
+
+  least_prioprity的使用方法是:least_prioprity从0开始,调用一次过程中若SWAP_FLAG_PREFER没有
+  设置且swap area已成功打开就把least_prioprity _自减_.
+  #+BEGIN_EXAMPLE
+	} else {
+		p->prio = --least_priority;
+	}
+  #+END_EXAMPLE 
+- 接下来就是打开specialfile指定的文件了
+  #+BEGIN_EXAMPLE
+	swap_list_unlock();
+	name = getname(specialfile);
+	error = PTR_ERR(name);
+	if (IS_ERR(name)) {
+		name = NULL;
+		goto bad_swap_2;
+	}
+	swap_file = filp_open(name, O_RDWR|O_LARGEFILE, 0);
+	error = PTR_ERR(swap_file);
+	if (IS_ERR(swap_file)) {
+		swap_file = NULL;
+		goto bad_swap_2;
+	}
+
+	p->swap_file = swap_file;
+	mapping = swap_file->f_mapping;
+	inode = mapping->host;
+  #+END_EXAMPLE 
+- 接下来就是检查
