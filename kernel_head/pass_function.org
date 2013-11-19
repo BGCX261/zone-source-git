@@ -8880,4 +8880,904 @@ union swap_header {
 	mapping = swap_file->f_mapping;
 	inode = mapping->host;
   #+END_EXAMPLE 
-- 接下来就是检查
+- 接下来就是检查这个被打开的作为swap area的文件是不是已经被当作swap area的文件了,
+  #+BEGIN_EXAMPLE
+	error = -EBUSY;
+	for (i = 0; i < nr_swapfiles; i++) {
+		struct swap_info_struct *q = &swap_info[i];
+
+		if (i == type || !q->swap_file)
+			continue;
+		if (mapping == q->swap_file->f_mapping)
+			goto bad_swap;
+	}
+  #+END_EXAMPLE 
+- 若是swap area是一个块设备,(1)那么就调用bd_claim()来独占这个设备,(2)接着就是重新设置设备
+  的块大小block_device.bd_block_size为页的大小,在设置之前要把原来的块大小保存起来,保存在
+  swap_info_struct.old_block_size里,swap_info_struct.old_block_size就是这样使用的.
+  #+BEGIN_EXAMPLE
+	if (S_ISBLK(inode->i_mode)) {
+		bdev = I_BDEV(inode);
+		error = bd_claim(bdev, sys_swapon);
+		if (error < 0) {
+			bdev = NULL;
+			goto bad_swap;
+		}
+		p->old_block_size = block_size(bdev);
+		error = set_blocksize(bdev, PAGE_SIZE);
+		if (error < 0)
+			goto bad_swap;
+		p->bdev = bdev;
+	}
+  #+END_EXAMPLE 
+- 若swap area是一个文件,也要有bd_claim()相似的独占检查
+  #+BEGIN_EXAMPLE
+	} else if (S_ISREG(inode->i_mode)) {
+		p->bdev = inode->i_sb->s_bdev;
+		down(&inode->i_sem);
+		did_down = 1;
+		if (IS_SWAPFILE(inode)) {
+			error = -EBUSY;
+			goto bad_swap;
+		}
+  #+END_EXAMPLE 
+- 接下来就是获取swap area的第一个页,这个页存放的就是swap_head的数据,这些数据应该是在创建
+  swap area时就已经写入到这个页里了,把获取的第一个页的数据所在内存的页框的首地址赋给
+  swap_header.
+  #+BEGIN_EXAMPLE
+	/*
+	 * Read the swap header.
+	 */
+	if (!mapping->a_ops->readpage) {
+		error = -EINVAL;
+		goto bad_swap;
+	}
+	page = read_cache_page(mapping, 0,
+			(filler_t *)mapping->a_ops->readpage, swap_file);
+	if (IS_ERR(page)) {
+		error = PTR_ERR(page);
+		goto bad_swap;
+	}
+	wait_on_page_locked(page);
+	if (!PageUptodate(page))
+		goto bad_swap;
+	kmap(page);
+	swap_header = page_address(page);
+  #+END_EXAMPLE 
+- swap_header.magic.magic为SWAP-SPACE这个版本不再被支持
+  #+BEGIN_EXAMPLE
+	if (!memcmp("SWAP-SPACE",swap_header->magic.magic,10))
+		swap_header_version = 1;
+	else if (!memcmp("SWAPSPACE2",swap_header->magic.magic,10))
+		swap_header_version = 2;
+	else {
+		printk("Unable to find swap-space signature\n");
+		error = -EINVAL;
+		goto bad_swap;
+	}
+	
+	switch (swap_header_version) {
+	case 1:
+		printk(KERN_ERR "version 0 swap is no longer supported. "
+			"Use mkswap -v1 %s\n", name);
+		error = -EINVAL;
+		goto bad_swap;
+  #+END_EXAMPLE 
+- 还要检查swap header的子版本号
+  #+BEGIN_EXAMPLE
+		/* Check the swap header's sub-version and the size of
+                   the swap file and bad block lists */
+		if (swap_header->info.version != 1) {
+			printk(KERN_WARNING
+			       "Unable to handle swap header version %d\n",
+			       swap_header->info.version);
+			error = -EINVAL;
+			goto bad_swap;
+		}
+  #+END_EXAMPLE
+- 最后就是找出这个swap area的允许多少个页,swap_info_struct.lowest_bit:First page slot to
+  be scanned when searching for a free one.
+
+  swap_info_struct.highest_bit:Last page slot to be scanned when searching for a free one.
+
+  swap_head.info.last_page:Last page slot that is effectively usable.
+
+  #+BEGIN_EXAMPLE
+
+		p->lowest_bit  = 1;
+		/*
+		 * Find out how many pages are allowed for a single swap
+		 * device. There are two limiting factors: 1) the number of
+		 * bits for the swap offset in the swp_entry_t type and
+		 * 2) the number of bits in the a swap pte as defined by
+		 * the different architectures. In order to find the
+		 * largest possible bit mask a swap entry with swap type 0
+		 * and swap offset ~0UL is created, encoded to a swap pte,
+		 * decoded to a swp_entry_t again and finally the swap
+		 * offset is extracted. This will mask all the bits from
+		 * the initial ~0UL mask that can't be encoded in either
+		 * the swp_entry_t or the architecture definition of a
+		 * swap pte.
+		 */
+		maxpages = swp_offset(pte_to_swp_entry(swp_entry_to_pte(swp_entry(0,~0UL)))) - 1;
+		if (maxpages > swap_header->info.last_page)
+			maxpages = swap_header->info.last_page;
+		p->highest_bit = maxpages - 1;
+  #+END_EXAMPLE 
+- 如果有坏的页就要给坏的页标上SWAP_MAP_BAD
+  #+BEGIN_EXAMPLE
+		/* OK, set up the swap map and apply the bad block list */
+		if (!(p->swap_map = vmalloc(maxpages * sizeof(short)))) {
+			error = -ENOMEM;
+			goto bad_swap;
+		}
+
+		error = 0;
+		memset(p->swap_map, 0, maxpages * sizeof(short));
+		for (i=0; i<swap_header->info.nr_badpages; i++) {
+			int page = swap_header->info.badpages[i];
+			if (page <= 0 || page >= swap_header->info.last_page)
+				error = -EINVAL;
+			else
+				p->swap_map[page] = SWAP_MAP_BAD;
+		}
+  #+END_EXAMPLE
+
+  通过swap_header.info.badpages数组来看哪个页是坏页.
+- 接下来就是调用setup_swap_extents()给这个swap_info_struct来建立swap extent
+- 接下来就是设置这个swap area的优先级
+  #+BEGIN_EXAMPLE
+	/* insert swap space into swap_list: */
+	prev = -1;
+	for (i = swap_list.head; i >= 0; i = swap_info[i].next) {
+		if (p->prio >= swap_info[i].prio) {
+			break;
+		}
+		prev = i;
+	}
+	p->next = i;
+	if (prev < 0) {
+		swap_list.head = swap_list.next = p - swap_info;
+	} else {
+		swap_info[prev].next = p - swap_info;
+	}
+  #+END_EXAMPLE
+  所有的swap area的swap_info_struct都放在swap_info这个数组里,且放的顺序没有规律,要把它们按
+  优先级排序起来,使用了swap_info_struct.next成员,这个是成员表示的是下一个同级或低一级的
+  swap area所在swap_info数组里的位置的下标,注意是同级或低一级的,所以所有的swap_info_struct
+  是一条线连起来的,而不是同级的一条线,低一级的另一条线.
+** int bd_claim(struct block_device *bdev, void *holder)
+*** fs/block_dev.c:
+- 这个函数是处理block_device.bd_holder/bd_contains的
+- block_device.bd_holder是主要由这个函数和对应的bd_release()来处理,处理就只给
+  blkdev_close()使用一次.
+- 关于bd_contains,bd_holder和这个函数的说明:ulk:If the block device descriptor refers to a
+  disk partition, the bd_contains field points to the descriptor of the block device
+  associated with the whole disk, while the bd_part field points to the hd_struct
+  partition descriptor (see the section "Representing Disks and Disk Partitions" earlier
+  in this chapter). Otherwise, if the block device descriptor refers to a whole disk, the
+  bd_contains field points to the block device descriptor itself, and the bd_part_count
+  field records how many times the partitions on the disk have been opened.
+  
+  The bd_holder field stores a linear address representing the holder of the block
+  device. The holder is not the block device driver that services the I/O data transfers
+  of the device; rather, it is a kernel component that makes use of the device and has
+  exclusive, special privileges (for instance, it can freely use the bd_private field of
+  the block device descriptor). Typically, the holder of a block device is the filesystem
+  mounted over it. Another common case occurs when a block device file is opened for
+  exclusive access: the holder is the corresponding file object.
+  
+  The bd_claim( ) function sets the bd_holder field with a specified address; conversely,
+  the bd_release( ) function resets the field to NULL. Be aware, however, that the same
+  kernel component can invoke bd_claim( ) many times; each invocation increases the
+  bd_holders field. To release the block device, the kernel component must invoke
+  bd_release( ) a corresponding number of times.
+
+  关于bd_contains,也就是若block_device描述符是一个分区的描述符,那么bd_contains指向的是该分区所在的disk的
+  block_device描述符.若block_device描述符是一个disk的block_device的描述符,那么
+  block_device.bd_contains指向自已的block_device.
+
+  关于bd_holder,它保存holder的线性地址,这个线性地址不是该block device的驱动,而是具在独占
+  使用这个block_device的kernel component.如sys_swapon()函数就是这样的一个holder.bd_holders
+  是bd_holder的计数器.
+
+- 对于以下的代码有两种不同的结果
+  #+BEGIN_EXAMPLE
+	if (res==0) {
+		/* note that for a whole device bd_holders
+		 * will be incremented twice, and bd_holder will
+		 * be set to bd_claim before being set to holder
+		 */
+		bdev->bd_contains->bd_holders ++;
+		bdev->bd_contains->bd_holder = bd_claim;
+		bdev->bd_holders++;
+		bdev->bd_holder = holder;
+	}
+  #+END_EXAMPLE
+
+  若bdev是一分区的block_device,那么分区的bd_holders和包含这个分区的disk的bd_holders各自增
+  加1,否则,disk的bd_holders就会加2.
+
+  若bdev是一分区的block_device,那么分区的bd_holder指向参数holder,包含这个分区的disk的
+  bd_holder指向bd_claim这个函数,否则,disk的bd_holder指向参数holder.简而言之就是参数holder
+  一定是被引用的,有分区时分区就引用否则就disk引用.
+** static int setup_swap_extents(struct swap_info_struct *sis)
+*** mm/swapfile.c:
+- 这个函数是给一个swap area建立一个swap extents list的
+- 无论swap area是一个文件还是一个块设备,都是以 PAGE_SIZE 来操作
+- swap_info_struct.max:Size of swap area in pages.是该架构能寻址到的最大的swap entry号和
+  swap_head.info.last_page这两个中的最小的那个值
+- 如果swap area是一个块设备,那么就建一个swap extent就可以了,add_swap_extent()后面有介绍
+  #+BEGIN_EXAMPLE
+	inode = sis->swap_file->f_mapping->host;
+	if (S_ISBLK(inode->i_mode)) {
+		ret = add_swap_extent(sis, 0, sis->max, 0);
+		goto done;
+	}
+  #+END_EXAMPLE
+- bmap()通过在文件里的块号计算出对应的块设备的块号.
+  #+BEGIN_EXAMPLE
+		first_block = bmap(inode, probe_block);
+		if (first_block == 0)
+			goto bad_bmap;
+  #+END_EXAMPLE
+  得到的first_block必须为与页大小对齐,所以有以下的代码
+  #+BEGIN_EXAMPLE
+
+		/*
+		 * It must be PAGE_SIZE aligned on-disk
+		 */
+		if (first_block & (blocks_per_page - 1)) {
+			probe_block++;
+			goto reprobe;
+		}
+  #+END_EXAMPLE
+  当不与页大小对齐时就会增加probe_block回到循环的开始,那么又可以用bmap()来计算下一块设备的
+  逻辑块号了.为什么要对齐呢?应该是为了方便计算吧.
+- 让first_block这个块号与页大小对齐之外,还需要从这个块往后的一定的块数(这些块数的大小加起
+  来是一个页的大小)是连续的,因为一个文件不一定是用连续的块来存放的.
+  #+BEGIN_EXAMPLE
+		for (block_in_page = 1; block_in_page < blocks_per_page;
+					block_in_page++) {
+			sector_t block;
+
+			block = bmap(inode, probe_block + block_in_page);
+			if (block == 0)
+				goto bad_bmap;
+			if (block != first_block + block_in_page) {
+				/* Discontiguity */
+				probe_block++;
+				goto reprobe;
+			}
+		}
+  #+END_EXAMPLE 
+- 有了之前的检查,first_block是一个合适的块,这时就可以用add_swap_extent()把这些块作为一个
+  swap slot来加到swap extent list里,因为add_swap_extent()里若发现被加的slot可以合并到某个
+  swap extent的话就会合并
+  #+BEGIN_EXAMPLE
+		/*
+		 * We found a PAGE_SIZE-length, PAGE_SIZE-aligned run of blocks
+		 */
+		ret = add_swap_extent(sis, page_no, 1,
+				first_block >> (PAGE_SHIFT - blkbits));
+  #+END_EXAMPLE 
+- 从以下的代码可以看出,swap_info_struct.max就是swap area里有效的slot
+  #+BEGIN_EXAMPLE
+	if (page_no == 0)
+		ret = -EINVAL;
+	sis->max = page_no;
+	sis->highest_bit = page_no - 1;
+  #+END_EXAMPLE 
+- 所以这个函数主要是给swap area建立swap extent list的,并设置
+  swap_info_struct.max,
+  swap_info_struct.highest_bit,
+  swap_info_struct.curr_swap_extent.
+- 注意swap_info_struct.max,swap_info_struct.highest_bit这两个变量是在swap area是文件时才会
+  设置的,那么若是块设备又是怎么设置的呢?在sys_swapon()里无论是文件还是块设备都设置了这两个
+  成员,所以是块设备的话在这个函数里也不用设置了.
+- 在sys_swapon()调用这个函数之前已经设置了swap_info_struct.pages:Number of usable page
+  slots.所以可以推断出在setup_swap_extents()函数里添加到swap extent里的slot数一定是
+  swap_info_struct.pages.
+
+** static int add_swap_extent(struct swap_info_struct *sis, unsigned long start_page, unsigned long nr_pages, sector_t start_block)
+*** mm/swapfile.c:
+- 调用这个函数把一段连续的块加入到swap extent list里.
+- 首先要看这一段连续的块能不能与原来的swap extent合并,只要原来的list里有一个extent的最后一
+  个block和page是与被加的连续的块的第一个block和page是连着的就可以合并
+  #+BEGIN_EXAMPLE
+	while (lh != &sis->extent_list) {
+		se = list_entry(lh, struct swap_extent, list);
+		if (se->start_block + se->nr_pages == start_block &&
+		    se->start_page  + se->nr_pages == start_page) {
+			/* Merge it */
+			se->nr_pages += nr_pages;
+			return 0;
+		}
+		lh = lh->next;
+	}
+  #+END_EXAMPLE 
+- swap_extent.start_page和swap_extent.start_block有什么区别吗?start_page可以与
+  swap_extent.nr_pages相加start_block也可以与nr_pages相加.
+
+  在sys_swapon()里,若swap area是一个块设备,那么会把block_device.bd_block_szie设为页的大小.
+- 如果不能合并就新增一个extent list.
+  #+BEGIN_EXAMPLE
+
+	/*
+	 * No merge.  Insert a new extent, preserving ordering.
+	 */
+	new_se = kmalloc(sizeof(*se), GFP_KERNEL);
+	if (new_se == NULL)
+		return -ENOMEM;
+	new_se->start_page = start_page;
+	new_se->nr_pages = nr_pages;
+	new_se->start_block = start_block;
+  #+END_EXAMPLE 
+- 要把新增的swap extent按块的顺序加到extent list里
+  #+BEGIN_EXAMPLE
+	lh = sis->extent_list.prev;	/* The lowest block */
+	while (lh != &sis->extent_list) {
+		se = list_entry(lh, struct swap_extent, list);
+		if (se->start_block > start_block)
+			break;
+		lh = lh->prev;
+	}
+	list_add_tail(&new_se->list, lh);
+  #+END_EXAMPLE 
+** asmlinkage long sys_swapoff(const char __user * specialfile)
+*** mm/swapfile.c:
+- 先打开参数specialfile指定的swap area文件.
+  #+BEGIN_EXAMPLE
+
+	pathname = getname(specialfile);
+	err = PTR_ERR(pathname);
+	if (IS_ERR(pathname))
+		goto out;
+
+	victim = filp_open(pathname, O_RDWR|O_LARGEFILE, 0);
+	putname(pathname);
+	err = PTR_ERR(victim);
+	if (IS_ERR(victim))
+		goto out;
+  #+END_EXAMPLE
+- 成功打开后就要找出swap_info数组里与该文件对应的swap_info_struct.
+
+  找的方法是用swap_info_struct.swap_file.f_mapping与file.f_mapping比较,不能用
+  swap_info_struct.swap_file与file比较.
+  #+BEGIN_EXAMPLE
+	mapping = victim->f_mapping;
+	prev = -1;
+	swap_list_lock();
+	for (type = swap_list.head; type >= 0; type = swap_info[type].next) {
+		p = swap_info + type;
+		if ((p->flags & SWP_ACTIVE) == SWP_ACTIVE) {
+			if (p->swap_file->f_mapping == mapping)
+				break;
+		}
+		prev = type;
+	}
+  #+END_EXAMPLE 
+- 接着就看有没有足够的内存可以把swap area的页全部换入.
+  #+BEGIN_EXAMPLE
+	if (!security_vm_enough_memory(p->pages))
+		vm_unacct_memory(p->pages);
+	else {
+		err = -ENOMEM;
+		swap_list_unlock();
+		goto out_dput;
+	}
+  #+END_EXAMPLE 
+- 接着就可以把找到的swap_info_struct从swap_info数组里删除了.删除的方法就是从链表里脱掉而已.
+  #+BEGIN_EXAMPLE
+	if (prev < 0) {
+		swap_list.head = p->next;
+	} else {
+		swap_info[prev].next = p->next;
+	}
+  #+END_EXAMPLE
+- SWP_WRITEOK:1 if it is possible to write into the swap area; 0 if the swap area is
+  read-only (it is being activated or inactivated).
+  #+BEGIN_EXAMPLE
+	p->flags &= ~SWP_WRITEOK;
+  #+END_EXAMPLE 
+- 设置task_struct.flag的PF_SWAPOFF表示这个进程正在换入一个swap area所有slot.
+  #+BEGIN_EXAMPLE
+	current->flags |= PF_SWAPOFF;
+	err = try_to_unuse(type);
+	current->flags &= ~PF_SWAPOFF;
+  #+END_EXAMPLE 
+- 如果不能把所有的页换入,那么就不能删除这个swap area,那么就要撤回之前的操作,如恢复
+  swap_info数组等
+- 若把所有的slot都换入了,那么就把swap extent list给删掉.
+** static int try_to_unuse(unsigned int type)
+*** mm/swapfile.c:
+- 在swap area里找出一个正在被用的slot,用find_next_to_unuse(),找的方法是用
+  swap_info_struct.swap_map[]的slot计数来判断.
+- 若进程接收到信号就退出,为什么要这样子做呢?
+  #+BEGIN_EXAMPLE
+		if (signal_pending(current)) {
+			retval = -EINTR;
+			break;
+		}
+  #+END_EXAMPLE
+- read_swap_cache_async()后面在介绍,在没有相应的swap entry的时候会继续下一个swap entry,在
+  没有内存的时候会退出换入操作.
+  #+BEGIN_EXAMPLE
+		page = read_swap_cache_async(entry, NULL, 0);
+		if (!page) {
+			/*
+			 * Either swap_duplicate() failed because entry
+			 * has been freed independently, and will not be
+			 * reused since sys_swapoff() already disabled
+			 * allocation from here, or alloc_page() failed.
+			 */
+			if (!*swap_map)
+				continue;
+			retval = -ENOMEM;
+			break;
+		}
+  #+END_EXAMPLE 
+- 不知道下面代码什么意思
+  #+BEGIN_EXAMPLE
+		/*
+		 * Don't hold on to start_mm if it looks like exiting.
+		 */
+		if (atomic_read(&start_mm->mm_users) == 1) {
+			mmput(start_mm);
+			start_mm = &init_mm;
+			atomic_inc(&init_mm.mm_users);
+		}
+  #+END_EXAMPLE
+  是不是说start_mm.mm_users为1的时候就只有这个函数在使用这个mm_struct?若是这样的话就没有必
+  要再扫描这个mm_struct了,但是为什么要重新扫描呢,把start_mm改成init_mm呢?
+- try_to_unuse()和do_swap_page()可能会竞争,所以要把页给锁起来
+  #+BEGIN_EXAMPLE
+
+		/*
+		 * Wait for and lock page.  When do_swap_page races with
+		 * try_to_unuse, do_swap_page can handle the fault much
+		 * faster than try_to_unuse can locate the entry.  This
+		 * apparently redundant "wait_on_page_locked" lets try_to_unuse
+		 * defer to do_swap_page in such a case - in some tests,
+		 * do_swap_page and try_to_unuse repeatedly compete.
+		 */
+		wait_on_page_locked(page);
+		wait_on_page_writeback(page);
+		lock_page(page);
+		wait_on_page_writeback(page);
+  #+END_EXAMPLE
+  这段代码好像有点问题,就是不能保证是try_to_unuse()把页给锁起来的,还是页的PG_locked的理解
+  有错?
+- 是不是没有一个mm_struct的指针引用了一个mm_struct时就会增加mm_struct.mm_users呢?就好像下
+  面的代码,start_mm就的mm_users就被增加了两次
+  #+BEGIN_EXAMPLE
+		if (*swap_map > 1) {
+			int set_start_mm = (*swap_map >= swcount);
+			struct list_head *p = &start_mm->mmlist;
+			struct mm_struct *new_start_mm = start_mm;
+			struct mm_struct *prev_mm = start_mm;
+			struct mm_struct *mm;
+
+			atomic_inc(&new_start_mm->mm_users);
+			atomic_inc(&prev_mm->mm_users);
+			spin_lock(&mmlist_lock);
+			while (*swap_map > 1 && !retval &&
+					(p = p->next) != &start_mm->mmlist) {
+				mm = list_entry(p, struct mm_struct, mmlist);
+				if (atomic_inc_return(&mm->mm_users) == 1) {
+					atomic_dec(&mm->mm_users);
+					continue;
+				}
+  #+END_EXAMPLE
+- 接下来就是循环整个mm链表来找出所有引用这个被换入页的pte页表项,对于每一个mm_struct使用
+  unuse_mm()来处理.下面有介绍.
+- 不知道下面的代码的原因
+  #+BEGIN_EXAMPLE
+		/*
+		 * If a reference remains (rare), we would like to leave
+		 * the page in the swap cache; but try_to_unmap could
+		 * then re-duplicate the entry once we drop page lock,
+		 * so we might loop indefinitely; also, that page could
+		 * not be swapped out to other storage meanwhile.  So:
+		 * delete from cache even if there's another reference,
+		 * after ensuring that the data has been saved to disk -
+		 * since if the reference remains (rarer), it will be
+		 * read from disk into another page.  Splitting into two
+		 * pages would be incorrect if swap supported "shared
+		 * private" pages, but they are handled by tmpfs files.
+		 *
+		 * Note shmem_unuse already deleted a swappage from
+		 * the swap cache, unless the move to filepage failed:
+		 * in which case it left swappage in cache, lowered its
+		 * swap count to pass quickly through the loops above,
+		 * and now we must reincrement count to try again later.
+		 */
+		if ((*swap_map > 1) && PageDirty(page) && PageSwapCache(page)) {
+			struct writeback_control wbc = {
+				.sync_mode = WB_SYNC_NONE,
+			};
+
+			swap_writepage(page, &wbc);
+			lock_page(page);
+			wait_on_page_writeback(page);
+		}
+  #+END_EXAMPLE 
+** static int unuse_mm(struct mm_struct *mm,swp_entry_t entry, struct page *page)
+*** mm/swapfile.c:
+- 这个函数就是对在mm.mmap链表里的所有vm_area都调用unuse_vma()把该vm_area里有虚拟地址对应的
+  页表项是entry的项改成引用page页.在调用unuse_vma()之前要先判断vm_area.anon_vma是不是空,不
+  为空才可以调用,也就是说该区是匿名区才可以调用.
+- 这个函数通过层层调
+  用:unuse_mm()->unuse_pud_range()->unuse_pmd_range()->unuse_pte_range()->unuse_pte()->set_pte_at()
+  把entry对应的页表项改成引用page.同时unuse_pte()还调用了swap_free()把
+  swap_info_struct.swap_map里entry对应的计数减1.
+** struct page *read_swap_cache_async(swp_entry_t entry, struct vm_area_struct *vma, unsigned long addr)
+*** mm/swap_state.c:
+- ulk:The read_swap_cache_async( ) function is invoked whenever the kernel must swap in a
+  page.
+- 不管有多少个swap area都只有一个radix树是包含所有的swap cache的,所以任何一个swap area的
+  slot对应swap page的是使用swp_entry()来生成的,swp_entry()使用了swap area类型和对应的slot
+  号.
+- 先在swapper_space的radix树里找出entry对应的页.若找到就返回这个页.
+  #+BEGIN_EXAMPLE
+		found_page = find_get_page(&swapper_space, entry.val);
+		if (found_page)
+			break;
+  #+END_EXAMPLE 
+- 若没找到就分配一个
+  #+BEGIN_EXAMPLE
+
+		/*
+		 * Get a new page to read into from swap.
+		 */
+		if (!new_page) {
+			new_page = alloc_page_vma(GFP_HIGHUSER, vma, addr);
+			if (!new_page)
+				break;		/* Out of memory */
+		}
+  #+END_EXAMPLE 
+- 接着就把这个页加到swap cache里,
+  #+BEGIN_EXAMPLE
+		/*
+		 * Associate the page with swap entry in the swap cache.
+		 * May fail (-ENOENT) if swap entry has been freed since
+		 * our caller observed it.  May fail (-EEXIST) if there
+		 * is already a page associated with this entry in the
+		 * swap cache: added by a racing read_swap_cache_async,
+		 * or by try_to_swap_out (or shmem_writepage) re-using
+		 * the just freed swap entry for an existing page.
+		 * May fail (-ENOMEM) if radix-tree node allocation failed.
+		 */
+		err = add_to_swap_cache(new_page, entry);
+  #+END_EXAMPLE
+
+  对于注释里说的返回值是ENOENT时,在add_to_swap_cache()里看出是因为swap_duplicate()返回0时
+  才会返回ENOENT,在swap_duplicate()里返回0的情况在这里应该是对应的
+  swap_info_struct.swap_map[]是0,就是这个slot当前没有被使用
+
+  若add_to_swap_cache()返回的是ENOENT或ENOMEM就返回NULL,就是说若swap entry被释放了或若没有
+  足够的内存了,就会返回NULL.
+- 成功把页加到swap_space之后就可以调用swap_readpage()来把数据从swap area里读到页里.
+** static inline int scan_swap_map(struct swap_info_struct *si)
+*** mm/swapfile.c:
+- ulk:The scan_swap_map( ) function is used to find a free page slot in a given swap
+  area. It acts on a single parameter, which points to a swap area descriptor and returns
+  the index of a free page slot.
+- 终于知道swap_info_struct.lowest_bit和swap_info_struct.highest_bit是什么意思了,就是在
+  swap_info_struct.swap_map[]里比lowest_bit还小的下标是元素都不为空,就是page slot都被占
+  了.highest_bit就是比highest_bit大的下标也都被占用了.有了lowest_bit和highest_bit那么就可
+  以提高搜索空slot速度.
+- 可以执行到got_page标签处就说明offset这个局部变量表示的就是在swap_map[offset]为空
+- swap_info_struct.cluster_nr表示从swap_info_struct.cluster_next这个swap_map的下标开始还有
+  连续swap_info_struct.cluster_nr个空闲的slot可以使用.
+- 在重新获得一个cluster时可以看出一个cluster里的所有page slot都是连续为空的.
+  #+BEGIN_EXAMPLE
+	/* try to find an empty (even not aligned) cluster. */
+	offset = si->lowest_bit;
+ check_next_cluster:
+	if (offset+SWAPFILE_CLUSTER-1 <= si->highest_bit)
+	{
+		unsigned long nr;
+		for (nr = offset; nr < offset+SWAPFILE_CLUSTER; nr++)
+			if (si->swap_map[nr])
+			{
+				offset = nr+1;
+				goto check_next_cluster;
+			}
+		/* We found a completly empty cluster, so start
+		 * using it.
+		 */
+		goto got_page;
+	}
+  #+END_EXAMPLE
+- 若从cluster_next到cluster_nr都为空闲的话,那么为什么下面的代码要判断swap_map相应的下标是
+  否为空呢?
+  #+BEGIN_EXAMPLE
+	if (si->cluster_nr) {
+		while (si->cluster_next <= si->highest_bit) {
+			offset = si->cluster_next++;
+			if (si->swap_map[offset])
+				continue;
+			si->cluster_nr--;
+			goto got_page;
+		}
+	}
+	si->cluster_nr = SWAPFILE_CLUSTER;
+  #+END_EXAMPLE 
+- 若在cluster_next到cluster_nr之间没有找到空闲的slot,那么就尝试获取一个cluster
+  #+BEGIN_EXAMPLE
+	/* try to find an empty (even not aligned) cluster. */
+	offset = si->lowest_bit;
+ check_next_cluster:
+	if (offset+SWAPFILE_CLUSTER-1 <= si->highest_bit)
+	{
+		unsigned long nr;
+		for (nr = offset; nr < offset+SWAPFILE_CLUSTER; nr++)
+			if (si->swap_map[nr])
+			{
+				offset = nr+1;
+				goto check_next_cluster;
+			}
+		/* We found a completly empty cluster, so start
+		 * using it.
+		 */
+		goto got_page;
+	}
+  #+END_EXAMPLE
+
+  如果分配一个新的cluster不成功,那么就只能在lowest_bit到highest_bit之间一个一个slot地找,直
+  到找到一个空的slot
+  #+BEGIN_EXAMPLE
+	/* No luck, so now go finegrined as usual. -Andrea */
+	for (offset = si->lowest_bit; offset <= si->highest_bit ; offset++) {
+		if (si->swap_map[offset])
+			continue;
+  #+END_EXAMPLE 
+- 若offset与lowest_bit或highest_bit相等,那么就要相应调整lowest_bit和highest_bit,因为超出
+  lowest_bit到highest_bit这个范围的slot一定是被占用的.
+  #+BEGIN_EXAMPLE
+		if (offset == si->lowest_bit)
+			si->lowest_bit++;
+		if (offset == si->highest_bit)
+			si->highest_bit--;
+  #+END_EXAMPLE 
+- ulk: If no null entry is found, it sets the lowest_bit field to the maximum index in the
+  array, the highest_bit field to 0, and returns 0 (the swap area is full).
+  #+BEGIN_EXAMPLE
+	si->lowest_bit = si->max;
+	si->highest_bit = 0;
+  #+END_EXAMPLE 
+** swp_entry_t get_swap_page(void)
+*** mm/swapfile.c:
+- swap_list.head应该指向的是第一个最高优先级的swap area.
+- 特别是从下面的这段代码来看,可以看出Round Robin是这样子的:假设所有的swap area都没有可用的
+  slot了,一开始是从swap_list.next开始找slot,若跟在swap_list.next这个swap area后面的是同优
+  先级的,那么接着下一个swap area就是跟在swap_list.next后面的那个swap area,否则,就会从
+  swap_list.head开始把所有的swap area扫描一遍,注意是一遍而已.
+  #+BEGIN_EXAMPLE
+		if (!wrapped) {
+			if (type < 0 || p->prio != swap_info[type].prio) {
+				type = swap_list.head;
+				wrapped = 1;
+			}
+		} else
+			if (type < 0)
+				goto out;	/* out of swap space */
+  #+END_EXAMPLE
+  当执行到 type = swap_list.head;时就表明同级的已经扫描完毕,而且!wrapped的条件不再成立,再
+  加上当type < 0的条件成立时,那么就说明已经扫描完一遍了,应该退出.
+** void swap_free(swp_entry_t entry)
+*** mm/swapfile.c:
+- 这个函数主要是释放entry这个slot,主要是调用swap_entry_free()
+** static int swap_entry_free(struct swap_info_struct *p, unsigned long offset)
+*** mm/swapfile.c:
+- 若slot的计数为SWAP_MAP_MAX的话就什么都不做,因为这个是永久使用的
+- 若不是永久使用的,那么就减它的计数
+- 减完计数后还要更新lowest_bit,highest_bit,nr_swap_pages,inuse_pages.
+
+** not function
+*** 17.4.6
+- 使用PG_locked标志来处理同时换入一个共享页和同时换出换入操作.
+- 同时换入和换出有点意思:Before being written to disk, each page to be swapped out is
+  stored in the swap cache by shrink_list( ). Consider a page P that is shared among two
+  processes, A and B. Initially, the Page Table entries of both processes contain a
+  reference to the page frame, and the page has two owners; this case is illustrated in
+  Figure 17-8(a). When the PFRA selects the page for reclaiming, shrink_list( ) inserts
+  the page frame in the swap cache. As illustrated in Figure 17-8(b), now the page frame
+  has three owners, while the page slot in the swap area is referenced only by the swap
+  cache. Next, the PFRA invokes try_to_unmap( ) to remove the references to the page frame
+  from the Page Table of the processes; once this function terminates, the page frame is
+  referenced only by the swap cache, while the page slot is referenced by the two
+  processes and the swap cache, as illustrated in Figure 17-8(c). Let's suppose that,
+  while the page's contents are being written to disk, process B accesses the pagethat is,
+  it tries to access a memory cell using a linear address inside the page. Then, the page
+  fault handler finds the page frame in the swap cache and puts back its physical address
+  in the Page Table entry of process B, as illustrated in Figure 17-8(d). Conversely, if
+  the swap-out operation terminates without concurrent swap-in operations, the
+  shrink_list( ) function removes the page frame from the swap cache and releases the page
+  frame to the Buddy system, as illustrated in Figure 17-8(e).
+
+  从第d个图可以看出,当一个被很多进程共享的页在swap cache里且所有共享该页的进程的相应的页表
+  项都指向所在相应的page slot(就是所有共享进程都对该页换出了),如果其中一个进程要访问该页时,就
+  会发生缺页异常,因为页还是swap cache,那么就不用从disk里换入了(其实disk也没有这个页的数据,
+  只是增加了page slot的引用而已),而是把引起缺页的pte页表项给妀成这个页的物理地址,但这个页
+  并没有从swap cache里去掉引用,所以不但pte引用了,还有swap cache的radix树也引用了,同时还有
+  一点就是若接下来还有其它共享进程重新访问这个页的内容,那么也会引起缺页异常,所以一个被共享
+  的页就算在内存里也可以引起缺页异常.
+- when the page is put in the swap cache, both the count field of the page descriptor and
+  the page slot usage counters are increased, because the swap cache uses both the page
+  frame and the page slot.当一个页放到swap cache时,page._count和相应的
+  swap_info_struct.swap_map[]会增加,就算一个页没有真正换出到disk,也可以增加swap_map.
+** int add_to_swap(struct page * page)
+*** mm/swap_state.c:
+- 这个函数把一个页加到swap cache radix树里
+- (1)首先这个函数调用get_swap_page()获得一个空闲的slot相应的entry,接着调
+
+  (2)用__add_to_swap_cache()把页插到swap_space radix树里,为什么之前要获得entry呢?因为radix树是
+  根据这个entry索引的,调__add_to_swap_cache()时用了GFP_ATOMIC和__GFP_NOMEMALLOC标志来分配
+  radix结点.
+
+  (3)最后就是调用设置PG_uptodate和PG_dirty, 设置这两个标志是为了让shrink_list()把这个页写
+  到disk
+- 所以这个函数只是把一个不在swap cache里的页放到swap cache里,就是让swap cache引用这个页,设
+  置了两个标志,而没有把引用这个页的的页表项作处理,也没有把这个页回写到disk.但是已占用了一
+  个slot.
+- 一旦shrink_list()调用完这个函数,就相用try_to_unmap()处理引用这个页的所有pte页表项,把这些
+  页表项都妀为引用这个entry.
+** int swap_writepage(struct page *page, struct writeback_control *wbc)
+*** mm/page_io.c:
+- 这个函数是把在swap cache里的页写到disk里.
+- shrink_list()调用完try_to_unmap()之后,就调用pageout(),转而调用address_space.writepage方
+  法,这个方法就是用swap_writepage()实现的.
+- 调用remove_exclusive_swap_page()看有没有必要真正把一个页的数据回写disk.
+- 在调用submit_bio()之前会清掉PG_locked
+- shrink_list()成功调用完这个函数之后就是把这个页从swap cache里删除,调用
+  delete_from_swap_cache()来删除,因为这个页只有swap cache引用而已,所以这个页也就会相应就被
+  回收到伙伴系统.
+
+  那么换入页时page._count又是怎么恢复的呢?应该是通过相应的slot的计数来恢复,每换入一次slot
+  的计数就减1,相应的page._count就加1.
+
+  只要swap cache还有引用一个页,那么就说明一定还有进程在访问这个页时会出现缺页异常,所以反过
+  来也说明若发生缺页异常,那么这个页要么在swap cache里,要么在swap area里,不能同时在两个地方.
+** int remove_exclusive_swap_page(struct page *page)
+*** mm/swapfile.c:
+- 若这个页没有正在被回写
+
+  且这个页的对应的slot的计数为1
+
+  且在的_count为2(us+cache),
+
+  那么这个页就可以删掉了,因为没有进程引用了.
+- Checks whether at least one User Mode process is referencing the page. If not, it
+  removes the page from the swap cache and returns 0. This check is necessary because a
+  process might race with the PRFA and release a page after the check performed by
+  shrink_list().
+** static int do_swap_page(struct mm_struct * mm, struct vm_area_struct * vma, unsigned long address, pte_t *page_table, pmd_t *pmd, pte_t orig_pte, int write_access)
+*** mm/swapfile.c:
+- 返回值是VM_FAULT_MINOR表示次缺页,VM_FAULT_MAJOR表示主缺页.
+- 从之前的分析可以得出,就算被请求的页已经在内存,也有可能发生缺页异常,所以要先调用
+  lookup_swap_cache()来看看swap cache里是不是存放这个页.
+- 若页不在swap cache里,那就一个在disk里的swap area里,这时就要读disk了,
+  #+BEGIN_EXAMPLE
+	page = lookup_swap_cache(entry);
+	if (!page) {
+ 		swapin_readahead(entry, address, vma);
+ 		page = read_swap_cache_async(entry, vma, address);
+		if (!page) {
+			/*
+			 * Back out if somebody else faulted in this pte while
+			 * we released the page table lock.
+			 */
+			spin_lock(&mm->page_table_lock);
+			page_table = pte_offset_map(pmd, address);
+			if (likely(pte_same(*page_table, orig_pte)))
+				ret = VM_FAULT_OOM;
+			else
+				ret = VM_FAULT_MINOR;
+			pte_unmap(page_table);
+			spin_unlock(&mm->page_table_lock);
+			goto out;
+		}
+
+		/* Had to read the page from swap area: Major fault */
+		ret = VM_FAULT_MAJOR;
+		inc_page_state(pgmajfault);
+		grab_swap_token();
+	}
+  #+END_EXAMPLE
+  ulk:Invokes the swapin_readahead( ) function to read from the swap area a group of at
+  most 2n pages, including the requested one. The value n is stored in the page_cluster
+  variable, and is usually equal to 3.[*] Each page is read by invoking the
+  read_swap_cache_async( ) function.
+  
+  swapin_readahead()是预读2^page_cluster个页.
+
+  预读了页但是不能表明所要的页就在预读到的页里,所以还要调用read_swap_cache_async(),因为
+  page_cluster有可能为0,或读一组空闲页,或读了一组坏页.
+
+  ulk:Invokes read_swap_cache_async( ) once more to swap in precisely the page accessed by
+  the process that caused the Page Fault. This step might appear redundant, but it isn't
+  really. The swapin_readahead( ) function might fail in reading the requested pagefor
+  instance, because page_cluster is set to 0 or the function tried to read a group of
+  pages including a free page slot or a defective page slot (SWAP_MAP_BAD). On the other
+  hand, if swapin_readahead( ) succeeded, this invocation of read_swap_cache_async( )
+  terminates quickly because it finds the page in the swap cache.
+  #+BEGIN_EXAMPLE
+ 		swapin_readahead(entry, address, vma);
+ 		page = read_swap_cache_async(entry, vma, address);
+  #+END_EXAMPLE 
+- 如果调用了read_swap_cache_async()还读不到想要的页,那么就说明这个页有可以被其它的进程换入
+  到swap cache里了,为什么会出现在种情况呢?因为在预读页之前解了mm.page_table_lock锁,所以是
+  有可能被其它进程换入的,这时应该返回VM_FAULT_MINOR.
+
+  但还有一种可能会读不到所要的页,就是在没有足够的内存空间来存放换入的页时,这时应该返回
+  VM_FAULT_OOM.
+
+  #+BEGIN_EXAMPLE
+ 		page = read_swap_cache_async(entry, vma, address);
+		if (!page) {
+			/*
+			 * Back out if somebody else faulted in this pte while
+			 * we released the page table lock.
+			 */
+			spin_lock(&mm->page_table_lock);
+			page_table = pte_offset_map(pmd, address);
+			if (likely(pte_same(*page_table, orig_pte)))
+				ret = VM_FAULT_OOM;
+			else
+				ret = VM_FAULT_MINOR;
+  #+END_EXAMPLE
+  如果真的是从disk里读进了页,那么下面还要做很多事情.
+- 先调用mark_page_accessed()把这个页标记一下被访问了
+  #+BEGIN_EXAMPLE
+	mark_page_accessed(page);
+  #+END_EXAMPLE 
+- 还是之前解mm.page_table_lock的问题
+  #+BEGIN_EXAMPLE
+	spin_lock(&mm->page_table_lock);
+	page_table = pte_offset_map(pmd, address);
+	if (unlikely(!pte_same(*page_table, orig_pte))) {
+		ret = VM_FAULT_MINOR;
+		goto out_nomap;
+	}
+  #+END_EXAMPLE 
+- 原来被过判断PG_uptodate来确定是不是发生了总线错误
+  #+BEGIN_EXAMPLE
+	if (unlikely(!PageUptodate(page))) {
+		ret = VM_FAULT_SIGBUS;
+		goto out_nomap;
+	}
+  #+END_EXAMPLE 
+- 因为都已经是确定从disk里读到了所要的页,那么就可以释放这个slot了
+  #+BEGIN_EXAMPLE
+	swap_free(entry);
+  #+END_EXAMPLE 
+- 稍微控制一下swap cache的空闲页数量,少于50%就要调用remove_exclusive_swap_page()从swap
+  cache删除一些没有进程引用的页.
+  #+BEGIN_EXAMPLE
+	swap_free(entry);
+	if (vm_swap_full())
+		remove_exclusive_swap_page(page);
+  #+END_EXAMPLE 
+- 被换入的页的原来的标志和权限是怎么保存的呢?其实是这样的,至于读写这些权限是与页所在内存区
+  的权限有关,所以也不用特意去保存,
+  #+BEGIN_EXAMPLE
+	pte = mk_pte(page, vma->vm_page_prot);
+  #+END_EXAMPLE 
+- ulk:if the access that caused the fault was a write and the faulting process is the
+  unique owner of the page, the function also sets the Dirty flag and the Read/Write flag
+  to prevent a useless Copy On Write fault.
+
+  #+BEGIN_EXAMPLE
+	if (write_access && can_share_swap_page(page)) {
+		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
+		write_access = 0;
+	}
+  #+END_EXAMPLE 
+
+  can_share_swap_page()是不是说明只有一个进程是访问这个页的呢?应该是.因为只有一个进程在访
+  问,所以就不用COW了.
+- 设置完pte页表项之后就是把这个匿名页插入到反向链表里.调用page_add_anon_rmap()
+- 到了这里若进程还是以写方式访问该页,那么就要用do_wp_page()来处理COW了
+  
