@@ -9781,3 +9781,2086 @@ union swap_header {
 - 设置完pte页表项之后就是把这个匿名页插入到反向链表里.调用page_add_anon_rmap()
 - 到了这里若进程还是以写方式访问该页,那么就要用do_wp_page()来处理COW了
   
+** not function
+*** 12.1.1
+- 注意什么是文件模型(file model)的概念
+- 从图12-2可以看出,一个磁盘文件可以和一个superblock object关联,之后superblock object再和一
+  个inode object关联,或是一个磁盘文件直接与一个inode object关联,注意都是一对一的关系.
+- page cache也是disk cache?ulk:Beside the dentry cache and the inode cache, Linux uses
+  other disk caches. The most important one,called the page cache, is described in detail
+  in Chapter 15.  superblock object和file object是没有cache的?
+- We said earlier that the VFS is a layer between application programs and specific
+  filesystems.
+- superblock object是与一个已被挂载的文件系统相关联的,如果是一个基于磁盘的文件系统的话,那么
+  superblock object对应保存在磁盘的filesystem control block.  ulk:Stores information
+  concerning a mounted filesystem. For disk-based filesystems, this object usually
+  corresponds to a filesystem control block stored on disk.
+- 按照ulk的说法,file.f_count在两种情况下会增加,一个与CLONE_FILE有关,一个与dup()有关.ulk:The
+  f_count field of the file object is a reference counter: it counts the number of
+  processes that are using the file object (remember however that lightweight processes
+  created with the CLONE_FILES flag share the table that identifies the open files, thus
+  they use the same file objects). The counter is also increased when the file object is
+  used by the kernel itselffor instance, when the object is inserted in a list, or when a
+  dup( ) system call has been issued.
+- dentry object也有in-use,unused或negative state 3种状态.
+- 所有的dentry object都放到一个hash表里,通过一个给定的文件名和目录来快速查找
+- dentry object也用最近最少使用来组织以方便回收.
+- negative dentry是怎么产生的和怎么被回收的:An "in use" dentry object may become
+  "negative" when the last hard link to the corresponding file is deleted. In this case,
+  the dentry object is moved into the LRU list of unused dentries. Each time the kernel
+  shrinks the dentry cache, negative dentries move toward the tail of the LRU list so that
+  they are gradually freed.
+- 进程描述符和文件相关的两个域是struct fs_struct类型的fs域和struct file_struct类型的files
+  域.
+- ulk:thanks to the dup( ) , dup2( ) , and fcntl( )system calls, two file descriptors may
+  refer to the same opened filethat is, two elements of the array could point to the same
+  file object. dup()产生的是指向同一个file object的
+- 什么是文件系统的挂载点(mount point)和什么是一个已挂载文件系统的孩子.
+- 什么是进程的namespace:In a traditional Unix system, there is only one tree of mounted
+  filesystems: starting from the system's root filesystem, each process can potentially
+  access every file in a mounted filesystem by specifying the proper pathname. In this
+  respect, Linux 2.6 is more refined: every process might have its own tree of mounted
+  filesystemsthe so-called namespace of the process.
+- ulk:The new namespace is then inherited by children processes if the parent creates them
+  without the CLONE_NEWNS flag.
+- ulk里所说的filesystem指的是在/dev/目录下的块设备文件,而不是指ext2,fat之类的,ulk12.4.2开
+  头的说明可以看出.
+- Linux is different: it is possible to mount the same filesystem several times. Of
+  course, if a filesystem is mounted n times, its root directory can be accessed through n
+  mount points, one per mount operation. Although the same filesystem can be accessed by
+  using different mount points, it is really unique. Thus, there is only one superblock
+  object for all of them, no matter of how many times it has been mounted.
+  
+  可以多次被挂载,这时可以从这个挂载点访问,但只有一个superblock object.所以文件系统是唯一的.
+- 不同的filesytem可以挂载到同一个挂载点,形式同stack
+- 从ulk的描述来看,struct vfsmount是与一个已挂载的filesystem相关联的,是一对一的关系.ulk:For
+  each mount operation, the kernel must save in memory the mount point and the mount
+  flags, as well as the relationships between the filesystem to be mounted and the other
+  mounted filesystems. Such information is stored in a mounted filesystem descriptor of
+  type vfsmount .
+- 要查找一个vfsmount可以在一个hash表里查找;
+  
+  属于同一个namespace的filesystem有一个链表把它们链起来.
+  
+  一个filesystem的所有子filesystem有一个链表把它们链起来.
+
+** long do_mount(char * dev_name, char * dir_name, char *type_page, unsigned long flags, void *data_page)
+*** fs/namespace.c:
+- 这个函数是sys_mount()调用用来挂载filesystem的.
+- 开始把MS_NOSUID,MS_NODEV,MS_NOEXEC转成MNT_NOSUID,MNT_NODEV,MNT_NOEXEC,分别是禁止setuid和
+  setgid,禁止访问块设置文件,不允许执行文件,为什么这3个那么特殊呢?
+- 找到路径之后开始处理挂载的事了,这个处理要看传入的flags标志了
+- 若标志是MS_REMOUNT,那么一般是想用来修改superblock的s_flags域和mnt_flags域.调用
+  do_remount()来处理
+- 若标志是MS_BIND,那么表示用户想把一个目录挂载到另一个目录上.对应mount命令的bind参数.
+** static int do_remount(struct nameidata *nd, int flags, int mnt_flags, void *data)
+*** fs/super.c:
+- 这个函数做一些检查之后就调用do_remount_sb()
+** int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
+*** fs/super.c:
+- 若传入的flags里没有MS_RDONLY但是这个块设备是只读的,那么就要返回不能重新设置flags,而不是
+  把MS_RDONLY给设置上再往下执行.
+  
+  通过调用bdev_read_only()来查看block_device.bd_part.policy(若block_device是一个分区)或
+  block_device.bd_disk.policy(若block_device是一个磁盘)来判断,若为1表示为只读.
+  
+  block_device的这些policy是什么时候建立的呢?是根据什么建立的呢?
+
+- 接着调用shrink_dcache_sb()来为superblock shrink dcache
+** void shrink_dcache_sb(struct super_block * sb)
+*** fs/dcache.c:
+- 注释:Shrink the dcache for the specified super block. This is used to free the dcache
+  before unmounting a file system.所以有两点:1.shrink指定superblock的dcache,2,在unmount前
+  调用来free dcache.
+- 在repeat这个标签之前主要是扫描整个dentry_unused这个链表,把找到的每一个d_sb为指定
+  superblock的dentry重新插入到dentry_unused的表头,所以最后的结果是所有d_sb为指定superblock
+  的dentry都在dentry_unused表前头.
+- 下半部分就是删除dentry了
+  
+  删除dentry是不一定的,但是一定会把d_sb为指定的superblock的dentry从dentry_unused里删除
+  
+  若dentry.d_count不为0就不可以删除,那么什么时候会把这种dentry删除掉呢?
+- 调用prune_one_dentry()做最后的释放.
+- 因为在prune_one_dentry()里调用的dentry_iput()里会释放dcache_lock,所以在这个函数里不一定
+  能从头到尾都持有dcache_lock这个锁,所以在这个空档时间内有可能有一dentry插入到了
+  dentry_unused表头,就因为这个原因在这个函数的第二个while里要判断一下dentry.d_sb是不是指定
+  的superblock
+  #+BEGIN_EXAMPLE
+		if (dentry->d_sb != sb)
+			continue;
+  #+END_EXAMPLE
+- 
+** static inline void prune_one_dentry(struct dentry * dentry)
+*** fs/dcache.c:
+- 这个函数只有两个地方调用:prune_dcache(),shrink_dcache_sb()
+- 注释:Throw away a dentry - free the inode, dput the parent.This requires that the LRU
+  list has already been removed.Called with dcache_lock, drops it and then regains.
+
+  dentry一定是已经从dentry_unused里删除的.
+- 调用__d_drop()把dentry从hash表里删除,同时要设置DCACHE_UNHASHED.
+- dentry.d_child:For directories, pointers for the list of directory dentries in the same
+  parent directory.所以在这个函数里要把dentry.d_child链表里删除.
+- dentry.d_alias:Pointers for the list of dentries associated with the same inode (alias).
+  
+  这个函数调用了dentry_iput()来释放该dentry所关联的inode.这个所谓的释放就是设置
+  dentry.d_inode为空而已,并没有把关联的inode从disk里删除
+  
+  同时还要把dentry从dentry.alias链表里删除.
+- 因为取消了一个dentry对inode的引用,所以要调用iput()来减inode的引用计数,有可能会把inode释
+  放掉.
+- 因为一个目录被删掉了,所以该目录的父目录的引用计数就要减一.那么是不是说创建一个文件的
+  dentry时,它的父目录和父目录...的dentry也要创建呢?
+  #+BEGIN_EXAMPLE
+	if (parent != dentry)
+		dput(parent);
+  #+END_EXAMPLE 
+** int fastcall path_lookup(const char *name, unsigned int flags, struct nameidata *nd)
+*** fs/namei.c:
+- ulk:Pathname lookup has to be done inside the namespace of the process that issued the
+  system call. The same pathname used by two processes with different namespaces may
+  specify different files.
+- ulk:Because the dentry object and the mounted filesystem object returned by the
+  path_lookup( ) function in the nameidata structure represent the result of a lookup
+  operation, both objects should not be freed until the caller of path_lookup( ) finishes
+  using them. Therefore, path_lookup( ) increases the usage counters of both objects. If
+  the caller wants to release these objects, it invokes the path_release( ) function
+  passing as parameter the address of a nameidata structure. 因为nameidata.dentry和
+  nameidata.mnt会增加dentry object和filesystem object的计数器.
+- 为什么开始要设置nameidata.last_type为LAST_ROOT呢?last_type表示:Type of last component of
+  the pathname (used when the LOOKUP_PARENT flag is set)
+- nameidata.flags是查找过程中要用的标志.
+- nameidata.depth:Current level of symbolic link nesting (see below); it must be smaller
+  than 6.所以一开始要设置为0.
+- fs_struct.altroot是模拟根目录,LOOKUP_NOALT:LOOKUP_NOALT Do not consider the emulated
+  root directory (useless in the 80x86 architecture).
+- 接下来就是设置nameidata.mnt和nameidata.dentry了,设置之后的结果有3种:
+  
+  1. 分别为模拟文件系统和模拟根目录,在路径是绝对路径的情况下且有模拟根目录且没有设置LOOKUP_NOALT.
+  
+  2. 分别是进程的根目录(fs_struct.root)和进程的根文件系统(fs_struct.rootmnt).在路径 _不是_
+     绝对路径的情况下且 _没有_ 模拟根目录或 _有_ 设置LOOKUP_NOALT.
+
+  3. 分别是当前目录和当前目录文件系统
+- task_struct.total_link_count:the total_link_count field in the descriptor of the current
+  process keeps track of how many symbolic links (even nonnested) were followed in the
+  original lookup operation.If this counter reaches the value 40, the lookup operation
+  aborts. Without this counter, a malicious user could create a pathological pathname
+  including many consecutive symbolic links that freeze the kernel in a very long lookup
+  operation.
+- 调用link_path_walk()来查找
+** int fastcall link_path_walk(const char *name, struct nameidata *nd)
+*** fs/namei.c:
+- 主要是调用__link_path_walk()
+** static fastcall int __link_path_walk(const char * name, struct nameidata *nd)
+*** fs/namei.c:
+- 把开头连续的/给删掉,用cd //home的确可以进入/home目录
+- ulk:In the nameidata data structure,the dentry and mnt fields point to the objects
+  relative to the last resolved component of the original pathname.
+- 因为在path_lookup()里根据路径处理了nameidata.dentry,所以处理完路径名开头的/之后的第一个
+  文件名就对应nameidata.dentry了
+  #+BEGIN_EXAMPLE
+	while (*name=='/')
+		name++;
+	if (!*name)
+		goto return_reval;
+
+	inode = nd->dentry->d_inode;
+  #+END_EXAMPLE 
+- nameidata.depth:Current level of symbolic link nesting (see below); it must be smaller
+  than 6.
+  
+  为什么为正的时候就要设置LOOKUP_FOLLOW呢?
+  #+BEGIN_EXAMPLE
+	if (nd->depth)
+		lookup_flags = LOOKUP_FOLLOW;
+  #+END_EXAMPLE 
+- 下面的代码有两个作用:
+
+  1, 把最前的那个路径component给取出来,计算它的hash值以用来在dentry cache hash里找出dentry
+  object. 总之一句话就是初始化了struct qstr
+  
+  2, 把name的指针向后移到了下一个component里去了
+  #+BEGIN_EXAMPLE
+		this.name = name;
+		c = *(const unsigned char *)name;
+
+		hash = init_name_hash();
+		do {
+			name++;
+			hash = partial_name_hash(c, hash);
+			c = *(const unsigned char *)name;
+		} while (c && (c != '/'));
+		this.len = name - (const char *) this.name;
+		this.hash = end_name_hash(hash);
+  #+END_EXAMPLE
+  
+  这个计算hash说方法有点意思,可以一个字符一个字符地算.
+- 接下来又是去连续/了
+  #+BEGIN_EXAMPLE
+		while (*++name == '/');
+		if (!*name)
+			goto last_with_slashes;
+  #+END_EXAMPLE
+- 接下来就是处理为'.'和'..'的情况,用follow_dotdot()来处理'..'.
+  #+BEGIN_EXAMPLE
+		if (this.name[0] == '.') switch (this.len) {
+			default:
+				break;
+			case 2:	
+				if (this.name[1] != '.')
+					break;
+				follow_dotdot(nd);
+				inode = nd->dentry->d_inode;
+				/* fallthrough */
+			case 1:
+				continue;
+		}
+  #+END_EXAMPLE
+  
+  注意上面的代码switch中有continue,这个continue不是作用于switch的,而是作用于外层的for()循
+  环的.这说明了如果是一个'.'或'..'的话那么就开始解析下一个部分.注意有fallthrough的.
+- 下面的会重新生成hash值,为什么要这样做呢?
+  #+BEGIN_EXAMPLE
+		if (nd->dentry->d_op && nd->dentry->d_op->d_hash) {
+			err = nd->dentry->d_op->d_hash(nd->dentry, &this);
+			if (err < 0)
+				break;
+		}
+  #+END_EXAMPLE
+- 设置LOOKUP_CONTINUE有什么用呢?LOOKUP_CONTINUE:There are still filenames to be examined
+  in the pathname.
+  #+BEGIN_EXAMPLE
+		nd->flags |= LOOKUP_CONTINUE;
+  #+END_EXAMPLE
+- 调用do_lookup()作真正的查找.
+- 找到的结果放到了next这个类型为struct path的结构体里.
+- 是不是inode.i_op为空的时候就表示inode不是一个目录呢?
+  #+BEGIN_EXAMPLE
+		err = -ENOTDIR; 
+		if (!inode->i_op)
+			goto out_dput;
+  #+END_EXAMPLE 
+  不是的,如果是一个符号链接也不可以为空.
+- 接下来就看看这个component是不是一个符号链接,i_operation.follow_link()不为空就表示是符号
+  链接,这时调用do_follow_link()来处理.
+- 若不是符号链接,就要把nameidata.mnt和maneidata.dentry修改为刚刚解析完的component的mnt和
+  dentry
+  #+BEGIN_EXAMPLE
+		} else {
+			dput(nd->dentry);
+			if (nd->mnt != next.mnt)
+				mntput(nd->mnt);
+			nd->mnt = next.mnt;
+			nd->dentry = next.dentry;
+		}
+  #+END_EXAMPLE 
+  其实是符号链接的时候这些东西应该已经在do_follow_link()里做了.
+- 如果在这个时候发现解析完的这个component不是一个目录,就会返回ENOTDIR表示在路径的中间遇到
+  了一个不是目录的component.
+  #+BEGIN_EXAMPLE
+		err = -ENOTDIR; 
+		if (!inode->i_op->lookup)
+			break;
+  #+END_EXAMPLE 
+  否则就continue到下一个component.
+- 如果发现路径的最后一个字符是/,那么就设置LOOKUP_FOLLOW和LOOKUP_FOLLOW If the last
+  component is a symbolic link, interpret (follow) it .LOOKUP_DIRECTORY. LOOKUP_DIRECTORY:
+  The last component must be a directory.为什么要设置这两个标志?ulk:If the pathname has a
+  trailing slash, it sets the LOOKUP_FOLLOW and LOOKUP_DIRECTORY flags in the lookup_flags
+  local variable to force the last component to be interpreted by later functions as a
+  directory name.
+- 到了last_with_slashes就说明已经解析到了最后一个component了,注意只是解析到了,但是没有解析,因
+  为last_with_slashes和last_comonent是在用最后一个component初始化类型为struct qstr的this之
+  后就跳转的
+  #+BEGIN_EXAMPLE
+		this.name = name;
+		c = *(const unsigned char *)name;
+
+		hash = init_name_hash();
+		do {
+			name++;
+			hash = partial_name_hash(c, hash);
+			c = *(const unsigned char *)name;
+		} while (c && (c != '/'));
+		this.len = name - (const char *) this.name;
+		this.hash = end_name_hash(hash);
+
+		/* remove trailing slashes? */
+		if (!c)
+			goto last_component;
+		while (*++name == '/');
+		if (!*name)
+			goto last_with_slashes;
+  #+END_EXAMPLE
+- 要清掉LOOKUP_CONTINUE,因为到这里已经是最后一个component了.  
+ 
+  LOOKUP_CONTINUE There are still filenames to be examined in the pathname.
+- 解析最后一个component的代码与之前解析其它的component基本一样.调用follow_dotdot(),调用
+  do_lookup()调用do_follow_link()
+- 为什么要做下的检查
+  #+BEGIN_EXAMPLE
+		err = -ENOENT;
+		if (!inode)
+			break;
+  #+END_EXAMPLE 
+  ulk:Checks whether nd->dentry->d_inode is NULL. This happens when there is no inode
+  associated with the dentry object, usually because the pathname refers to a nonexistent
+  file. In this case, the function returns the error code -ENOENT.
+
+- LOOKUP_PARENT: Look up the directory that includes the last component of the pathname
+  
+  http://blog.chinaunix.net/uid-12567959-id-160997.html
+  在很多情况下，查找操作的真正目的并不是路径名的最后一个分量，而是最后一个分量的前一个分量。
+  例如，当文件被创建时，最后一个分量表示还不存在的文件的文件名，而路径名中的其余路径指定新
+  链接必须插入的目录。因此，查找操作应当取回最后分量的前一个分量的目录项对象。另举一个例子，
+  我们执行rm -f /foo/bar，这里路径名/foo/bar表示的文件bar拆分出来就包含从其目录foo中移去
+  bar。因此，内核真正的兴趣在于访问文件目录foo 而不是bar。
+
+  当查找操作必须解析的是包含路径名最后一个分量的目录而不是最后一个分量本身时，就使用
+  LOOKUP_PARENT标志。当LOOKUP_PARENT标志被设置时，link_path_walk()函数也在nameidata数据结构
+  中建立last和last_type字段。last字段存放路径名中的最后一个分量名。
+
+  last_type字段标识最后一个分量的类型；可以把它置为如下所示的值之一：
+
+  LAST_NORM：最后一个分量是普通文件名
+  LAST_ROOT：最后一个分量是“/”（也就是整个路径名为“/”）
+  LAST_DOT：最后一个分量是“.”
+  LAST_DOTDOT：最后一个分量是“..”
+  LAST_BIND：最后一个分量是链接到特殊文件系统的符号链接
+
+  当整个路径名的查找操作开始时，LAST_ROOT标志是由path_lookup()设置的缺省值。如果路径名正好
+  是“/”，则内核不改变last_type字段的初始值。last_type字段的其他值在LOOKUP_PARENT标志置位时
+  由link_path_walk()设置
+
+  LOOKUP_PARENT标志的值，如果被置位则执行如下操作：
+
+  a. 把nd->last置为最后一个分量名。this就是最后一个分量
+  #+BEGIN_EXAMPLE
+		nd->last = this;
+  #+END_EXAMPLE 
+
+  b. 把nd->last_type初始化为LAST_NORM。
+  #+BEGIN_EXAMPLE
+		nd->last_type = LAST_NORM;
+  #+END_EXAMPLE 
+
+  c. 如果最后一个分量名为“.”（一个圆点），则把nd->last_type置为LAST_DOT。
+
+  d. 如果最后一个分量名为“..”（两个圆点），则把nd->last_type置为LAST_DOTDOT
+
+  e. 通过返回值0（无错误）终止。
+
+  可以看到，最后一个分量根本就没有被解释。因此，当函数终止时，nameidata数据结构的dentry和
+  mnt字段指向最后一个分量所在目录对应的对象。
+  
+  执行到lookup_parent这里时最后一个component还是没有解析出它的dentry的.
+  
+  如果最所一个component是一个..,那么就要执行return_reval标签调用d_revalidate(),否则都是退
+  出这个函数返回0.
+- http://blog.chinaunix.net/uid-12567959-id-160997.html
+  FS_REVAL_DOT标志（始终在目录项高速缓存中使“.”和“..”路径重新生效（针对网络文件系统））
+- 到现在发生在这个函数里若使用break来跳出解析循环的,都是错误的情况
+  #+BEGIN_EXAMPLE
+  return_err:
+	return err;
+  #+END_EXAMPLE
+- 如果最后一个component是一个.,那么退出这个函数返回0,表示没有错误.因为.的父录已经在
+  nameidata里了.
+  #+BEGIN_EXAMPLE
+			case 1:
+				goto return_reval;
+  #+END_EXAMPLE
+** static inline void follow_dotdot(struct nameidata *nd)
+*** fs/namei.c:
+- vfsmount.mnt_parent: Points to the parent filesystem on which this filesystem is
+  mounted.
+- vfsmount.mnt_root: Points to the dentry of the root directory of this filesystem.
+- dentry.d_mounted:d_mounted or directories, counter for the number of filesystems
+  mounted on this dentry.
+- 下面的代码对应ulk的这段话:If the last resolved directory is the process's root directory
+  (nd->dentry is equal to current->fs->root and nd->mnt is equal to current->fs->rootmnt),
+  then climbing is not allowed: it invokes follow_mount( ) on the last resolved component
+  (see below) and continues with the next component.
+  
+  #+BEGIN_EXAMPLE
+		if (nd->dentry == current->fs->root &&
+		    nd->mnt == current->fs->rootmnt) {
+                        read_unlock(&current->fs->lock);
+			break;
+		}
+  #+END_EXAMPLE 
+  
+  为什么要两个都相等时才成立呢?
+
+- 接下来的代码对应ulk:If the last resolved directory is not the root directory of a
+  mounted filesystem, then the function must simply climb to the parent directory: it sets
+  nd->dentry to nd- >dentry->d_parent, invokes follow_mount( ) on the parent directory,
+  and continues with the next component.
+  #+BEGIN_EXAMPLE
+		if (nd->dentry != nd->mnt->mnt_root) {
+			nd->dentry = dget(nd->dentry->d_parent);
+			spin_unlock(&dcache_lock);
+			dput(old);
+			break;
+		}
+  #+END_EXAMPLE
+  只修改了nameidata.dentry为它自已的父目录.
+
+- 接下来的代码对应ulk:If the last resolved directory is the root directory of the nd->mnt
+  filesystem (nd- >dentry is equal to nd->mnt->mnt_root) and the nd->mnt filesystem is not
+  mounted on top of another filesystem (nd->mnt is equal to nd->mnt->mnt_parent), then the
+  nd- >mnt filesystem is usually[*] the namespace's root filesystem: in this case,
+  climbing is impossible, thus invokes follow_mount( ) on the last resolved component (see
+  below) and continues with the next component.
+  #+BEGIN_EXAMPLE
+		parent = nd->mnt->mnt_parent;
+		if (parent == nd->mnt) {
+			spin_unlock(&vfsmount_lock);
+			break;
+		}
+  #+END_EXAMPLE
+
+- 接下来的代码对应ulk:If the last resolved directory is the root directory of the nd->mnt
+  filesystem and the nd->mnt filesystem is mounted on top of another filesystem, a
+  filesystem switch is required. So, the function sets nd->dentry to
+  nd->mnt->mnt_mountpoint , and nd->mnt to nd->mnt->mnt_parent, then restarts step 5g
+  (recall that several filesystems can be mounted on the same mount point).
+  #+BEGIN_EXAMPLE
+		mntget(parent);
+		nd->dentry = dget(nd->mnt->mnt_mountpoint);
+		spin_unlock(&vfsmount_lock);
+		dput(old);
+		mntput(nd->mnt);
+		nd->mnt = parent;
+  #+END_EXAMPLE
+- 注意函数是用了一个死循环来处理'..'的,所以只有最后一种情况下还要重新做解析.为什么?因为最
+  后一种情况只是做了filesystem的切换,并没有真正处理'..'.所以要再一次.
+- 最终的结果就是修改了nameidata.dentry和nameidata.mnt.
+  
+  若要切换文件系统就修改nameidata.mnt.
+  
+  若没有上级目录就不能候改nameidata.dentry.
+- 无论什么情况,都会调用follow_mount().
+** static void follow_mount(struct vfsmount **mnt, struct dentry **dentry)
+*** fs/namei.c:
+- 若有多个filesystem挂载到某个filesystem的同一个dentry里,那么这些filesystem的
+  vfsmount.mnt_root是不是都是相等的呢?
+  
+  除了vfsmount.mnt_root之外,还有vfsmount.mnt_mountpoint:mnt_mountpoint Points to the
+  dentry of the mount point directory where the filesystem is mounted.
+  
+  可见是不一样的.
+
+- 总之,传进来的参数dentry一定是在mnt下的dentry.
+
+- 调用lookup_mnt()来找一个挂载到指定的filesystem里的指定的dentry的filesystem.也就是要找到
+  一个filesystem的mnt_parent等于参数mnt,mnt_mountpoint等于参数dentry.
+  
+  又因为在follow_mount()里除了第一次调用lookup_mnt()外,其它的调用的第二个参数都是mnt_root.
+  
+  所以可以总结出:follow_mount()的这个循环里循环处理的是多个filesystem以堆栈的形式挂载在前
+  一个filesystem的根目录里.而不是多个filesystem挂载到某个filesystem的同一个dentry下.
+- 但是若dentry.d_mounted大于1,就是说有多个filesystem桂载到同一个dentry下时,follow_mount()
+  只能处理一个,这样合理吗?如果合理的话,解释应该是这样子的:就是挂载到同一个dentry下的多个
+  filesystem只能访问最后一个被挂载的filesystem的数据,这样的话那么lookup_mnt()返回的就是那
+  个可以访问的,而不是其它不可以访问的,那么lookup_mnt()又是如何保证这点的呢?
+- 结合follow_dotdot()来看,如果是下面的那种情况
+  #+BEGIN_EXAMPLE
+		if (nd->dentry == current->fs->root &&
+		    nd->mnt == current->fs->rootmnt) {
+                        read_unlock(&current->fs->lock);
+			break;
+		}
+  #+END_EXAMPLE 
+  那么这个'..'不是真正的有效.因为最多dentry.mnt_mounted大于1而转到其它的filesystem的根目录
+  里,而不会再进入上一级目录.
+  
+  如果是下面的情况
+  #+BEGIN_EXAMPLE
+		if (nd->dentry != nd->mnt->mnt_root) {
+			nd->dentry = dget(nd->dentry->d_parent);
+			spin_unlock(&dcache_lock);
+			dput(old);
+			break;
+		}
+  #+END_EXAMPLE  
+  结合follow_mount()来看又是什么情况呢?一个目录A的父目录可以被挂载上其它的filesystem吗?如果
+  可以的话好像是有问题的,因为父目录挂载了其它的filesystem了,那么不可以通过这个所谓的父目录
+  来访问另一个filesystem的目录A的.
+** static int do_lookup(struct nameidata *nd, struct qstr *name, struct path *path)
+*** fs/namei.c:
+- 这个函数就是返回name.name对应的的dentry.先是在dcache里找.
+- 按照ulk的说法参数nd.dentry是name.name这个成分的父目录:Invokes do_lookup( ) to derive the
+  dentry object associated with a given parent directory (nd->dentry) and filename (the
+  pathname component being resolved).
+  
+  但是从调用do_lookup()的__link_path_walk()却看不出来.假设在path_lookup()里一直
+  到__link_path_walk()都看不出是父目录.
+  
+  好像在name为绝对路径的时候才会正确,因为在path_lookup()里若name为绝对路径,那每
+  nameidata.dentry就是模拟根目录或进程namespace的根目录,转而调用link_path_walk(),再转而调
+  用__link_path_walk(),在__link_path_walk()里一开始就把/给删除不作解析,所以紧接下来的那个
+  component就是nameidata.dentry的子目录,因为nameidata.dentry是根目录的dentry.
+  
+  但如果不是绝对路径的话好像就不正确了.突然想明白了,还是正确的,就是你在当前目录A,想进入它
+  的子目录B,这时你是输入cd B,而不是cd A/B,所以还是正确的.
+
+- 先调用__d_lookup()在dcache里找.返回0表示在dcache里没有找到.
+- d_revalidate:Determines whether the dentry object is still valid before using it for
+  translating a file pathname. The default VFS function does nothing, although network
+  filesystems may specify their own functions.
+- 若在dcache里没有找到,那么就要调用real_lookup()来建一个了.
+- 找到的结果放到参数path里,这个struct path结构体只有mnt和dentry这两个成员.
+- 因为找到的dentry可能被挂载上了其它filesystem,所以要调用__follow_mount()来找出最后一次挂
+  载到这个dentry的filesystem.并修改path.
+** struct dentry * __d_lookup(struct dentry * parent, struct qstr * name)
+*** fs/dcache.c:
+- 用dentry cache的hash表来找出要找的dentry.
+- 注意一下d_hash()的使用,第一个参数是要找的dentry的父目录,ulk:The dentry parameter
+  identifies the directory containing the component. The name parameter points to a
+  structure containing both the pathname component to be looked up and the value produced
+  by the hash function. 通过d_hash()就可以找到要找的dentry对应的hash表项,之后就可以通过
+  hash链表来查找了.
+  
+  关于dentry cache的 hash表.整个hash链表的表头是static struct hlist_head
+  *dentry_hashtable;dentry_hashtable会在dcache_init()里调用alloc_large_system_hash()来分配
+  空间,这个空间就是以struct hlist_head *为类型的的空间,可以被过d_hash()的代码程返回值可以
+  看出来
+  #+BEGIN_EXAMPLE
+	return dentry_hashtable + (hash & D_HASHMASK);
+  #+END_EXAMPLE 
+- d_hash()返回的就为要找的dentry所在的hash链表的表头,接下来就用hlist_for_each_rcu()来遍历
+  整个链表来找,找到的条件为
+  
+  1,d_hash值要和hash一样.
+  
+  2,d_parent是parent
+  
+  3,name要一样
+** static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, struct nameidata *nd)
+*** fs/namei.c:
+- 要重新做一次在dcache里找,因为在获取信号量的时候有可能会被其它进程建了一个dentry,这个是注
+  释上说的
+  #+BEGIN_EXAMPLE
+	/*
+	 * First re-do the cached lookup just in case it was created
+	 * while we waited for the directory semaphore..
+  #+END_EXAMPLE
+- 若在dcache里还找不到,那么就用d_alloc()分配一个dentry object,再用inode.i_op.lookup()从磁
+  盘里读出来.
+  
+  inode_operation.lookup()Searches a directory for an inode corresponding to the filename
+  included in a dentry object.
+** static inline int do_follow_link(struct path *path, struct nameidata *nd)
+*** fs/namei.c:
+- 这个函数是用来查找路径时处理符号链接的.
+- the total_link_count field in the descriptor of the current process keeps track of how
+  many symbolic links (even nonnested) were followed in the original lookup operation. If
+  this counter reaches the value 40, the lookup operation aborts. Without this counter, a
+  malicious user could create a pathological pathname including many consecutive symbolic
+  links that freeze the kernel in a very long lookup operation.
+  
+  task_struct.total_link_count就算没有嵌套也要增加.
+- 如何判断一个文件是符号链接呢?若inode的follow_link()方法不为空就表示是
+- 若task_struct.link_count大于或等于5就返回,不用再解析,link_count是用来避免在同一个符号链
+  接里无限follow的.
+- 接下来就是检查total_link_count.
+- 检查完link_count和total_link_count之后就是增加它们.
+- 还要增加nameidata.depth,depth Current level of symbolic link nesting (see below); it
+  must be smaller than 6
+  
+  那么nameidata.depth是在哪里检查的呢?
+- 主要是调用__do_follow_link()来处理.
+** static inline int __do_follow_link(struct path *path, struct nameidata *nd)
+*** fs/namei.c:
+- 调用touch_atime()来修改符号链接的inode的访问时间,为什么要修改这个昵?是不是因为要读取里面
+  的内容呢?
+  
+  而在查找路径时有没有修改目录的访问时间呢?
+
+- 通过nd_set_link()可以看出,nameidata.saved_names是一个数组,这个数组的大小是
+  nameidata.depth的最大值,用来保存每一次嵌套符号链接时的路径.
+
+- 接收到path.dentry参数,是正需要被解析的符号链接.
+- 接下来就是调用文件系统特定的follow_link()函数,这个函数里会做一件事,就是把符号链接文件里
+  的内容取出来放是nameidata.saved_names数组里.
+- 调用nd_get_link()把最外层的路径取出来解析
+  #+BEGIN_EXAMPLE
+		char *s = nd_get_link(nd);
+  #+END_EXAMPLE
+- 调用__vfs_follow_link()
+- 调用inode的put_link()的方法来释放调用follow_link()时分配的空间.
+** static inline int __vfs_follow_link(struct nameidata *nd, const char *link)
+*** fs/namei.c:
+- 若符号链接解析出来的路径名是一个绝对路径,那么就调用path_release()转而调用dput()和
+  mntput()
+- 这里也调用了link_path_walk(),这里调用的link_path_walk()只是把符号链接里的内容给解析了,解
+  析完之后那么最后一个component就放在nameidata里,并把nameidata返回给调用
+  do_follow_link()的__link_path_walk().
+** asmlinkage long sys_open(const char __user * filename, int flags, int mode)
+*** fs/namei.c:
+- 调用getname()从用户态空间来获取要打开的文件路径.
+- 调用get_unused_fd()在current.files.fd数组里找出一个空闲的文件描述符.
+- 接下来就是调用filp_open()
+** char * getname(const char __user * filename)
+*** fs/namei.c:
+- 先调用__getname()来分配内核空间来存放路径名,__getname()是一个调用kmem_cache_alloc()的宏,
+  使用的是names_cache cache.这个names_cache创建的时候指定的object大小的PATH_MAX,也就是4096
+  这字节.
+- 分配好空间后就调用do_getname().
+** static inline int do_getname(const char __user *filename, char *page)
+*** fs/namei.c:
+- 为什么要调用segment_eq来判断呢?
+- 主要是调用strncpy_from_user()来拷贝路径名.
+** int get_unused_fd(void)
+*** fs/open.c:
+- 主要是调用find_next_zero_bit()找出一个空闲的fd.这个函数用到了
+  files.open_fds.fds_bits,files.max.fdset,files.next_fd.
+- 找出一个空闲的fd之后就要调用expand_files()判断一下是否要扩展fd数组,若需要就同时扩展一下.
+- expand_files()返回1表示需要扩展但是扩展过程中遇到了阻塞了.
+- expand_files()成功后就表明open_fds里一定有一个可以设置的位了,那么就会调用FD_SET()设置相
+  应的files.open_fds位.但是为什么要清files.close_on_exec的位呢?close_on_exec里的位没有被使
+  用不是本应该是清除的吗?
+** int expand_files(struct files_struct *files, int nr)
+*** fs/file.c:
+- 注释说是返回<0的值表示有错,返回0表示做了扩展,返回1表示要扩展但扩展过程被阻塞了.
+- files.max_fds是指类型为struct files *的files.fd数组的大小,
+  
+  files.max_fdset是指向当前打开的文件的文件描述符的位图的最大位数,就是files.open_fds.
+  
+  files.max_fds和files.max_fdset还是不同的,不一定一样,因为max_fdset指的是最大位数,而不定所
+  有位对应的文件描述符都被使用.
+- 调用expand_fdset()扩展fdset位图
+- files.fd数组也不是时刻时刻都填满的,也使用了expand_fd_array(),
+** static int expand_fdset(struct files_struct *files, int nr)
+*** fs/file.c:
+- nr是当前已被使用的fd,那么它是不是最大的呢?从get_unused_fd()来看,这个要取决于
+  find_next_zero_bit().
+- 先判断files.max_fdset和nr有没有超过NR_OPEN
+- 接下来就是找出合适的将要扩展的大小,
+  #+BEGIN_EXAMPLE
+	do {
+		if (nfds < (PAGE_SIZE * 8))
+			nfds = PAGE_SIZE * 8;
+		else {
+			nfds = nfds * 2;
+			if (nfds > NR_OPEN)
+				nfds = NR_OPEN;
+		}
+	} while (nfds <= nr);
+  #+END_EXAMPLE
+  
+  这个增加的方法有点意思,1.就是被扩展之后的大小最少是一个页的大小,2.若扩展之前的大小大于一
+  个页,那么就是翻倍的了,这可能是为了减少内存的碎片吧.
+- 计算好需要多少个位之后,就可以把原来的位设置放到一个新分配的空间里.
+  
+  注意要同时处理files.open_fds和files.close_on_exec这两个成员,为什么呢?而且这两个成员的空间
+  大小要一样.因为可能进程打开的所有文件都要求在执行exec()时关闭文件,所以这两个成员的空间至
+  少要一样.
+  
+  先分配新的空间
+  #+BEGIN_EXAMPLE
+	new_openset = alloc_fdset(nfds);
+	new_execset = alloc_fdset(nfds);
+  #+END_EXAMPLE 
+  
+  接下来就是拷贝
+  #+BEGIN_EXAMPLE
+		/* 
+		 * Don't copy the entire array if the current fdset is
+		 * not yet initialised.  
+		 */
+		if (i) {
+			memcpy (new_openset, files->open_fds, files->max_fdset/8);
+			memcpy (new_execset, files->close_on_exec, files->max_fdset/8);
+			memset (&new_openset->fds_bits[i], 0, count);
+			memset (&new_execset->fds_bits[i], 0, count);
+		}
+  #+END_EXAMPLE 
+  什么情况下i会等于0呢?注释说是还没有被初始化,是不是出现竞争了呢?就是还没有初始化进程就打
+  开文件了.
+  
+  接下来就是交换原来空间和新空间的地址,调用xchg(),这个函数是用汇编实现的.
+  
+  到这里已经扩展成功了,可以返回了,
+- 因为调用alloc_fdset()分配新的空间时可能会休眠,所以要分配后要判断是不是有其它的进程进行了
+  扩展.
+  #+BEGIN_EXAMPLE
+	if (nfds > files->max_fdset) {
+  #+END_EXAMPLE 
+** static int expand_fd_array(struct files_struct *files, int nr)
+*** fs/file.c:
+- 处理的方法与expand_fdset()差不多.
+- 也会先判断有没有超过NR_OPEN,
+- 也会计算应该扩展到多大
+- 也是先分配一个合适的空间,然后把原来的内容拷贝到新的空间上,并把原来的空间给释放掉
+- 也处理了分配新空间时因休眠而被其它的进程给扩展了.
+- 有点不同的是有一个NR_OPEN_DEFAULT指定空间至少要为这个值.
+- 计算也是至少一个页,且会翻倍.
+** struct file *filp_open(const char * filename, int flags, int mode)
+*** fs/open.c:
+- 把O_RDONLY,O_WRONLY和O_RDWR转成合适的位,因为与sys_open()的不一样,有注释
+  #+BEGIN_EXAMPLE
+ * Note that while the flag value (low two bits) for sys_open means:
+ *	00 - read-only
+ *	01 - write-only
+ *	10 - read-write
+ *	11 - special
+ * it is changed into
+ *	00 - no permissions needed
+ *	01 - read-permission
+ *	10 - write-permission
+ *	11 - read-write
+ * for the internal routines (ie open_namei()/follow_link() etc). 00 is
+ * used by symlinks.
+  #+END_EXAMPLE
+  转换的代码是
+  #+BEGIN_EXAMPLE
+	if ((namei_flags+1) & O_ACCMODE)
+		namei_flags++;
+  #+END_EXAMPLE
+- 现在是下面的代码了,有点不明白
+  #+BEGIN_EXAMPLE
+	if (namei_flags & O_TRUNC)
+		namei_flags |= 2;
+  #+END_EXAMPLE 
+  
+  为什么是O_TRUNC时要给以写的访问权限呢?
+  
+  apue:O_TRUNC:O_TRUNC 如果此文件存在,而且为只读或只写成功打开,则将其长度截短为 0.
+  
+  APUE:为了在open函数中对一个文件指定O_TRUNC标志,必须对该文件具有写许可权.
+  
+  通过APUE的解释,之所以要给写的访问权限,可能是为了检查进程是否对该文件有写的权限,而不是真
+  正打开来写的.
+- 然后调用open_namei()
+** int open_namei(const char * pathname, int flag, int mode, struct nameidata *nd)
+*** fs/namei.c:
+- 调用ACC_MODE()宏来找出访问权限的模式
+  #+BEGIN_EXAMPLE
+#define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
+  #+END_EXAMPLE 
+  这个宏有点意思,
+  
+  如果flag为no permissions,那么返回0
+  
+  如果为read permission,那么返回4
+  
+  如果为write permission,那么返回2
+  
+  若为read/write permissions,那么返回6
+  
+  从这里可以知道O_RDONLY,O_WRONLY,O_RDWR只能为一个,调用open()时若指定了多个,那么最后的权限
+  若不是O_RDWR就是O_WRONLY,要不就是O_RDONLY
+  
+  为什么要转换这些权限数字呢?应该是把这些访问权限转为文件访问权限的形式,就要chmod里使用的
+  数字一样
+  #+BEGIN_EXAMPLE
+#define MAY_EXEC 1
+#define MAY_WRITE 2
+#define MAY_READ 4
+#define MAY_APPEND 8
+  #+END_EXAMPLE 
+  
+  至于为什么O_RDWR是6呢?可能是MAY_WRITE + MAY_READ吧
+
+- 接着转换O_APPEND为MAY_APPEND
+- 现在看回sys_open()函数,第三个参数是在创建文件时才用的.
+  
+  APUE:O_CREAT 若此文件不存在则创建它。使用此选择项时,需同时说明第三个参数 mode,用其说明该
+  新文件的存取许可权位。
+- 指定nameidata.intent.open.flags为转换后的flags,并把创建文件的模式保存到
+  nameidata.intent.open.create_mode.
+  
+  mode应该是S_IRUSR,S_IWUSR,S_IRGRP之类的.
+- 如果没有指定O_CREAT来创建文件,那么就调用path_lookup()来查找路径.
+  
+  为什么要指定LOOKUP_OPEN来查找路径.
+  
+  调用path_lookup()的标志好像和ulk说的不一样,ulk:If O_CREAT is not set in the access mode
+  flags, starts the lookup operation with the LOOKUP_PARENT flag not set and the
+  LOOKUP_OPEN flag set. Moreover, the LOOKUP_FOLLOW flag is set only if O_NOFOLLOW is
+  cleared, while the LOOKUP_DIRECTORY flag is set only if the O_DIRECTORY flag is set.
+  
+  清LOOKUP_PARENT
+  
+  O_NOFOLLOW -> LOOKUP_FOLLOW
+  
+  O_DIRECTORY -> LOOKUP_DIRECTORY
+
+  LOOKUP_DIRECTORY:The last component must be a directory
+  
+  其实是一样的,因为使用了lookup_flags()来转换O_~到LOOKUP_~.
+
+- 如果查找成功就调用may_open()
+- 若设置O_CREAT,那么调用path_lookup()时要指定LOOKUP_PARENT|LOOKUP_OPEN|LOOKUP_CREATE,为什
+  么不指定LOOKUP_DIRECTORY呢?不能指定LOOKUP_DIRECTORY的,因为最后一个component是将要创建的
+  文件名.
+  
+  指定LOOKUP_CREATE有什么用呢?
+  
+  nameidata.last_type的这个last指的不是当前的nameidata.dentry的类型,last_type在
+  LOOKUP_PARENT设置时才会设置,这时last_type是最后一个component的类型,而nameidata.dentry是
+  最后一个component的父目录.
+- 调用__lookup_hash()来获得dentry object
+- 获得dentry object之后若发现没有对应的inode object,那么就要调用vfs_create()来创建一个
+  inode
+  #+BEGIN_EXAMPLE
+	if (!path.dentry->d_inode) {
+		if (!IS_POSIXACL(dir->d_inode))
+			mode &= ~current->fs->umask;
+		error = vfs_create(dir->d_inode, path.dentry, mode, nd);
+		up(&dir->d_inode->i_sem);
+		dput(nd->dentry);
+		nd->dentry = path.dentry;
+		if (error)
+			goto exit;
+		/* Don't check for write permission, don't truncate */
+		acc_mode = 0;
+		flag &= ~O_TRUNC;
+		goto ok;
+	}
+  #+END_EXAMPLE
+- O_EXCL: With O_CREAT, fail if the file already exists
+  
+  能执行到这里一定是设置O_CREAT
+  #+BEGIN_EXAMPLE
+	if (flag & O_EXCL)
+		goto exit_dput;
+  #+END_EXAMPLE 
+  
+  注意到这里时path.dentry是最后一个component的.
+- 接下调用__follow_mount()是什么意思呢?path.dentry不是一个普通文件的dentry吗?可以用一个普
+  通文件的dentry来调用__follow_mount()吗?
+- 这个函数的作用是不是查找要找的文件的dentry放到参数nd.dentry里返回呢?
+- 执行到下面的这一段话,最后一个component怎么可能是一个符号链接呢?
+  #+BEGIN_EXAMPLE
+	if (path.dentry->d_inode->i_op && path.dentry->d_inode->i_op->follow_link)
+		goto do_link;
+  #+END_EXAMPLE
+- 这个函数有多要goto标签,
+  
+  do_last应该处理最后一个component用的,
+  
+  ok应该是成功时找到合适的dentry,放到了nameidata.dentry.
+  
+  exit_dupt应该是失败时要先释放path.dentry时用的
+  
+  exit应该也是失败时要用的.
+  
+  do_link:应该是在处理最后一个component时发现它是一个符号链接时用的.
+  
+  所以成功的话一定是到ok标签的,之后就会调用may_open()
+- 若找到dentry,但是文件已被删除的情况下,先把inode给创建了,到调用may_open()之前要把acc_mode
+  给清掉,为什么呢?
+** int may_open(struct nameidata *nd, int acc_mode, int flag)
+*** fs/namei.c:
+- 为什么多一个FMODE_READ/FMODE_WRITE来表示文件的读写权限呢?
+
+  在open_namei()传进来的flag都是以O_为开头的标志,不过是经过在filp_open()做加1处理的了.
+  
+  通过这个加1处理之后1就表示了读权限,因为原来的O_RDONLY是0,2就表示了写权限,因为原来的
+  O_WRONLY是1.而刚好FMODE_READ是1,FMODE_WRITE是2.
+
+- inode.i_mode是一个包含文件类型和访问权限的成员.
+- 如果文件类型是一个目录且不会对它写的话,就可以通过
+  #+BEGIN_EXAMPLE
+	if (S_ISDIR(inode->i_mode) && (flag & FMODE_WRITE))
+		return -EISDIR;
+  #+END_EXAMPLE 
+  
+  为什么不能对目录写呢?
+- fifo,socket,设备文件
+  #+BEGIN_EXAMPLE
+	/*
+	 * FIFO's, sockets and device files are special: they don't
+	 * actually live on the filesystem itself, and as such you
+	 * can write to them even if the filesystem is read-only.
+	 */
+  #+END_EXAMPLE
+- 接下来是检查文件类型和写权限了,
+
+  若是fifo或socket,那么要把O_TRUNC给去掉.注意参数acc_mode是被通过flag转的,在open_namei()里
+  转.
+  #+BEGIN_EXAMPLE
+	if (S_ISFIFO(inode->i_mode) || S_ISSOCK(inode->i_mode)) {
+	    	flag &= ~O_TRUNC;
+  #+END_EXAMPLE 
+  
+  若是设备文件,要先检查有没有MNT_DODEV标志再清O_TRUNC
+  #+BEGIN_EXAMPLE
+	} else if (S_ISBLK(inode->i_mode) || S_ISCHR(inode->i_mode)) {
+		if (nd->mnt->mnt_flags & MNT_NODEV)
+			return -EACCES;
+
+		flag &= ~O_TRUNC;
+  #+END_EXAMPLE 
+  
+  文件系统的文件若是只读不能用写访问
+  #+BEGIN_EXAMPLE
+	} else if (IS_RDONLY(inode) && (flag & FMODE_WRITE))
+		return -EROFS;
+  #+END_EXAMPLE
+- 关于inode.i_flags的标志有
+  #+BEGIN_EXAMPLE
+
+/* Inode flags - they have nothing to superblock flags now */
+
+#define S_SYNC		1	/* Writes are synced at once */
+#define S_NOATIME	2	/* Do not update access times */
+#define S_APPEND	4	/* Append-only file */
+#define S_IMMUTABLE	8	/* Immutable file */
+#define S_DEAD		16	/* removed, but still open directory */
+#define S_NOQUOTA	32	/* Inode is not counted to quota */
+#define S_DIRSYNC	64	/* Directory modifications are synchronous */
+#define S_NOCMTIME	128	/* Do not update file c/mtime */
+#define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+#define S_PRIVATE	512	/* Inode is fs-internal */
+  #+END_EXAMPLE
+- 对于一个只能追加的文件,若不能只设置写访问,还要加多一个O_APPEND标志才行.
+  
+  也不能设置O_TRUNC
+  #+BEGIN_EXAMPLE
+	/*
+	 * An append-only file must be opened in append mode for writing.
+	 */
+	if (IS_APPEND(inode)) {
+		if  ((flag & FMODE_WRITE) && !(flag & O_APPEND))
+			return -EPERM;
+		if (flag & O_TRUNC)
+			return -EPERM;
+	}
+  #+END_EXAMPLE 
+- O_NOATIME: Do not update the inode's last access time
+  #+BEGIN_EXAMPLE
+
+	/* O_NOATIME can only be set by the owner or superuser */
+	if (flag & O_NOATIME)
+		if (current->fsuid != inode->i_uid && !capable(CAP_FOWNER))
+			return -EPERM;
+  #+END_EXAMPLE
+- 调用break_lease()
+- 这个写的访问还真多要检查的.到了这里之后还要检查VM_DENYWRITE.这个检查是调用
+  get_write_access()
+- 为什么只有设置了O_TRUNC才会调用locks_verify_locked()来检查它的强制锁呢?
+  #+BEGIN_EXAMPLE
+	if (flag & O_TRUNC) {
+		error = get_write_access(inode);
+		if (error)
+			return error;
+
+		/*
+		 * Refuse to truncate files with mandatory locks held on them.
+		 */
+		error = locks_verify_locked(inode);
+  #+END_EXAMPLE 
+  
+  因为强制锁这些记录锁可以对文件的某一部分加锁,但是因为以O_TRUNC打开文件会把整个文件截为0,
+  所以无论强制锁加在哪个部分都会影响到.
+- 若设置了O_TRUNC,那么就调用do_truncate()把文件截成长度为0.
+  #+BEGIN_EXAMPLE
+			error = do_truncate(dentry, 0);
+  #+END_EXAMPLE
+- 所以这个函数主要是检查文件能不能按照要求来打开,还截短了.
+** int permission(struct inode *inode, int mask, struct nameidata *nd)
+*** fs/namei.c:
+- 这个函数由may_open()调用
+- 在open_namei()已经把参数flag通过下面的宏转成chmod的形式了,之后再传给may_open(),转而再传
+  给这个函数.
+  #+BEGIN_EXAMPLE
+#define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+#define MAY_EXEC 1
+#define MAY_WRITE 2
+#define MAY_READ 4
+#define MAY_APPEND 8
+  #+END_EXAMPLE
+- 接下来查看写访问是否被允许
+  
+  如果文件只被读,且这个文件是 _普通文件_ 或是 _目录_ 或是 _符号链接_,就不能写访问.
+  
+  除了上面3种文件类型之外,还有chr,blk,fifo,sock
+  #+BEGIN_EXAMPLE
+#define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
+#define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
+#define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
+
+#define S_ISCHR(m)	(((m) & S_IFMT) == S_IFCHR)
+#define S_ISBLK(m)	(((m) & S_IFMT) == S_IFBLK)
+#define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
+#define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
+  #+END_EXAMPLE 
+  
+  为什么只要检查上面的3种呢?应该是因为只有写这3种文件的时候才会操件文件所在的文件系统的磁
+  盘.而其它的不会对磁盘操作.
+  
+  IMMUTABLE文件也不能写
+  #+BEGIN_EXAMPLE
+		/*
+		 * Nobody gets write access to an immutable file.
+		 */
+		if (IS_IMMUTABLE(inode))
+			return -EACCES;
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+#define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
+  #+END_EXAMPLE 
+  inode.i_flags:Filesystem mount flags
+- 要先清掉MAY_APPEND,这个标志是在open_namei()里根据O_APPEND得到的
+  #+BEGIN_EXAMPLE
+	/* Ordinary permission routines do not understand MAY_APPEND. */
+	submask = mask & ~MAY_APPEND;
+  #+END_EXAMPLE
+- 若inode.i_op.permission()为空,就调用generic_permission()
+** int generic_permission(struct inode *inode, int mask, int (*check_acl)(struct inode *inode, int mask))
+*** fs/namei.c:
+- FSUID, FSGID -- 用于文件系统访问检查的用户ID和组ID；一般等于相应的EUID和EGID；这是一个
+  Linux特有的属性。
+
+  Linux特有的进程属性FSUID是用来允许NFS服务器一类的程序把自己的文件系统权限限制在某些给定的
+  UID上，而不给这些UID向进程发送信号的许可。一旦EUID被改变，FSUID就被改为新的EUID值；FSUID
+  的值可以用Linux独有的调用setfsuid(2)单独进行设置。注意，非 root调用者只能把FSUID设置为当
+  前的RUID、EUID、SEUID或当前的FSUID。
+  
+  注释是这样说的
+  #+BEGIN_EXAMPLE
+ * We use "fsuid" for this, letting us set arbitrary permissions
+ * for filesystem access without changing the "normal" uids which
+ * are used for other things..
+  #+END_EXAMPLE 
+- 关于inode.i_mode里的文件类型和权限是如何占位的
+  #+BEGIN_EXAMPLE
+
+#define S_IFMT  00170000
+#define S_IFSOCK 0140000
+#define S_IFLNK	 0120000
+#define S_IFREG  0100000
+#define S_IFBLK  0060000
+#define S_IFDIR  0040000
+#define S_IFCHR  0020000
+#define S_IFIFO  0010000
+#define S_ISUID  0004000
+#define S_ISGID  0002000
+#define S_ISVTX  0001000
+
+#define S_IRWXU 00700
+#define S_IRUSR 00400
+#define S_IWUSR 00200
+#define S_IXUSR 00100
+
+#define S_IRWXG 00070
+#define S_IRGRP 00040
+#define S_IWGRP 00020
+#define S_IXGRP 00010
+
+#define S_IRWXO 00007
+#define S_IROTH 00004
+#define S_IWOTH 00002
+#define S_IXOTH 00001
+  #+END_EXAMPLE 
+** int get_write_access(struct inode * inode)
+*** fs/namei.c:
+- 这个函数主要是操作inode.i_writecount,它的值与MAP_DENYWRITE/VM_DENYWRITE有关
+  
+  有注释
+  #+BEGIN_EXAMPLE
+ * get_write_access() gets write permission for a file.
+ * put_write_access() releases this write permission.
+ * This is used for regular files.
+ * We cannot support write (and maybe mmap read-write shared) accesses and
+ * MAP_DENYWRITE mmappings simultaneously. The i_writecount field of an inode
+ * can have the following values:
+ * 0: no writers, no VM_DENYWRITE mappings
+ * < 0: (-i_writecount) vm_area_structs with VM_DENYWRITE set exist
+ * > 0: (i_writecount) users are writing to the file.
+  #+END_EXAMPLE 
+** int notify_change(struct dentry * dentry, struct iattr * attr)
+*** fs/attr.c:
+- 这个函数好像是通知某个dentry的文件属性改变了,改变了什么和怎么妀变都在第二个参数有说明.
+- iattr.ia_valid应该就是说明改变了什么,其它的成员应该就是说明怎么改变的.ia_valid的标志有
+  #+BEGIN_EXAMPLE
+
+/*
+ * Attribute flags.  These should be or-ed together to figure out what
+ * has been changed!
+ */
+#define ATTR_MODE	1
+#define ATTR_UID	2
+#define ATTR_GID	4
+#define ATTR_SIZE	8
+#define ATTR_ATIME	16
+#define ATTR_MTIME	32
+#define ATTR_CTIME	64
+#define ATTR_ATIME_SET	128
+#define ATTR_MTIME_SET	256
+#define ATTR_FORCE	512	/* Not a change, but a change it */
+#define ATTR_ATTR_FLAG	1024
+#define ATTR_KILL_SUID	2048
+#define ATTR_KILL_SGID	4096
+  #+END_EXAMPLE
+- 调用current_fs_time()计算时间,这个函数好像做一个时间的转换
+** int do_truncate(struct dentry *dentry, loff_t length)
+*** fs/open.c:
+- 这个函数是用来截短文件的
+- 其实就是调用notify_change()来修改文件的属性,有长度和CTIME属性.
+** struct file *get_empty_filp(void)
+*** fs/file_table.c:
+- 这个函数用来获得一个struct file
+- 首先判断有没有超过数量限制
+  #+BEGIN_EXAMPLE
+	if (files_stat.nr_files < files_stat.max_files ||
+				capable(CAP_SYS_ADMIN)) {
+  #+END_EXAMPLE
+- 调用kmem_cache_alloc()分配struct file
+- 这里设置了file.f_uid/f_gid为current.fsuid/fsgid.  原来fsuid/fsgid是这样被用的.
+** struct file *dentry_open(struct dentry *dentry, struct vfsmount *mnt, int flags)
+*** fs/open.c:
+- 这个函数被调用来打开dentry指定的文件.所谓的打开主要是建一个合适的struct file.
+- file.f_flags就是在filp_open()转换过的flags
+- file.f_mode就是除了有读/写外,还加上FMODE_LSEEK,FMODE_PREAD,FMODE_PWRITE
+  FMODE_LSEEK:file is seekable
+  
+  FMODE_PREAD: file can be accessed using pread
+  
+  FMODE_PWRITE:file can be accessed using pwrite 
+  
+  f_flags指的是以什么方式打开,而f_mode指的是打开之后能做什么.
+- f_mapping是用inode.i_mapping的.i_mapping:Pointer to an address_space object
+- f_dentry是用参数的
+- f.vfsmnt是用参数的
+- f.f_pos为0
+- f.f_op是用inode.i_fop
+- 把这个file插入到inode.i_sb.s_files链表里
+- 到这里还要调用file.f_op.open()方法,这就是驱动自已定义的方法.
+- file.f_flags:Flags specified when opening the file
+  
+  为什么要清O_CREAT,O_EXCL,O_NOCTTY,O_TRUNC呢?
+  #+BEGIN_EXAMPLE
+	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
+  #+END_EXAMPLE 
+- 初始化预读窗口,为什么要这样呢?为什么读写都要呢?
+- 若设置了O_DIRCT,那么就要检查file.f_mapping.a_ops.direct_IO方法是否被定义.
+** asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
+*** fs/read_write.c:
+- 先调用fget_light()来获取fd对应的file object.
+- 再调用file_pos_read()来获取文件指针,其实是就是file.f_pos.
+- 
+** ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+*** fs/read_write.c:
+- 先要看是不是读访问的
+  #+BEGIN_EXAMPLE
+	if (!(file->f_mode & FMODE_READ))
+		return -EBADF;
+  #+END_EXAMPLE
+- 再看有没有定义file.f_op.read/aio_read
+  #+BEGIN_EXAMPLE
+	if (!file->f_op || (!file->f_op->read && !file->f_op->aio_read))
+		return -EINVAL;
+  #+END_EXAMPLE
+- 接下来看看用户空间可以访问不
+  #+BEGIN_EXAMPLE
+	if (!file->f_op || (!file->f_op->read && !file->f_op->aio_read))
+		return -EINVAL;
+  #+END_EXAMPLE
+- 调用rw_verify_area()作一些区域性的检查,一次读/写的字节数是否过大,还有强制锁的事.
+- 接下来就是比较核心的部分了,调用自定义的read(),若没有就调用do_sync_read(),do_sync_read()
+  最后就是调用自定义的aio_read().注意是先调用read()的.
+- 调用完自定义的读函数之后就调用dnotify_parent()
+** int rw_verify_area(int read_write, struct file *file, loff_t *ppos, size_t count)
+*** fs/read_write.c:
+- file.f_maxcount: Maximum number of bytes that can be read or written with a single
+  operation
+
+  首先判断要读取的字节数有没有超过file_f_maxcount
+
+- 接下来看文件指针,自身和加上count都不能为负.
+
+- 接下来就是处理强制锁了,
+  
+  MS_MANDLOCK: Mandatory locking allowed.这个标志是执行mount命令时指定的,后来传给
+  inode.i_mode的
+  
+  http://www.blogjava.net/qileilove/archive/2012/05/23/378903.html
+  为了使能Linux中的强制锁功能，你需要在文件系统级别上打开它，同时在单个文件上打开它。其步骤是：
+
+  1、挂载文件系统时使用“-omand”参数。
+
+  2、对于要打开强制锁功能的文件lock_file，必须打开set-group-ID位，关闭group-execute位。
+  （选择此方法的原因是，当你关闭group-execute时，设置set-group-ID就没有实际的意义了）
+  
+  MANDATORY_LOCK()这个宏就是作上面这两种检查,如果上面的这两种检查都存在,那么就要在指定的区
+  域加锁了.要调用lock_mandatory_area()
+
+  
+** struct file fastcall *fget_light(unsigned int fd, int *fput_needed)
+*** fs/file_table.c:
+- task_struct.fs的类型是files_struct. files_struct.count:Number of processes sharing this
+  table.
+- 关于竞争注释有说明
+  #+BEGIN_EXAMPLE
+ * Lightweight file lookup - no refcnt increment if fd table isn't shared. 
+ * You can use this only if it is guranteed that the current task already 
+ * holds a refcnt to that file. That check has to be done at fget() only
+ * and a flag is returned to be passed to the corresponding fput_light().
+ * There must not be a cloning between an fget_light/fput_light pair.
+  #+END_EXAMPLE
+- 若文件描述表没有被共享,那么直接调用fcheck_files(),这个函数就是直接返回files.fd[fd].
+- 若文件描述表被共享,那么要加files.file_lock锁,还有一点很不一样的是:还要增加找的file的计数
+  器.
+  
+  这样说明,这个函数的操作有点大胆
+** asmlinkage long sys_close(unsigned int fd)
+*** fs/open.c:
+- 在files.fd里找出合适的struct file
+- 要把fd对应的在close_on_exec的位给清掉
+- 因为一个fd不用了,所以调用__put_unused_fd()来处理files.open_fds和files.next_fd.
+- 调用filp_close()
+** int filp_close(struct file *filp, fl_owner_t id)
+*** fs/open.c:
+- 这个函数的返回值有两种
+  
+  一个是使用file.f_error, 接着file.f_error清零
+  
+  若file.f_error没有错误码,那么就调file.f_op.flush()返回的错误码,若有,就不会使用flush()返
+  回的.
+
+- 这个函数主要调调用file.f_op_flush()后调用dnotify_flush()
+
+- 调用locks_remove_posix()处理锁的事
+
+- 调用fput()释放file object.
+** void dnotify_flush(struct file *filp, fl_owner_t id)
+*** fs/dnotify.c:
+- 若传入的filp不是一个目录的file object ,那么就返回.
+  #+BEGIN_EXAMPLE
+	if (!S_ISDIR(inode->i_mode))
+		return;
+  #+END_EXAMPLE 
+  
+  所以可以看出这个函数只处理目录的file object
+
+- 注意函数使用的inode是从filp里获得的,所以它们是对应的.
+** static void redo_inode_mask(struct inode *inode)
+*** fs/dnotify.c:
+- 这个函数就是把inode.i_dnotify链表里所有的dnotify_struct.dn_mask全都 _或_ 起来,最后把
+  _DN_MULTISHOT_ 给清掉, 再给inode.i_dnotify_mask
+- 在dnotify_flush()里这个函数被调用一次就退出循环了.
+** not function
+*** 12.7
+- It is possible to lock an arbitrary region of a file (even a single byte) or to lock the
+  whole file (including data appended in the future). Because a process can choose to lock
+  only a part of a file, it can also hold multiple locks on different parts of the file.
+- 若删除文件中间的一部分内容,那么文件在磁盘的存放位置是如何变化的?
+- POSIX标准的锁是用fcntl()实现,这个锁是建议锁,可以锁 _部分_ 或 _全部_.
+  
+  ulk:The POSIX standard requires a file-locking mechanism based on the fcntl( ) system
+  call. It is possible to lock an arbitrary region of a file (even a single byte) or to
+  lock the whole file (including data appended in the future). Because a process can
+  choose to lock only a part of a file, it can also hold multiple locks on different parts
+  of the file.
+  
+  This kind of lock does not keep out another process that is ignorant of locking. Like a
+  semaphore used to protect a critical region in code, the lock is considered "advisory"
+  because it doesn't work unless other processes cooperate in checking the existence of a
+  lock before accessing the file. Therefore, POSIX's locks are known as advisory locks .
+- 传统的BSD用flock()实现 _建议锁_,但只能锁 _全部_.
+- 传统的system v提供fcntl()的一个接口lockf()
+- system v3引入了 _强制锁_, 在调用 _open()_, _read()_, _write()_ 时会检查,不能冲突.
+- linux支持 _建议锁_, _强制锁_.支持 _fcntl()_ (POSIX)(系统调用), _flock()_( BSD)(系统调用),
+  _lockf()_ (system v)(函数库) .
+- 在同一个区域只能同时出现多个读锁,不能同时出现读和写锁,和多个写锁.
+- 在linux,flock()是可以实现强制锁的
+- linux 在fcntl()引入的强制锁就 _lease_,若一个进程要访问被lease的区间,那么会被 _block_,拥
+  有lease的进程会被 _informed_,那么它就要 _update_ 文件再 _release_ lease,若超过一定的时间
+  还没有relase, _kernel_ 会自动release.
+- 要实现 _建议锁_ 可以使用 _flock()_ 和 _fcntl()_.
+- _flock()_ 和 _fcntl()_ 之间的锁互不干扰,为什么要这样做呢?ulk:This has been done on
+  purpose in order to avoid the deadlocks occurring when an application using a type of
+  lock relies on a library that uses the other type.
+- 要想使用 _强制锁_ ,有3步:
+  
+  mount命令的 _MS_MANDLOCK_ 
+  
+  设置SGID,清组执行位
+  
+  调用fcntl()
+
+- read(),write(),以O_TRUNC的open()会处理锁的事.
+
+- 作用于同一文件的 _lock_file_ 文件锁结构体都是放在inode.i_flock链表里.
+
+- lock_file.fl_wait:When a process issues a blocking system call to require an exclusive
+  lock while there are shared locks on the same file, the lock request cannot be satisfied
+  immediately and the process must be suspended. The process is thus inserted into a wait
+  queue pointed to by the fl_wait field of the blocked lock's file_lock structure.
+- _file_lock_list_, _blocked_list_, _lock_file.fl_link_ :有一些 lock_file结构体所描述的锁已经
+  成功获取,但一些还没有,为了分清这两种情况,所以就有file_lock_list和blocked_list这两个链表
+  了,相应的lock_file.fl_link就插到其中的一个链表里去
+- FL_FLOCK锁指的是建议锁
+- http://www.ibm.com/developerworks/cn/linux/l-cn-filelock/index.html
+  共享模式锁
+
+  Linux 中还引入了两种特殊的文件锁：共享模式强制锁和租借锁。这两种文件锁可以被看成是强制锁的
+  两种变种形式。共享模式强制锁可以用于某些私有网络文件系统，如果某个文件被加上了共享模式强
+  制锁，那么其他进程打开该文件的时候不能与该文件的共享模式强制锁所设置的访问模式相冲突。但
+  是由于可移植性不好，因此并不建议使用这种锁。
+- 租借锁
+
+  采用强制锁之后，如果一个进程对某个文件拥有写锁，只要它不释放这个锁，就会导致访问该文件的
+  其他进程全部被阻塞或不断失败重试；即使该进程只拥有读锁，也会造成后续更新该文件的进程的阻
+  塞。为了解决这个问题，Linux 中采用了一种新型的租借锁。
+
+  当进程尝试打开一个被租借锁保护的文件时，该进程会被阻塞，同时，在一定时间内拥有该文件租借
+  锁的进程会收到一个信号。收到信号之后，拥有该文件租借锁的进程会首先更新文件，从而保证了文
+  件内容的一致性，接着，该进程释放这个租借锁。如果拥有租借锁的进程在一定的时间间隔内没有完
+  成工作，内核就会自动删除这个租借锁或者将该锁进行降级，从而允许被阻塞的进程继续工作。
+- http://blog.csdn.net/yebanghua/article/details/7301904
+  
+  概念:文件锁,记录锁,读写锁,共享锁,互斥锁
+  
+  读写锁是在记录锁里分类的
+  
+  Unix系统对文件加锁有两种粒度:文件锁和记录锁，
+  
+  文件锁用来锁定整个文件，
+  
+  而记录锁可以锁定文件的部分区域甚至一个字节，进程通过为文件设置多个记录锁，可以实现文件中
+  不同区域的数据的读写同步，因此记录锁最为常见。
+  
+  记录锁根据访问方式的不同，又分为读锁和写锁。
+  
+  读锁允许多个进程同时进行读操作，也称共享锁。
+  
+  文件加了读锁就不能再设置写锁，但仍允许其他进程在同一区域再设置读锁。
+  
+  写锁的主要目的是隔离文件使所写内容不被其他进程的读写干扰，以保证数据的完整性。
+  
+  写锁一旦加上，只有上锁的人可以操作，其他进程无论读还是写只有等待写锁释放后才能执行，故写
+  锁又称互斥锁，写锁与任何锁都必须互斥使用。
+- 文件锁和记录锁是按照锁的 _粒度_ 分类的.按 _实现机制_ 分类有建议锁和强制锁.
+  
+  建议锁开销小，可移植性好，符合POSIX标准的文件锁实现，在数据库系统中应用广泛，特别是当多个
+  进程交叉读写文件的不同部分时，建议锁有更好的并行性和实时性。
+  
+  这说明POSIX的锁的建议锁.
+  
+  flock和posix lock都共享一组机制，系统调用fcntl() 符合 POSIX 标准的文件锁实现，功能比
+  flock强大，可以支持记录锁。flock() 系统调用是从 BSD 中衍生出来的，只能支持整个文件的锁。
+
+- http://zohead.com/archives/linux-fcntl-advisory-mandatory-lock/
+  
+  通过这文章描述来看,建议锁和强制锁是不能对同一个文件使用的,若挂载时没用-o且没有去掉程序的
+  组执行权限和增加程序的设置组ID权限时,执行文章的代码就是使用建议锁,否则就是强制锁.所以在
+  fcntl()函数的参数里没有指定是否使用强制锁,只是在函数内部通过判断挂载标志和文件属性来确定
+  使用的是什么锁.
+  
+  使用 BSD 的 flock 函数时不能使用强制锁，见 Linux kernel 源码下 mandatory-locking.txt 中的
+  说明：Mandatory locks can only be applied via the fcntl()/lockf() locking interface – in
+  other words the System V/POSIX interface. BSD style locks using flock() never result in
+  a mandatory lock.
+  
+  那么租借锁又是如何与建议锁/强制锁协调的呢?租借锁使用F_SETLEASE,F_GETLEASE,建议锁/强制锁
+  使用F_SETLK/F_GETLK/F_SETLKW
+
+- fcntl()好像没有分开建议锁和强制锁,
+  
+  http://bbs.chinaunix.net/thread-1499379-1-1.html
+  
+  系统默认fcntl都是建议性锁，强制性锁是非POSIX标准的。如果要使用强制性锁，要使整个系统可以
+  使用强制性锁，那么得需要重新挂载文件系统，mount使用参数 -0 mand打开强制性锁，或者关闭已加
+  锁文件的组执行权限并且打开该文件的set-GID权限位。
+** asmlinkage long sys_flock(unsigned int fd, unsigned int cmd)
+*** fs/locks.c:
+- flock()是处理 _建议锁_ 的,
+- LOCK_SH 是给读共享锁的
+  
+  LOCK_EX 是给写锁的
+  
+  LOCK_UN 是释放锁的.
+  
+  LOCK_NB 在获取锁时不被阻塞
+- 还有一个LOCK_MAND,注释这样说:
+  #+BEGIN_EXAMPLE
+ *	%LOCK_MAND -- a `mandatory' flock.  This exists to emulate Windows Share Modes.
+ *
+ *	%LOCK_MAND can be combined with %LOCK_READ or %LOCK_WRITE to allow other
+ *	processes read and write access respectively.
+  #+END_EXAMPLE 
+- 若想给文件加建议锁,但是file object不能读和写,那么就返回错
+  #+BEGIN_EXAMPLE
+	if (!unlock && !(cmd & LOCK_MAND) && !(filp->f_mode & 3))
+		goto out_putf;
+  #+END_EXAMPLE 
+- 若有LOCK_NB标志,那么就设置file_lock.fl_flags的FL_SLEEP
+- 接下来若自定义了file.f_op.flock()那么就执行,否则就执行flock_lock_file_wait()(这是大多数
+  的情况)
+** static int flock_make_lock(struct file *filp, struct file_lock **lock,
+*** fs/locks.c:
+- 这个函数创建一个struct file_lock和初始化它
+- 调用flock_translate_cmd()把cmd转成另一种形式赋给file_lock.fl_type,结果有几种
+
+  LOCK_MAND | LOCK_RW
+  
+  F_RDLCK
+  
+  F_WRLCK
+  
+  F_UNLCK
+- 关于锁的标志的分类
+  #+BEGIN_EXAMPLE
+
+/* for posix fcntl() and lockf() */
+#define F_RDLCK		0
+#define F_WRLCK		1
+#define F_UNLCK		2
+
+/* for old implementation of bsd flock () */
+#define F_EXLCK		4	/* or 3 */
+#define F_SHLCK		8	/* or 4 */
+
+/* for leases */
+#define F_INPROGRESS	16
+
+/* operations for bsd flock(), also used by the kernel implementation */
+#define LOCK_SH		1	/* shared lock */
+#define LOCK_EX		2	/* exclusive lock */
+#define LOCK_NB		4	/* or'd with one of the above to prevent
+				   blocking */
+#define LOCK_UN		8	/* remove lock */
+
+#define LOCK_MAND	32	/* This is a mandatory flock */
+#define LOCK_READ	64	/* ... Which allows concurrent read operations */
+#define LOCK_WRITE	128	/* ... Which allows concurrent write operations */
+#define LOCK_RW		192	/* ... Which allows concurrent read & write ops */
+  #+END_EXAMPLE 
+  
+  说明一下flock()是bsd的东西
+  
+  基于fcntl()的 _强制锁_ 才就lease
+- 奇怪的一点是为什么flock_translate_cmd()把强制锁转成bsd的flock()的,而建议锁转成posix的
+  fcntl()和lockf()形式的.还是说LOCK_MAND,LOCK_READ,LOCK_WRITE,LOCK_RW不只是flock()的,而是
+  所有使用强制锁的函数共用的.
+- 这里使用的标志是FL_FLOCK,不管是不是强制锁
+  #+BEGIN_EXAMPLE
+	fl->fl_flags = FL_FLOCK;
+  #+END_EXAMPLE
+- 锁的标志有
+  #+BEGIN_EXAMPLE
+
+#define FL_POSIX	1
+#define FL_FLOCK	2
+#define FL_ACCESS	8	/* not trying to lock, just looking */
+#define FL_LOCKD	16	/* lock held by rpc.lockd */
+#define FL_LEASE	32	/* lease held on this file */
+#define FL_SLEEP	128	/* A blocking lock */
+  #+END_EXAMPLE 
+- 根据flock_translate_cmd(),锁的类型有(lock_file.fl_type)
+  #+BEGIN_EXAMPLE
+
+#define F_RDLCK		0
+#define F_WRLCK		1
+#define F_UNLCK		2
+
+#define LOCK_MAND	32	/* This is a mandatory flock */
+#define LOCK_READ	64	/* ... Which allows concurrent read operations */
+#define LOCK_WRITE	128	/* ... Which allows concurrent write operations */
+#define LOCK_RW		192	/* ... Which allows concurrent read & write ops */
+  #+END_EXAMPLE 
+- 这个函数无论是建议锁还是强制锁,都设置fl_end为OFFSET_MAX,也没有设置fl_start
+** int flock_lock_file_wait(struct file *filp, struct file_lock *fl)
+*** fs/locks.c:
+- 
+** static int flock_lock_file(struct file *filp, struct file_lock *new_fl)
+*** fs/locks.c:
+- 加一个锁要获得大内核锁,不管是不是强制锁.
+- 为什么在第一次扫描过程中,发现链表里有POSIX锁就退出呢?好像可以保证链表里若有POSIX锁就没有
+  FL_FLOCK锁似的
+  
+  为什么有LEASE锁时是continue呢?
+- 要注意第一个循环的目的应该是调用locks_delete_lock()来删除
+- ulk:If an FL_FLOCK lock for the same file object has been foundthus the process is
+  changing an already owned read lock into a write one (or vice versa)gives some other
+  higher-priority process, in particular every process previously blocked on the old file
+  lock, a chance to run by invoking cond_resched( ).
+  
+  第一个循环会在什么情况下有以上所说的情况呢?就是在IS_POSIX()为假,IS_LEASE()为假,filp等于
+  fl.fl_file, new_fl.fl_type不等于fl.fl_type,就是想妀变一个file object的FL_FLOCK类型.这时
+  found会为1,同执行完locks_delete_lock()后cond_resched()
+- 为什么在第一个循环之后判断new_fl.fl_type为F_UNLCK就会返回0呢?
+  #+BEGIN_EXAMPLE
+
+	if (new_fl->fl_type == F_UNLCK)
+		return 0;
+  #+END_EXAMPLE 
+  
+  ulk:If the process is performing an unlock (LOCK_UN), nothing else needs to be done: the
+  lock was nonexisting or it has already been released, thus returns 0.
+  
+  所以执行到这里之后只两种情况,就是原来的锁本不在,或已被释放.那么第一个循环只有三种情况会
+  退出循环执行到这里,第一种就是循环到最后一结点而结束,另一种就是IS_POSIX()为真,最后一种就
+  是执行完locks_delete_lock().所以前两种情况就是锁本不在,后一种情况就是锁被释放掉.
+  
+  若是被释放掉的,那么就要调用cond_resched().
+- 再看ulk的这段话,ulk:Searches the list that filp->f_dentry->d_inode->i_flock points
+  to. If an FL_FLOCK lock for the same file object is found, checks its type (LOCK_SH or
+  LOCK_EX): if it is equal to the type of the new lock, returns 0 (nothing has to be
+  done). Otherwise, the function removes the old element from the list of locks on the
+  inode and the global file lock list, wakes up all processes sleeping in the wait queues
+  of the locks in the fl_block list, and frees the file_lock structure.
+  
+  这段话又对应什么的代码呢?
+  
+  对于ulk说的返回0情况,执行过程是filp等于fl.fl_file, new_fl.fl_type也等于fl.fl_type,这时就
+  跳到out标签去执行.
+  
+  至于ulk说的否则后的话,就是locks_delete_lock()执行的任务:从inode的文件锁链表里删除该锁,同
+  是也从global file lock list这个激活的锁链表里删除该锁,最后唤醒休眠在fl_block里的进程.
+  
+  奇怪的是在什么时候会把进程插入到fl_block里呢?
+
+- 执行到第二个循环主要是想把锁插入到锁链表, ulk:Searches the list of locks on the inode
+  again to verify that no existing FL_FLOCK lock conflicts with the requested one. There
+  must be no FL_FLOCK write lock in the list, and moreover, there must be no FL_FLOCK lock
+  at all if the process is requesting a write lock.
+ 
+  flock_locks_conflict()返回0就表示没有冲突,若发现有冲突的话,就会往下执行,往下执行的结果是
+  先看这个锁允不允许休眠,接着就退出.
+
+- 结合两个循环来看POSIX锁时,就会发现若是POSIX锁,就会调用locks_insert_lock().
+- 进程是在调用locks_insert_block()时放到锁的等待队列的
+- 若不是插在等待队列,就是插在file_lock_list这个激活的链表里,这个要调用locks_insert_lock(),
+  这个函数还把锁插入到了inode.i_flock.
+** static void locks_delete_lock(struct file_lock **thisfl_p)
+*** fs/locks.c:
+- 奇怪的是,这个函数好像有一个错误,就是*thisfl_p.fl_next可能为NULL,那么为什么可以赋给
+  *thisfl_p呢?可以啊,结果就是*thisfl_p就是NULL而已,没什么大不了的.
+** static int flock_locks_conflict(struct file_lock *caller_fl, struct file_lock *sys_fl)
+*** fs/locks.c:
+- 判断FL_FLOCK锁有没有冲突
+- 用在同一个file object的FLOCK锁是不会冲突的
+  #+BEGIN_EXAMPLE
+	/* FLOCK locks referring to the same filp do not conflict with
+	 * each other.
+	 */
+  #+END_EXAMPLE
+- 第一个判断
+  #+BEGIN_EXAMPLE
+	if (!IS_FLOCK(sys_fl) || (caller_fl->fl_file == sys_fl->fl_file))
+		return (0);
+  #+END_EXAMPLE 
+  
+  这个函数主要是检查FL_FLOCK的,所以不是FL_FLOCK锁,就不处理了,但总要一个返回结果,所以就返回
+  了不冲突(0).
+  
+  若是FL_FLOCK锁,且是相同的file object,也是不冲突的.为什么呢?难道是因为同一个file object是
+  被共享的,所以让这些共享进程自已去协调吗?而不管是不是强制锁.
+- 若执行到了第二个判断,就是说明sys_fl的锁是FL_FLOCK锁且在是同一个file object.
+- 第二个判断是不处理旧或新的强制锁,若有强制锁就返回不冲突
+- 接下来就是调用locks_conflict()了,这个函数处理过程就要ulk所说的那样:There must be no
+  FL_FLOCK write lock in the list, and moreover, there must be no FL_FLOCK lock at all if
+  the process is requesting a write lock.
+** not function
+*** 12.7.4
+- 一个FL_POSIX锁是和一个进程还有一个inode相关连的,不能缺一.这点可能与FL_FLOCK不一样
+- FL_POSIX锁不会因调用fork()而产生继承.这点可能也与FL_FLOCK不一样
+- www.ibm.com/developerworks/cn/linux/l-cn-filelock/index.html
+  
+  F_GETLK：进程可以通过它来获取通过 fd 打开的那个文件的加锁信息。执行该操作时，lock 指向的
+  结构中就保存了希望对文件加的锁（或者说要查询的锁）。如果确实存在这样一把锁，它阻止 lock
+  指向的 flock 结构所给出的锁描述符，则把现存的锁的信息写到 lock 指向的 flock 结构中，并将
+  该锁拥有者的 PID 写入 l_pid 字段中，然后返回；否则，就将 lock 指向的 flock 结构中的
+  l_type 设置为 F_UNLCK，并保持 flock 结构中其他信息不变返回，而不会对该文件真正加锁。
+  
+  系统调用 fcntl() 还可以用于租借锁
+  
+  与租借锁相关的 cmd 参数的取值有两种：F_SETLEASE 和 F_GETLEASE。其含义如下所示：
+
+    F_SETLEASE：根据下面所描述的 arg 参数指定的值来建立或者删除租约：
+    
+        F_RDLCK：设置读租约。当文件被另一个进程以写的方式打开时，拥有该租约的当前进程会收
+  到通知
+        
+        F_WRLCK：设置写租约。当文件被另一个进程以读或者写的方式打开时，拥有该租约的当前进
+  程会收到通知
+        
+        F_UNLCK：删除以前建立的租约
+        
+    F_GETLEASE：表明调用进程拥有文件上哪种类型的锁，这需要通过返回值来确定，返回值有三种：
+  F_RDLCK、F_WRLCK和F_UNLCK，分别表明调用进程对文件拥有读租借、写租借或者根本没有租借
+  
+  需要注意的是，租借锁也只能对整个文件生效，而无法实现记录级的加锁。
+
+** asmlinkage long sys_fcntl(unsigned int fd, unsigned int cmd, unsigned long arg)
+*** fs/fcntl.c:
+- 这个函数主要是调用do_fcntl()
+** static long do_fcntl(int fd, unsigned int cmd, unsigned long arg, struct file *filp)
+*** fs/fcntl.c:
+** int fcntl_setlk(struct file *filp, unsigned int cmd, struct flock __user *l)
+*** fs/locks.c:
+- 调用这个函数主要是处理强制锁的事
+- 在do_fcntl()的cmd为F_SETLK或F_SETLKW时才调用的.
+- 若文件有一个共享内存映射,那么就不能加制锁.
+  #+BEGIN_EXAMPLE
+
+	/* Don't allow mandatory locks on files that may be memory mapped
+	 * and shared.
+	 */
+	if (IS_MANDLOCK(inode) &&
+	    (inode->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID &&
+	    mapping_writably_mapped(filp->f_mapping)) {
+		error = -EAGAIN;
+		goto out;
+	}
+  #+END_EXAMPLE 
+- 接下调用flock_to_posix_lock()把struct flock转成struct file_lock
+- 要检查F_RDLCK对应FMODE_READ,F_WRLCK对应FMODE_WRITE
+- 调用file.f_op.lock()
+- 接下来是调用__posix_lock_file()
+** static int flock_to_posix_lock(struct file *filp, struct file_lock *fl, struct flock *l)
+*** fs/locks.c:
+- 这个函数主要是用用户态传入的struct flock结构体里的数据初始化struct file_lock里的东西.
+- 文件的被锁的区域是如何确定的呢? 使用3个东西,一个是SEEK_SET,SEEK_CUR,SEEK_END,第二个是被
+  锁区域的起始位置相对于SEEK_SET或SEEK_CUR或SEEK_END的偏移量,最后一个是被锁区域的长度
+- file_lock.fl_flags设成了FL_POSIX
+** static int __posix_lock_file(struct inode *inode, struct file_lock *request)
+*** fs/locks.c:
+- 扫描inode里所有的锁.
+  
+  这一次是遇到POSIX锁的才继续的了
+  #+BEGIN_EXAMPLE
+			if (!IS_POSIX(fl))
+				continue;
+  #+END_EXAMPLE 
+  
+  接下来是检查冲突的问题,使用posix_locks_conflict().
+  
+  若是同一个拥有者就不冲突,file_lock.fl_owner
+  
+  若区间不重合就不冲突,这点FL_FLOCK没有检查
+  
+  若新旧都是不写的也不冲突.
+  
+  若不冲突就检查下一个锁
+  #+BEGIN_EXAMPLE
+			if (!posix_locks_conflict(request, fl))
+				continue;
+  #+END_EXAMPLE 
+  所以往下执行的都是有冲突的POSIX锁,若不能休眠(FL_SLEEP),那么就退出
+  #+BEGIN_EXAMPLE
+			if (!(request->fl_flags & FL_SLEEP))
+				goto out;
+  #+END_EXAMPLE 
+  
+  不明白为什么会出现死锁呢?判断是否死锁的方法就是看blocked_list里是否有同样的拥有者,但是
+  blocked_list里的进程不是都已经休眠了吗?
+  
+  在posix_locks_deadlock()里会调用posix_same_owner()来检查是否有同一个拥有者,之前在
+  posix_locks_conflict()同样也会调用,但是能执行到这里并不能确定posix_locks_conflict()调用
+  的posix_same_owner()是什么情况.
+  
+  posix_locks_deadlock()是这样检查死锁的,先用被加入的锁(caller_fl)与在__posix_lock_file()
+  里当前处理的锁比较是不是有相同的拥有者,这两个锁是同一个inode的,若相同,那么就表示有死锁,
+  所以可以看出inode.i_flock里的所有锁都不可能有相同的拥有者.比较完这个后就是用被加入的锁
+  (caller_fl)与block_list链表里的被阻塞的锁比较,若有相同的也认为有冲突.
+  
+  关于file_lock.fl_block:若有锁A被锁B阻塞,B是激活锁,那么A的file_lock.fl_block就插到B的
+  file_lock.fl_block里?
+
+  若即可以休眠又没有死锁,那么就可以调用locks_insert_block()把锁插入到file_lock.fl_block里,
+  若想插入到blocked_list链表里,就必须是POSIX锁.
+  #+BEGIN_EXAMPLE
+	if (IS_POSIX(blocker))
+		list_add(&waiter->fl_link, &blocked_list);
+  #+END_EXAMPLE
+
+- 若能正常地退出第一个循环,而不是跳到out标签处,那么就说明被加的锁是一个没有与其它在
+  inode.i_flock的锁有冲突的.
+- FL_ACCESS只是看锁会不会与其它的锁冲突,从代码来看若没有冲突就会返回0,若冲突就会返回其它的
+  错误码
+- 以下的代码是找到在inode.i_flock链表里第一个是POSIX锁且有相同拥有者的锁放到befor变量里.
+  #+BEGIN_EXAMPLE
+	before = &inode->i_flock;
+
+	/* First skip locks owned by other processes.  */
+	while ((fl = *before) && (!IS_POSIX(fl) ||
+				  !posix_same_owner(request, fl))) {
+		before = &fl->fl_next;
+	}
+  #+END_EXAMPLE
+- while()循环是处理与被加入锁有相同拥有者的锁.有点奇怪的是好像有相同拥有者的POSIX锁是连续
+  的似的.
+  
+  1. 若是相同类型的锁
+     
+     若新加入的锁的区间在旧锁的后面就再处理下一个旧锁
+     
+     若新锁区间在旧锁的前面,那么就跳出循环,为什么不处理下一个锁了呢?
+     
+     若以上的两种情况都不是,那么就说明有重合,所以就把它们合并起来
+     #+BEGIN_EXAMPLE
+   			/* If we come here, the new and old lock are of the
+			 * same type and adjacent or overlapping. Make one
+			 * lock yielding from the lower start address of both
+			 * locks to the higher end address.
+			 */
+			if (fl->fl_start > request->fl_start)
+				fl->fl_start = request->fl_start;
+			else
+				request->fl_start = fl->fl_start;
+			if (fl->fl_end < request->fl_end)
+				fl->fl_end = request->fl_end;
+			else
+				request->fl_end = fl->fl_end;
+     #+END_EXAMPLE 
+** not function
+*** 13.1
+- ulk:While accessing I/O ports is simple, detecting which I/O ports have been assigned to
+  I/O devices may not be easy, in particular, for systems based on an ISA bus. Often a
+  device driver must blindly write into some I/O port to probe the hardware device; if,
+  however, this I/O port is already used by some other hardware device, a system crash
+  could occur. To prevent such situations, the kernel keeps track of I/O ports assigned to
+  each hardware device by means of "resources ."
+- A resource represents a portion of some entity that can be exclusively assigned to a
+  device driver. In our case, a resource represents a range of I/O port addresses. The
+  information relative to each resource is stored in a resource data structure, whose
+  fields are shown in Table 13-1. All resources of the same kind are inserted in a
+  tree-like data structure; for instance, all resources representing I/O port address
+  ranges are included in a tree rooted at the node ioport_resource.
+- 父的资源范围包含子的资源范围.资源树的结构就是这样的,由parent,child,sibling
+- http://www.cnblogs.com/image-eye/archive/2012/01/29/2330838.html
+  
+  kset.kobj指针所指向的kobject的kset好像没有指向什么对吗?还是说指向包含这个kset的kset的呢?
+  应该是这样的.
+  
+  kset里的内嵌的kobject的件用是:一个kobject加入一个kset，主要是kobject结构体中的相关字段记
+  录了对应的kset信息
+- http://www.360doc.com/content/11/1110/23/1317564_163453770.shtml
+  
+  一个kobject对自身关不感兴趣，它存在的意义在于把高级对象连接到设备模型上。</STRONG></EM>高
+  级对象包括：总线，设备，设备驱动等。要把它们抽象起来，组织成一个模型，把必须要有一个中间
+  物，这个中间物就是kobject。为此，kobject总是被嵌入到这些高级对象中，很少有一个单独的
+  kobject对象。理解这个对于理解设备模型很重要.
+- struct cdev里嵌入了struct kobject有什么作用呢?
+- ldd3:一旦设置了kset并把它添加到系统中,将在sysfs中创建一个目录.kobject不必在sysfs中表示,
+  但是kset中的每一个kobject成员都将在sysfs中得到表示.
+- ldd3:kset在一个标准的内核链表中保存了它的子节点.在大多数情况下,所包含的kobject会在它们的
+  parent成员中保存kset(严格地说是其内嵌的kobject)的指针.
+  
+  保存到kset链表里的节点的kobject实际上是被嵌入到其他类型中(就如struct cdev里的kobject一
+  样).甚至可能是其他的kset.
+  
+  ldd3:一个kobject的父节点不一定是包含它的kset.(这种情况非常少)
+  
+  只有设置了kset才会在sysfs里创建目录,而有kobject的其它类型则不会在sysfs里创建目录.
+  
+  ldd3:kset中也有一个指针(在ktype成员中)指向kobj_type结构,用来描述它所包含的kobjcet.该类型
+  的使用的优先于kobject中的ktype.因此在典型应用中,kobject中的ktype成员被设置为NULL.因为
+  kset中的ktype成员是实际上被使用的成员.
+  
+  所以kset.ktype是用来描述在kset那个kobject链表里的kobject的.且是优先使用.
+  
+  ldd3:子系统通常(但不一定)显示在sysfs分层结构中的顶层.
+  
+  ldd3:每一个kset都必须属于一个子系统.
+  
+  可以通过kset.subsystem找到包含该kset的子系统,但是不能从subsystem里找到包含的多个kset.
+  
+  ldd3:对于sysfs中的每个目录,内核中都会存在一个对应的kobject.每一个kobject都输出一个或者多
+  个属性,它们在kobject的sysfs目录中表现为文件,其中的内容由内核生成.这部分内容揭示了kobject
+  和sysfs在底层是如何交互的.
+  
+  所以sysfs的文件与kobject不是一对一关系,只有目录与kobject才是一对一的关系,里面的文件是因
+  为kobject而输出的.文件是由内核生成的,不用特意去生成.
+  
+  ldd3:只要调用kobject_add(),就能在sysfs中显示kobject.
+  
+  ldd3:kobject在sysfs中的入口始终是一个目录,因此,对kobject_add的调用将在sysfs中创建一个目
+  录.通常这个目录包含一个或多个属性.
+  
+  所以一个目录一定有一个kobject对应的.
+  
+  ldd3:sysfs入口在目录中的位置对应于kobject的parent指针.如果调用lobject_add的时候,parent是
+  NULL,它将被设置为嵌入到新kobjcect的kset中的kobject,这样,sysfs分层结构通常与kset创建的内
+  部结构相匹配.如果parent和kset都是NULL,则会在最高层创弪sysfs目录,在这通常不是我们所期望的.
+  
+  那么parent指向其它的kset内嵌的kobject和指向把自已给内嵌的kset的目录布局又是怎么样的呢?
+  
+  现在有一个疑问:就是kobject.kset一定是指向包含该kobject的kset吗?应该是的,假设有A,B,C三个
+  kset,当然都有内嵌的kobject,现在把它们连接起来,假如A是父目录,如果没有kobjcet.kset表示的话
+  B和C是不知道其它两个kset那个是父目录的.那parent又有什么用呢?真正的目录视图到底是
+  kobject.kset还是kobject.parent在起作用呢?可能不是kset,有kobject.kset是为了使用kset里的
+  kobj_type?不会使用kobject.kset.kobj_type的,最多只会使用kobject被内嵌的kset的ktpe.有答案
+  了:之前有说过,ldd3:sysfs入口在目录中的位置对应于kobject的parent指针.ldd3:一个kobject的父
+  节点不一定是包含它的kset(这样的结构非常少见).
+  
+  若有kset A和B,它们都有内嵌的kobject,若B.kobj.parent指向A.kobj,这时目录和目录里的文件应该
+  是这样生成的:A生成一个相应的目录C,这个目录里有一个目录D对应B,目录C里生成的一些文件是根据
+  A.ktype.default_attrs这个sturct attribute链表生成的,若A.ktype为空,那么目录C里生成的一些
+  文件就是根据A.kobj.ktype.default_attrs.要生成多个文件,struct attribute链表就要有多个节点.
+  
+  kobj_type.sysfs_ops是读写kobj_type.default_attrs里的方法.
+- 关于二进制属性是如何使用的呢?它的类型是struct bin_attribute,所以不能像非默认属性那样可以
+  插在kobject.ktpye.attr链表里.二进制属性是用来上传固件用的.
+- kobject的添加和删除都会引起热插拔事件,事件会从内核态发到用户态,从而引起/sbin/hotplug的调
+  用,hotplug会通过加载驱动程序,创那设备节点,挂载分区或者其他的动作来响应事件.
+  
+  调用kobject_add或kobject_del时才会真正产生这些事件.
+  
+  热插拔的操作函数在kset.hotplug_ops里,这可能也是为什么kobject有一个kset的原因吧.
+  
+  ldd3:如果在kset中不包含一个指定的kobject,内核将在分层结构中进行搜索(通过parent指针),直到
+  找到一个包含有kset的kobject为止,然后使用这个kset的热插拔操作.
+** int request_resource(struct resource *root, struct resource *new)
+*** kernel/resource.c:
+- 这个函数主要是调用__request_resource()
+** static struct resource * __request_resource(struct resource *root, struct resource *new)
+*** kernel/resource.c:
+- 有三种情况会返回第一个参数,
+  
+  请求的区间的起始位置大于结束位置
+  #+BEGIN_EXAMPLE
+	if (end < start)
+		return root;
+  #+END_EXAMPLE 
+  
+  请求的区间的起始位置小于根的起始位置
+  #+BEGIN_EXAMPLE
+	if (start < root->start)
+		return root;
+  #+END_EXAMPLE 
+  
+  请求的区间的结束置大于根的结束位置
+  #+BEGIN_EXAMPLE
+	if (end > root->end)
+		return root;
+  #+END_EXAMPLE
+- 这个函数返回NULL表示成功,否则返有冲突的resource
+- 资源树可能是这样的,struct resource.child只是指向一个struct resource,然后用
+  resource.sibling把所有的孩子给连起来
+- for循环里的代码是如何保证请求的区间在两个区间之间又不冲突时成功的呢?
+  
+  保证请求区间的起始地址大于前一个区间的结西地址是for()后面的代码
+  #+BEGIN_EXAMPLE
+		p = &tmp->sibling;
+		if (tmp->end < start)
+			continue;
+  #+END_EXAMPLE
+  因为continue之后会处理下一个区间,所以就会用下面的代码来判断请求区间的结束地址小于当前区
+  间的起始地址
+  #+BEGIN_EXAMPLE
+		if (!tmp || tmp->start > end) {
+			new->sibling = tmp;
+			*p = new;
+			new->parent = root;
+			return NULL;
+		}
+  #+END_EXAMPLE
+  因为在函数的开始就处理了请求的区间有没有超过root的区间.
+- 通过把新的区间的resource的插入代码来看,sibling里的resource是按照资源的位置大小来排的
+  #+BEGIN_EXAMPLE
+			new->sibling = tmp;
+			*p = new;
+  #+END_EXAMPLE
+** static int find_resource(struct resource *root, struct resource *new, unsigned long size, unsigned long min, unsigned long max, unsigned long align, void (*alignf)(void *, struct resource *, unsigned long, unsigned long), void *alignf_data)
+*** kernel/resource.c:
+- 成功就返回0,失败就返回EBUSY
+- 函数find_resource()用于在一颗资源树中寻找未被使用的、且满足给定条件的（也即资源长度大小为
+  size，且在[min,max]区间内）的资源。
+- for()循环的的开始先把被分配区间(new)定位在没有被使用区间内
+  #+BEGIN_EXAMPLE
+		new->start = this->end + 1;
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+		if (this)
+			new->end = this->start - 1;
+		else
+			new->end = root->end;
+  #+END_EXAMPLE 
+  
+  然后就再缩小到min到max之后
+  #+BEGIN_EXAMPLE
+		if (new->start < min)
+			new->start = min;
+		if (new->end > max)
+			new->end = max;
+  #+END_EXAMPLE
+  
+  接着再把对齐一下new.start
+  #+BEGIN_EXAMPLE
+		new->start = (new->start + align - 1) & ~(align - 1);
+  #+END_EXAMPLE 
+  
+  new.start定好之后就用请求的大小来确定new.end
+  #+BEGIN_EXAMPLE
+		if (new->start < new->end && new->end - new->start >= size - 1) {
+			new->end = new->start + size - 1;
+			return 0;
+		}
+  #+END_EXAMPLE
+- 这个函数只是在root里找到合适的区间来初始化new,并没有把new插入到root的孩子链表里.
+** int allocate_resource(struct resource *root, struct resource *new,unsigned long size,unsigned long min, unsigned long max,unsigned long align,void (*alignf)(void *, struct resource *,unsigned long, unsigned long),void *alignf_data)
+*** kernel/resource.c:
+- 这个函数先用find_resource()找出落在某区间的指定大小的区间,
+  
+  接着再调用__request_resource(),若find_resource()成功了,那么调用__request_resource()一定
+  是成功,调用__request_resource()的目的只是把区间插到root孩子链表里.
+
+- 这个函数与request_resource()的区别就是这个函数指定了在某个区间里找一个指定大小的区间,并
+  指定的对齐大小,
+  
+  request_resource()就比较死,区间就只能在指定范围里.
+** #define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name))
+*** include/linux/ioport.h:
+- 这个函数只分配ioport_resource资源树里的资源.
+** struct kobject * kobject_get(struct kobject * kobj)
+*** lib/kobject.c:
+- 增加kobject.kref.refcount, struct kref就只有refcount这一个结构体而已
+** int kobject_register(struct kobject * kobj)
+*** lib/kobject.c:
+- 调用kobject_init()
+- 调用kobject_add(),返回之后就对参数kobj创建了dentry和inode
+** void kobject_init(struct kobject * kobj)
+*** lib/kobject.c:
+- 设置kobject.kref.refcount为1.
+- 把调用kset_get()的返回值给kobject.kset.
+  
+  若该kobject是由某个kset.kobj指向的,那么kset_get()就会返回这个kset.
+  
+  要kset_get()返回kset,那么kobject.kset就不能为空
+  
+  但从kset_get()里调用的to_kset()来看,只是兜了一个圏而已,过程只是增加了
+  kobject.kset.kobj.kerf.refcount
+  
+  调用kset_get()时传入的是kobject.kset, 在kset_get()里调用to_kset()时作为参数的是传给
+  kset_get()的kset的kobj. 而在to_kset()里返回的是包含传入的kobject的kset,而这个kset就是传
+  入给kset_get()的那个kset.所以kset_get()返回的就是传入的那个kset,而不管kset.kobj是不是与
+  调用kset_get()时的kobject一样.
+- 关于kset里的kobj:ulk:The kobj field is a kobject embedded in the kset data structure;
+  the parent field of the kobjects contained in the kset points to this embedded
+  kobject. Thus, a kset is a collection of kobjects, but it relies on a kobject of higher
+  level for reference counting and linking in the hierarchical tree. This design choice is
+  code-efficient and allows the greatest flexibility. For instance, the kset_get( ) and
+  kset_put( ) functions, which increase and decrease respectively the reference counter of
+  the kset, simply invoke kobject_get( ) and kobject_put( ) on the embedded kobject;
+  because the reference counter of a kset is merely the reference counter of the kobj
+  kobject embedded in the kset. Moreover, thanks to the embedded kobject, the kset data
+  structure can be embedded in a "container" object, exactly as for the kobject data
+  structure. Finally, a kset can be made a member of another kset: it suffices to insert
+  the embedded kobject in the higher-level kset. 
+  
+  kset.kobj.parent指向kset.kobj,就是指向自已.
+- 目录文件与kobject的关系:ulk:The directory associated with a kobject always appears in
+  the directory of the parent kobject. For instance, the directories of kobjects included
+  in the same kset appear in the directory of the kset itself. 
+  
+  注意是parent kobject. included in the same kset的意思是不是指kset.kobj.entry链起来的
+  kobject呢?
+- 接下来调用kobject_add()
+** int kobject_add(struct kobject * kobj)
+*** lib/kobject.c:
+- 这个又调用kobject_get(),在kobject_init()里已经get一次了.
+- 会在这里把kobject.name的地址给kobject.k_name,所以在register一个kobject的时候要初始化好
+  kobject.name,好像也可以初始化好kobject.k_name,只是要分配空间.
+- 接下来就是对kobject.parent来get一次.
+  
+  在这里得到的parent就是kobject.parent, 但是为什么在下面又把parent赋给kobject.parent呢?不
+  是多此一举吗?
+  
+  不是多此一举的,因为在中间还一个对kobject.parent的处理,就是若kobject.kset不为 _空_,且
+  kobject.parent为 _空_,那么parent就为kobject.kset.kobj.
+  
+  我觉得kobject.parent都是指向kobject.kset.kobj的
+- 若kobject.kset不为空,那么就把kobject.entry插入到kobject.kset.list链表里.而不管这个
+  kobject.parent指的是谁,反正就一定会把kobject.entry插到kobject.kset.list里.
+- 调用create_dir()来创建文件
+- 这个函数主要是做了3件事:
+  
+  初始化kobject的名字,
+  
+  初始化kobject.parent
+  
+  创建目录.
+** static int create_dir(struct kobject * kobj)
+*** lib/kobject.c:
+- 只有在kobject.k_name不为空时才可以创建文件
+- 接着就是调用sysfs_create_dir()
+** int sysfs_create_dir(struct kobject * kobj)
+*** fs/sysfs/dir.c:
+- 这个函数先找到参数kobj将被创建的位置的父目录.
+  #+BEGIN_EXAMPLE
+	if (kobj->parent)
+		parent = kobj->parent->dentry;
+	else if (sysfs_mount && sysfs_mount->mnt_sb)
+		parent = sysfs_mount->mnt_sb->s_root;
+	else
+		return -EFAULT;
+  #+END_EXAMPLE
+  
+  若有kobj.parent,那么就在这个parent的目录下创建.
+  
+  若没有kobj.parent,那么就在sysfs文件系统的最顶层去创建.
+
+- 找到父目录的dentry之后,就调用create_dir()来创建一个文件
+** static int create_dir(struct kobject * k, struct dentry * p, const char * n, struct dentry ** d)
+*** fs/sysfs/dir.c:
+- 文件模式宏
+  #+BEGIN_EXAMPLE
+#define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
+#define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
+#define S_IRUGO		(S_IRUSR|S_IRGRP|S_IROTH)
+#define S_IWUGO		(S_IWUSR|S_IWGRP|S_IWOTH)
+#define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
+  #+END_EXAMPLE
+- 这个函数创建的只是目录, 没有创建普通文件的功能.
+- 先调用sysfs_get_dentry()在dentry cache里找看有没有这个dentry object,若没有也会创建一个的.
+  
+  若sysfs_get_dentry()在dentry cache里若没有找到dentry object,就会调用d_alloc()分配一个,分
+  配过程中会把dentry.d_parent给初始化为sysfs_get_dentry()传入的那么parent dentry的.
+- 接着调用sysfs_create()
+- dentry.d_fsdata: Filesystem-dependent data
+- 调用sysfs_create()创建完inode之后就调用sysfs_make_dirent()为新的inode创建新的struct
+  fsdata_dirent.
+- 接着就增加dentry.d_inode.i_nlink. i_nlink :Number of hard links
+- 在创建struct sysfs_dirent没有错时设置dentry.d_op为sysfs_dentry_ops.
+- sysfs_create()返回EEXIST时表明inode不用创建了,因为已经存在,若是其它的错,就要d_drop()掉dentry.
+  #+BEGIN_EXAMPLE
+		if (error && (error != -EEXIST))
+			d_drop(*d);
+  #+END_EXAMPLE 
+
+
+** int sysfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
+*** fs/sysfs/inode.c:
+- 这个函数先为dentry创建一个inode,若发现这个inode已经存在,那么就返回EEXIT错误码
+- 调用sysfs_new_inode()来创建一个inode,这个inode特别的地方就是
+  
+  i_mode 为 S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO,就是说一定是一个 _目录_,所有用户可 _读_,
+  所有用户可 _执行_, 只有 root可 _写_.
+  
+  i_mapping.a_ops为sysfs_aops
+  
+  i_mapping.backing_dev_info为sysfs_backing_dev_info
+- 分配好inode之后就调用参数函数init(),这个函数的在create_dir()传进来的是init_dir()这个函数,这
+  个函数就是设i_op为sysfs_dir_inode_operations, i_fop为sysfs_dir_operations, 递增了i_nlink.
+- 最后就是调用d_instantiate(),
+  
+  把dentry.d_alias放到inode.i_dentry里
+  
+  设置dentry.d_inode为inode
+- 所以这个函数任务就是给dentry分配一个对应的inode,并初始化它.
+** int sysfs_make_dirent(struct sysfs_dirent * parent_sd, struct dentry * dentry, void * element, umode_t mode, int type)
+*** fs/sysfs/dir.c:
+- 调用sysfs_new_dirent()给新的dentry创建新的struct sysfs_dirent
+  
+  新的sysfs_dirent增加了sysfs_dirent.s_count
+  
+  新的sysfs_dirent.s_sibling插到了parent的sysfs_dirent.s_childrent里了
+  
+  新的sysfs_dirent.element赋予了dentry对应的的kobject.
+
+- sysfs_new_dirent()返回之后继续初始化sysfs_dirent.
+  
+  s_mode为建inode时用的mode
+  
+- 子目录的dentry.d_fsdata与父目录的一样,因为在create_dir()里传入的fsdata就是父目录的d_fsdata.
