@@ -7068,3 +7068,196 @@ http://bbs.csdn.net/topics/390486414
 ==============================[2013-12-12 Thu]===============================
 
 发现打字的时候很字是二简码的,所以打字时注意.
+
+zh-hans_windows_xp_professional_with_service_pack_3_x86_cd_vl
+搜这个就可以找到原版的XP了。
+SHA1:D142469D0C3953D8E4A6A490A58052EF52837F0F
+
+==============================[2013-12-13 Fri]==============================
+
+其实fedora的源一直都有的，只是旧系统的源没有作更新而己
+http://archives.fedoraproject.org/pub/archive/fedora/
+
+今无在删除kernel-headers包的时候也把依赖它的gcc,glibc-devel,glibc-headers包给删了，所以要重
+说安装
+好在依赖kernel包的也就gcc的东西了。
+
+原来http://archives.fedoraproject.org/pub/archive/fedora/
+http://archive.fedoraproject.org/pub/archive/fedora/linux/updates/
+这些源是那么快的，哈哈。以后就不会怕因为不长期维护而没有软件安装了..
+
+终于在fc17里把vbox给装上了，用了手动安装旧的kernel包,用yum安装老是安装新的,但是新的鼠标不能
+用,我觉还有一种方法就是把yum 的update源给删掉,这样就不会在新源上找了.
+
+把yum的源地址改成了archives的，update的源也是：
+[fedora]
+name=Fedora $releasever - $basearch
+failovermethod=priority
+baseurl=http://archives.fedoraproject.org/pub/archive/fedora/linux/releases/$releasever/Everything/$basearch/os/
+# baseurl=http://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/$basearch/os/
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=fedora-$releasever&arch=$basearch
+enabled=1
+metadata_expire=7d
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
+
+[fedora-debuginfo]
+name=Fedora $releasever - $basearch - Debug
+failovermethod=priority
+baseurl=http://archives.fedoraproject.org/pub/archive/fedora/linux/releases/$releasever/Everything/$basearch/debug/
+# baseurl=http://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/$basearch/debug/
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=fedora-debug-$releasever&arch=$basearch
+enabled=0
+metadata_expire=7d
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
+
+[fedora-source]
+name=Fedora $releasever - Source
+failovermethod=priority
+baseurl=http://archives.fedoraproject.org/pub/archive/fedora/linux/releases/$releasever/Everything/source/SRPMS/
+# baseurl=http://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Everything/source/SRPMS/
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=fedora-source-$releasever&arch=$basearch
+enabled=0
+metadata_expire=7d
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
+
+
+updata的源
+
+[updates]
+name=Fedora $releasever - $basearch - Updates
+failovermethod=priority
+baseurl=http://archive.fedoraproject.org/pub/archive/fedora/linux/updates/$releasever/$basearch/
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=updates-released-f$releasever&arch=$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
+
+[updates-debuginfo]
+name=Fedora $releasever - $basearch - Updates - Debug
+failovermethod=priority
+baseurl=http://archive.fedoraproject.org/pub/archive/fedora/linux/updates/$releasever/$basearch/debug/
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=updates-released-debug-f$releasever&arch=$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
+
+[updates-source]
+name=Fedora $releasever - Updates Source
+failovermethod=priority
+baseurl=http://archive.fedoraproject.org/pub/archive/fedora/linux/updates/$releasever/SRPMS/
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=updates-released-source-f$releasever&arch=$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$basearch
+
+
+==============================[2013-12-14 Sat]==============================
+
+http://blog.sina.com.cn/s/blog_3ecb8c890101gohv.html
+解决了支付宝插件不能用的问题,
+
+我不是64位,而是32位的,所以用ldd libaliedit32.so |grep "not found"
+其实真正应该这样
+ldd /home/yj/.mozilla/plugins/libaliedit32.so |grep "not found"
+
+ldd命令:
+http://www.poluoluo.com/server/201011/98313.html
+
+发现不用指尖按键,而用指面按好像省力和省心很多,特别是按LSHIFT的时候.
+
+是不是把太多的气集中在手指了所以导致脾会气虚呢?
+
+在开kvm的虚拟机的时候要执行setenforce 0来关闭selinux.
+
+==============================[2013-12-15 Sun]==============================
+
+vbox和kvm的区别
+http://www.cnblogs.com/chinacloud/archive/2010/08/17/1801638.html
+http://forum.ubuntu.org.cn/viewtopic.php?t=359647
+
+vbox的共享剪切板还要设置的啊.
+
+开了3D图形加速firefox在tudou不能看视频了,看凤凰网的视频也卡.
+开2D的视频加速可以看.
+
+发现用无名指按p链也不错.
+
+按键盘打的节奏要配合呼吸才会舒服,才不打乱身体的气的流动.这要对郑码有较高的要求.
+
+要想知道fedora19稳不稳定,不要搜"fedora19稳定",要搜"fedora19不稳定"
+
+==============================[2013-12-17 Tue]==============================
+
+不要一直把手放在键盘了,不按的时候就不要放
+
+发现身体向右侧的时候会按键会比较到位一点,如按lshift,backspace,enter,ralt,rctrl,还有有一点就
+是可以矫正我向左倾的脊椎.
+
+==============================[2013-12-19 Thu]==============================
+
+找到了在gnome3里切换程序的快键方法了,就是按下win键后,输入程序的名字,很多时候只需输入一两个
+字母就可以了,搜到之后按enter可以切换,若同时按下ctrl还可以再打开相同的程序.
+
+相邻(flow)不是floy吗?
+
+==============================[2013-12-23 Mon]==============================
+
+我发现我很多时候手掌在自然状态下没有伸直, 那是紧张的表现, 所以要时刻注意这个细节, 让自己的
+手自然放松.这样可以缓解紧张感.
+
+现在觉得键盘放的位置要偏右一点,否则右手掌会过于曲而按回车和bs很吃力.
+
+现在发现手的姿势按alt 和 ctl方便了,但是按 t y 5 6 7 就不方便了.
+
+有一个方法就是打开垫脚.我用尺量了一下,打开垫脚之后,最下面的那一排键的高度并没有降低或升高,
+
+看着realforce 和 hhkb 打开与不打开垫脚的高度参数是一样的,但是实际是不一样的,为什么,因为量的
+地方不一样,realforce量的是到最边沿的地方,hhkb量的是到数字键的那一行,所以实际realforce数字那
+一行的高度是比hhkb低的, 应该低至少5mm.如果是这样的话,hhkb按数按上面的键应该会更轻松.
+
+显示器放得更近,放得更低,工作起来就不会那么费神.
+
+现在发现按shifp键有一方便的方法,就是把小指卷起来,然后就是直接向下按就可以了.TAB键可以这样
+按.这样没有那么费力.
+
+==============================[2013-12-24 Tue]==============================
+
+我现在又发现还是用低的桌子好,因为这样显示器可以放得低一点.这点是我使用笔记本时体会到的.
+
+打字时不能急躁,不然什么的好键盘垖不舒服.
+
+firefox可以用alt+数字来切换标签.
+
+如果是打字就把键盘放远一点,否则就把键盘和显示器放近一点.因为放近一点之后按 t y 6 7 会难按一点.
+
+现在发现可以不用很少按bs和enter的方法，在emacs时按ctrl-- ctrl-d可以代替bs,alt-bs可以用
+ctrl-- alt-d代替,虽然按多了几个键,但是手不累,按bs实在是高难度动作.在emacs里enter键好像都可
+以用ctrl-j代替.再加上卷着小指按左右的shift,就算把键盘放得很近也不会有问题,且用小小输入法时
+可以用esc来取消输入的错误,把键盘放近后按esc也很容易.但是enter还是逃不掉,因为切换应用程序时要用.
+还可以用ctrl-b ctrl-d代替bs,这个更方便.
+
+cscope buffer是只读的buffer,不能用C-j,代替enter的方法:找到条目后按空格,再切换到相应的
+buffer即可.
+
+用C-j代替enter真是好用.
+
+evince的查找一上个可以用ctrl+g, 上一个可以用ctrl+shifg+g. 这个可以代替回车.
+
+如果是切换时按enter其实没什么大碍,因为这时切入或切出emacs,手势可以稍微调整一下.
+
+87u可以再加多一个映射就和86u一样了,在fedora里加多一个alt is mapped to right win,super to
+menu.
+
+==============================[2013-12-25 Wed]==============================
+
+若连续错误输入n个字的话,可以先按n次C-b,再按n次C-d.这个n次还可以用C-u输入.
+
+==============================[2013-12-27 Fri]==============================
+
+要习惯用小指的关节按enter和shift.
+
+
+

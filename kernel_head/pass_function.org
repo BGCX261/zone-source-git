@@ -11601,7 +11601,8 @@ union swap_header {
   
   kobj_type.sysfs_ops是读写kobj_type.default_attrs里的方法.
 - 关于二进制属性是如何使用的呢?它的类型是struct bin_attribute,所以不能像非默认属性那样可以
-  插在kobject.ktpye.attr链表里.二进制属性是用来上传固件用的.
+  插在kobject.ktpye.attr链表里.二进制属性是用来上传固件用的.struct bin_attribute里有一个
+  struct attribute类型的成员,而这个attribute应该是被链接到kset.ktype.default_attrs里的
 - kobject的添加和删除都会引起热插拔事件,事件会从内核态发到用户态,从而引起/sbin/hotplug的调
   用,hotplug会通过加载驱动程序,创那设备节点,挂载分区或者其他的动作来响应事件.
   
@@ -11611,6 +11612,155 @@ union swap_header {
   
   ldd3:如果在kset中不包含一个指定的kobject,内核将在分层结构中进行搜索(通过parent指针),直到
   找到一个包含有kset的kobject为止,然后使用这个kset的热插拔操作.
+- ldd3:无论什么时候，当内核要为指定的kobject产生事件时，都要调用kset_hotplug_ops.filter函
+  数.如果filter返回0,将不产生事件.因此该函数给kset代码一个机会,用于决定是否向用户空间传递
+  特定的事件.
+  
+  所以可以filter函数来确定是否逡中用户通知事件
+- ldd3:任何热插拔脚本所需要知道的信息将通过环境变量传递.最后一个hotplug方法(hotplug)会在调
+  用脚本前,提供添加环境变量的机会.ldd3有关于这个函数的参数的描述.
+- 总线的结构体是struct bus_type.ldd3:每个总线都有自已的子系统.然而这些子系统并不在sysfs中
+  的顶层,相反钗,我们会在总线子系统下面发现它们.一个总线包含两个kset,分别代表了总线的驱动程
+  序和插入总纯的所有设备
+  
+  所以总线不在最顶层,一个kset指总线驱动程序,一个kset指 _所有_ 设备.
+- 总线的结构体是struct bus_type.
+- 总线的match方法:ldd3:当一个总线上的新设备或者新驱动程序被添加时,会一次或多次调用这个函数.如
+  果指定的驱动程序能够处理事务定的设备,该函数返回非零值.必须在总线层上使用该函数,因为那里
+  存在着正确的逻辑.核心内核不知道如何为每个总线类型匹配设备和驱动程序.
+  
+  match方法原来是 _总线_ 的.
+- 总线的hotplug方去:ldd3:在为用户空间产生热插拔事件前,这个方法允许总线添加环境变量.其 _参
+  数_ 与 _kset_ 的hotplug方法相同.
+  
+  那么这两个方法调用有什么不同吗?总线的hotplug是给总线添加环境变量的,kset的hotplug是给kset
+  添加环境变量.
+- bus_type里有一个struct bus_attribute的属性结构体表示总线的属性.
+- struct bus_type里有kset没有kobject,但是struct device里 _没有_ kset _有_ kobject,所以
+  struct device不会做为一个容器来包含其它的kobject.而是struct bus_type会包含struct
+  device. device.bus的类型是struct bus_type.
+- 在struct device结构体里没有struct device_attribute类型的成员,但是struct bus_type有.
+  
+  在struct driver结构体里没有struct driver_attribute类型的成员,但是struct bus_type有.
+- ldd3:bus_type结构中的dev_attrs成员,指白一个为 _每个_ 加入总线的设备建立的默认属性链表.
+- struct bus_type里有struct subsystem,但struct device里没有.
+- device.parent:ldd3:设备的"父"设备--指的是该设备所属的设备.在大多数情况下,一个父设备通常是
+  某种 _总线_ 或者是宿主控制器.如果parent是NULL,表示该设备是顶层设备,但这种情况 _很少_ 出
+  现.
+  
+  parent可以指向总线,总线可以用struct device表示.parent为NULL很少.
+- device.kobj:ldd3:表示该设备并把它连接到结构体系中的kobject.请注意,作为一个通用准
+  则,device.kobj.parent与&device.parent.kobj是相同的.
+  
+  kobject.parent是对目录结构有影响的.
+- ldd3:单纯用device结构表示的设备是很少见的,而是通常把类似kobject这样的结构内嵌在设备的高层
+  表示之中.如果读者阅读pci_dev或者usb_device结构的定义,就会发现其中隐藏了device结构.
+  
+  但是struct cdev没有,cdev有什么特别之处吗?
+- device_driver.name:ldd3:是驱动程序的名字(在sysfs中显示),那么这个各字是以一个目录还是文件存在
+  呢?
+  
+  device_driver.bus:ldd3:是该驱动程序所操作的总线类型.
+  
+  device_driver.devices:ldd3:是当前驱动程序能操作的设备链表.
+    
+  device.driver:注释:which driver has allocated this device .
+  
+  所以一个设备只能由一个驱动所驱动,但是一个驱动程序可以驱动多个设备.
+  
+- ldd3:bus_type结构包含一个成员(drv_attrs),它指向一组为属于该总线的所有设备创建的默认属性.
+  
+  看来,kobject,kset,subsystem,device,driver,bus_type的成员要一个一个记住啊.
+  
+  发现关于结构体成员的描述还是ulk说得好点.
+
+- ulk:Even the subsystem data structure can be embedded in a larger "container" object;
+  the reference counter of the container is thus the reference counter of the embedded
+  subsystemthat is, the reference counter of the kobject embedded in the kset embedded in
+  the subsystem. The subsys_get( ) and subsys_put( ) functions respectively increase and
+  decrease this reference counter.
+  
+  subsys_get()->kset_get()->kobject_get(),最终是增加了subsystem.kset.kobj.kref.refcount.
+
+- subsystem 嵌入的是 _kset_,
+  
+  kset      嵌入的是 _kobject_,
+  
+  bus_type  嵌入的是 两个 _kset_, 一个 _subsystem_
+  
+  device    嵌入的是 kobject
+  
+  device_driver 嵌入的是 bus_type, kobject
+
+- cdev里只有kobject,没有subsystem,kset,bus_type,device,driver.
+  
+  pci_dev里没有kobject,有device
+  
+  是不是有device就没有必要有kobject了呢?因为cdev不需要用到device是的成员来描述设备,所以就
+  没有必要有device了,但是又必须有一个内嵌的kobject,且因没有devcie而不能使用device里的
+  kobject,所以只好在cdev是内嵌一个kobject了.这样解释对吗?
+
+- device.children是子设备链表的表头,device.node指向孩子链表的下一个元素.但是仅从这两个成员
+  来看是不知道父子关系的,所以要用device里的kobject来表示设备的父子关系,这样/sys/devices目
+  录下的目录结构才符合设备的物理组织.
+  
+  所有设备对象全收集到devices_subsystem中,与/sys/devices目录关联.
+
+- device.driver_list:Each driver keeps a list of device objects including all managed
+  devices; the driver_list field of the device object stores the pointers to the adjacent
+  elements, while the driver field points to the descriptor of the device driver.
+- device.bus_list:For each bus type, moreover, there is a list including all devices that
+  are hosted on the buses of the given type; the bus_list field of the device object
+  stores the pointers to the adjacent elements, while the bus field points to the bus type
+  descriptor.
+- struct device对象在sysfs里表现是一个目录还是一个文件呢?
+- device有 _bus_id_,
+  
+  device_driver有 _name_,
+  
+  bus_type有 _name_,
+- 总线有总线的属性: struct bus_attribute,
+  
+  设备有设备的属性: struct device_attribute,
+  
+  驱动有驱动的属性: struct driver_attribute.
+  
+  这种结构体都有struct attribute,show(),store(),不同的是show(),store()的参数类型不一样.
+  
+  bus_type是有bus_attribute,device_attribute,driver_attribute类型的指针.
+  
+  而device和device_driver都没有这些结构体成员.
+- ulk:因为设备的kobject目录已经在/sys/devices/下,所以每种总线子系统的devices目录存放了指
+  向/sys/devices下目录的符号链接.
+- device_driver的方法成员有:suspend(),resume(),probe(),remove(),shutdown(),
+  
+  bus_type的方法成员有     :suspend(),resume(),match(),hotplug().
+  
+  它们之间有什么区别呢?
+  
+  bus_type.match():ulk:当内核检查一个给定的设备是否可以由给定的驱动程序处理时,就会执行
+  match方法.
+  
+  bus_type.hotplug():ulk:在设备驱动程序模型中注册某个设备时会执行hotplug方法.
+- 类由struct class描述, 每个class对象包含一个代表一个属于该class的逻辑设备的class_device描
+  述符链表.
+  
+  就是说class_device是用来表示逻辑设备的,什么是逻辑设备呢?
+  
+  ulk:The class_device structure includes a dev field that points to a device descriptor,
+  thus a logical device always refers to a given device in the device driver
+  model. However, there can be several class_device descriptors that refer to the same
+  device. In fact, a hardware device might include several different sub-devices, each of
+  which requires a different User Mode interface. For example, the sound card is a
+  hardware device that usually includes a DSP, a mixer, a game port interface, and so on;
+  each sub-device requires its own User Mode interface, thus it is associated with its own
+  directory in the sysfs filesystem.
+  
+- 好像bus_type,device,device_driver里都没有成员与class关联的,只是class_device里有一个
+  struct device的dev成员.
+  
+  struct class是有一个包含一个struct class_device链表的.
+
 ** int request_resource(struct resource *root, struct resource *new)
 *** kernel/resource.c:
 - 这个函数主要是调用__request_resource()
@@ -11771,6 +11921,9 @@ union swap_header {
   kobject.parent为 _空_,那么parent就为kobject.kset.kobj.
   
   我觉得kobject.parent都是指向kobject.kset.kobj的
+- device.parent:ldd3:设备的"父"设备--指的是该设备所属的设备.在大多数情况下,一个父设备通常是
+  某种 _总线_ 或者是宿主控制器.如果parent是NULL,表示该设备是顶层设备,但这种情况 _很少_ 出
+  现.
 - 若kobject.kset不为空,那么就把kobject.entry插入到kobject.kset.list链表里.而不管这个
   kobject.parent指的是谁,反正就一定会把kobject.entry插到kobject.kset.list里.
 - 调用create_dir()来创建文件
@@ -11800,6 +11953,8 @@ union swap_header {
   若有kobj.parent,那么就在这个parent的目录下创建.
   
   若没有kobj.parent,那么就在sysfs文件系统的最顶层去创建.
+  
+  所以目录说位置与kset没有太大的关系.
 
 - 找到父目录的dentry之后,就调用create_dir()来创建一个文件
 ** static int create_dir(struct kobject * k, struct dentry * p, const char * n, struct dentry ** d)
@@ -11828,8 +11983,6 @@ union swap_header {
 		if (error && (error != -EEXIST))
 			d_drop(*d);
   #+END_EXAMPLE 
-
-
 ** int sysfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
 *** fs/sysfs/inode.c:
 - 这个函数先为dentry创建一个inode,若发现这个inode已经存在,那么就返回EEXIT错误码
@@ -11864,3 +12017,2037 @@ union swap_header {
   s_mode为建inode时用的mode
   
 - 子目录的dentry.d_fsdata与父目录的一样,因为在create_dir()里传入的fsdata就是父目录的d_fsdata.
+** int kset_register(struct kset * k)
+*** lib/kobject.c:
+- 这个函数只调用了两个函数:
+  
+  kset_init()
+  
+  kset_add()
+** void kset_init(struct kset * k)
+*** lib/kobject.c:
+- 这个函数调用对kset.kobj调用了kobject_init().
+** int kset_add(struct kset * k)
+*** lib/kobject.c:
+- 这个函数先设置好kset.kobj.parent,
+  
+  若kset.kobj.parent 和 kset.kobj.kset 都为空, 且kset.subsys不为空,那么就设置
+  kset.kobj.parent为kset.subsys.kset.kobj
+  
+  结合紧接着调用的kobject_add()关于处理kset.kobj.parent的过程,可以得出:
+  
+  若kset.kobj.parent为空,而kset.kobj.kset不为空,那么 _kset.kobj.parent =
+  kset.kobj.kset.kobj_
+  
+  若kset.kobj.parent为空,而kset.kobj.kset为空,但kset.subsys不为空,那么 _kset.kobj.parent =
+  &kset.subsys.kset.kobj_ 
+  
+  注意这个设置kset.kobj.pareent的优先级:kset.kobj.kset.kobj,   &kset.subsys.kset.kobj
+  
+  
+- 最后对kset.kobj调用kobject_add()创建目录
+** int subsystem_register(struct subsystem * s)
+*** lib/kobject.c:
+- 先调用subsystem_init(), 
+  
+  再调用kset_add()
+
+- 还设置subsystem.kset.subsys为参数.
+** void subsystem_init(struct subsystem * s)
+*** lib/kobject.c:
+- 对subsystem.kset调用kset_init()
+** int sysfs_create_file(struct kobject * kobj, const struct attribute * attr)
+*** fs/sysfs/file.c:
+- 这个函数直接调用sysfs_add_file()
+- 这个函数在kobj.dentry指向的目录里创建attr所描述的属性文件
+** int sysfs_add_file(struct dentry * dir, const struct attribute * attr, int type)
+*** fs/sysfs/file.c:
+- 在kobject_add()->create_dir()->sysfs_create_dir()->create_dir()->sysfs_make_dirent(),
+  kobject_add()最终调用的sysfs_make_dirent()的第二个类型为struct dentry *的参数一定不是空
+  的.第二个参数dentry的来源是在第二个调用create_dir()时调用sysfs_get_dentry()分配的,调用
+  sysfs_get_dentry()的返回值就是sysfs_make_dirent()的第二个参数,sysfs_get_dentry()的第一个
+  参数struct dentry是sysfs_get_dentry()第二个参数的父目录的dentry,调用的
+  sysfs_make_dirent()的最后一个参数是SYSFS_DIR.
+  
+- 这个函数只是调用sysfs_make_dirent(),第二个参数是NULL,为什么呢?
+  
+  http://linux.chinaunix.net/techdoc/system/2008/07/22/1020032.shtml
+  其他文件系统像ext3格式中普通文件的inode，在文件创建之时就已经创建了。但是，sysfs 不一样，
+  它在创建普通文件时，只是先创建一个sysfs_dirent结构。创建inode的工作是推迟到lookup函数来完
+  成的。
+  
+  所以在调用sysfs_make_dirent()创建普通文件的sysfs_dirent时第二个参数是空的,而在创建目录的
+  sysfs_dirent时候不是空的.
+  
+  同时也可以知道无论是普通文件还目录都会有对应的sysfs_dirent的.
+- sysfs_dirent.type有五种
+  值:SYSFS_ROOT,SYSFS_DIR,SYSFS_KOBJ_ATTR,SYSFS_KOBJ_BIN_ARRT,SYSFS_KOBJ_LINK
+- 在create_dir()里调用sysfs_make_dirent()创建目录的sysfs_dirent时,第三个参数是kobject,是调
+  用kobject_add()的参数.
+  
+  在sysfs_add_file()调用syfs_make_dirent()创建普通文件的sysfs_dirent时,第三个参数是struct
+  attribute,
+  
+  现在有一个问题:struct attribute只有三个参数:name,owner,mode.那么在为一个属性创建一个文件
+  时,它的内容是如何确定的呢?
+
+  #+BEGIN_EXAMPLE
+
+struct kobj_type {
+	void (*release)(struct kobject *);
+	struct sysfs_ops	* sysfs_ops;
+	struct attribute	** default_attrs;
+};
+
+struct sysfs_ops {
+	ssize_t	(*show)(struct kobject *, struct attribute *,char *);
+	ssize_t	(*store)(struct kobject *,struct attribute *,const char *, size_t);
+};
+  #+END_EXAMPLE
+
+  ldd3:当用户空间读取一个属性时,内核会使用指向kobject的指针和正确的属性结构来调用show方法.该
+  方法将把指定的值编码后放入缓冲区,然后把实际长度做为返回值返回.
+  
+  ldd3:也可以对所有的kobject的属性使用同一个show方法.传递给该函数的attr指针可以用来判断所
+  请求的是哪个属.一些show方法包含一系列对属性名的检查.其他的实现方法会把attribute结构嵌入
+  到其他结构中,而在那些结构中包含了需要返因的属性值信息.
+  
+  第一种使用attribute的方法就是在一个show()里通过判断attribute.name来确定访问的是那个属性,
+  从而确定操作.
+  
+  第二种使用attribute的方法就是在一个show()里通过contain_of()真正包含attribute的结构体
+  (kobj_type.default.attrs是一个指针的指针),而在这个结构体里就有要访问的内容.
+- 现在发现一个问题:在创建目录的时候,传给sysfs_make_dirent()的第二个参数dentry为不空,所以可
+  以初始化dentry.d_fsdata为刚分配的sysfs_dirent.
+  
+  但是如果是普通文件,第二个参数为NULL,只有在用syfs_lookup()查找时才创建,那么它的
+  syfs_dirent又是如何被保存起来的呢?
+  
+  应该是在sysfs_make_dirent()的开头调用的sysfs_new_dirent()时保存的.保存在了
+  parent_sd.s_children链表里.
+  
+  的确是这样的,因为在sysfs_lookup()里遍历了parent_sd.s_children
+  
+  #+BEGIN_EXAMPLE
+	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
+  #+END_EXAMPLE 
+  
+  在sysfs_lookup()里通过判断传入的dentry的d_name.name是否与sysfs_dirent的名字是否相等来配
+  匹.sysfs_dirent获得它的名字的方法是先通过s_type来确定获取名的方式,
+  
+  SYSFS_DIR:名字是s_dentry.d_name.name.
+  
+  SYSFS_KOBJ_ATTR:s_element是struct attribute类型,名字是s_element.name
+  
+  还有SYSFS_KOBJ_BIN_ATTR,SYSFS_KOBJ_LINK类似SYSFS_KOBJ_ATTR.
+- 如果是创建普通文件的话,文件的属性是与attribute.mode有关的
+  #+BEGIN_EXAMPLE
+	umode_t mode = (attr->mode & S_IALLUGO) | S_IFREG;
+  #+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+#define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
+  #+END_EXAMPLE 
+  
+  若是目录的话,就是固定的
+  create_dir():
+  #+BEGIN_EXAMPLE
+	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
+  #+END_EXAMPLE
+- sysfs_make_dirent()的所有参数就足够初始化sysfs_dirent.
+  
+  如在sysfs_add_file()里调用的
+  #+BEGIN_EXAMPLE
+	error = sysfs_make_dirent(parent_sd, NULL, (void *) attr, mode, type);
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+
+struct sysfs_dirent {
+	atomic_t		s_count;
+	struct list_head	s_sibling;
+	struct list_head	s_children;
+	void 			* s_element;
+	int			s_type;
+	umode_t			s_mode;
+	struct dentry		* s_dentry;
+};
+  #+END_EXAMPLE 
+** not function
+*** 13.3
+- As far as the kernel is concerned, the name of the device file is irrelevant. If you
+  create a device file named /tmp/disk of type "block" with the major number 3 and minor
+  number 0, it would be equivalent to the /dev/hda device file shown in the table. 
+  
+  不同的设备名可以有相同的主次设备号.
+*** 13.5
+- cdev.list/count:ulk:The list field is the head of a doubly linked circular list
+  collecting inodes of character device files that refer to the same character device
+  driver. There could be many device files having the same device number, and all of them
+  refer to the same character device. Moreover, a device driver can be associated with a
+  range of device numbers, not just a single one; all device files whose numbers fall in
+  the range are handled by the same character device driver. The size of the range is
+  stored in the count field.
+  
+  因为不同的设备文件有相同的设备号,这些有相同设备号的文件的inode会链到 _cdev.list_ 上,通过
+  _inode.i_devices_ 链起来.
+  
+  除了相同之外,在 _cdev.count_ 指定范围之内的设备号也会链起来.
+  
+  
+** struct cdev *cdev_alloc(void)
+*** lib/kobject.c:
+- 这个函数动态分配一个cdev,并初始化里面的kobject
+- 没有struct cdev的slab.
+- 初始化cdev.kobj.ktype为ktype_cdev_dynamic,
+  
+  ktype_cdev_dynamic只有一个release成只,它初始化为cdev_dynamic_release.
+  
+  cdev_dynamic_release()
+  (1)把cdev.list里的inode都解除链接,但没有释放inode.
+  #+BEGIN_EXAMPLE
+		list_del_init(&inode->i_devices);
+		inode->i_cdev = NULL;
+  #+END_EXAMPLE
+  (2)还释放cdev.
+- 接着就调用kobject_init()
+  
+  调用kref_init()增加kobject.kref.count计数器.
+  
+  调用kset_get()
+  #+BEGIN_EXAMPLE
+	kobj->kset = kset_get(kobj->kset);
+  #+END_EXAMPLE
+  其实kobj.kset是空的,所以这句其实无效.
+- 所以这个函数就是
+  
+  分配了cdev
+  
+  初始化cdev.kobj.ktype(release方法)
+  
+  增加cdev.kobj.kref.count
+** int cdev_add(struct cdev *p, dev_t dev, unsigned count)
+*** fs/char_dev.c:
+- ulk:The cdev_add( ) function registers a cdev descriptor in the device driver model.
+- 初始化cdev.dev为参数dev,
+  
+  初始化cdev.count为参数count.
+- 调用kobj_map().
+** int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct module *module, kobj_probe_t *probe, int (*lock)(dev_t, void *), void *data)
+*** drivers/base/map.c:
+- The device driver model defines a kobject mapping domain for the character devices,
+  which is represented by a descriptor of type kobj_map and is referenced by the cdev_map
+  global variable. The kobj_map descriptor includes a hash table of 255 entries indexed by
+  the major number of the intervals. The hash table stores objects of type probe, one for
+  each registered range of major and minor numbers
+
+  kobj_map是设备驱动模型给 _字符_ 设备定义的一个 kobject mapping domain.
+  
+  cdev_map是struct kobj_map *类型的全局变量.
+  
+  在cdev_add()里调用kobj_map()的时候传的kobj_map是cdev_map
+  #+BEGIN_EXAMPLE
+	return kobj_map(cdev_map, dev, count, NULL, exact_match, exact_lock, p);
+  #+END_EXAMPLE 
+- kobj_map结构体里有一个类型为struct probe *[255]的成员,这个指针数组的元素是一个hash链表.
+  这些链表把struct probe给链起来.
+  #+BEGIN_EXAMPLE
+		p->next = *s;
+		*s = p;
+  #+END_EXAMPLE 
+- 这个函数要注意两点:
+  
+  次设备号的个数可以超过了最大值,所以可能跨过一个或多个主设备号,但是这不是错误.
+  
+  kobj_map.probes里的每个hanh链表内部结点的排序是按照probe.range从小到大来的.
+- 先找出range跨过多少个主设备号
+  #+BEGIN_EXAMPLE
+	unsigned n = MAJOR(dev + range - 1) - MAJOR(dev) + 1;
+  #+END_EXAMPLE 
+  
+  index为起始主设备号
+  #+BEGIN_EXAMPLE
+	unsigned index = MAJOR(dev);
+  #+END_EXAMPLE
+  
+  所以要分配合适个数的struct probe
+  #+BEGIN_EXAMPLE
+	p = kmalloc(sizeof(struct probe) * n, GFP_KERNEL);
+  #+END_EXAMPLE 
+  
+  虽然是分配了多个struct probe,但是每一个的初始化都是一样的
+  #+BEGIN_EXAMPLE
+	for (i = 0; i < n; i++, p++) {
+		p->owner = module;
+		p->get = probe;
+		p->lock = lock;
+		p->dev = dev;
+		p->range = range;
+		p->data = data;
+	}
+  #+END_EXAMPLE 
+  
+  cdev_add()调用这个函数时传入的moudle是NULL,为什么不传入cdev.owner呢?
+  
+  probe.get:ulk:the get method is implemented by a short function that returns the address
+  of the kobject embedded in the cdev descriptor;
+  probe.get对于cdev来说就是返回内嵌到cdev里的 _kobject的地址_.
+  
+  probe.lock:ulk:the lock method, instead, essentially increases the reference counter in
+  the embedded kobject.
+  增加kobject.kref.count.
+  
+  结合cdev_add()的调用来看,probe.dev就是起始的主次设备号结合的类型为dev_t设备号.
+  
+  probe.range就是次设备号数.
+  
+  结合cdev_add(),probe.data就是cdev
+- 最后把所有新建的probe插入到hash表
+  #+BEGIN_EXAMPLE
+	for (i = 0, p -= n; i < n; i++, p++, index++) {
+		struct probe **s = &domain->probes[index % 255];
+		while (*s && (*s)->range < range)
+			s = &(*s)->next;
+		p->next = *s;
+		*s = p;
+	}
+  #+END_EXAMPLE 
+** struct kobject *kobj_lookup(struct kobj_map *domain, dev_t dev, int *index)
+*** drivers/base/map.c
+- ulk:The kobj_lookup( ) function receives as input parameters a kobject mapping domain
+  and a device number; it searches the hash table and returns the address of the kobject
+  of the owner of the interval including the number, if it was found. When applied to the
+  mapping domain of the character devices, the function returns the address of the kobject
+  embedded in the cdev descriptor of the device driver that owns the interval of device
+  numbers.
+- kobj_map.probe的hash表是根据主设备号来计算hash值的,而不是设备号
+  #+BEGIN_EXAMPLE
+	for (p = domain->probes[MAJOR(dev) % 255]; p; p = p->next) {
+  #+END_EXAMPLE
+- 这个函数定位到hash表之后
+  #+BEGIN_EXAMPLE
+	for (p = domain->probes[MAJOR(dev) % 255]; p; p = p->next) {
+  #+END_EXAMPLE
+  
+  在该链表里找到第一个kobj_map的设备范围在包含参数dev的kobj_map结点.
+  #+BEGIN_EXAMPLE
+		if (p->dev > dev || p->dev + p->range - 1 < dev)
+			continue;
+  #+END_EXAMPLE 
+  
+  找到之后就调用lock(),这个方法对于cdev来说是增加kobject成员的计数.
+  #+BEGIN_EXAMPLE
+		if (p->lock && p->lock(dev, data) < 0) {
+			module_put(owner);
+			continue;
+		}
+  #+END_EXAMPLE
+  
+  调用完lock(),再调用probe().对于cdev来说,就是获取cdev.kobj.
+  #+BEGIN_EXAMPLE
+		kobj = probe(dev, index, data);
+  #+END_EXAMPLE 
+  
+  成功获得之后就返回kobject
+  #+BEGIN_EXAMPLE
+		if (kobj)
+			return kobj;
+  #+END_EXAMPLE
+- 有些细节要处理
+  
+  希望能在释放信号量后调用probe(),所以得到kobj_map之后就是保存kobj_map的成员到局部变量以释
+  放信号量再用
+  #+BEGIN_EXAMPLE
+		owner = p->owner;
+		data = p->data;
+		probe = p->get;
+		best = p->range - 1;
+		*index = dev - p->dev;
+  #+END_EXAMPLE 
+  
+  index是返回给调用者的,意思是获得是kobj_map的dev与传入的dev的差值,就是索引.
+  
+  best不知有什么用.
+** not function
+*** 13.5.1
+- struct char_device_struct,这个结构体用来表示一个设备号区间.
+  
+  用3个成员:major,baseminor,minocrt
+
+  major:The major number of the interval
+  
+  baseminor:The initial minor number of the interval
+  
+  minocrt:the interval size
+  
+  就是主设备号, 起始次设备号, 次设备号个数.
+  
+  因为所有的char_device_struct是被链到chrdevs hash表里的,所以要用 _next_ 成员用来链接.
+  
+  name成员:使用这个区间的 _驱动_ 的名字.
+  
+  cdev成员:指向设备驱动描述符.
+  
+  hash链表里的结点是按设备号由小到大排序的.
+** int register_chrdev_region(dev_t from, unsigned count, const char *name)
+*** fs/char_dev.c:
+- 这个函数对在参数dev+count范围内设备号所涉及的所有 _主设备号_ 调用__register_chrdev_region()
+- 这个函数注册的设备号范围是这样的:
+  
+  主设备号从参数from这个设备号指的主设备号开始, 一直到from+count这个设备号设表示的主设备号
+  结束.
+  
+  次设备号除了第一个要被注册的主设备号(最小的主设备号)外, 其它被注册的所有主设备号的从0到
+  一个主设备号所能关联的最大次设备号都被注册.第一个被注册的主设备号的次设备号范围是个参数
+  from这个设备号的次设备号到最大次设备号.
+  
+  这个是通过next和n局部变量得到的.
+** static struct char_device_struct *__register_chrdev_region(unsigned int major, unsigned int baseminor, int minorct, const char *name)
+*** fs/char_dev.c:
+- 这个函数注册有指定范围的一个主设备号
+  #+BEGIN_EXAMPLE
+ * Register a single major with a specified minor range.
+  #+END_EXAMPLE
+- 参数major为0的时候会动态分配一个主设备号.
+  
+  但是major为0时分配主设备号的方法不太好,只分配255个hash表里所有为 _空_ 的hash表的 _最大索
+  引_ 的那个hash表作为分配的major,所以分配的major不会大于255.
+  
+  ulk:Notice that the kernel can dynamically allocate only major numbers less than 255,
+  and that in some cases allocation can fail even if there is a unused major number less
+  than 255. We might expect that these constraints will be removed in the future.
+
+  #+BEGIN_EXAMPLE
+
+	/* temporary */
+	if (major == 0) {
+		for (i = ARRAY_SIZE(chrdevs)-1; i > 0; i--) {
+			if (chrdevs[i] == NULL)
+				break;
+		}
+
+		if (i == 0) {
+			ret = -EBUSY;
+			goto out;
+		}
+		major = i;
+		ret = major;
+	}
+  #+END_EXAMPLE
+- 接下来就是初始化除了char_device_struct.cdev之处的所有成员.
+  #+BEGIN_EXAMPLE
+
+	cd->major = major;
+	cd->baseminor = baseminor;
+	cd->minorct = minorct;
+	cd->name = name;
+  #+END_EXAMPLE 
+  
+  最后是next,注意链表里的结点是按设备号从小到大排序的.
+  #+BEGIN_EXAMPLE
+
+	i = major_to_index(major);
+
+	for (cp = &chrdevs[i]; *cp; cp = &(*cp)->next)
+		if ((*cp)->major > major ||
+		    ((*cp)->major == major && (*cp)->baseminor >= baseminor))
+			break;
+	if (*cp && (*cp)->major == major &&
+	    (*cp)->baseminor < baseminor + minorct) {
+		ret = -EBUSY;
+		goto out;
+	}
+	cd->next = *cp;
+	*cp = cd;
+  #+END_EXAMPLE
+
+- 所以这个函数就是分配一个char_device_struct并初始化它.
+** int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name)
+*** fs/char_dev.c:
+- 这个函数也调用__register_chrdev_region(),
+  
+  与register_chrdev_region()不同的是没有处理所有次设备号超范围的情况.
+  
+  且是用动态分配主设备号的.
+** int register_chrdev(unsigned int major, const char *name, struct file_operations *fops)
+*** fs/char_dev.c:
+- The register_chrdev( ) function is used by drivers that require an old-style interval of
+  device numbers.
+- 这个函数也调用__register_chrdev_region(),但主设备号是 _静态_ 分配的,且次设备是 0-255.
+- 和register_chrdev_region()和alloc_chrdev_region()不同的是 还分配了cdev并调用cdev_add().
+** int chrdev_open(struct inode * inode, struct file * filp)
+*** fs/char_dev.c:
+- 这个函数是对字符设备调用open()时调用的.
+- 首先看inode.i_cdev是否为空,为空就说明inode还没有访问过,所以要初始化i_cdev
+  #+BEGIN_EXAMPLE
+	if (!p) {
+		struct kobject *kobj;
+		int idx;
+		spin_unlock(&cdev_lock);
+		kobj = kobj_lookup(cdev_map, inode->i_rdev, &idx);
+		if (!kobj)
+			return -ENXIO;
+		new = container_of(kobj, struct cdev, kobj);
+		spin_lock(&cdev_lock);
+		p = inode->i_cdev;
+		if (!p) {
+			inode->i_cdev = p = new;
+			inode->i_cindex = idx;
+			list_add(&inode->i_devices, &p->list);
+			new = NULL;
+		} else if (!cdev_get(p))
+			ret = -ENXIO;
+	}
+  #+END_EXAMPLE 
+  
+  找的方法是用设备号在cdev_map hash表里找.
+  #+BEGIN_EXAMPLE
+		kobj = kobj_lookup(cdev_map, inode->i_rdev, &idx);
+		if (!kobj)
+			return -ENXIO;
+		new = container_of(kobj, struct cdev, kobj);
+  #+END_EXAMPLE
+  
+  接着就是初始化i_cdev, i_cindex.i_devices
+  i_cindex: Index of the device file within a group of minor numbers.
+  #+BEGIN_EXAMPLE
+			inode->i_cdev = p = new;
+			inode->i_cindex = idx;
+			list_add(&inode->i_devices, &p->list);
+  #+END_EXAMPLE 
+- 搞定了i_cdev之后,就是初始化f_op,
+  #+BEGIN_EXAMPLE
+	filp->f_op = fops_get(p->ops);
+  #+END_EXAMPLE 
+  f_op直接就是cdev.ops.
+- 最后就是调用f_op.open了. 真正调用cdev.ops.open是在这里,之前经过了很多的处理.
+** not function
+*** 14
+- Block devices have very high average access times. Each operation requires several
+  milliseconds to complete, mainly because the disk controller must move the heads on the
+  disk surface to reach the exact position where the data is recorded.
+
+  几个微秒就可以寻到址.
+- 从图14-1来看,一个块设备驱动程序涉及的内核部分里有3个这样的层:mapping layer,接下来是
+  generic block layer, 接丁来是 I/Oscheduler layer.
+- ulk:3. Let's assume that the kernel must read the data from the block device, thus it
+  must determine the physical location of that data. To do this, the kernel relies on the
+  mapping layer , which typically executes two steps:
+  
+  a. It determines the block size of the filesystem including the file and computes the
+  extent of the requested data in terms of file block numbers . Essentially, the file is
+  seen as split in many blocks, and the kernel determines the numbers (indices relative to
+  the beginning of file) of the blocks containing the requested data.
+  
+  b. Next, the mapping layer invokes a filesystem-specific function that accesses the
+  file's disk inode and determines the position of the requested data on disk in terms of
+  logical block numbers. Essentially, the disk is seen as split in blocks, and the kernel
+  determines the numbers (indices relative to the beginning of the disk or partition)
+  corresponding to the blocks storing the requested data. Because a file may be stored in
+  nonadjacent blocks on disk, a data structure stored in the disk inode maps each file
+  block number to a logical block number.
+  
+  mapping layer主要是用文件的 _逻辑块号_ 获得数据在磁盘的信置.
+- 4. The kernel can now issue the read operation on the block device. It makes use of the
+  generic block layer , which starts the I/O operations that transfer the requested
+  data. In general, each I/O operation involves a group of blocks that are adjacent on
+  disk. Because the requested data is not necessarily adjacent on disk, the generic block
+  layer might start several I/O operations. Each I/O operation is represented by a "block
+  I/O" (in short, "bio") structure, which collects all information needed by thelower
+  components to satisfy the request.
+  
+  所以generic block layer主要是发送I/O请求(bio),每次的请求只能作用于相邻的disk块.
+- 5. Below the generic block layer, the "I/O scheduler " sorts the pending I/O data
+  transfer requests according to predefined kernel policies. The purpose of the scheduler
+  is to group requests of data that lie near each other on the physical medium. 
+  
+  I/O scheduler层保存未决的数据请求,主要目的是相邻的数据请求给组织起来.
+- 要分清: 扇区(sector), 块(block), 段(segment), 页(page).
+  
+  ulk:there are many kernel components that are concerned with data stored in block
+  devices; each of them manages the disk data using chunks of different length: 
+  
+  The controllers of the hardware block devices transfer data in chunks of fixed length
+  called "sectors." Therefore, the I/O scheduler and the block device drivers must manage
+  sectors of data.
+
+  The Virtual Filesystem, the mapping layer, and the filesystems group the disk data in
+  logical units called "blocks." A block corresponds to the minimal disk storage unit
+  inside a filesystem. 
+  
+  As we will see shortly, block device drivers should be able to cope   with "segments" of
+  data: each segment is a memory pageor a portion of a memory pageincluding chunks of data
+  that are physically adjacent on disk.
+
+  The disk caches work on "pages" of disk data, each of which fits in a page frame. The
+  generic block layer glues together all the upper and lower components, thus it knows
+  about sectors , blocks, segments, and pages of data.
+  
+  块设备的驱动器以 _sector_ 的长度传输数据. 所以 _I/O scheduler_ 和 _block device driver_
+  要知道sector的长度.
+  
+  _virtual filesystem_ 和 _mapping layer_ 处理的是 _block_, block是filesystem是最小存储单
+  位.
+  
+  _segment_ 与 _驱动_ 有关,驱动能以segment来拷贝, segment的数据在物理磁盘上是 _连续_ 的且
+  是一个 _页_ 或一个页的 _部分_.
+  
+  因为 _generic block layer_ 在中间,所以它知道 _sector_, _block_, _segment_, _page_.
+- 图14-2给出了典型的block, segment, sector, page的大小
+  
+  page - 4k
+  
+  segment - 3k
+  
+  block - 1k
+  
+  sector - 512B
+  
+  page 含 segment 含 block 含 sector
+- 大部分block device的sector大小是512B
+- ulk:In Linux, the size of a sector is conventionally set to 512 bytes; if a block device
+  uses larger sectors,the corresponding low-level block device driver will do the
+  necessary conversions.
+- 一个block的数据可能在disk里不是连续的sector.
+- ulk:In Linux, the block size must be a power of 2 and cannot be larger than a page
+  frame. Moreover, it must be a multiple of the sector size,
+  
+  block要小于page, 因为page要可以分成page buffer
+  
+  block是2的幂次大小
+  
+  block是sector的倍数.
+- 一次的DMA操作所涉及说sector必须在disk上是连续的.
+- 14章讨论generic block layer层及以下的 I/O scheduler 和 block device.
+  
+  没有讨论virtual filesystem 和 mapping layer.
+- generic block layer这一层使得
+  
+  用户态的数据可以map/unmap到内核态.
+  
+  disk和用户态空间可以直接交互,不用通过内核.
+  
+  提供给LVM和RAID来管理逻辑卷,不同的多个的partitions可以看成一个partition.
+  
+  优化disk控制器的功能.
+- generic block layer的核心数据结构是struct bio.
+  
+  因为generic block layer要知道page, segment, block, sector.所以当然要知道segment.
+  
+  表示segment的数据结构是struct bio_vec.
+
+  在bio里有指向bio_vec链表第一个bio_vec的指针叫bi_io_vec.
+- 在I/O操作时要跟踪更新bio,如scatter-gather DMA操作可能不能在一次完成, 所以要用 _bi_idx_
+  来跟踪当前传到第几个segment.
+- 一个disk用 _struct gendisk_ 表示.
+- /dev/hda和/devhad1的 _主_ 设备号是 _相同_ 的, _次_ 设备号是 _不同_ 的.
+- 每个分区的一些东西用 _struct hd_struct_ 表示,gendisk.part指向struct hd_struct 的 _数组_.
+** void generic_make_request(struct bio *bio)
+*** drivers/block/ll_rw_blk.c:
+- bio分配好并初始化之后调用这个函数,这个函数是generic block layrer的主要入口.
+- 这个函数的作用:注释: is used to make I/O requests of block devices.
+- 成功与否是通过bio.bi_end_io方法来 _异步_ 通知的.
+- 调用这个函数前要初始化好bio:
+  
+  bi_sector
+  
+  bi_size
+  
+  bi_io_vec
+  
+  bi_rw
+  
+  bi_end_io
+- bd_inode: Pointer to the inode of the file associated with the block device in the bdev
+  filesystem.
+  
+  bdev filesystem,好像第一次听这东西,bdev filesystem其实是 _特殊文件系统_ 的一种,bdev
+  filesystem系统是 _没有挂载点_,还有其它的文件系统.
+  
+  其它的特殊文件系统ulk 的表12-8有列出,如pipefs,rootfs,shm,sockfs,tmpfs,usbs等等.
+  
+  ulk:the kernel assigns to each mounted special filesystem a fictitious block device that
+  has the value 0 as major number and an arbitrary value (different for each special
+  filesystem) as a minor number.
+  
+  除了 special filesystem之外,还有 _disk-based filesystem_ 和 _network filesystem_.
+  
+  如果文件系统是没有挂载点的,如bdev文件系统,那么文件系统的定义又是什么呢?
+  
+  http://zh.wikipedia.org/wiki/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F
+  文件系统是一套实现了数据的存储、分级组织、存取和获取等操作的抽象数据类型（Abstract data
+  type）。
+- i_size:File length in bytes
+  
+  先找出设备文件的最大扇区号
+  #+BEGIN_EXAMPLE
+	maxsector = bio->bi_bdev->bd_inode->i_size >> 9;
+  #+END_EXAMPLE 
+  
+  bi_bdev可能是一个disk或是partition
+  
+  从代码里的 _魔数_ 9可以看出,扇区的大小的固定死的了,是 _512B_.
+- 检查bio里请求的扇区范围有没有超过设备的范围
+  #+BEGIN_EXAMPLE
+		sector_t sector = bio->bi_sector;
+
+		if (maxsector < nr_sectors || maxsector - nr_sectors < sector) {
+			/*
+			 * This may well happen - the kernel calls bread()
+			 * without checking the size of the device, e.g., when
+			 * mounting a device.
+			 */
+			handle_bad_sector(bio);
+			goto end_io;
+		}
+  #+END_EXAMPLE 
+  
+  处理错误的方法是在handle_bad_sector()里设置bi_flags的 _BIO_EOF_ 标志, 夕然后调用
+  bi_end_io.
+- 调用bdev_get_queue()来获得设备队列,
+  
+  若没有队列就认为块设备不存在,这个可以从打印信息里看出
+  #+BEGIN_EXAMPLE
+			       "generic_make_request: Trying to access "
+				"nonexistent block-device %s (%Lu)\n",
+  #+END_EXAMPLE
+
+
+
+
+
+
+- 一个块设备队列是一个disk一个还是一个分区一个呢?应该是一个disk一个,bd_disk: Pointer to
+  gendisk structure of the disk underlying this block device.
+  
+  bd_disk有queue成员, bd_disk是指向 _disk_ 的gendisk, 不是指向patition的gendisk.
+  
+  其实准确来说是一个disk controller一个队列,ulk:Each block device driver maintains its own
+  request queue, which contains the list of pending requests for the device. If the disk
+  controller is handling several disks, there is usually one request queue for each
+  physical block device.
+
+- bio提交的扇区数不能大于队列能处理的最大扇区数
+  #+BEGIN_EXAMPLE
+
+		if (unlikely(bio_sectors(bio) > q->max_hw_sectors)) {
+			printk("bio too big device %s (%u > %u)\n", 
+				bdevname(bio->bi_bdev, b),
+				bio_sectors(bio),
+				q->max_hw_sectors);
+			goto end_io;
+		}
+  #+END_EXAMPLE 
+- 调用block_wait_queue_running(),ulk: to check whether the I/O scheduler currently in use
+  is being dynamically replaced; in this case, the function puts the process to sleep
+  until the new I/O scheduler is started.
+- 调用blk_partion_remap()把bi_sector和bi_bdev转成disk的.所以插入到队列的bio请求的扇区是对
+  disk的位置,而不是分区的.
+- 调用队列的make_request_fn()来把bio插入到队列.
+** static inline void blk_partition_remap(struct bio *bio)
+*** drivers/block/ll_rw_blk.c:
+- 首先看bio的请求是从分区发出的还是从disk发出的.
+- bi_bdev:Pointer to block device descriptor. 所以bi_bdev有可能指向分区或disk的设备文件.
+  
+  bd_contains: If block device is a partition, it points to the block device descriptor of
+  the whole disk; otherwise, it points to this block device descriptor
+  #+BEGIN_EXAMPLE
+	struct block_device *bdev = bio->bi_bdev;
+
+	if (bdev != bdev->bd_contains) {
+  #+END_EXAMPLE 
+- bd_part: Pointer to partition descriptor (NULL if this block device is not a partition)
+- struct hd_struct就是分区的描述符.
+- 若是分区的话,就要修改
+
+  hd_struct.read_sectors
+  
+  hd_struct.read
+  
+  hd_struct.write_sectors
+  
+  hd_struct.write
+  
+  bio.bi_sector 改为在disk的位置,而不是原来分区的位置.
+  
+  bio_bi_bdev   改为bd_contains.
+** not function
+*** 14.3
+- 为了减少磁头移动次数(磁盘转而磁头不动), _内核_ 会聚集多个sector来作一次处理.
+  
+  ulk:Although block device drivers are able to transfer a single sector at a time, the
+  block I/O layer does not perform an individual I/O operation for each sector to be
+  accessed on disk; this would lead to poor disk performance, because locating the
+  physical position of a sector on the disk surface is quite time-consuming. Instead, the
+  kernel tries, whenever possible, to cluster several sectors and handle them as a whole,
+  thus reducing the average number of head movements. 
+  
+  When a kernel component wishes to read or write some disk data, it actually creates a
+  block device request. That request essentially describes the requested sectors and the
+  kind of operation to be performed on them (read or write). However, the kernel does not
+  satisfy a request as soon as it is createdthe I/O operation is just scheduled and will
+  be performed at a later time. This artificial delay is paradoxically the crucial
+  mechanism for boosting the performance of block devices. When a new block data transfer
+  is requested, the kernel checks whether it can be satisfied by slightly enlarging a
+  previous request that is still waiting (i.e., whether the new request can be satisfied
+  without further seek operations). Because disks tend to be accessed sequentially, this
+  simple mechanism is very effective.
+
+  I/O操作是异步的,就是说块设备的驱动会异步读取上层发来的请求,而唤醒驱动处理下一个请求的是
+  disk controller处理完一个I/O操作后所产生的中断.
+  
+  ulk:To keep the block device driver from being suspended, each I/O operation is
+  processed asynchronously. In particular, block device drivers are interrupt-driven (see
+  the section "Monitoring I/O Operations" in the previous chapter): the generic block
+  layer invokes the I/O scheduler to create a new block device request or to enlarge an
+  already existing one and then terminates. The block device driver, which is activated at
+  a later time, invokes the strategy routine to select a pending request and satisfy it by
+  issuing suitable commands to the disk controller. When the I/O operation terminates, the
+  disk controller raises an interrupt and the corresponding handler invokes the strategy
+  routine again, if necessary, to process another pending request. 
+- request_queue是队列结构体, request_queue.queue_head是请求的链表头.
+- 一个quest里有多个bio的厡因是:
+  
+  1.I/O scheduler 加一个新的 segment 到bio,
+  
+  2.链接另一个bio到quest
+  
+  当新的数据在物理上与在quest里旧的数据 _相邻_ 时就会有这些情况.
+  
+  _request.bio_ 指向第一个bio, _biotail_ 指向最后一个, _rq_for_each_bio_ 遍历.
+- 每一个request_queue都有一个管理request内存池分配的成员 _request_list_.
+  
+  request_list里有 _两个_ 等待 READ和WRITE request可用的等待队列, _一个_ 等待队列刷新的等
+  待队列
+  
+  request_list.count[2]:Two counters for the number of requests descriptors allocated
+  for READ and WRITE requests,respectively.
+  
+  request_list.starved[2]:Two flags indicating whether a recent allocation for a READ or
+  WRITE request, respectively,failed.
+** struct request *blk_get_request(request_queue_t *q, int rw, int gfp_mask)
+*** drivers/block/ll_rw_blk.c:
+- ulk:The blk_get_request( ) function tries to get a free request descriptor from the
+  memory pool of a given request queue;
+- 如果有 __GFP_WAIT_ 标志,表示分配时可以等待.调用
+  
+  get_request_wait()
+  
+  若则调用
+  
+  get_request().
+  
+  get_request_wait()里调用get_request()分配,若分配不到就休眠.
+** static struct request *get_request(request_queue_t *q, int rw, int gfp_mask)
+*** drivers/block/ll_rw_blk.c:
+- request_queue.nr_requests: ulk: The field of the request descriptor stores the maximum
+  number of allowed pending requests for each data transfer direction. 
+  
+  若超过了 nr_request ,
+  
+  就设置 _QUEUE_FLAG_READFULL (QUEUE_FLAG_WRITEFULL)_,
+  
+  并把进程放到request_list里相应等待队列里.
+
+- nr_request是最大 request 数, (128)
+  
+  nr_congestion_on是拥挤阀值, (113)
+  
+  nr_congestion_off是不拥挤阀值. (111)
+  
+  blk_congestion_wait()会把进程休眠,若当前是拥挤的.
+
+- unpluging - activating
+  
+  pluging   - de-activating
+** void blk_plug_device(request_queue_t *q)
+*** drivers/block/ll_rw_blk.c:
+- 这个函数是 plug(de-active) 一个队列的.
+- 不能 plug 一个停止的队列
+  #+BEGIN_EXAMPLE
+	if (test_bit(QUEUE_FLAG_STOPPED, &q->queue_flags))
+		return;
+  #+END_EXAMPLE
+- 主要做两件事:
+  
+  设置QUEUE_FLAG_PLUGGED
+  
+  若QUEUE_FLAG_PLUGGED没有设置,那么就开始request_queue.unplug_timer的计时.
+** int blk_remove_plug(request_queue_t *q)
+*** drivers/block/ll_rw_blk.c:
+- 这个函数与 _blk_plug_device()_ 对应
+  
+  所以做两件事:
+  
+  清 QUEUE_FLAG_PLUGGED,
+  
+  删request_queue.unplug_timer
+
+- 这个函数在 _两_ 种情况下被调用:
+  
+  队列里的可合并 request 都 in sight. 这由 _内核_ 显式调用.
+  
+  当队列里 _未决_ 的request超过 _request_list.unplug_thres_ (4)时,由 _I/O scheduler_ 调用.
+** not function
+*** 14.3.3
+- 当 _request_queue.unplug_timer_ 超时后,就是 _request_queue.unplug_delay_ ,
+  
+  就执行定时器函数 _blk_unplug_timeout()_
+  
+  转而唤醒服务于 _kblockd_workqueue_ 工作队列的 _kblockd_ 内核线程.
+  
+  kbloced 转而执行 _request_queue.unplug_work_ 方法, 一般是 _blk_unplug_work()_.
+  
+  blk_unplug_work() 转而执行 _request_queue.unplug_fn_, 一般是 _generic_unplug_device()_
+  
+  转而 _generic_unplug_device()_ 调用 _request_queue.request_fn_.
+  
+  总结就是 超时后唤醒线程执行 unplug_work -> unplug_fn -> request_fn.
+*** 14.3.4
+- 处理 request 的算法是 电梯 算法.
+  
+  在某个时刻磁头是向一个方向移动的(只有两个方向), 那么磁头会一直向那个方向移动直到当前在那
+  个方向上的所有request都被处理到,然后再向反方向移动.
+
+- 实际的电梯算法有
+  
+  "Anticipatory,"
+  
+  "Deadline,"
+  
+  "CFQ (Complete Fairness Queueing)," 
+  
+  "Noop (No Operation)."
+
+- 有一个 _调度队列(dispatch queue)_ 的概念, 它包含的是已经排序好的request
+
+- request_queue.elevator的类型是elevator_t的电梯对象.里面有很多方法
+- noop 算法, 它没有按顺序的队列,不排序请求.
+- CFQ 算法,
+  
+  它保证发出请求的进程的 I/O 带宽是公平分配的.
+  
+  有 64 个队列, 一个request插到哪个队列是根据发request的进程的组ID来hash的结果.
+  
+  再用 _round_robin_ 遍历 64 个队列来选择把一个队列的一些request放到 dispatch 队列里.
+- deadline elevator
+  
+  这个算法是消除请求饥饿的.
+  
+  有 _一_ 个 _dispatch queue_.
+  
+  有 _两_ 个 _sorted queue_, 分别是 _读_ 和 _写_ 的, 里面的 requrest 是按 _sector_ 号排序
+  的.
+  
+  还有 _两_ 个 _deadline queue_, 也分 _读_ _写_, 按 _deadline_ 排.
+  
+  _读_ 的超时时间一般是 500ms,
+  
+  _写_ 的一般是 5s.
+  
+  读一般是同步阻塞的,写一般是异步的.
+  
+  填充dispatch queue时,先确定是 _读还是写_, _读_ 优先,若 deadline queue有超时,就把第一个超
+  时的request移到 dispatch queue, 再从 sorted queue 移一批次扇区号在超时request之后的
+  request,越相邻就移得越多.若没有超时,就dispatch一批次以从sorted queue移的最后一个request
+  开始的request.
+  
+  那么不是在提交request的时候,不是要指定是放在sorted queue还是放在deadline queue.
+- Anticipatory elevator
+  
+  它是基于deadline elevator的.
+  
+  比deadline elevator多了两点:
+  
+  1.dispatch 一个在磁头当前方向的反方向的 request的情况,当在sorted queue里反方向的 request
+  与当前磁头的距离比在sorted queue里正方向的 request与当前磁头的距离的 _一半_ 还要小.
+  
+  2.处理了进程P的 _读_ 请求之后,若sorted queue的下一个request也是P的,那么就马上处理.否则会
+  根据进程P的状态来判断P是否很快发出下一个请求,若是就等一下.因同一个进程连续发出的请求的
+  sector可能相邻.
+** void blk_queue_bounce(request_queue_t *q, struct bio **bio_orig)
+*** mm/highmem.c:
+- ulk:The blk_queue_bounce( ) function looks at the flags in q->bounce_gfp and at the
+  threshold in q->bounce_pfn to determine whether buffer bouncing might be required. This
+  happens when some of the buffers in the request are located in high memory and the
+  hardware device is not able to address them.
+- request_queue.bounce_gfp: Memory allocation flags for bounce buffers
+  
+  bounce_gfp 设了GFP_DMA就使用page_pool内存池来调用__blk_queue_bounce()
+  
+  否则就用isa_page_pool.isa_page_pool内存池是用GFP_DMA分配的.
+** static void __blk_queue_bounce(request_queue_t *q, struct bio **bio_orig, mempool_t *pool)
+*** mm/highmem.c:
+- 第一个循环的处理结果是:
+  
+  若有一个segment是在高端内存,就会分配一个新的bio,
+  
+  对旧bio所有的在高端内存的segment都移到的新的bio的segment上去,移的东西包括struct bio_vec
+  是的所有成员.
+  
+  注意只是处理了在高端内存的segment, 没有处理 _bio的其它成员_ 和 _不在高端内存的segment_,
+  而是在接下来处理.
+  
+  在写的时候要进行数据拷贝
+  #+BEGIN_EXAMPLE
+		if (rw == WRITE) {
+			char *vto, *vfrom;
+
+			flush_dcache_page(from->bv_page);
+			vto = page_address(to->bv_page) + to->bv_offset;
+			vfrom = kmap(from->bv_page) + from->bv_offset;
+			memcpy(vto, vfrom, to->bv_len);
+			kunmap(from->bv_page);
+		}
+  #+END_EXAMPLE
+
+- 接下来是处理剩下的segment, 因为剩下的segment是在DMA区的,所以不用进行数据拷贝,只是设置
+  struct bio_vec的其它成员为旧的bio
+  #+BEGIN_EXAMPLE
+	__bio_for_each_segment(from, *bio_orig, i, 0) {
+		to = bio_iovec_idx(bio, i);
+		if (!to->bv_page) {
+			to->bv_page = from->bv_page;
+			to->bv_len = from->bv_len;
+			to->bv_offset = from->bv_offset;
+		}
+	}
+  #+END_EXAMPLE
+
+- 接下来就是初始化bio的其它成员, bi_flags要多设置BIO_BOUNCED.
+  #+BEGIN_EXAMPLE
+
+	bio->bi_bdev = (*bio_orig)->bi_bdev;
+	bio->bi_flags |= (1 << BIO_BOUNCED);
+	bio->bi_sector = (*bio_orig)->bi_sector;
+	bio->bi_rw = (*bio_orig)->bi_rw;
+
+	bio->bi_vcnt = (*bio_orig)->bi_vcnt;
+	bio->bi_idx = (*bio_orig)->bi_idx;
+	bio->bi_size = (*bio_orig)->bi_size;
+  #+END_EXAMPLE
+  
+  对于bio.bi_end_io有特殊的处理
+  #+BEGIN_EXAMPLE
+	if (pool == page_pool) {
+		bio->bi_end_io = bounce_end_io_write;
+		if (rw == READ)
+			bio->bi_end_io = bounce_end_io_read;
+	} else {
+		bio->bi_end_io = bounce_end_io_write_isa;
+		if (rw == READ)
+			bio->bi_end_io = bounce_end_io_read_isa;
+	}
+  #+END_EXAMPLE
+  
+  bi_priavte保存了bio_orig的地址, 而bio_orig指向了新的bio, 这对调用者要注意,就是参数
+  *bio_orig就是可以传给I/O scheduler的bio的指针.
+** static int __make_request(request_queue_t *q, struct bio *bio)
+*** drivers/block/ll_rw_blk.c:
+- 之前讨论的generic_make_request()里调用了request_queue.make_request_fn. make_request_fn()
+  一般由__make_request()实现.
+- 看到这段代码想到是不是把bi_vec里所有的段的长度起来就是bi_size.
+  #+BEGIN_EXAMPLE
+	nr_sectors = bio_sectors(bio);
+	cur_nr_sectors = bio_cur_sectors(bio);
+  #+END_EXAMPLE
+- 调用blk_queue_bounce()按需来建立低内存的segment,
+  
+  从blk_queue_bounce()来看新建的bio已由bio引用,旧的bio在bio.bi_private里.
+- 调用elv_queue_empty()看dispatch queue是否为空,
+  
+  dispatch queue为空不代表其它的类型的queue就为空.
+  
+  为空就不处理了
+  
+  #+BEGIN_EXAMPLE
+	if (elv_queue_empty(q)) {
+		blk_plug_device(q);
+		goto get_rq;
+	}
+  #+END_EXAMPLE
+- 剩下的就是看bio能否 _合并_ 到已有的 request,若可以就合并,不可以就新建一个request,并初始
+  化request,把bio插进去.
+  
+  调用elv_merge()判断是否可以合并,若可以合并,第二个参数返回可以合并的 request. elv_merge()
+  返回合并的类型.
+  
+  因为一个 request 里的所有bio所表示的I/O操作都是相邻, 合并bio要么是bio放到request 的bio链
+  表里的 _开头_ ,要么 _尾端_ .或是 _合并两个request_.
+  
+  合并类型有:
+  
+  ELEVATOR_BACK_MERGE:bio放到尾端,
+  
+  ELEVATOR_FRONT_MERGE:放到开头,
+- 若不能合并,就分配一个新的request,因为在分配一个request时把队列的锁给解了,所以分配完之后
+  要回头执行,
+  #+BEGIN_EXAMPLE
+	if (freereq) {
+		req = freereq;
+		freereq = NULL;
+	} else {
+		spin_unlock_irq(q->queue_lock);
+		if ((freereq = get_request(q, rw, GFP_ATOMIC)) == NULL) {
+			/*
+			 * READA bit set
+			 */
+			err = -EWOULDBLOCK;
+			if (bio_rw_ahead(bio))
+				goto end_io;
+	
+			freereq = get_request_wait(q, rw);
+		}
+		goto again;
+	}
+  #+END_EXAMPLE
+- 若是同步的bio,那么就要 unplug 驱动
+  #+BEGIN_EXAMPLE
+	if (sync)
+		__generic_unplug_device(q);
+  #+END_EXAMPLE 
+** not function
+*** 19.1.1
+- POSIX 定义的是 _半双工_ pipe.
+  
+  system v release 4 是 _全双工_ pipe.
+  
+  linux 是 _半双工_ pipe, 但不用关闭其中一端.
+- ulk:Once a pipe is created, a process uses the read( ) and write( ) VFS system calls to
+  access it. Therefore, for each pipe, the kernel creates _an_ inode object plus _two_
+  file objectsone for _reading_ and the other for _writing_.
+- ulk:When the inode object refers to a pipe, its _i_pipe_ field points to a
+  _pipe_inode_info_ structure
+- ulk:The number of bytes currently written in all pipe buffers and yet to be read is the
+  so-called _pipe size_.
+- linux为了想使用 _大于4k_ 的pipe buffer,所以把 _16_ 个4k的页框看成了一个pipe buffer,组织这
+  16个pipe buffer的方式是使用数组, _pipe_inode_info.bufs_ .
+  
+  pipe_inode_info.curbuf的类型是 struct pipe_buffer. 
+  
+  为了把这16个页框看成一个 _循环_ pipe buffer, 就要有方法获得当前 _读位置_ 和 _写位置_.
+  
+  读位置:先用pipe_inode_info.curbuf 确定读位置是在哪个页框上的,就是pipe_inode_info.bufs的
+  _下标_, 找到页框之后就是用 _pipe_buffer.offset_ 确定在页内的偏移量.
+  
+  写位置:用读位置来确定写位置, 多使用一个 _pipe_inode_info.nrbuf_ 表示一共有多少个pipe
+  buffer是有数据的. 所以写位置在最后一个有数据的页框的有效数据长度加1, _pipe_buffer.len_.
+** asmlinkage int sys_pipe(unsigned long __user * fildes)
+*** arch/i386/kernel/sys_i386.c:
+- 调用do_pipe()
+** int do_pipe(int *fd)
+*** fs/pipe.c:
+- 先调用get_empty_file() _两次_ 来获得两个 _FILE_
+- 调用get_pipe_inode()获得一个inode并初始化.
+- 再调用get_unused_fd() _两次_ 来获得两个 _文件描述符_.
+- 调用d_alloc分配一个dentry
+  #+BEGIN_EXAMPLE
+	sprintf(name, "[%lu]", inode->i_ino);
+	this.name = name;
+	this.len = strlen(name);
+	this.hash = inode->i_ino; /* will go */
+	dentry = d_alloc(pipe_mnt->mnt_sb->s_root, &this);
+  #+END_EXAMPLE 
+  
+  可见pipe在pipefs文件系统都是以 _inode号_ 作为名字的,
+  
+  且所有的pipe都是放在pipefs的 _根目录_.
+** static struct inode * get_pipe_inode(void)
+*** fs/pipe.c:
+- 调用new_inode()从pipe_mnt.mnt_sb spuerblock里分配一个inode.
+- 初始化 _inode.i_pipe.readers_ 和 _inode.i_pipe.writers_ 为1.
+- 初始化 _inode.i_ops_
+- inode.i_state 为I_DIRTY.
+  #+BEGIN_EXAMPLE
+	/*
+	 * Mark the inode dirty from the very beginning,
+	 * that way it will never be moved to the dirty
+	 * list because "mark_inode_dirty()" will think
+	 * that it already _is_ on the dirty list.
+	 */
+  #+END_EXAMPLE
+- inode.i_mode设了S_IFIFO,
+  
+  pipe只能由建pipe的用户来读写.因为只设了 S_IRUSR和S_IWUSR
+- 接下来就是初始化两个file的成员.
+** not function
+*** 19.1.3
+- fork()不会增加readers和writers计数器, readers和writers总是1, 但会增加父进程所有file的计数,
+  所以就算父进程die了,但是父进程的所有file对象没有释放, 因为计数没为0,因为子进程还在使用它
+  们.
+  
+  ulk:Forking a new process does not increase the value of the
+  readers and writers fields, so they never rise above 1;[*] however, it does increase the
+  value of the usage counters of all file objects still used by the parent process (see
+  the section "The clone( ), fork( ), and vfork( ) System Calls" in Chapter 3). Thus, the
+  objects are not released even when the parent dies, and the pipe stays open for use by
+  the children.
+  
+  fork()一个进程时file对象是共享的.
+** not function
+*** 19.1.4
+- 要用fcntl()才可以设置非阻塞的pipe, open()的O_NONBLOCK不行
+  
+  ulk:Nonblocking operations are usually requested by specifying the O_NONBLOCK flag in
+  the open( ) system call. This method does not work for pipes, because they cannot be
+  opened. A process can, however, require a nonblocking operation on a pipe by issuing a
+  fcntl( ) system call on the corresponding file descriptor.
+- 仅当pipe _没数据_ 且 写端的 _file object_ 没有被进程使用时, _read()_ 也会返回0.
+** static ssize_t pipe_read(struct file *filp, char __user *buf, size_t count, loff_t *ppos)
+*** fs/pipe.c:
+- 这个函数调用pipe_readv()
+** static ssize_t pipe_readv(struct file *filp, const struct iovec *_iov, unsigned long nr_segs, loff_t *ppos)
+*** fs/pipe.c:
+- 主要是借ulk的表19-3来看代码.讲解以表的行的情况来讲比较好.
+- pipe size = 0
+  
+  1. 若没有pipe size 为 _0_ ,且 _没有写者_,那么就会返回0.这正如ulk上说的,
+     
+     pipe_inode_info.writers :Flag for (or number of) writing processes
+     #+BEGIN_EXAMPLE
+       	ret = 0;
+   	down(PIPE_SEM(*inode));
+   	info = inode->i_pipe;
+   	for (;;) {
+   		int bufs = info->nrbufs;
+   		if (bufs) {
+     #+END_EXAMPLE
+     #+BEGIN_EXAMPLE
+   		if (!PIPE_WRITERS(*inode))
+   			break;
+     #+END_EXAMPLE 
+     #+BEGIN_EXAMPLE
+   	return ret;
+     #+END_EXAMPLE
+
+  2. 若pipe size 为0, 且 _读者_ 不能阻塞,
+     
+     但在有没有 _阻塞写者_ 的情况下,代码与19-3图是不一致的,
+     
+     代码是在 _有阻塞写者_ 的情况下是 _不会_ 返回EAGIN,
+     
+     表格是就算有也一定会返回EAGAIN.
+     #+BEGIN_EXAMPLE
+  	ret = 0;
+	down(PIPE_SEM(*inode));
+	info = inode->i_pipe;
+	for (;;) {
+		int bufs = info->nrbufs;
+		if (bufs) {
+     #+END_EXAMPLE
+     #+BEGIN_EXAMPLE
+		if (!PIPE_WAITING_WRITERS(*inode)) {
+			/* syscall merging: Usually we must not sleep
+			 * if O_NONBLOCK is set, or if we got some data.
+			 * But if a writer sleeps in kernel space, then
+			 * we can wait for that data without violating POSIX.
+			 */
+			if (ret)
+				break;
+			if (filp->f_flags & O_NONBLOCK) {
+				ret = -EAGAIN;
+				break;
+			}
+		}
+     #+END_EXAMPLE 
+     #+BEGIN_EXAMPLE
+		pipe_wait(inode);
+     #+END_EXAMPLE 
+     
+     从上面的注释来看,通常是要休眠的,但是如果写休眠者是内核态下休眠,那么可以不违反POSIX的情
+     况下等待.为什么是这样不违反POSIX呢?
+
+  3. 当pipe size为0, 且可以阻塞, 且 _有_ 写者但 _没有_ 写者休眠,那么可以休眠.
+     #+BEGIN_EXAMPLE
+  	ret = 0;
+	down(PIPE_SEM(*inode));
+	info = inode->i_pipe;
+	for (;;) {
+		int bufs = info->nrbufs;
+		if (bufs) {
+     #+END_EXAMPLE
+     #+BEGIN_EXAMPLE
+		if (!PIPE_WAITING_WRITERS(*inode)) {
+			/* syscall merging: Usually we must not sleep
+			 * if O_NONBLOCK is set, or if we got some data.
+			 * But if a writer sleeps in kernel space, then
+			 * we can wait for that data without violating POSIX.
+			 */
+			if (ret)
+				break;
+			if (filp->f_flags & O_NONBLOCK) {
+				ret = -EAGAIN;
+				break;
+			}
+		}
+     #+END_EXAMPLE 
+     #+BEGIN_EXAMPLE
+   		pipe_wait(inode);
+     #+END_EXAMPLE
+
+  4. pipe size 为0, 且 _有_ 写者休眠,也是上面的代码,也可以休眠.
+     
+     要注意这种情况下无论读者是否可以阻塞,读者都要休眠.
+     
+  所以只有在 _没有_ 写者 _休眠_ 时才会判断读者的 _O_NONBLOCK_.这样实现是不是因为:写者休眠
+  是因为没有多余的空间,所以当读者读取数据后就要空间,这时写者可以马上把为数据写到pipe
+  buffer,很快读者可以很快又读到数据,所以就不需要休眠了.
+
+- 接下来是表19-3的 pipe size 大于0, 但是小于所要读的数据.
+  
+  1. 没有写者的情况,
+     
+     当读完所有的数据的后,就退出函数,返回已读的字节数.
+     
+     进入这个判断.
+     #+BEGIN_EXAMPLE
+   		int bufs = info->nrbufs;
+		if (bufs) {
+     #+END_EXAMPLE 
+     不能进入这个判断
+     #+BEGIN_EXAMPLE
+   
+			if (chars > total_len)
+				chars = total_len;
+     #+END_EXAMPLE
+     无论后面是否还有pipe buffer可读,一定会进入这个判断,因为读者会把所有pipe buffer的数据
+     都读完,包括当前这个
+     #+BEGIN_EXAMPLE
+   			if (!buf->len) {
+				buf->ops = NULL;
+				ops->release(info, buf);
+				curbuf = (curbuf + 1) & (PIPE_BUFFERS-1);
+				info->curbuf = curbuf;
+				info->nrbufs = --bufs;
+				do_wakeup = 1;
+			}
+     #+END_EXAMPLE
+     
+     说说这个do_wakeup的含义, 就是如果一个pipe buffer(页框)的数据全被读取了,那么就可以唤醒
+     写者了,
+     #+BEGIN_EXAMPLE
+   		if (do_wakeup) {
+			wake_up_interruptible_sync(PIPE_WAIT(*inode));
+ 			kill_fasync(PIPE_FASYNC_WRITERS(*inode), SIGIO, POLL_OUT);
+		}
+     #+END_EXAMPLE
+
+  2. 如果是非阻塞的 _读_ 时,那么代码又和表格不同了, 
+     
+     如果有 _写_ 者在等待的话, 那么就会等待.而表格不是这样的.
+     
+     表格的意思是只要是阻塞的读, 就算有写者在等待空余的pipe buffer, 读者也不会等待.
+     
+     有一种这样的情况,若有一个写者把16个pipe buffer全都填充完了,但还有n个没有填充的数据,这
+     时写者会休眠,之后有一个读者会读取超过16个pipe buffer外加n个的数据, 
+     
+     这时如果按表格的方式实现, 那么读者在读完16个pipe buffer的数据后就返回EAGAIN.
+     
+     而按照linux的实现就不会返回EAGAIN,而会读完所有想要的数据,且正常返回.
+     
+     还有一点要注意的就是表格那里只是阻塞的读,是不管写者是不是在休眠都是一样的操作,
+     
+     而代码不是样的,有写者但是写者没有休眠才会判断读者是不是可以阻塞.但是为什么要这样做呢?
+     好像有点不合理,应该是合理的,因为pipe_inode_info里的写者等待队列是因为没有pipe buffer
+     写等待的,而没有等待的写者,肯定是干其它的事情去了,而没有写pipe buffer,所以阻塞的读者是
+     不可以等待这些没有休眠的写者的.
+
+  3. 若是 _阻塞读_ , _有_ _没有休眠_ 的写者,读者不用等待.这也符合表格所写的
+     进入这个判断
+     #+BEGIN_EXAMPLE
+   		int bufs = info->nrbufs;
+		if (bufs) {
+     #+END_EXAMPLE 
+     若数据跨过一个pipe buffer就会进入下面的判断.
+     #+BEGIN_EXAMPLE
+   		if (bufs)	/* More to do? */
+			continue;
+     #+END_EXAMPLE 
+     因为有写者,所以不会进入下的判断
+     #+BEGIN_EXAMPLE
+  		if (!PIPE_WRITERS(*inode))
+			break;
+     #+END_EXAMPLE 
+     因为没有写者休眠,所以会进入下的的判断
+     #+BEGIN_EXAMPLE
+   		if (!PIPE_WAITING_WRITERS(*inode)) {
+     #+END_EXAMPLE 
+     因为执行到这里时读者已读取了部分数据,所以会进入下面的判断
+     #+BEGIN_EXAMPLE
+			if (ret)
+				break;
+     #+END_EXAMPLE 
+     进入上面的判断后会退出循环,重点是它没有对读者是否可以阻塞进行判断,这是正确的,因为写者
+     没有数据可写,所以读者没有必要等待.
+     
+     因为读完所有的pipe buffer数据而退出,所以一定是释放了pipe buffer的,所以do_wakeup一定被
+     设置为1了,所以会进入下面的判断
+     #+BEGIN_EXAMPLE
+	/* Signal writers asynchronously that there is more room.  */
+	if (do_wakeup) {
+		wake_up_interruptible(PIPE_WAIT(*inode));
+		kill_fasync(PIPE_FASYNC_WRITERS(*inode), SIGIO, POLL_OUT);
+	}
+     #+END_EXAMPLE 
+     但是不是没有写者吗?为什么还进入上面的判断呢?
+
+  4. 如果是 _阻塞_ 读者,且有写者在 _休眠_,那么当然是读者会休眠了.
+- 如果是pipe size大于要读的数据, 那么无论什么情况下读者都不会休眠的.
+- 现在有点明白info_inode_info.tmp_page是怎么处理的了, 是为了提高给pipe的写者分配页的速度的.
+  
+  当一个读者读完一个pipe buffer里所有数据时(就是把页框里最后一个有效的数据给读取了),设这个
+  叫P,就会调用pipe_buffer.ops.release()方法来释tmp_page所指向的页,并把tmp_page重新赋以页P.
+  
+  当一个写者要分配一个页框来存放数据时,就会使用tmp_page所指向的页.
+
+** static ssize_t pipe_write(struct file *filp, const char __user *buf, size_t count, loff_t *ppos)
+*** fs/pipe.c:
+- 直接调用pipe_writev()
+** static ssize_t pipe_writev(struct file *filp, const struct iovec *_iov, unsigned long nr_segs, loff_t *ppos)
+*** fs/pipe.c:
+- 无论在什么情况下,只要该pipe没有读者,那么会退出, 并发送SIGPIPE信号
+  #+BEGIN_EXAMPLE
+	if (!PIPE_READERS(*inode)) {
+		send_sig(SIGPIPE, current, 0);
+		ret = -EPIPE;
+		goto out;
+	}
+  #+END_EXAMPLE
+  pipe_readv()里是在pipe size为0,没有写者时会返回0.
+- 计算出所要写的数据大小模上页大小的数据量, 之后判断这些数据能不能 _全部_ 放到当前 _最后_
+  一个pipe buffer的 _剩余_ 这个空间里,若可以就放,否则不放,分一个新的页框来放.
+  
+  是否可以合并,除了判断最后一个pipe buffer是否有空间之外,还要看
+  pipe_inode_info.ops.can_merge是否设置了.
+  #+BEGIN_EXAMPLE
+
+	/* We try to merge small writes */
+	chars = total_len & (PAGE_SIZE-1); /* size of the last buffer */
+	if (info->nrbufs && chars != 0) {
+		int lastbuf = (info->curbuf + info->nrbufs - 1) & (PIPE_BUFFERS-1);
+		struct pipe_buffer *buf = info->bufs + lastbuf;
+		struct pipe_buf_operations *ops = buf->ops;
+		int offset = buf->offset + buf->len;
+		if (ops->can_merge && offset + chars <= PAGE_SIZE) {
+			void *addr = ops->map(filp, info, buf);
+			int error = pipe_iov_copy_from_user(offset + addr, iov, chars);
+			ops->unmap(info, buf);
+			ret = error;
+			do_wakeup = 1;
+			if (error)
+				goto out;
+			buf->len += chars;
+			total_len -= chars;
+			ret = chars;
+			if (!total_len)
+				goto out;
+		}
+	}
+  #+END_EXAMPLE 
+  判断是否够空间和can_merge是否设置
+  #+BEGIN_EXAMPLE
+		if (ops->can_merge && offset + chars <= PAGE_SIZE) {
+  #+END_EXAMPLE
+  
+  所以,不一定是每个pipe buffer填充完之后才可以分配一个新的pipe buffer. 但是为什么会这样设
+  计呢?
+  
+  pipe_readv(), pipe_writev()都在函数的开头获取pipe信号量,在最后再释放信号量.所以不会出现之
+  间的 _竞争_ 和 内部的 _重入_ 问题.但是两个函数为了等待 读/写 者而会调用pipe_wait()先释放
+  信号量后两休眠.但是这样也不会在访问pipe_inode_info时会竞争.
+- 发现表格19-4和代码很不一样,完全对不上号.
+- 能执行到for这里,那么只两种情况,
+  
+  1. 和最后一个pipe buffer合并了,但是还有数据,且这些数据大小是页的整数倍.
+
+  2. 可能一开始的数据量是页的整数倍,或 因最后一个pipe buffer剩下的空间不能存放原数据量模去
+     页大小后的数据量而没有合并.
+     
+  所以执行到for这里剩下的数据量不一定是页大小的整数.
+- 当没有空闲的pipe buffer时且写者能等待时才会休眠,而不像表19-4所述那样.
+- 分配一个新页都是从头开始存数据的.
+  #+BEGIN_EXAMPLE
+			buf->offset = 0;
+  #+END_EXAMPLE 
+- 为了提高执行效率,对pipe_inode_info.tmp_page使用了技巧. 若tmp_page指后一个页,那么在需要一
+  个新页存放数据时使用tmp_page页就可以,若没有就分配,成功分配之后,使用了技巧,就是把新分配的
+  页指针赋给tmp_page,为什么这样做呢?因为在接下来执行中可能出现并没有真正使用该页就退出循环
+  了.
+  
+  分配页
+  #+BEGIN_EXAMPLE
+			if (!page) {
+				page = alloc_page(GFP_HIGHUSER);
+				if (unlikely(!page)) {
+					ret = ret ? : -ENOMEM;
+					break;
+				}
+				info->tmp_page = page;
+			}
+  #+END_EXAMPLE 
+  可能会退出
+  #+BEGIN_EXAMPLE
+			if (unlikely(error)) {
+				if (!ret) ret = -EFAULT;
+				break;
+			}
+  #+END_EXAMPLE
+  若没有退出循环,那么就置tmp_page为NULL
+  #+BEGIN_EXAMPLE
+			info->tmp_page = NULL;
+  #+END_EXAMPLE 
+** not function
+*** 19.2
+- 因进程不能打开一个已存在的pipe,使进程不能打开pipe和进程通信,所以引入了FIFO,即命名pipe.
+- ulk:Each FIFO is much like a pipe: rather than owning disk blocks in the filesystems, an
+  opened FIFO is associated with a kernel buffer that temporarily stores the data
+  exchanged by two or more processes.
+- ulk:Thanks to the disk inode, however, a FIFO can be accessed by every process, because
+  the FIFO filename is included in the system's directory tree.
+- FIFO的读/写也是用pipe_read()和pipe_write()实现的.有两点不同:
+  
+  FIFO的inode是出现在系统目录树的, 而不是在pipefs文件系统的.
+  
+  FIFO是双向的.
+- 创建FIFO时用 _mknod()_, 要指定S_FIFO.
+  
+  POSIX有一个 _mkfifo()_, linux是用mknod()实现的.
+- 打开一个fifo时, 调用
+
+  read_inode() -> 发现是特殊文件(fifo也是)就调用
+  
+  init_special_inode() 它设置 i_fop 为def_fifo_fops.
+  
+  然后 file object 的 f_ops设为 i_fop.
+  
+  执行open方法时就是fifo_open()
+- fifo的inode.i_pipe也是使用pipe_inode_info结构体.
+** static int fifo_open(struct inode *inode, struct file *filp)
+*** fs/fifo.c:
+- 若inode.i_pipe为NULL,那么也分配一个pipe_inode_info.
+  #+BEGIN_EXAMPLE
+	if (!inode->i_pipe) {
+		ret = -ENOMEM;
+		if(!pipe_new(inode))
+			goto err_nocleanup;
+	}
+  #+END_EXAMPLE 
+- fifo只能处理read/write
+  #+BEGIN_EXAMPLE
+
+	/* We can only do regular read/write on fifos */
+	filp->f_mode &= (FMODE_READ | FMODE_WRITE);
+  #+END_EXAMPLE
+- file.f_op
+  
+  1. 如果是 _只读_ 的情况,
+     
+     file.f_op要设为 _read_fifo_fops_ .
+  
+     read_fifo_fops.read 设为 _pipe_read_ .
+  
+     read_fifo_fops.write 设为 _bad_pipe_w_ .
+     
+     bad_pipe_w返回EBADF
+  2. 若是 _只写_ 的情况.
+     
+     file.f_op要设为 _write_fifo_fops_.
+     
+     write_fifo_fops.read 设为 _bad_pipe_r_.
+     
+     write_fifo_fops.write 设为 _pipe_write_.
+  3. 若是 _读写_ 的情况.
+     
+     file.f_op要设为 _rdwr_fifo_fops_.
+     
+     rdwr_fifo_fops.read 为 _pipe_read_.
+     
+     rdwr_fifo_fops.write 为 _pipe_write_.
+- POSIX.1说就算 _没有_ _写_ FIFO的进程, _只读_ _O_NONBLOCK_ 打开FIFO也没有错
+  #+BEGIN_EXAMPLE
+	/*
+	 *  O_RDONLY
+	 *  POSIX.1 says that O_NONBLOCK means return with the FIFO
+	 *  opened, even when there is no process writing the FIFO.
+	 */
+  #+END_EXAMPLE
+- pipe_inode_info.wait,这个等待队列里应该是可以放 _读者和写者_ 的.
+  
+  因为pipe_readv()和pipe_write()里都调用pipe_wait()把当前进程插入到这个队列里.
+  
+  但是会不会在等待队列里 _同时存在_ 读者和写者呢?
+  
+  应该不会的,
+  
+  假如没有pipe buffer可给写者填数据时, 那么写者会调用pipe_wait()进行休眠, 但是在调用
+  pipe_waite()前会调用会调用wake_up_interruptible_sync() _同步_ 唤醒pipe_inode_info.wait里
+  的 _所有_ 进程. 在pipe_inode_info.wait的等待不是互斥的, 所以会唤醒队列里的所有进程. 因为
+  在pipe_wait()里会获取等待队列的自旋锁, 又因为wake_up_interruptible_sync()已获取了这个锁,
+  所以一定是调用wake_up_interruptible()把所有的任务都移出队列之后才会调用pipe_wait()把当前
+  进程加到队列里.但是现在又有一个问题:会不会在调用wake_up_interruptible_sync()之后到调用
+  pipe_wait()之前这个时间窗口里有其它的读者或写者被插到队列里呢?不会的,因为inode.i_sem的原
+  因,所以这个时间窗口是一个被inode.i_sem保护的临界区.那么pipe_inode_info.wait里是不是只会
+  出现一个任务呢?而不会同时出现多个任务呢?应该是,因为在插入任务前一定会清队列,插入和删除之
+  间不会竞争.
+- 只读时有这段代码的意思是:因为该FIFO没有读者,该读者是唯一的读者,所以等待队列里有进程时一
+  定是写者,所以不管三七二十一把它唤醒就是了,
+  #+BEGIN_EXAMPLE
+  		if (PIPE_READERS(*inode)++ == 0)
+			wake_up_partner(inode);
+  #+END_EXAMPLE
+- 在只读时, O_NONBLOCK 是影响fifo_open() 是否阻塞的,
+  
+  如果是 _非阻塞_ 的, 就设置 _file.f_version_.
+  
+  如果是 _阻塞_ 的,就会调用wait_for_partner()来等待至少一个写者唤醒并把数据写入FIFO,
+  
+  wait_for_partner()循环调用pipe_wait(),若发现r_counter/w_counter有变化就退出循环.
+  
+  好像r_counter和w_counter是只增加的,没有减少的.如果不是这样的话,wait_for_partner()也不可
+  以只判断r_counter/w_counter的变化而不判断是增还是减.
+  
+  r_counter的增加只在以 _读_ 方式 _打开_ fifo文件时.
+  
+  w_counter的增加只在以 _写_ 方式 _打开_ fifo文件时.
+  
+  当fifo没有 _写者_ 且 读者可以 _阻塞_, 那fifo_open()会一直等待直到有写者, 在
+  wait_for_partner()发现有写者表示可以马上读到数据吗?不一定的,假设进程A调用open()打开一个
+  没有写者的fifo来读数据,因为没有写者而等待,接着进程B调用open()打开同一个fifo来写数据,写者
+  会增加w_counter并执行wake_up_partner()
+  #+BEGIN_EXAMPLE
+		PIPE_WCOUNTER(*inode)++;
+		if (!PIPE_WRITERS(*inode)++)
+			wake_up_partner(inode);
+  #+END_EXAMPLE 
+  这时进程A还没有等待进程B退出open()来写数据,就向fifo读数据了.而在pipe_readv()里又会因为没
+  有数据而等待写者把数据写进fifo,那么open()里的等待是不是有点多余呢?
+
+- 当 _只写_ 时, 若发现这是 _唯一_ 的写者, 那么会调用wake_up_partner(), 这和只读的原因是一
+  样的.
+  
+- 当 _只写_ 时, 若没有读者,也会调用 wait_for_partner() 等待以读的方式打开fifo, 这点与只读
+  也相似,
+  
+  但是有一点不同, 就是不会判断 _O_NONBLOCK_ , 也就是说 _O_NONBLOCK_ 对写者无效.
+
+- 如果是 _读写_ 的,处理就会很简单, 
+  
+  若读写是唯一的话还是会调用wake_up_partner().
+  
+
+- 在从这个函数可以看出,在FIFO里, pipe_inode_info.readers/writers不总是1,会增加的, 以读/写
+  打开一次这个fifo就会自加一次readers/writers.
+** not function
+*** 19.3
+- system v IPC 是一套机制, 
+  
+  这套机制包括: _信号量_, _消息_, _共享内存_.
+  
+  IPC 资源 指 IPC信号量或IPC消息队列或IPC共享内存.
+  
+- _一个_ IPC资源可以被 _任何_ 进程使用,即使进程之间没有任何关系.
+  
+  ulk:An IPC resource may be used by every process, including those that do not share the
+  ancestor that created the resource.
+
+- IPC 资源都有一个 _IPC identifier_ 标识, 是 _32_ 位的数字, 在系统范围是 _唯一_ 的, 所以可
+  不同进程可以用这个标识找到相应的IPC资源来和其它的进程通信.
+- semget() 创建 IPC 信号量, msgget() 创建 IPC 消息, shmget() 创建 IPC 共享内存.
+  
+  这些函数主要是创建一个IPC 标识符, 若是已被创建,那么也返回这个标识符.
+  
+  它们的第一个参数指定了IPC的标识符, 如果是0(IPC_PRIVATE), 那么就会创建一个 _新的_, 且只能
+  在有 _亲属_ 关系的进程之间使用来通信.
+  
+  ulk:One process issues a semget( ), msgget( ), or shmget( ) function by specifying
+  IPC_PRIVATE as its IPC key. A new IPC resource is thus allocated, and the process can
+  either communicate its IPC identifier to the other process in the application[ ] or fork
+  the other process itself. This method ensures that the IPC resource cannot be used
+  accidentally by other applications.
+- _sem_ids_, _msg_ids_, _shm_ids_ 这些全局变量的类型是 _struct ipc_ids_.
+  
+  不是sem msg shm 共享一个struct ipc_ids.
+- ipc sem要搞清 _struct kern_ipc_perm_, _struct sem_array_, _struct sem_, _struct
+  sem_undo_, _struct sem_queue_.
+- ipc 信号量比 _内核_ 信号量复杂和不同的原因:
+  
+  1. IPC信号量是多个信号量的集合,所以可以保护多个独立的共享的信号量. IPC信号量里的信号量叫
+     primitive 信号量.
+     
+     IPC信号量和每个IPC信号量里的 primitive 信号量都是有上限的.
+
+  2. 有undo信号量机制,在进程没有undo信号量时退出时会启动undo进程运行时的信号量操作.
+- 与IPC 信号量相关的函数有 _semget()_, _semop()_, _semctl()_.
+- http://www.eefocus.com/article/09-06/75167s.html
+  
+  _键_ 和 _识别号_ 指的是不同的东西。系统支持两种 _键_ ： _公有和私有_ 。如果键是 _公有_ 的，
+  则系统中所有的进程通过权限检查后，均可以找到System V IPC 对象的 _识别号_ 。如果键是私有的，
+  则键值为0，说明每个进程都可以用键值0建立一个专供其私用的对象。注意，对System V IPC对象的
+  引用是通过识别号而不是通过键.
+  
+  是针对进程之间要共享一个临界资源而言的，信号量的初值为1。实际上，信号量作为资源计数器，它
+  的初值可以是任何正整数，其初值不一定为0或1。另外，如果一个进程要先获得两个或多个的共享资
+  源后才能执行的话，那么，相应地也需要多个信号量，而多个进程要分别获得 _多个临界资源后方能运
+  行_ ，这就是 _信号量集合机制_, Linux 讨论的就是信号量集合问题。
+  
+  信号量集合用struct sem_array表示, 信号量用struct sem表示, sem_array.sem是一个struct sem的
+  指针,指向一个数组.
+** void __init sem_init (void)
+*** ipc/sem.c:
+- 这个函数是初始化sem_ids全局变量的.
+- 调用ipc_init_ids(), 可见无论是信号量, 消息, 还是共享内存都是调用这个函数的来初始化的,不
+  同的是第二个参数不同.
+  
+  第二个参数指的是资源的最大数量.信号量的是SEMMNI (128),
+** void __init ipc_init_ids(struct ipc_ids* ids, int size)
+*** ipc/util.c:
+- 无论是信号量的,还是消息的, 还是共享内存的, 资源的最大值都不能超过IPCMNI (32768)
+  #+BEGIN_EXAMPLE
+	if(size > IPCMNI)
+		size = IPCMNI;
+  #+END_EXAMPLE
+- max_id: Maximum slot index in use
+- ipc.ids.seq_max初始化为INT_MAX可以分成多少分的IPCMNI
+  #+BEGIN_EXAMPLE
+		int seq_limit = INT_MAX/SEQ_MULTIPLIER;
+		if(seq_limit > USHRT_MAX)
+			ids->seq_max = USHRT_MAX;
+		 else
+		 	ids->seq_max = seq_limit;
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+#define SEQ_MULTIPLIER	(IPCMNI)
+  #+END_EXAMPLE
+- 最后是初始化ipc_ids.entries
+  #+BEGIN_EXAMPLE
+	ids->entries = ipc_rcu_alloc(sizeof(struct kern_ipc_perm *)*size +
+				     sizeof(struct ipc_id_ary));
+
+	if(ids->entries == NULL) {
+		printk(KERN_ERR "ipc_init_ids() failed, ipc service disabled.\n");
+		size = 0;
+		ids->entries = &ids->nullentry;
+	}
+	ids->entries->size = size;
+	for(i=0;i<size;i++)
+		ids->entries->p[i] = NULL;
+  #+END_EXAMPLE 
+  
+  给ipc_ids.entries.p分配了size个struct kern_ipc_perm _指针_.
+- 因为size是小于IPCMNI的, 且SEQ_MULTIPLIER是IPCMNI, 所以每一个seq里的id数都不小于size.
+** asmlinkage long sys_semget (key_t key, int nsems, int semflg)
+*** ipc/sem.c:
+- 参数key是键值, nsems是创建的信号量集里信号的个数.
+- semflg参数的取值：IPC_CREAT ：如果内核中没有新创建的信号量集合，则创建它。
+  IPC_EXCL ：当与IPC_CREAT一起使用时，但信号量集合已经存在，则创建失败。
+  
+  如果IPC_CREAT单独使用，semget()为一个新建的集合返回标识号，或者返回具有相同键值的已存在集
+  合的标识号。如果IPC_EXCL与IPC_CREAT一起使用，要么创建一个新的集合，要么对已存在的集合返
+  回-1。IPC_EXCL单独是没有用的，
+- 若key是IPC_PRIVATE,那么就调用newary(),
+- 若key不是IPC_PRIVATE,那么就先判断key所表示的这个id是不是已经被使用了,调用ipc_findkey()判
+  断,
+  
+  若没被使用又没设IPC_CREAT, 那么就返回错,若设了IPC_CREAT, 那么也是调用newary().
+- 若该id的资源被使用了,且IPC_CREAT和IPC_EXCL _都_ 设置了, 那么就返回EEXIST.
+  #+BEGIN_EXAMPLE
+	} else if (semflg & IPC_CREAT && semflg & IPC_EXCL) {
+		err = -EEXIST;
+	}
+  #+END_EXAMPLE
+- 那么剩下的情况就是:id是已被使用的.
+  
+  这时参数nsems不能大于新建时的sem_array.sem_nsems
+  
+  调用ipcperms来处理打开一已存在的IPC 信号量的访问权限.
+  
+  若以上都通过了,那么就调用sem_buildid()
+** #define sem_buildid(id, seq) ipc_buildid(&sem_ids, id, seq)
+*** ipc/util.c:
+** int ipc_buildid(struct ipc_ids* ids, int id, int seq)
+*** ipc/util.c:
+- 
+  #+BEGIN_EXAMPLE
+	return SEQ_MULTIPLIER*seq + id;
+  #+END_EXAMPLE 
+** int ipcperms (struct kern_ipc_perm *ipcp, short flag)
+*** ipc/util.c:
+- 这个权限检查有点特别,
+- ulk:The mode bit mask includes six flags, which store the read and write access
+  permissions for the resource's owner, the resource's group, and all other users. IPC
+  access permissions are similar to file access permissions described in the section
+  "Access Rights and File Mode" in Chapter 1, except that the Execute permission flag is
+  not used.
+  
+  只有6个标志, 与文件的权限的差别就是没有执行权限, 但是这个函数代码没有特殊处理执行的权限,
+  就是 S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IWOTH.
+- 权限的检查是这样的:
+  
+  若 _当前进程的_ _有效_ 用户是 信号量的 _创建用户_ 或 _拥有者_,那么 若原地权限没有
+  S_IRUSR 的,那么传入的权限 _不_ 能有 _读_ 的权限(S_IRUSR, S_IRGRP, S_IROTH),
+  写也是这样.
+  
+  若 _当前进程的_ _有效_ 用户 不是 信号量的 _创建用户_ 或 _拥有者_,但当前进程的有效组是信
+  号量的创建组或拥有组, 那么处理原来权限的S_IRGRP和S_IWGRP和有效用户的一样.
+  
+  总结就是:
+  1. 分有效用户和有效组
+
+  2. 传入的权限要合并
+
+  3. 原来没有的不能有, 原来有的可有可无.
+  
+  这样的检查有点怪.
+** int ipc_findkey(struct ipc_ids* ids, key_t key)
+*** ipc/util.c:
+- 看ids里的key这个id的IPC信号有没有被使用.
+  
+  判断的标准是ipc_ids.entries.p数组里的某个kern_ipc_perm.key 是否等于key
+- ipc_ids.max_id表示的是当前使用的最大的id.
+  
+** static int newary (key_t key, int nsems, int semflg)
+*** ipc/sem.c:
+- used_sems是指当前一共使用的primitive 信号量数,是一个全局变量
+  
+  sc_semmns是指最多可以使用的primitive信号量数, 是一个全局变量, 是SEMMSL(256).
+  
+  #+BEGIN_EXAMPLE
+	if (used_sems + nsems > sc_semmns)
+		return -ENOSPC;
+  #+END_EXAMPLE 
+- 在sem_init()里调用的ipc_init_ids()分配了struct ipc_ids,并初始化了.
+  
+  在这个函数里分配了struct sem_array,并初始化了.
+  #+BEGIN_EXAMPLE
+
+	size = sizeof (*sma) + nsems * sizeof (struct sem);
+	sma = ipc_rcu_alloc(size);
+	if (!sma) {
+		return -ENOMEM;
+	}
+	memset (sma, 0, size);
+  #+END_EXAMPLE
+- 这个函数不管semflg的IPC_CREATE和IPC_EXCL.
+  
+  semflg里的权限是对所有的primitive信号量起作用的, 不是每个primitive信号量有独立的权限.
+  #+BEGIN_EXAMPLE
+	sma->sem_perm.mode = (semflg & S_IRWXUGO);
+  #+END_EXAMPLE 
+  键也是对所有的primitive信号量而言的,
+  #+BEGIN_EXAMPLE
+	sma->sem_perm.key = key;
+  #+END_EXAMPLE
+- 调用ipc_addid()来初始化sem_array.sem_perm,并在ipc_ids.entries.p数组里找个空闲的位置放下.
+- 接下来就是增加used_sems
+  #+BEGIN_EXAMPLE
+	used_sems += nsems;
+  #+END_EXAMPLE
+  可见 used_sems 是对于 primitive 来说的.
+- 初始化sem_array.sem_base
+  #+BEGIN_EXAMPLE
+	sma->sem_base = (struct sem *) &sma[1];
+  #+END_EXAMPLE 
+  
+  为什么要这样初始化呢? 因为分配是 struct sem 和 struct sem_array 的空间一起分配的
+  #+BEGIN_EXAMPLE
+	size = sizeof (*sma) + nsems * sizeof (struct sem);
+  #+END_EXAMPLE
+- 初始化sem_nsems和sem_ctime
+  #+BEGIN_EXAMPLE
+	sma->sem_nsems = nsems;
+	sma->sem_ctime = get_seconds();
+  #+END_EXAMPLE
+- 最后调用sem_buildid(), 就是计算
+  #+BEGIN_EXAMPLE
+	return SEQ_MULTIPLIER*seq + id;
+  #+END_EXAMPLE
+  
+  ipc_ids.seq在ipc_addid()里若函数成功是会自增的, 自增之前赋给kern_ipc_perm.seq在
+  ipc_addid()里若函数成功是会自增的,所以到执行sem_buildid时已经和上一次调用newary()时不同
+  了.
+  
+  且id是ipc_addid()返回的新建的sem_array.sem_perm的地址所存在sem_ids.entries.p数组的下标.
+  
+  所以新建一个struct sem_array之后,它的id一定是固定的.
+  
+  那么怎么对一个已存在的信号量获得信号量所在的ipc_ids.entries.p数组下标号呢?就是通过用key来
+  调用ipc_findkey()得到的, 
+  
+  sys_semget()第一个参数传入的是key, 返回的是用key调用ipc_findkey()所得的下标加上
+  SEQ_MULTIPLIER*seq. seq在每新建一个struct sem_array时会增加,会回绕, 所以有些信号量的seq
+  会相等, 但是由于id是唯一的, 所以sys_semget()返回的值是对于不同的信号量而不同的.
+  
+  seq为什么要这样处理呢?ulk:To minimize the risk of incorrectly referencing the wrong
+  resource, the kernel does not recycle IPC identifiers as soon as they become
+  free. Instead, the IPC identifier assigned to a resource is almost always larger than
+  the identifier assigned to the previously allocated resource of the same type.
+  
+  seq就是槽号.
+- 所以调用完这个函数之后的结果是
+  
+  1. 分配了一个新的 struct sem_array, 一堆的 struct sem,
+
+  2. 并初始化了 sem_array和sem_array.sem_perm的成员,
+
+  3. 把sem_array.sem_perm的地址放到了sem_ids(ipc_ids类型).entries.p数组合适的下标.
+** int ipc_addid(struct ipc_ids* ids, struct kern_ipc_perm* new, int size)
+*** ipc/util.c:
+- 调用grow_ary()来扩展IPC信号量的可达到的最大总数,具体的就是ipc_ids.entries.p数组的大小.
+  
+  grow_ary()里若第二个参数size不大于ipc_ids.entries.size的时候,返回值就是第二个参数.
+  
+  但是第二个参数传入的都是当前的ipc_ids.entries.p数组的最大值, 若想扩展ipc_ids.entries.p,
+  就要用更大的值.
+- 接丁来就是找出第一个为空的索引
+  #+BEGIN_EXAMPLE
+	for (id = 0; id < size; id++) {
+		if(ids->entries->p[id] == NULL)
+			goto found;
+	}
+	return -1;
+  #+END_EXAMPLE
+  
+  分配id时是尽量分配最小的.
+- 增加ipc_ids.in_use
+- ipc_ids.max_id的意思应该是当前使用的最大id号,
+  #+BEGIN_EXAMPLE
+	if (id > ids->max_id)
+		ids->max_id = id;
+  #+END_EXAMPLE
+- kern_ipc_perm.cuid : creator user ID
+  kern_ipc_perm.uid: owner user ID
+  #+BEGIN_EXAMPLE
+
+	new->cuid = new->uid = current->euid;
+	new->gid = new->cgid = current->egid;
+  #+END_EXAMPLE
+- kern_ipc_perm.seq应该是这样的, 每用一个id, 就会增加1, 到ipc_ids.seq_max就会回绕到 0, 但
+  不会自减.
+  #+BEGIN_EXAMPLE
+
+	new->seq = ids->seq++;
+	if(ids->seq > ids->seq_max)
+		ids->seq = 0;
+  #+END_EXAMPLE
+- 所以这个函数就是在ipc_ids.entries.p数组里找了一个空的kern_ipc_perm,并初始化这个
+  kern_ipc_perm,返回该kern_ipc_perm所在的下标,就是id.
+** static int grow_ary(struct ipc_ids* ids, int newsize)
+*** ipc/util.c:
+- 参数newsize就是要扩展的大小.
+- ipc_ids.entries.size要改成newsize
+  #+BEGIN_EXAMPLE
+	new->size = newsize;
+  #+END_EXAMPLE 
+- 根据newsize分配一个空间,并初始化ipc_id_ary.p数组,
+  #+BEGIN_EXAMPLE
+
+	new = ipc_rcu_alloc(sizeof(struct kern_ipc_perm *)*newsize +
+			    sizeof(struct ipc_id_ary));
+	if(new == NULL)
+		return size;
+	new->size = newsize;
+	memcpy(new->p, ids->entries->p, sizeof(struct kern_ipc_perm *)*size +
+					sizeof(struct ipc_id_ary));
+	for(i=size;i<newsize;i++) {
+		new->p[i] = NULL;
+	}
+	old = ids->entries;
+  #+END_EXAMPLE 
+  
+  ipc_ids.entries使用新的空间 并 释放旧的空间
+  #+BEGIN_EXAMPLE
+	old = ids->entries;
+
+	/*
+	 * Use rcu_assign_pointer() to make sure the memcpyed contents
+	 * of the new array are visible before the new array becomes visible.
+	 */
+	rcu_assign_pointer(ids->entries, new);
+
+	ipc_rcu_putref(old);
+  #+END_EXAMPLE 
+** asmlinkage long sys_semop (int semid, struct sembuf __user *tsops, unsigned nsops)
+*** ipc/sem.c:
+- 这个函数调用sys_semtimedop()
+** asmlinkage long sys_semtimedop(int semid, struct sembuf __user *tsops, unsigned nsops, const struct timespec __user *timeout)
+*** ipc/sem.c:
+- http://baike.baidu.com/link?url=ZisHBwW2F12WfK6hUGsoXwlA24FqLRyM2eFymZSzv5sbFTepGPni3X7ryCUyHjQQ7SoqJzf6tZNEoflkGvbwNa
+  #+BEGIN_EXAMPLE
+
+/* semop system calls takes an array of these. */
+struct sembuf {
+	unsigned short  sem_num;	/* semaphore index in array */
+	short		sem_op;		/* semaphore operation */
+	short		sem_flg;	/* operation flags */
+};
+  #+END_EXAMPLE 
+  在sembuf结构中,
+  
+  sem_num是相对应的信号量集中的某一个资源,所以其值是一个从0到相应的信号量集的资源总数
+  （ipc_perm.sem_nsems）之间的整数.
+  
+  sem_op指明所要执行的操作,
+  
+  sem_flg说明函数semop的行为.sem_op的值是一个整数,如表2所示,列出了详细sem_op的值及所对应的
+  操作.
+  
+  sem_op:
+  1. 正数 :
+     
+     释放相应的资源数,将sem_op的值加到信号量的值上
+  2. 0 
+      
+     进程阻塞直到信号量的相应值为0, 当信号量已经为0,函数立即返回。
+      
+     如果信号量的值不为0,则依据sem_flg的IPC_NOWAIT位决定函数动作。
+     - sem_flg指定IPC_NOWAIT,则semop函数出错返回EAGAIN。
+     - sem_flg没有指定IPC_NOWAIT,则将该信号量的semncnt值加1,然后进程挂起直到下述情况发生。
+       - 信号量值为0,将信号量的semzcnt的值减1,函数semop成功返回；
+       - 此信号量被删除（只有超级用户或创建用户进程拥有此权限）,函数smeop出错返回EIDRM；
+       - 进程捕捉到信号,并从信号处理函数返回,在此情况将此信号量的semncnt值减1,函数semop出错返回EINTR
+  3. 负数 
+      
+     - 请求sem_op的绝对值的资源。如果相应的资源数可以满足请求，则将该信号量的值减去sem_op的绝对值，函数成功返回。
+     - 当相应的资源数不能满足请求时，这个操作与sem_flg有关。
+       - sem_flg指定IPC_NOWAIT，则semop函数出错返回EAGAIN。
+       - sem_flg没有指定IPC_NOWAIT，则将该信号量的semncnt值加1，然后进程挂起直到下述情况发生：
+         - 当相应的资源数可以满足请求，该信号的值减去sem_op的绝对值。成功返回；
+         - 此信号量被删除（只有超级用户或创建用户进程拥有此权限），函数smeop出错返回EIDRM：
+         - 进程捕捉到信号，并从信号处理函数返回，在此情况将此信号量的semncnt值减1，函数semop出错返回EINTR 
+- 参数nsops是指定参数tsops数组的元素个数
+- 因为tsops是在用户态空间的, 所以要把它拷贝到内核态空间.
+  
+  又因为tsops是一个数组,所以拷贝之前要有一个可以容纳tsops数组大小的空间.
+  
+  这个内核空间可以是用堆栈分配优先, 就是以局部变量的方式, 这种方式只能在执行前指定大小,
+  #+BEGIN_EXAMPLE
+	struct sembuf fast_sops[SEMOPM_FAST];
+	struct sembuf* sops = fast_sops, *sop;
+  #+END_EXAMPLE
+  
+  若大小不够就用堆动态分配
+  #+BEGIN_EXAMPLE
+	if(nsops > SEMOPM_FAST) {
+		sops = kmalloc(sizeof(*sops)*nsops,GFP_KERNEL);
+		if(sops==NULL)
+			return -ENOMEM;
+	}
+  #+END_EXAMPLE 
+  
+  在栈分配比在堆分配快.
+- 
+** static inline int get_undo_list(struct sem_undo_list **undo_listp)
+*** ipc/sem.c:
+- IPC信号量的undo机制使用了两个链表, 一个是per-process, 另一个是per-semaphore, 
+  
+  task_struct.sysvsem_list是和 per-process链表有关的, ulk:The per-process list includes
+  all sem_undo data structures corresponding to IPC semaphores on which the process has
+  performed undoable operations. The sysvsem.undo_list field of the process descriptor
+  points to a data structure, of type sem_undo_list , which in turn contains a pointer to
+  the first element of the list; the proc_next field of each sem_undo data structure
+  points to the next element in the list.
+
+- 这个函数的作用很简单, 就是通过undo_listp这个参数返回current.sysvsem.undo_list.
+  
+  若current.sysvsem.undo_list.为空, 那么就分配一个
+** static inline int get_undo_list(struct sem_undo_list **undo_listp)
+*** ipc/sem.c:
+
