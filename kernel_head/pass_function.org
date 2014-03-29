@@ -14033,7 +14033,129 @@ struct sembuf {
   #+END_EXAMPLE 
   
   在栈分配比在堆分配快.
-- 
+- 调用find_undo()在当前进程的sysvsem里找sem_undo.semid等于semid的sem_undo.
+- 对IPC信号量进行操作,就要检查权限
+  #+BEGIN_EXAMPLE
+
+	error = -EACCES;
+	if (ipcperms(&sma->sem_perm, alter ? S_IWUGO : S_IRUGO))
+		goto out_unlock_free;
+  #+END_EXAMPLE 
+  #+BEGIN_EXAMPLE
+		if (sop->sem_op < 0)
+			decrease = 1;
+		if (sop->sem_op > 0)
+			alter = 1;
+	}
+	alter |= decrease;
+  #+END_EXAMPLE 
+  
+  所以,当参数tsops数组里有要对信号量作加减操作的,那么信号量的kern_ipc_perm.sem_perm就要有
+  写的访问权限,否则就要有读的权限,
+  
+  即没有写权限,也没有读权限也是不行的.
+- 调用try_atomic_semop()让sops的所有sembuf作用于对应的sem_array.sem, 若成功就返回0, 若要休
+  眠就返回1. 有错(信号数超范围了)就返回错(负数).
+  #+BEGIN_EXAMPLE
+
+	error = try_atomic_semop (sma, sops, nsops, un, current->tgid);
+	if (error <= 0) {
+		if (alter && error == 0)
+			update_queue (sma);
+		goto out_unlock_free;
+	}
+  #+END_EXAMPLE 
+  
+  从代码可以看出不用等待就可以返回了,否则下面还要做等待队列的处理
+- 若try_atomic_semop()返回0表示所有的sembuf都已作用于对应的sem_array.sem.
+  
+  所以这样可能可以使一些等待信号的进程可以被唤醒.
+  
+  所以调用了update_queue().
+- 接下来就是要做休眠的处理了.
+  
+  初始化sem_queue
+  #+BEGIN_EXAMPLE
+
+	/* We need to sleep on this operation, so we put the current
+	 * task into the pending queue and go to sleep.
+	 */
+		
+	queue.sma = sma;
+	queue.sops = sops;
+	queue.nsops = nsops;
+	queue.undo = un;
+	queue.pid = current->tgid;
+	queue.id = semid;
+	queue.alter = alter;
+	if (alter)
+		append_to_queue(sma ,&queue);
+	else
+		prepend_to_queue(sma ,&queue);
+
+	queue.status = -EINTR;
+	queue.sleeper = current;
+	current->state = TASK_INTERRUPTIBLE;
+	sem_unlock(sma);
+  #+END_EXAMPLE 
+  
+  把参数sops, nsops, id分别保存到sem_queue.sops, sem_queue.nsops, sem_queue.id.
+  
+  把current对应这个IPC信号量的sem_undo保存到sem_queue.undo, 因为到时处理这个sem_queue的时
+  候要处理对应的sem_undo.
+  
+  sem_queue.alter是在update_queue()时用来判断处理完这个sem_queue时是否要从头扫描
+  task_struct.sysvsem链表.
+  
+  sem_queue.alter在sops数组里有sembuf的sem_op非0时就会设为1
+  #+BEGIN_EXAMPLE
+	for (sop = sops; sop < sops + nsops; sop++) {
+		if (sop->sem_num >= max)
+			max = sop->sem_num;
+		if (sop->sem_flg & SEM_UNDO)
+			undos++;
+		if (sop->sem_op < 0)
+			decrease = 1;
+		if (sop->sem_op > 0)
+			alter = 1;
+	}
+	alter |= decrease;
+  #+END_EXAMPLE 
+  
+  所以sem_queue.alter在sem_queue.sops数组里有sembuf要对primitive进行加减操作时就设为1
+  
+  若sem_queue.alter为1, 那么就把sem_queue加在链表的后面, 否则就加在前面以让这个sem_queue最
+  快处理, 因为处理这样的sem_queue消耗primitive信号量.
+- 这个函数的参数timeout,指的是在需要阻塞时调度的超时时间
+  #+BEGIN_EXAMPLE
+
+	if (timeout)
+		jiffies_left = schedule_timeout(jiffies_left);
+	else
+		schedule();
+  #+END_EXAMPLE
+- 调度回来以后就判断sem_queue.status的状态, 若是IN_WAKEUP,表示该sem_queue已被另一个进程从链
+  表里删除了,但是那个进程还没调用wake_up_process()唤醒该进程,这可以从update_queue()里了解,
+  
+  所以这时要占着cpu等待,但又不禁止中断,就是类似用死循环,直到sem_queue.status不等于
+  IN_WAKEUP.
+  #+BEGIN_EXAMPLE
+
+	error = queue.status;
+	while(unlikely(error == IN_WAKEUP)) {
+		cpu_relax();
+		error = queue.status;
+	}
+  #+END_EXAMPLE
+- 这个函数在等待时只在3种情况会返回,之前已说过, 
+  
+  信号量数满足; IPC信号量被删除; 接收到信号.
+  
+  接下来的代码就是处理这3种情况的.
+  
+  如果没有被删除,也没有收到信号,schedule()返回后一定是其它的进程因信号量满足而在
+  update_queue()调用wake_up_process()来唤醒进程的吗?
+  
 ** static inline int get_undo_list(struct sem_undo_list **undo_listp)
 *** ipc/sem.c:
 - IPC信号量的undo机制使用了两个链表, 一个是per-process, 另一个是per-semaphore, 
@@ -14048,6 +14170,389 @@ struct sembuf {
 - 这个函数的作用很简单, 就是通过undo_listp这个参数返回current.sysvsem.undo_list.
   
   若current.sysvsem.undo_list.为空, 那么就分配一个
-** static inline int get_undo_list(struct sem_undo_list **undo_listp)
+** static struct sem_undo *find_undo(int semid)
 *** ipc/sem.c:
+- 这个函数一开始就用get_undo_list(),上面有介绍.
+- 再调用lookup_undo()在进程的sysvsem链表里找出sem_undo.semid等于参数semid的struct sem_undo.
+
+  若找到就返回这个sem_undo, 否则就新建一个.
+  
+  #+BEGIN_EXAMPLE
+	nsems = sma->sem_nsems;
+	ipc_rcu_getref(sma);
+	sem_unlock(sma);
+
+	new = (struct sem_undo *) kmalloc(sizeof(struct sem_undo) + sizeof(short)*nsems, GFP_KERNEL);
+	if (!new) {
+		ipc_lock_by_ptr(&sma->sem_perm);
+		ipc_rcu_putref(sma);
+		sem_unlock(sma);
+		return ERR_PTR(-ENOMEM);
+	}
+  #+END_EXAMPLE
+  
+  因为是在解锁的情况下新建的, 所以在插入链表之前要加上锁后检查是不是已被其它的进程给插入了,若
+  是就返回.
+  #+BEGIN_EXAMPLE
+	lock_semundo();
+	un = lookup_undo(ulp, semid);
+	if (un) {
+		unlock_semundo();
+		kfree(new);
+		ipc_lock_by_ptr(&sma->sem_perm);
+		ipc_rcu_putref(sma);
+		sem_unlock(sma);
+		goto out;
+	}
+  #+END_EXAMPLE 
+  
+  若没有被插入,还要看这个信号量是不是被删除了,
+  #+BEGIN_EXAMPLE
+	ipc_lock_by_ptr(&sma->sem_perm);
+	ipc_rcu_putref(sma);
+	if (sma->sem_perm.deleted) {
+		sem_unlock(sma);
+		unlock_semundo();
+		kfree(new);
+		un = ERR_PTR(-EIDRM);
+		goto out;
+	}
+  #+END_EXAMPLE 
+  
+  kern_ipc_perm.deleted原来是这样用的.
+- 关于struct sem_undo的四个成员的初始化
+
+  sem_undo.proc_next就插到进程的sysvsem链表里
+  #+BEGIN_EXAMPLE
+	new->proc_next = ulp->proc_list;
+	ulp->proc_list = new;
+  #+END_EXAMPLE 
+  
+  sem_undo.id_next就插在ID为semid的这个信号量的sem_array.undo这个链表里
+  #+BEGIN_EXAMPLE
+	new->id_next = sma->undo;
+	sma->undo = new;
+  #+END_EXAMPLE 
+  
+  sem_undo.semadj指向一个大小为IPC信号量的primitive 信号量个数的数组空间
+  #+BEGIN_EXAMPLE
+	memset(new, 0, sizeof(struct sem_undo) + sizeof(short)*nsems);
+	new->semadj = (short *) &new[1];
+  #+END_EXAMPLE 
+  
+  sem_undo.semid就是该sem_undo所属的IPC信号量的ID号.
+  #+BEGIN_EXAMPLE
+	new->semid = semid;
+  #+END_EXAMPLE
+- 所以这个函数就是:若进程的sysvsem为空,那么就建一个,若进程的sysvsem链表里没有semid这个ID的
+  信号量的sem_undo就新建一个.  
+** static struct sem_undo *lookup_undo(struct sem_undo_list *ulp, int semid)
+*** ipc/sem.c:
+- 参数semid是在semget()一直传下来的信号量ID.
+- 这个函数的作用就用在传入的struct sem_undo_list链表里找出sem_undo.semid等于参数semid.
+** static int try_atomic_semop (struct sem_array * sma, struct sembuf * sops,int nsops, struct sem_undo *un, int pid)
+*** ipc/sem.c:
+- 若这个函数返回1,表示参数sops里至少有一个对IPC信号量的操作是会被阻塞的,还有一个条件就是要
+  清IPC_NOWAIT才会返回1.
+- 对在sops数组里的操作一个一个检查看会不会引起休眠.
+  #+BEGIN_EXAMPLE
+	for (sop = sops; sop < sops + nsops; sop++) {
+		curr = sma->sem_base + sop->sem_num;
+		sem_op = sop->sem_op;
+		result = curr->semval;
+  
+		if (!sem_op && result)
+			goto would_block;
+
+		result += sem_op;
+		if (result < 0)
+			goto would_block;
+		if (result > SEMVMX)
+			goto out_of_range;
+		if (sop->sem_flg & SEM_UNDO) {
+			int undo = un->semadj[sop->sem_num] - sem_op;
+			/*
+	 		 *	Exceeding the undo range is an error.
+			 */
+			if (undo < (-SEMAEM - 1) || undo > SEMAEM)
+				goto out_of_range;
+		}
+		curr->semval = result;
+	}
+  #+END_EXAMPLE 
+  
+  进入等待的有两种情况:
+  
+  1. 当sembuf.sem_op为 _0_ 时,若sem_array.sem_base[sembuf.sem_num].semval不为 _0_,就要根据
+     sembuf.sem_flg的IPC_NOWAIT来确定是否等待.
+  
+     注意是semval0与非0的情况,不管是不是正数.
+     #+BEGIN_EXAMPLE
+		curr = sma->sem_base + sop->sem_num;
+		sem_op = sop->sem_op;
+		result = curr->semval;
+  
+		if (!sem_op && result)
+			goto would_block;
+     #+END_EXAMPLE 
+  2. 当sembuf.sem_op为 _负数_ ,且sembuf.sem_op加个sem_array.sem_base[sembuf.sem_num].semval为
+     _负数_
+     
+     #+BEGIN_EXAMPLE
+   		result += sem_op;
+		if (result < 0)
+			goto would_block;
+     #+END_EXAMPLE 
+- 若有sembuf.sem_flg的SEM_UNDO设置了,那么就把undo时的调整值放到 _当前进程_ 对于 _这个IPC信
+  号量_ 的sem_undo.semadj[sembuf.sem_num]里去, 调整值的针对primitive信号量的.
+  
+  调整值不是把没修改前的sem.semval值存到sem_undo.semadj[sembuf.sem_num]里去,而是
+  sem_undo.semadj[sembuf.sem_num]-sembuf.sem_op.
+  #+BEGIN_EXAMPLE
+		if (sop->sem_flg & SEM_UNDO)
+			un->semadj[sop->sem_num] -= sop->sem_op;
+  #+END_EXAMPLE
+- 信号量的值超范围有两种情况:
+  1. sem.semval加上sembuf.sem_op时超范围
+     #+BEGIN_EXAMPLE
+   		if (result > SEMVMX)
+			goto out_of_range;
+     #+END_EXAMPLE 
+  2. sem_undo.semadj[sembuf.sem_num]减去sembuf.sem_op时超出范围
+     #+BEGIN_EXAMPLE
+   			int undo = un->semadj[sop->sem_num] - sem_op;
+			/*
+	 		 *	Exceeding the undo range is an error.
+			 */
+			if (undo < (-SEMAEM - 1) || undo > SEMAEM)
+				goto out_of_range;
+     #+END_EXAMPLE 
+- 这个函数成功后, 参数sops数组的所有元素都作用到了相应的的sem里去了, SEM_UNDO也处理了.
+  
+  若不成功,就是至少有一个元素不是阻塞就是超范围, 且所有的元素都不能作用于sem里去.
+** static void update_queue (struct sem_array * sma)
+*** ipc/sem.c:
+- 一个struct sem_queue是对应一个休眠进程的.
+  
+  等待队列不是一个双向循环链表, 而是一个双向链表.所以分别有sem_array.sem_pending和
+  sem_array.sem_pending_last指向第一个结点和最后一个结点.这样做是为了像FIFO,插入时放在最后.
+  
+  一个进程要对一个IPC信号量的多个primitive信号量处理, 但是又会因为有其中一个primitive不满
+  足就会休眠, 所以在sem_queue里有一个有struct sembuf数组, 就是sem_queue.sembuf了.
+  
+  只要有一个sem_undo就可以了,因为sem_undo.semadj是一个包含了所有primitive信号量的数组.
+
+- 这个函数对IPC信号量的sem_pending链表的sem_queue都扫描一遍,
+- 对每个sem_queue都调用try_atomic_semop()
+  #+BEGIN_EXAMPLE
+		error = try_atomic_semop(sma, q->sops, q->nsops,
+					 q->undo, q->pid);
+  #+END_EXAMPLE 
+  
+  若sem_queue.sembuf数组里的元素都满足了就会返回0.
+- 若sem_queue里所有的primitive都满足了,那么就把该sem_queue从sem_array.sem_pending链表里删
+  除.
+  #+BEGIN_EXAMPLE
+			remove_from_queue(sma,q);
+  #+END_EXAMPLE
+- 在准备唤醒之前要设sem_queue.status为IN_WAKEUP,为什么要这么做呢?
+  #+BEGIN_EXAMPLE
+			q->status = IN_WAKEUP;
+  #+END_EXAMPLE 
+  在调用wake_up_process()之后要设status为try_atomic_semop()的返回值, 那么这时status只有两
+  个值, 一个是0, 表示sem_queue的所有primitive请求都满足, 另一个是ERANGE,表示请求是非正常范
+  围.对于这两种情况,按逻辑都应该要唤醒进程的.
+- 若对sem_queue的操作会时影响整个链表,那么这个sem_queue就alter成员就设为1.
+  
+  这时就要重新扫描链表,否则就是扫描下一个,
+  #+BEGIN_EXAMPLE
+			/*
+			 * Continue scanning. The next operation
+			 * that must be checked depends on the type of the
+			 * completed operation:
+			 * - if the operation modified the array, then
+			 *   restart from the head of the queue and
+			 *   check for threads that might be waiting
+			 *   for semaphore values to become 0.
+			 * - if the operation didn't modify the array,
+			 *   then just continue.
+			 */
+			if (q->alter)
+				n = sma->sem_pending;
+			else
+				n = q->next;
+  #+END_EXAMPLE
+- 所以可见, 一个进程不是对单个primitive信号量操作的, 而是对一整个IPC信号量操作的. 就是说若
+  需要一个IPC信号量里的两个primitive信号量时,不能先获取其中的一个primitive信号量,后发现不
+  能获取另一个primitive信号量而休眠.
+** not function
+*** 19.3.4 IPC messages
+- 一个消息由 _固定大小的头_ 和 _可变长度的文本_ 组成. 
+  
+  不同的消息由一个整型值来标签, 就是 _message type_. 通过这个message type进程可以直接获取
+  指定的消息.
+  
+  ulk:As we'll see, the message queue is implemented by means of a linked list. Because
+  messages can be retrieved in an order different from "first in, first out," the name
+  "message queue" is not appropriate. However, new messages are always put at the end of
+  the linked list.
+
+- IPC message queue的个数默认是16, 
+  
+  消息大小默认是8192个字节.
+  
+  _一个_ 队列里的所有消息大小的总和默认是16384字节.
+
+- 与sem_ids相似, 消息队列也有一个msg_ids.
+  
+  与IPC 信号量一样, 消息队列有一与sem_array类似的msg_queue. msg_queue也有一个类型为
+  kern_ipc_perm.
+
+- 一个消息队列里的所有消息被链到msg_queue.q_messages队列里.
+
+- 整个消息至少有一个页的大小, 第一个页的开头是类型为msg_msg的消息头, 消息文本紧跟在消息头
+  的面后
+  
+  msg_msg.m_list链起前后的消息, 
+  
+  消息文本不用使用东西来标明, 因为消息文本是紧跟在消息头的后面的.若文本超过4072个字节的话,
+  就是说消息头加上消息文本时已超过一个页的大小,那么msg_msg.next就会指向第二个页的
+  msg_msgseg结构体,除了第一个页,其它的页开头是一个只有next成员的msg_msgseg, 这个成员是指向
+  下一个页的.
+
+- 当一个进程把一个消息插入到一个已满的消息队列时就会被阻塞, 并把进程放到 _msg.q_senders_ 这
+  个等待队列里
+
+- 一个消息队列若没有进程指定要接收的消息(消息类型), 那么这个进程会被阻塞, 进程放到
+  _msg.q_receiver_ .
+** asmlinkage long sys_msgget (key_t key, int msgflg)
+*** ipc/msg.c:
+- 这个函数和sys_semget()类似, 不是用newary(),而是用newque()
+** asmlinkage long sys_msgsnd (int msqid, struct msgbuf __user *msgp, size_t msgsz, int msgflg)
+*** ipc/msg.c:
+- 调用msg_load()来把用户态的文本消息放到struct msg_msg里.
+- 发送消息队列要有写权限才可以
+  #+BEGIN_EXAMPLE
+
+		err=-EACCES;
+		if (ipcperms(&msq->q_perm, S_IWUGO))
+			goto out_unlock_free;
+  #+END_EXAMPLE
+- 除了所有的消息文本的大小不能超过最大值之外,为什么消息数也不能超过最大的字节数呢?难道是因
+  为过多的空消息(文本字节为0)而占过多的内存空间.
+  #+BEGIN_EXAMPLE
+		if(msgsz + msq->q_cbytes <= msq->q_qbytes &&
+				1 + msq->q_qnum <= msq->q_qbytes) {
+			break;
+		}
+  #+END_EXAMPLE
+  
+  以上的代码若没有执行到break;那么就会被阻塞.
+  #+BEGIN_EXAMPLE
+		/* queue full, wait: */
+		if(msgflg&IPC_NOWAIT) {
+			err=-EAGAIN;
+			goto out_unlock_free;
+		}
+  #+END_EXAMPLE
+- 若要等待, 那么就把进程加到送发的等待队列里去.
+  #+BEGIN_EXAMPLE
+		ss_add(msq, &s);
+		ipc_rcu_getref(msq);
+		msg_unlock(msq);
+		schedule();
+
+		ipc_lock_by_ptr(&msq->q_perm);
+		ipc_rcu_putref(msq);
+		if (msq->q_perm.deleted) {
+			err = -EIDRM;
+			goto out_unlock_free;
+		}
+		ss_del(&s);
+  #+END_EXAMPLE 
+  在上面的代码可以看出,因为删除一个消息时一定会同时把它从等待队列里删除,所以若发现消息被删
+  了,就不用再调用ss_del()了.
+  
+  这个函数是使用死循环来等待的.
+- 成功把一个消息插入队列之后就调用pipelined_send(),pipelined_send()函数若发现所插入的消息
+  正有一个接收者在等,那么唤醒它. 若在pipelined_send()里把所有等待该消息的进程都唤醒了, 那
+  么就返回0.
+  
+  为什么这个消息没有等待的进程(就是把所有的接收者都唤醒了也不能把消息的文本全读走)才会插入
+  到msg_queue.q_messages.
+  
+  
+** struct msg_msg *load_msg(const void __user *src, int len)
+*** ipc/msgutil.c:
+- 这个函数是把在src里的数据转成一个消息的文本.
+- 首先分配整个消息的长度,包括消息头和消息文本的空间,所以可能有多个连续的页
+  #+BEGIN_EXAMPLE
+
+	msg = (struct msg_msg *)kmalloc(sizeof(*msg) + alen, GFP_KERNEL);
+	if (msg == NULL)
+		return ERR_PTR(-ENOMEM);
+  #+END_EXAMPLE
+- 然后把第一个页的空间填满
+  #+BEGIN_EXAMPLE
+
+	if (copy_from_user(msg + 1, src, alen)) {
+		err = -EFAULT;
+		goto out_err;
+	}
+  #+END_EXAMPLE 
+  copy_from_user()只能对一个页操作.
+  
+  调用完后alen就是剩下没有拷贝的大小,
+- 如何把地址定位到下一个页呢?就是在源地址加上已拷贝的字节数
+  #+BEGIN_EXAMPLE
+	src = ((char __user *)src) + alen;
+  #+END_EXAMPLE 
+- 若还有没有拷贝的数据,就要继续拷贝
+  #+BEGIN_EXAMPLE
+	while (len > 0) {
+		struct msg_msgseg *seg;
+		alen = len;
+		if (alen > DATALEN_SEG)
+			alen = DATALEN_SEG;
+		seg = (struct msg_msgseg *)kmalloc(sizeof(*seg) + alen,
+						 GFP_KERNEL);
+		if (seg == NULL) {
+			err = -ENOMEM;
+			goto out_err;
+		}
+		*pseg = seg;
+		seg->next = NULL;
+		if (copy_from_user(seg + 1, src, alen)) {
+			err = -EFAULT;
+			goto out_err;
+		}
+		pseg = &seg->next;
+		len -= alen;
+		src = ((char __user *)src) + alen;
+	}
+  #+END_EXAMPLE
+** static inline int pipelined_send(struct msg_queue* msq, struct msg_msg* msg)
+*** ipc/msg.c:
+- 扫描参数msq.q_receivers里的进程是否是在等待接收参数msg这个消息.若是就唤醒它.
+- 通过调用testmsg()来判断所等待的消息就是传入的消息.
+- 在这个函数可以看出,若发现有进程要求接收的消息大小(msg_receiver.r_maxsize) _小于_ 参数msg
+  消息的大小, 就会继续处理 _下一个_ 接收者.
+  
+  若发现有 _大于_ 的,那么就会退出函数.
+- 这个函数若扫描完了所有的接收者, 那么就说明所有的接收者都被唤醒过了, 这时会返回0
+- 在请求的消息小于消息自身的大小时为什么设置msg_receiver.r_msg呢?从代码来看好像没有什么用
+  啊.
+  #+BEGIN_EXAMPLE
+				msr->r_msg = ERR_PTR(-E2BIG);
+  #+END_EXAMPLE 
+** static int testmsg(struct msg_msg* msg,long type,int mode)
+*** ipc/msg.c:
+- SEARCH_ANY: _任何_ 的类型都符合.
+  
+  SEARCH_LESSQUEAL: _小于或等于_ 的类型符合.
+  
+  SEARCH_EQUAL: _等于_ 的类型符合.
+  
+  SEARCH_NOTEQUAL: _不等于_ 的.
+
 
