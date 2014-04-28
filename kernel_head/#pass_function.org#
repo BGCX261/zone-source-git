@@ -14665,5 +14665,5 @@ struct sembuf {
   #+END_EXAMPLE
 - 如果是接收中断的话,会调用vortex_rx()转而调用netif_rx ().
   
-  有两种方式可以用来
+  有两种方式可以用来通知内核接收了一个新的帧:netif_rx()和NAPI机制
 

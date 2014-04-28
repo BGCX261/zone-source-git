@@ -7363,3 +7363,11 @@ http://blog.sina.com.cn/s/blog_5225c8a70100hd6v.html
 
 在求职时可以写上自已是一个平衝型的人:
 http://blog.sina.com.cn/s/blog_4b0e0af901012v7c.html
+
+我觉得面试的时候问这个公司的研发人员的平均年龄可以看出很多问题.
+
+==============================[2014-03-31 Mon]==============================
+
+把默认安装的firefox给卸了之后，再从网上下一个firefox,因为firefox不用安装可以直接使用,所以原
+来在application的图标就不见了,可以在/user/share/applications/目录加相应文件之后重启
+gnome-shell即可,重启的方法是alt+f2 输入r. 图标放在/usr/share/icons里
