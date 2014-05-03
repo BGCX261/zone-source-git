@@ -1,0 +1,2193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>kernel<sub>net</sub></title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2014-04-30 12:01:22 CST"/>
+<meta name="author" content="脩卯陆脺"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">kernel<sub>net</sub></h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 了解一下接收中断处理函数的主要任务,以后要自已写一个时可以知道要写什么东西. </a>
+<ul>
+<li><a href="#sec-1.1">1.1 static inline int netif<sub>running</sub>(const struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.2">1.2 int dev<sub>open</sub>(struct net<sub>device</sub> <b>dev)  **</b>  net/core/dev.c: </a></li>
+<li><a href="#sec-1.3">1.3 loopback是没有使用输入输出队列的. </a></li>
+<li><a href="#sec-1.4">1.4 有一些设备可以让用户选择用netif<sub>rx还是NAPI的</sub>. </a></li>
+<li><a href="#sec-1.5">1.5 NAPI:当NAPI正处理接收帧时又接到新的帧就会继续处理; 当输入队列为空时就会使能中断. </a></li>
+<li><a href="#sec-1.6">1.6 static void net<sub>rx</sub><sub>action</sub>(struct softirq<sub>action</sub> <b>h)  **</b>  net/core/dev.c: </a></li>
+<li><a href="#sec-1.7">1.7 static inline void netif<sub>rx</sub><sub>complete</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.8">1.8 static inline void netif<sub>rx</sub><sub>schedule</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.9">1.9 static inline void netif<sub>poll</sub><sub>disable</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.10">1.10 int netif<sub>rx</sub>(struct sk<sub>buff</sub> <b>skb)  **</b>  net/core/dev.c: </a></li>
+<li><a href="#sec-1.11">1.11 static int process<sub>backlog</sub>(struct net<sub>device</sub> <b>backlog<sub>dev</sub>, int *budget)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.12">1.12 not function </a></li>
+<li><a href="#sec-1.13">1.13 static void get<sub>sample</sub><sub>stats</sub>(int cpu) </a>
+<ul>
+<li><a href="#sec-1.13.1">1.13.1 net/core/dev.c: </a></li>
+</ul>
+</li>
+<li><a href="#sec-1.14">1.14 int netif<sub>receive</sub><sub>skb</sub>(struct sk<sub>buff</sub> <b>skb)  **</b>  net/core/dev.c: </a></li>
+<li><a href="#sec-1.15">1.15 not function </a></li>
+<li><a href="#sec-1.16">1.16 static inline void netif<sub>start</sub><sub>queue</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.17">1.17 static inline void netif<sub>stop</sub><sub>queue</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.18">1.18 static inline int netif<sub>queue</sub><sub>stopped</sub>(const struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.19">1.19 static inline void netif<sub>schedule</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.20">1.20 static inline void netif<sub>wake</sub><sub>queue</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </a></li>
+<li><a href="#sec-1.21">1.21 not function </a></li>
+<li><a href="#sec-1.22">1.22 static inline void qdisc<sub>run</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/net/pkt<sub>sched</sub>.h: </a></li>
+<li><a href="#sec-1.23">1.23 int qdisc<sub>restart</sub>(struct net<sub>device</sub> <b>dev)  **</b>  net/sched/sch<sub>generic</sub>.c: </a></li>
+<li><a href="#sec-1.24">1.24 not function </a></li>
+<li><a href="#sec-1.25">1.25 int dev<sub>queue</sub><sub>xmit</sub>(struct sk<sub>buff</sub> <b>skb)  **</b>  net/core/dev.c: </a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 checksumming for this protocol, complete checksumming here.</a>
+<ul>
+<li><a href="#sec-2.1">2.1 static void net<sub>tx</sub><sub>action</sub>(struct softirq<sub>action</sub> <b>h)  **</b>  net/core/dev.c: </a></li>
+<li><a href="#sec-2.2">2.2 not function </a>
+<ul>
+<li><a href="#sec-2.2.1">2.2.1 /home/yj/the big picture.png </a></li>
+<li><a href="#sec-2.2.2">2.2.2 /home/yj/Data<sub>structure</sub><sub>used</sub><sub>to</sub><sub>store</sub><sub>the</sub><sub>registered</sub><sub>protocol</sub><sub>handlers</sub>.png </a></li>
+</ul>
+</li>
+<li><a href="#sec-2.3">2.3 void dev<sub>add</sub><sub>pack</sub>(struct packet<sub>type</sub> <b>pt)  **</b>  net/core/dev.c: </a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 is linked into kernel lists and may not be freed until it has been</a></li>
+<li><a href="#sec-4">4 removed from the kernel lists.</a>
+<ul>
+<li><a href="#sec-4.1">4.1 not function </a></li>
+<li><a href="#sec-4.2">4.2 unsigned short eth<sub>type</sub><sub>trans</sub>(struct sk<sub>buff</sub> <b>skb, struct net<sub>device</sub> *dev)  **</b>  net/ethernet/eth.c: </a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5 This ALLMULTI check should be redundant by 1.4</a></li>
+<li><a href="#sec-6">6 so don't forget to remove it.</a></li>
+<li><a href="#sec-7">7 Seems, you forgot to remove it. All silly devices</a></li>
+<li><a href="#sec-8">8 seems to set IFF_PROMISC.</a>
+<ul>
+<li><a href="#sec-8.1">8.1 not function </a>
+<ul>
+<li><a href="#sec-8.1.1">8.1.1 Ethernet Versus IEEE 802.3 Frames </a></li>
+</ul>
+</li>
+<li><a href="#sec-8.2">8.2 not function </a>
+<ul>
+<li><a href="#sec-8.2.1">8.2.1 Chapter 14: Bridging: Concepts </a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> 了解一下接收中断处理函数的主要任务,以后要自已写一个时可以知道要写什么东西. </h2>
+<div class="outline-text-2" id="text-1">
+
+<ul>
+<li>
+ULN:
+
+
+
+
+<pre class="example">Specifically, the interrupt handler:
+1. Copies the frame into an sk_buff data structure.*
+2. Initializes some of the sk_buff parameters for use later by upper network layers
+(notably skb-&gt;protocol, which identifies the higher-layer protocol handler and
+will play a major role in Chapter 13).
+3. Updates some other parameters private to the device, which we do not consider
+in this chapter because they do not influence the frame’s path inside the net-
+work stack.
+4. Signals the kernel about the new frame by scheduling the NET_RX_SOFTIRQ softirq
+for execution.
+</pre>
+
+
+
+</li>
+</ul>
+
+</div>
+
+<div id="outline-container-1.1" class="outline-3">
+<h3 id="sec-1.1"><span class="section-number-3">1.1</span> static inline int netif<sub>running</sub>(const struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.1">
+
+<ul>
+<li>
+测试net<sub>device</sub>-&gt;state的_<sub>LINK</sub><sub>STATE</sub><sub>START</sub>.
+</li>
+<li>
+dev<sub>open设置</sub>_<sub>LINK</sub><sub>STATE</sub><sub>START</sub>.
+</li>
+<li>
+dev<sub>close清</sub>_<sub>LINK</sub><sub>STATE</sub><sub>START</sub>.
+</li>
+<li>
+dev<sub>open</sub>()用EXPORT<sub>SYMBOL</sub>()导出.
+</li>
+<li>
+dev<sub>open</sub>()指的是网络的dev<sub>open</sub>().
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.2" class="outline-3">
+<h3 id="sec-1.2"><span class="section-number-3">1.2</span> int dev<sub>open</sub>(struct net<sub>device</sub> <b>dev)  **</b>  net/core/dev.c: </h3>
+<div class="outline-text-3" id="text-1.2">
+
+<ul>
+<li>
+开始要检查net<sub>device</sub>-&gt;flags的IFF<sub>UP</sub>, 这个标志是干什么的呢?
+
+<p>
+ULN:IFF<sub>UP</sub>, is used to say whether the device is enabled (up) or disabled (down).
+</p>
+<p>
+IFF<sub>UP和</sub>_<sub>LINK</sub><sub>STATE</sub><sub>START的区别是什么呢</sub>?是什么关系呢?
+</p>
+<p>
+IFF<sub>UP是应用层传进来的</sub>.在/usr/include/linux/if.h有定义, _<sub>LINK</sub><sub>STATE</sub><sub>START没有</sub>
+</p>
+</li>
+<li>
+从代码可以看出,调用这个函数时若发现IFF<sub>UP设置</sub>,那么就不做任何事情,否则就会设置_<sub>LINK</sub><sub>STATE</sub><sub>START</sub>
+</li>
+<li>
+若net<sub>device</sub>-&gt;open没有定义,那么即会设置IFF<sub>UP</sub>,也会设置_<sub>LINK</sub><sub>STATE</sub><sub>START</sub>,
+
+
+
+
+<pre class="example">set_bit(__LINK_STATE_START, &amp;dev-&gt;state);
+if (dev-&gt;open) {
+        ret = dev-&gt;open(dev);
+        if (ret)
+                clear_bit(__LINK_STATE_START, &amp;dev-&gt;state);
+}
+
+/*
+ *      If it went open OK then:
+ */
+
+if (!ret) {
+        /*
+         *      Set the flags.
+         */
+        dev-&gt;flags |= IFF_UP;
+</pre>
+
+
+
+
+<p>
+从以上的代码还可以看出若调用net<sub>device</sub>-&gt;open失败的话会清掉_<sub>LINK</sub><sub>STATE</sub><sub>START</sub>,IFF<sub>UP也不会设置</sub>.
+</p>
+<p>
+所以总结就是_<sub>LINK</sub><sub>STATE</sub><sub>START和IFF</sub><sub>UP是同时设和同时清的</sub>.
+</p>
+<p>
+uln是这样说_<sub>LINK</sub><sub>STATE</sub><sub>START的</sub>:A device can be considered enabled when the
+_<sub>LINK</sub><sub>STATE</sub><sub>START</sub> flag is set in net_ device-&gt;state.
+</p>
+<p>
+若是没有定义net<sub>device</sub>-&gt;open的话就一定是打开成功的.
+</p>
+</li>
+<li>
+成功打开后就会给netdev<sub>chain键加NETDEV</sub><sub>UP通知</sub>.
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.3" class="outline-3">
+<h3 id="sec-1.3"><span class="section-number-3">1.3</span> loopback是没有使用输入输出队列的. </h3>
+<div class="outline-text-3" id="text-1.3">
+
+</div>
+
+</div>
+
+<div id="outline-container-1.4" class="outline-3">
+<h3 id="sec-1.4"><span class="section-number-3">1.4</span> 有一些设备可以让用户选择用netif<sub>rx还是NAPI的</sub>. </h3>
+<div class="outline-text-3" id="text-1.4">
+
+</div>
+
+</div>
+
+<div id="outline-container-1.5" class="outline-3">
+<h3 id="sec-1.5"><span class="section-number-3">1.5</span> NAPI:当NAPI正处理接收帧时又接到新的帧就会继续处理; 当输入队列为空时就会使能中断. </h3>
+<div class="outline-text-3" id="text-1.5">
+
+<ul>
+<li>
+NAPI使用的输入队列和非NAPI使用的输入队列是不同的,后者是softnet<sub>data</sub>-&gt;input<sub>pkt</sub><sub>queue</sub>.
+</li>
+<li>
+每一个CPU有一个softnet<sub>data</sub>, softnet<sub>data</sub>-&gt;poll<sub>list链表里的设备都有输入帧要被处理</sub>,那么
+是不是说每一个设备都有自已输入队列呢?
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.6" class="outline-3">
+<h3 id="sec-1.6"><span class="section-number-3">1.6</span> static void net<sub>rx</sub><sub>action</sub>(struct softirq<sub>action</sub> <b>h)  **</b>  net/core/dev.c: </h3>
+<div class="outline-text-3" id="text-1.6">
+
+<ul>
+<li>
+<img src="/home/yj/net_rx_action function.png"  alt="/home/yj/net_rx_action function.png" />
+</li>
+<li>
+这个函数是软中断函数
+
+
+
+<pre class="example">open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
+</pre>
+
+
+
+</li>
+<li>
+这个函数可以从softnet<sub>data</sub>-&gt;input<sub>pkt</sub><sub>queue</sub>(非NAPI)和设备内存(NAPI)里取帧来处理.
+
+<p>
+每次调用net<sub>rx</sub><sub>action</sub>(),最多只能处理netdev<sub>max</sub><sub>backlog</sub>(300)个帧,这些帧可能有在非
+NAPI(softnet<sub>data</sub>-&gt;input<sub>pkt</sub><sub>queue</sub>)和NAPI(设备内存)里,而input<sub>pkt</sub><sub>queue的最大值也是</sub>
+netdev<sub>max</sub><sub>backlog</sub>.
+</p>
+<p>
+至于每次调用设备的poll()方法会处理多少个帧,就由poll()方法去定,不一定是处理完所有的帧,这个
+可以从代码看出
+</p>
+
+
+<pre class="example">if (dev-&gt;quota &lt;= 0 || dev-&gt;poll(dev, &amp;budget)) {
+        netpoll_poll_unlock(dev);
+        local_irq_disable();
+        list_del(&amp;dev-&gt;poll_list);
+        list_add_tail(&amp;dev-&gt;poll_list, &amp;queue-&gt;poll_list);
+</pre>
+
+
+
+<p>
+还会把设备重新插到poll<sub>list的尾部</sub>
+poll()的
+第二个参数就是返回这个调用net<sub>rx</sub><sub>action</sub>()还剩多少个帧可以使用.
+</p></li>
+<li>
+若条件满足从poll<sub>list里取出设备</sub>,那么就从poll<sub>list里取出设备</sub>,取出设备之后还要看设备的
+quota是否还有剩,这个quota和budget又是不一样的.
+</li>
+<li>
+这个函数一共做了下的判断:
+1.poll<sub>list是否为空</sub>
+2.budget是否还有
+3.这个函数执行是否超时
+4.设备是否还有quota
+5.设备是否还有帧没处理,poll()函数返回.
+</li>
+<li>
+uln: net<sub>rx</sub><sub>action</sub> runs with interrupts enabled, new frames could be added to a device’s
+input queue while net<sub>rx</sub><sub>action</sub> is running. Thus, the number of available frames could
+become greater than budget, and net<sub>rx</sub><sub>action</sub> has to take action to make sure it does
+not run too long in such cases.
+
+</li>
+<li>
+这个函数在处理超过netdev<sub>max</sub><sub>backlog和处理时间超过一个tick就会退出</sub>
+
+
+
+<pre class="example">
+if (budget &lt;= 0 || jiffies - start_time &gt; 1)
+        goto softnet_break;
+</pre>
+
+
+
+
+<p>
+退出后会增加time<sub>squeeze</sub>.  uln:Number of times net<sub>rx</sub><sub>action</sub> had to return while frames
+were still in the CPU ingress queue, so as not to become a CPU hog.
+</p></li>
+<li>
+uln:It is important to underline that interrupts are disabled only for those devices in
+poll<sub>list</sub>, which applies only to devices that use NAPI and do not share backlog<sub>dev</sub>.
+
+<p>
+在poll<sub>list里的设备是禁止中断的</sub>,也就是说使用NAPI的设备是禁止中断的.
+</p>
+<p>
+但是看代码看不出哪里会有打开中断的语句啊.只是调用了一下dev<sub>put</sub>()
+</p></li>
+<li>
+函数一开始是禁止中断,接着就在一个while循环里遍历在softnet<sub>data</sub>-&gt;poll<sub>list里的设备</sub>
+</li>
+<li>
+从代码看这个函数是没有时间限制的,只要jiffies不回绕就可以了
+
+
+
+<pre class="example">if (budget &lt;= 0 || jiffies - start_time &gt; 1)
+</pre>
+
+
+
+</li>
+<li>
+处理完某个设备的quota个帧后还有帧时,就会把这个设备重新插入到poll<sub>list队列</sub>,又因为
+net<sub>rx</sub><sub>action</sub>()没有时间限制,所以还有帧的设备还会在本次调用net<sub>rx</sub><sub>action</sub>()中被轮询到的,这
+样重新插入只是为了公平性.
+</li>
+</ul>
+
+<p><img src="/home/yj/snapshot1.png"  alt="/home/yj/snapshot1.png" />
+</p><ul>
+<li>
+从图中可以看出, 
+
+<p>
+NAPI的驱动到达<sub>netif</sub><sub>rx</sub><sub>schedule</sub>()有两条路,一条是直接到达,一条是通过netif<sub>rx</sub><sub>schedule</sub>().
+</p>
+<p>
+其它驱动到到达<sub>netif</sub><sub>rx</sub><sub>schedule</sub>()只能通过netif<sub>rx</sub><sub>schedule</sub>()
+</p>
+<p>
+NAPI和非NAPI都使用softnet<sub>data</sub>-&gt;poll<sub>list队列</sub>,这个队列里的设备都禁止了中断
+</p></li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.7" class="outline-3">
+<h3 id="sec-1.7"><span class="section-number-3">1.7</span> static inline void netif<sub>rx</sub><sub>complete</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.7">
+
+<ul>
+<li>
+netif<sub>rx</sub><sub>schedule</sub>()把设备加到poll<sub>list</sub>,这个函数把设备从poll<sub>list里删除</sub>
+</li>
+<li>
+两个操作:
+1.是从poll<sub>list链表里删除</sub>,
+2.是清掉_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED</sub>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.8" class="outline-3">
+<h3 id="sec-1.8"><span class="section-number-3">1.8</span> static inline void netif<sub>rx</sub><sub>schedule</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.8">
+
+<ul>
+<li>
+先调用netif<sub>rx</sub><sub>schedule</sub><sub>prep</sub>()
+
+<p>
+netif<sub>rx</sub><sub>schedule</sub><sub>prep</sub>()的任务就是判断_<sub>LINK</sub><sub>STATE</sub><sub>START有没有设置</sub>, 若有设置就设
+置_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED</sub>,所以是设置了_<sub>LINK</sub><sub>STATE</sub><sub>START才能处理接收帧的</sub>.
+</p>
+<p>
+netif<sub>rx</sub><sub>complete</sub>()把_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED清了</sub>, 所以设了_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED就说明设备</sub>
+在poll<sub>list等待处理处理</sub>.
+</p>
+<p>
+若发现_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED已经设置了</sub>,那么就退出,若发现没设置,那么就调
+用_<sub>netif</sub><sub>rx</sub><sub>schedule</sub>(),所以可以看出若设置已经在poll<sub>list里的话</sub>,那么就不会再调
+用_<sub>netif</sub><sub>rx</sub><sub>schedule</sub>()再把备设插入到poll<sub>list</sub>.
+</p>
+</li>
+<li>
+接着就调用_<sub>netif</sub><sub>rx</sub><sub>schedule</sub>
+
+<p>
+这个函数的任务就是:
+</p><ol>
+<li>
+把设备hold住,(net<sub>device</sub>-&gt;refcnt)
+
+</li>
+<li>
+把设备加到poll<sub>list里</sub>,修改合适的net<sub>device</sub>-&gt;quota
+
+</li>
+<li>
+raise NET<sub>RX</sub><sub>SOFTIRQ</sub>
+</li>
+</ol>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.9" class="outline-3">
+<h3 id="sec-1.9"><span class="section-number-3">1.9</span> static inline void netif<sub>poll</sub><sub>disable</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.9">
+
+<ul>
+<li>
+这个函数是用来禁止一个设备插入到poll<sub>list里的</sub>, 做法就是设置_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED</sub>
+</li>
+<li>
+在禁止之后是不是因为可能在调用这个函数的时都是因为netif<sub>rx</sub><sub>action</sub>()执行太久了而调用的,所
+以若发现之前是没有禁止的话,那么就会用schedule<sub>time</sub>()调度,为什么还要先设置为
+TASK<sub>INTERRUPTIBLE呢</sub>?
+
+
+
+<pre class="example">while (test_and_set_bit(__LINK_STATE_RX_SCHED, &amp;dev-&gt;state)) {
+        /* No hurry. */
+        current-&gt;state = TASK_INTERRUPTIBLE;
+        schedule_timeout(1);
+}
+</pre>
+
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.10" class="outline-3">
+<h3 id="sec-1.10"><span class="section-number-3">1.10</span> int netif<sub>rx</sub>(struct sk<sub>buff</sub> <b>skb)  **</b>  net/core/dev.c: </h3>
+<div class="outline-text-3" id="text-1.10">
+
+<ul>
+<li>
+<img src="/home/yj/netif_rx.png"  alt="/home/yj/netif_rx.png" />
+</li>
+<li>
+一开始检查是不是使用NETPOLL的方式来处理接收帧,若是就用相应NETPOLL函数处理.处理完就返回,不
+再往下执行.
+
+
+
+<pre class="example">
+/* if netpoll wants it, pretend we never saw it */
+if (netpoll_rx(skb))
+        return NET_RX_DROP;
+</pre>
+
+
+
+</li>
+<li>
+在netif<sub>rx</sub>()开始设置skb-&gt;stamp时间戳,这个非NAPI的方式,那么NAPI的方式是什么呢?
+
+<p>
+保存时间耗时间,所以在需要的时候才保存
+</p>
+
+
+
+<pre class="example">static inline void net_timestamp(struct timeval *stamp)
+{
+        if (atomic_read(&amp;netstamp_needed))
+                do_gettimeofday(stamp);
+</pre>
+
+
+
+<p>
+还有一个地方是保存时间的,就是在调用完netif<sub>rx</sub>()的时候
+</p>
+
+
+<pre class="example">netif_rx(skb);
+dev-&gt;last_rx = jiffies;
+</pre>
+
+
+
+
+</li>
+<li>
+softnet<sub>data</sub>-&gt;input<sub>pkt</sub><sub>queue</sub>:This queue, initialized in net<sub>dev</sub><sub>init</sub>, is where incoming
+frames are stored before being processed by the driver. It is used by non-NAPI drivers;
+those that have been upgraded to NAPI use their own private queues.
+</li>
+<li>
+若input<sub>pkt</sub><sub>queue为空</sub>,那么就先调度,再把skb插入到input<sub>pkt</sub><sub>queue</sub>.
+
+
+
+<pre class="example">enqueue:
+                        dev_hold(skb-&gt;dev);
+                        __skb_queue_tail(&amp;queue-&gt;input_pkt_queue, skb);
+#ifndef OFFLINE_SAMPLE
+                        get_sample_stats(this_cpu);
+#endif
+                        local_irq_restore(flags);
+                        return queue-&gt;cng_level;
+                }
+
+                if (queue-&gt;throttle)
+                        queue-&gt;throttle = 0;
+
+                netif_rx_schedule(&amp;queue-&gt;backlog_dev);
+                goto enqueue;
+</pre>
+
+
+
+
+<p>
+为什么是先调度再插入input<sub>pkt</sub><sub>queue呢</sub>?这也没问题,因为netif<sub>rx</sub>()是在
+</p>
+<p>
+softnet<sub>data</sub>-&gt;backlog<sub>dev是什么来的</sub>,为什么要调度它呢?
+</p>
+<p>
+<a href="http://bbs.chinaunix.net/thread-3608336-1-1.html">http://bbs.chinaunix.net/thread-3608336-1-1.html</a>
+</p>
+<p>
+这里queue-&gt;backlog<sub>dev并不是一个实际上存在的网络设备，netif</sub><sub>rx</sub><sub>schedule</sub>()只是利用了其中的
+poll函数而已.
+</p>
+<p>
+netif<sub>rx处理过程</sub>:第一次因为接收包发生中断后，关闭中断，进入中断处理函数，此时连续处理接收
+到的包（这也是在中断期间处理多帧的本质），通过netif<sub>rx</sub>()函数将新接收的包链入
+softdata-&gt;input<sub>pkt</sub><sub>data队列上。当没有新包时，中断处理结束，开中断。</sub>
+</p>
+<p>
+softnet<sub>data</sub>-&gt;backlog<sub>dev是一个struct</sub> net<sub>device的实例</sub>,不是一个指针.
+</p>
+<p>
+这个函数为什么要在队列为空时调用netif<sub>rx</sub><sub>schedule</sub>()来调应backlog<sub>dev呢</sub>?因为队列为空,那么
+poll<sub>list里肯定是没有backlog</sub><sub>dev这个设备的</sub>,所以要调度它.
+</p>
+<p>
+一共有四种接收数据包的方法：
+1 轮询
+2 中断
+3 在中断期间处理多帧netif<sub>rx</sub>
+4 NAPI
+</p>
+<p>
+这里的前提是Linux中中断处理函数是非抢占的，不可重入的，也就是说在处理一个中断时，会将本地
+CPU的所有中断全部关掉。
+</p>
+<p>
+使用netif<sub>rx方法时，连续处理多个包的操作（操作主要是链入input</sub><sub>pkt</sub><sub>queue队列）是在中断处理</sub>
+函数中进行的，在这期间CPU的中断是关闭的。而使用NAPI时，连续处理多个包的操作也是在中断处理
+函数中进行的，但是此时进行的操作很简单，就是将该网络设备加入softnet<sub>data</sub>-&gt;poll<sub>list中</sub>,并
+且即使对多个包也只需进行一次。而具体的接收包的操作是在
+net<sub>rx</sub><sub>action</sub>()&ndash;&gt;netif<sub>receive</sub><sub>skb</sub>()中进行的，此时的执行上下文是软中断，而CPU的中断此时
+是开启的。所以说NAPI关闭CPU中断持续的时间比netif<sub>rx方法要少一些。</sub>
+</p></li>
+<li>
+与skb相关的真实设备是skb-&gt;dev
+</li>
+<li>
+backlog<sub>dev和input</sub><sub>pkt</sub><sub>queue是什么关系呢</sub>?
+
+<p>
+所有的非NAPI设备的接收帧skb都放到input<sub>pkt</sub><sub>queue里</sub>,处理input<sub>pkt</sub><sub>queue的skb都是用</sub>
+backlog<sub>dev</sub>-&gt;poll函数,实现为process<sub>backlog</sub>().在process<sub>backlog</sub>()里就是循环从
+input<sub>pkt</sub><sub>queue取出skb</sub>,再把skb传给netif<sub>receive</sub><sub>skb</sub>(),再dev<sub>put</sub>(skb-&gt;dev).
+</p></li>
+<li>
+- uln:The input queue is managed by softnet<sub>data</sub>-&gt;input<sub>pkt</sub><sub>queue</sub>. Each input queue has a
+maximum length given by the global variable netdev<sub>max</sub><sub>backlog</sub>, whose value is 300. This
+means that each CPU can have up to 300 frames in its input queue wait-ing to be
+processed, regardless of the number of devices in the system.*
+
+<p>
+每个cpu的input<sub>pkt</sub><sub>queue的最大值是300</sub>,不管有多少的设备,但这只对非NAPI设备而言.NAPI有自己
+的队列.
+</p>
+
+
+
+<pre class="example">        if (queue-&gt;input_pkt_queue.qlen &lt;= netdev_max_backlog) {
+                if (queue-&gt;input_pkt_queue.qlen) {
+                        if (queue-&gt;throttle)
+                                goto drop;
+
+enqueue:
+                        dev_hold(skb-&gt;dev);
+                        __skb_queue_tail(&amp;queue-&gt;input_pkt_queue, skb);
+</pre>
+
+
+
+
+<p>
+uln:However, this is hard to keep track of in an SMP system where the interrupts are
+distributed dynamically among the CPUs. It is not obvious which device will talk to
+which CPU. Thus, the value of netdev<sub>max</sub><sub>backlog</sub> is chosen through trial and error. 
+</p>
+</li>
+<li>
+netif<sub>rx</sub>()这个函数是会把包丢掉的,当在throttle时就会,就是在input<sub>pkt</sub><sub>queue的大小大于300时</sub>.
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.11" class="outline-3">
+<h3 id="sec-1.11"><span class="section-number-3">1.11</span> static int process<sub>backlog</sub>(struct net<sub>device</sub> <b>backlog<sub>dev</sub>, int *budget)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.11">
+
+<ul>
+<li>
+<img src="/home/yj/process_backlog function.png"  alt="/home/yj/process_backlog function.png" />
+</li>
+<li>
+这个函数是backlog<sub>dev</sub>-&gt;poll的实现
+</li>
+<li>
+在net<sub>rx</sub><sub>action</sub>()的budget是300,backlog<sub>dev</sub>-&gt;quota是64,所以若在input<sub>pkt</sub><sub>queue里的设备都</sub>
+是超过64,那么最多可以处理4个设备.在net<sub>rx</sub><sub>action</sub>()里若处理了某个设备的quota个帧就会把设
+备插到poll<sub>list尾部</sub>.
+</li>
+<li>
+取传入的budget和backlog<sub>dev</sub>-&gt;quota的最小值作为要处理的skb数.在net<sub>rx</sub><sub>action</sub>()调用poll方
+法时传入的budget是netdev<sub>max</sub><sub>backlog这个常量</sub>.所以这样做就是限制最大值.
+</li>
+<li>
+skb都是从input<sub>pkt</sub><sub>queue里取出的</sub>.
+</li>
+<li>
+调用netif<sub>receive</sub><sub>skb</sub>()处理skb,再dev<sub>put</sub>(skb-&gt;dev),每当有一个skb-&gt;dev引用设备,就get一次
+该设备.
+</li>
+<li>
+当input<sub>pkt</sub><sub>queue里没有帧时</sub>,就会把backlog<sub>dev从poll</sub><sub>list里删除</sub>,并清
+掉_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED</sub>,以示可以调度backlog<sub>dev</sub>,就是可以把backlog<sub>dev再插入poll</sub><sub>list里了</sub>.
+</li>
+<li>
+所以驱动调用netif<sub>rx</sub>()把skb放到input<sub>pkt</sub><sub>queue里去</sub>,调度backlog<sub>dev</sub>.软中断处理函数
+net<sub>rx</sub><sub>action</sub>()就把input<sub>pkt</sub><sub>queue里的skb给取出来处理</sub>.
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.12" class="outline-3">
+<h3 id="sec-1.12"><span class="section-number-3">1.12</span> not function </h3>
+<div class="outline-text-3" id="text-1.12">
+
+<ul>
+<li>
+当流量很大而使CPU负载很高时的处理:
+<ol>
+<li>
+Reducing the number of interrupts if possible
+</li>
+<li>
+Discarding frames as early as possible in the ingress path
+</li>
+</ol>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.13" class="outline-3">
+<h3 id="sec-1.13"><span class="section-number-3">1.13</span> static void get<sub>sample</sub><sub>stats</sub>(int cpu) </h3>
+<div class="outline-text-3" id="text-1.13">
+
+
+</div>
+
+<div id="outline-container-1.13.1" class="outline-4">
+<h4 id="sec-1.13.1"><span class="section-number-4">1.13.1</span> net/core/dev.c: </h4>
+<div class="outline-text-4" id="text-1.13.1">
+
+<ul>
+<li>
+这个函数用来计算拥塞的,在netif<sub>rx</sub>()里调用.
+</li>
+<li>
+通过当前的softnet<sub>data</sub>-&gt;avg<sub>blog和softnet</sub><sub>data</sub>-&gt;input<sub>pkt</sub><sub>queue</sub>.qlen来计算当前的avg<sub>blog</sub>
+值
+
+
+
+<pre class="example">int blog = sd-&gt;input_pkt_queue.qlen;
+int avg_blog = sd-&gt;avg_blog;
+
+avg_blog = (avg_blog &gt;&gt; 1) + (blog &gt;&gt; 1);
+</pre>
+
+
+
+
+<pre class="example">sd-&gt;avg_blog = avg_blog;
+</pre>
+
+
+
+</li>
+<li>
+得出的avg<sub>blog值与mod</sub><sub>cong</sub>,lo<sub>cong</sub>,no<sub>cong比较</sub>,大于这些值分别表示高,中,低的拥塞,小于
+no<sub>cong就表示NET</sub><sub>RX</sub><sub>SUCCESS</sub>,
+
+<p>
+cng<sub>level的值有</sub>:
+</p>
+
+
+<pre class="example">#define NET_RX_SUCCESS          0   /* keep 'em coming, baby */
+#define NET_RX_DROP             1  /* packet dropped */
+#define NET_RX_CN_LOW           2   /* storm alert, just in case */
+#define NET_RX_CN_MOD           3   /* Storm on its way! */
+#define NET_RX_CN_HIGH          4   /* The storm is here */
+#define NET_RX_BAD              5  /* packet dropped due to kernel error */
+</pre>
+
+
+
+</li>
+<li>
+netif<sub>rx</sub>()返回的是cng<sub>level的值</sub>.当是NET<sub>RX</sub><sub>DROP时</sub>,调用netif<sub>rx</sub>()的驱动就会
+</li>
+<li>
+在netif<sub>rx</sub>()有判断OFFLINE<sub>SAMPLE</sub>
+
+
+
+<pre class="example">#ifndef OFFLINE_SAMPLE
+                        get_sample_stats(this_cpu);
+#endif
+</pre>
+
+
+
+<p>
+uln:调用avg<sub>blog和cng</sub><sub>level只在get</sub><sub>sample</sub><sub>stats调用</sub>,但调用它有两种方式,一个是netif<sub>rx</sub>(),
+一个是周期调用,但不能同时使用,通过OFFLINE<sub>SAMPLE判断</sub>
+</p></li>
+<li>
+有RAND<sub>LIE的原因</sub>:
+在系统有多个设备使用一个队列时,防止贪婪的设备.
+
+<p>
+uln:In a system with only one interface, it does not really make sense to drop random
+frames here and there if there is no congestion; it would simply lower the through-
+put. But let’s suppose we have multiple interfaces sharing an input queue and one device
+with a traffic load much higher than the others. Since the greedy device fills the
+shared ingress queue faster than the other devices, the latter will often find no space
+in the ingress queue and therefore their frames will be dropped.* The greedy device will
+also see some of its frames dropped, but not proportionally to its load. When a system
+with multiple interfaces experiences congestion, it should drop ingress frames across
+all the devices proportionally to their loads. The RAND<sub>LIE</sub> code adds some fairness when
+used in this context: dropping extra frames randomly should end up dropping them
+proportionally to the load. 
+</p></li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-1.14" class="outline-3">
+<h3 id="sec-1.14"><span class="section-number-3">1.14</span> int netif<sub>receive</sub><sub>skb</sub>(struct sk<sub>buff</sub> <b>skb)  **</b>  net/core/dev.c: </h3>
+<div class="outline-text-3" id="text-1.14">
+
+<ul>
+<li>
+<img src="/home/yj/netif_receive_skb function.png"  alt="/home/yj/netif_receive_skb function.png" />
+</li>
+<li>
+一开始做的事和netif<sub>rx的一样</sub>:
+1.调用netpoll<sub>rx</sub>()
+2.设置skb-&gt;stamp
+
+<p>
+若是非NAPI,会先调用netif<sub>rx</sub>(),之后软中断net<sub>rx</sub><sub>action</sub>()会调用process<sub>backlog</sub>(),转而调用
+netif<sub>receive</sub><sub>skb</sub>(),所以会设置再次,但netpoll<sub>rx不是调用两次</sub>,因为netif<sub>rx</sub>()调用完
+netpoll<sub>rx</sub>()之后就会直接退出,而不会做后面的处理.
+</p></li>
+<li>
+接着处理bond设备, uln:Bonding allows a group of interfaces to be grouped together and be
+treated as a sin-gle interface. If the interface from which the frame was received
+belonged to one such group, the reference to the receiving interface in the sk<sub>buff</sub> data
+structure must be changed to the device in the group with the role of master before
+netif<sub>receive</sub><sub>skb</sub> delivers the packet to the L3 handler. 
+
+<p>
+skb<sub>bond</sub>()就把skb-&gt;dev赋给skb-&gt;real<sub>dev</sub>,skb-&gt;dev-&gt;master赋给skb-&gt;dev-&gt;master.
+</p></li>
+<li>
+uln:When neither the bridging code nor the ingress Traffic Control code consumes the
+frame, the latter is passed to the L3 protocol handlers (usually there is only one
+handler per protocol, but multiple ones can be registered).
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.15" class="outline-3">
+<h3 id="sec-1.15"><span class="section-number-3">1.15</span> not function </h3>
+<div class="outline-text-3" id="text-1.15">
+
+<ul>
+<li>
+相对接收的poll<sub>list</sub>,发送的有output<sub>queue</sub>
+</li>
+<li>
+_<sub>LINK</sub><sub>STATE</sub><sub>START设置了就可以接收</sub>,但发送要 <span style="text-decoration:underline;">清</span> _<sub>LINK</sub><sub>STATE</sub><sub>XOFF</sub>
+</li>
+<li>
+调度了设备接收就设置_<sub>LINK</sub><sub>STATE</sub><sub>RX</sub><sub>SCHED</sub> ,
+
+<p>
+发送就设置_<sub>LINK</sub><sub>STATE</sub><sub>SCHED</sub>.
+</p></li>
+<li>
+dev<sub>queue</sub><sub>xmit</sub>()和netif<sub>rx</sub>()类似.
+
+<p>
+<img src="/home/yjScheduling a device: (a) for reception (RX); (b) for transmission (TX).png"  alt="/home/yjScheduling a device: (a) for reception (RX); (b) for transmission (TX).png" />
+</p></li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.16" class="outline-3">
+<h3 id="sec-1.16"><span class="section-number-3">1.16</span> static inline void netif<sub>start</sub><sub>queue</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.16">
+
+<ul>
+<li>
+清_<sub>LINK</sub><sub>STATE</sub><sub>XOFF</sub>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.17" class="outline-3">
+<h3 id="sec-1.17"><span class="section-number-3">1.17</span> static inline void netif<sub>stop</sub><sub>queue</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.17">
+
+<ul>
+<li>
+设置_<sub>LINK</sub><sub>STATE</sub><sub>XOFF</sub>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.18" class="outline-3">
+<h3 id="sec-1.18"><span class="section-number-3">1.18</span> static inline int netif<sub>queue</sub><sub>stopped</sub>(const struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.18">
+
+<ul>
+<li>
+判断_<sub>LINK</sub><sub>STATE</sub><sub>XOFF</sub>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.19" class="outline-3">
+<h3 id="sec-1.19"><span class="section-number-3">1.19</span> static inline void netif<sub>schedule</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.19">
+
+<ul>
+<li>
+结合里面调用的_<sub>netif</sub><sub>schedule</sub>()来看.
+</li>
+<li>
+若设备被允许发送帧_<sub>LINK</sub><sub>STATE</sub><sub>XOFF</sub>,那么调用完这个函数就一定是表明设备被调度了,也就是
+说_<sub>LINK</sub><sub>STATE</sub><sub>SCHED设置了</sub>,_<sub>LINK</sub><sub>STATE</sub><sub>SCHED设置了也就说明设备已经在output</sub><sub>queue队列里了</sub>
+</li>
+<li>
+从把设备插入到output<sub>queue队列来看</sub>,output<sub>queue是一个单向链表</sub>,
+
+
+
+<pre class="example">dev-&gt;next_sched = sd-&gt;output_queue;
+sd-&gt;output_queue = dev;
+</pre>
+
+
+
+</li>
+<li>
+插入完就raise软中断.
+</li>
+<li>
+uln:output<sub>queue</sub> is used by both NAPI and non-NAPI devices, and poll<sub>list</sub> is used only
+to handle NAPI devices.
+
+<p>
+NAPI和非NAPI设备都是插入到output<sub>queue队列</sub>,和输入的不同.
+</p></li>
+<li>
+uln:output<sub>queue</sub> represents a list of devices that have something to send (because they
+failed on previous attempts, as described in the section “Queuing Discipline
+Inter-face”) or whose egress queues have been re-enabled after having been disabled for
+a while.
+
+<p>
+有帧要发送的设备会插入到output<sub>queue</sub>,
+</p>
+<p>
+被禁止的设备的输出队列重新使能后该设备也会被插入到队列,为什么可以这样呢?
+</p></li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.20" class="outline-3">
+<h3 id="sec-1.20"><span class="section-number-3">1.20</span> static inline void netif<sub>wake</sub><sub>queue</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/linux/netdevice.h: </h3>
+<div class="outline-text-3" id="text-1.20">
+
+<ul>
+<li>
+这个函数与netif<sub>schedule</sub>()只有一个不同,就是用test<sub>and</sub><sub>clear</sub><sub>bit</sub>(),而不是test<sub>bit</sub>()
+
+
+
+<pre class="example">static inline void netif_wake_queue(struct net_device *dev)
+{
+#ifdef CONFIG_NETPOLL_TRAP
+        if (netpoll_trap())
+                return;
+#endif
+        if (test_and_clear_bit(__LINK_STATE_XOFF, &amp;dev-&gt;state))
+                __netif_schedule(dev);
+}
+</pre>
+
+
+
+</li>
+<li>
+结果就是这个函数执行完之后设备一定是在output<sub>queue里的</sub>.
+
+<p>
+相当于执行netif<sub>start</sub><sub>queue</sub>()和netif<sub>schedule</sub>()
+</p></li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.21" class="outline-3">
+<h3 id="sec-1.21"><span class="section-number-3">1.21</span> not function </h3>
+<div class="outline-text-3" id="text-1.21">
+
+<ul>
+<li>
+Almost all devices use a queue to schedule egress traffic, and the kernel can use
+algorithms known as queuing disciplines to arrange the frames in the most efficient
+order for transmission.
+</li>
+<li>
+Whenever a device is scheduled for transmission, the next frame to transmit is selected
+by the qdisc<sub>run</sub> function, which indirectly calls the dequeue virtual function of the
+associated queuing discipline.
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.22" class="outline-3">
+<h3 id="sec-1.22"><span class="section-number-3">1.22</span> static inline void qdisc<sub>run</sub>(struct net<sub>device</sub> <b>dev)  **</b>  include/net/pkt<sub>sched</sub>.h: </h3>
+<div class="outline-text-3" id="text-1.22">
+
+<ul>
+<li>
+先判断设备是不是被关闭发送了,就是判断_<sub>LINK</sub><sub>STATE</sub><sub>XOFF是否设置</sub>.若可以发送就调用
+qdisc<sub>restart</sub>()
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.23" class="outline-3">
+<h3 id="sec-1.23"><span class="section-number-3">1.23</span> int qdisc<sub>restart</sub>(struct net<sub>device</sub> <b>dev)  **</b>  net/sched/sch<sub>generic</sub>.c: </h3>
+<div class="outline-text-3" id="text-1.23">
+
+<ul>
+<li>
+<img src="/home/yj/qdisc_restart function.png"  alt="/home/yj/qdisc_restart function.png" />
+</li>
+<li>
+uln:a device is scheduled for transmission.Sometimes it is because something in the
+egress queue is waiting to be transmitted. But at other times, the device is scheduled
+because the queue has been disabled for a while and therefore there could be something
+waiting in the queue from previous failed transmission attempts. The driver does not
+know whether anything has actually arrived; it must schedule the device in case data is
+waiting. If in fact no data is waiting, the subsequent call to the dequeue method
+fails. Even if data is waiting, the call can fail because complex queuing disciplines
+may decide not to transmit any of the data.
+
+<p>
+当设备被调度来发送时,一般是因为有东西在输出队列里等待发送,有时是因为设备被禁止了,在使能
+之前有数据放到输出队列里,但是因为设备被禁止而不能调度,所以在使能之后要再调度它.
+</p></li>
+<li>
+函数一开始就dequeue队列了,从中取出发送帧
+</li>
+<li>
+调用这个函数需要2个锁:
+
+<p>
+uln:
+</p>
+<ol>
+<li>
+The lock that protects the queue (dev-&gt;queue<sub>lock</sub>). This is acquired by the caller of
+qdisc<sub>restart</sub> (dev<sub>queue</sub><sub>xmit</sub>).
+
+<p>
+dev-&gt;queue<sub>lock锁</sub>,这个锁在调用qdisc<sub>restart</sub>()之前已经在dev<sub>queue</sub><sub>xmit</sub>()获
+取.qdisc<sub>restart</sub>()就不用再获取.
+</p>
+</li>
+<li>
+The lock on the driver’s transmit routine hard<sub>start</sub><sub>xmit</sub> (dev-&gt;xmit<sub>lock</sub>). The lock
+is managed by this function. When the device driver already implements its own
+locking, it indicates this by setting the NETIF<sub>F</sub><sub>LLTX</sub> flag (lockless transmission
+feature) in dev-&gt;features to tell the upper layers that there is no need to acquire
+the dev-&gt;xmit<sub>lock</sub> lock as well. The use of NETIF<sub>F</sub><sub>LLTX</sub> allows the kernel to
+optimize the transmit data path by not acquiring dev-&gt;xmit<sub>lock</sub> when it is not
+needed. Of course, there is no need to acquire the lock if the queue is empty.
+
+<p>
+另一个是dev-&gt;xmit<sub>lock</sub>,但这个锁被驱动自已实现的锁给代替了,就是dev-&gt;features的
+NETIF<sub>F</sub><sub>LLTX标志</sub>,dev-&gt;features告诉上层没有必要获取dev-&gt;xmit<sub>lock</sub>.
+</p>
+<p>
+以下代码是判断驱动是否支持NETIF<sub>F</sub><sub>LLTX</sub>
+</p>
+
+
+<pre class="example">unsigned nolock = (dev-&gt;features &amp; NETIF_F_LLTX);
+</pre>
+
+
+
+
+<p>
+若不支持,那么获取dev-&gt;xmit<sub>lock锁</sub>,那么就是有问题的,若是同一CPU获取的,就返回-1,若是另一
+个CPU获取的就把帧重新插入队列.
+</p>
+
+
+<pre class="example">if (!spin_trylock(&amp;dev-&gt;xmit_lock)) {
+collision:
+        /* So, someone grabbed the driver. */
+        
+        /* It may be transient configuration error,
+           when hard_start_xmit() recurses. We detect
+           it by checking xmit owner and drop the
+           packet when deadloop is detected.
+        */
+        if (dev-&gt;xmit_lock_owner == smp_processor_id()) {
+                kfree_skb(skb);
+                if (net_ratelimit())
+                        printk(KERN_DEBUG "Dead loop on netdevice %s, fix it urgently!\n", dev-&gt;name);
+                return -1;
+        }
+        __get_cpu_var(netdev_rx_stat).cpu_collision++;
+        goto requeue;
+}
+</pre>
+
+
+
+</li>
+</ol>
+</li>
+<li>
+虽然qdisc<sub>run</sub>()已经调用netif<sub>queue</sub><sub>stopped</sub>()做检查,但是到qdisc<sub>restart</sub>()里面才获取锁,所
+以在获取锁之后要再调用一次netif<sub>queue</sub><sub>stopped</sub>().
+
+
+
+<pre class="example">if (!netif_queue_stopped(dev)) {
+</pre>
+
+
+
+</li>
+<li>
+uln:netdev<sub>nit</sub> represents the number of protocol sniffers registered. If any are
+registered, dev<sub>queue</sub><sub>xmit</sub><sub>nit</sub> is used to deliver a copy of the frame to each.
+
+
+
+
+<pre class="example">if (netdev_nit)
+        dev_queue_xmit_nit(skb, dev);
+</pre>
+
+
+
+</li>
+<li>
+然后就是调用设备的hard<sub>start</sub><sub>xmit</sub>()来发送帧了
+
+
+
+<pre class="example">ret = dev-&gt;hard_start_xmit(skb, dev);
+</pre>
+
+
+
+</li>
+<li>
+hard<sub>start</sub><sub>xmit</sub>()返回NETDEV<sub>TX</sub><sub>OK表示帧发送成功</sub>,但是为什么返回-1呢?
+
+
+
+
+<pre class="example">if (ret == NETDEV_TX_OK) { 
+        if (!nolock) {
+                dev-&gt;xmit_lock_owner = -1;
+                spin_unlock(&amp;dev-&gt;xmit_lock);
+        }
+        spin_lock(&amp;dev-&gt;queue_lock);
+        return -1;
+}
+</pre>
+
+
+
+<p>
+有注释是这样说返回值的:
+</p>
+
+
+<pre class="example">Returns:  0  - queue is empty.
+         &gt;0  - queue is not empty, but throttled.
+         &lt;0  - queue is not empty. Device is throttled, if dev-&gt;tbusy != 0.
+</pre>
+
+
+
+
+<p>
+若不是以上两个返回值,那么就是NETDEV<sub>TX</sub><sub>BUSY了</sub>,且从代码看,往后执行的代码都是
+NETDEV<sub>TX</sub><sub>BUSY的情况</sub>.
+</p>
+<p>
+返回NETDEV<sub>TX</sub><sub>BUSY是因为</sub>:uln:The driver has discovered that the NIC lacks sufficient
+room in its transmit buffer pool. When this condition is detected, the driver often
+calls netif<sub>stop</sub><sub>queue</sub> too.
+</p>
+
+
+<pre class="example">                        /* NETDEV_TX_BUSY - we need to requeue */
+                        /* Release the driver */
+                        if (!nolock) { 
+                                dev-&gt;xmit_lock_owner = -1;
+                                spin_unlock(&amp;dev-&gt;xmit_lock);
+                        } 
+                        spin_lock(&amp;dev-&gt;queue_lock);
+                        q = dev-&gt;qdisc;
+                }
+
+                /* Device kicked us out :(
+                   This is possible in three cases:
+
+                   0. driver is locked
+                   1. fastroute is enabled
+                   2. device cannot determine busy state
+                      before start of transmission (f.e. dialout)
+                   3. device is buggy (ppp)
+                 */
+
+requeue:
+                q-&gt;ops-&gt;requeue(skb, q);
+                netif_schedule(dev);
+                return 1;
+</pre>
+
+
+
+</li>
+<li>
+总结把帧重新插入队列的原因:uln:
+
+<ol>
+<li>
+The queue is disabled (netif<sub>queue</sub><sub>stopped</sub>(dev) is true).
+</li>
+<li>
+Another CPU is holding the lock on the driver.
+</li>
+<li>
+The driver failed (hard<sub>start</sub><sub>xmit</sub> did not return NETDEV<sub>TX</sub><sub>OK</sub>).
+
+</li>
+</ol>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.24" class="outline-3">
+<h3 id="sec-1.24"><span class="section-number-3">1.24</span> not function </h3>
+<div class="outline-text-3" id="text-1.24">
+
+<ul>
+<li>
+dev<sub>queue</sub><sub>xmit</sub>()可以有两种路径来调用dev-&gt;hard<sub>start</sub><sub>xmit</sub>
+
+<ol>
+<li>
+调用qdisc<sub>run</sub>() -&gt; qdisc<sub>restart</sub>() -&gt; hard<sub>start</sub><sub>xmit</sub>() 在qdisc<sub>restart</sub>()里已说.
+
+</li>
+<li>
+直接调用.
+</li>
+</ol>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.25" class="outline-3">
+<h3 id="sec-1.25"><span class="section-number-3">1.25</span> int dev<sub>queue</sub><sub>xmit</sub>(struct sk<sub>buff</sub> <b>skb)  **</b>  net/core/dev.c: </h3>
+<div class="outline-text-3" id="text-1.25">
+
+<ul>
+<li>
+<img src="/home/yj/dev_queue_xmit function.png"  alt="/home/yj/dev_queue_xmit function.png" />
+<img src="/home/yj/dev_queue_xmit function1.png"  alt="/home/yj/dev_queue_xmit function1.png" />
+</li>
+<li>
+这个函数开始要检查有效负载的是否分段,
+
+<p>
+若分段,那么skb<sub>shinfo</sub>(skb)-&gt;frag<sub>list不为空</sub>.
+</p>
+<p>
+若设备支持scatter/gather DMA,那么NETIF<sub>F</sub><sub>FRAGLIST就设置</sub>.
+</p>
+<p>
+_<sub>skb</sub><sub>linearize</sub>()是合并段的.
+</p>
+
+
+<pre class="example">if (skb_shinfo(skb)-&gt;frag_list &amp;&amp;
+!(dev-&gt;features&amp;NETIF_F_FRAGLIST) &amp;&amp;
+_ _skb_linearize(skb, GFP_ATOMIC)) {
+goto out_kfree_skb;
+}
+</pre>
+
+
+
+
+<p>
+也要合并在高端内存的段.
+</p>
+
+
+<pre class="example">/* Fragmented skb is linearized if device does not support SG,
+ * or if at least one of fragments is in highmem and device
+ * does not support DMA from it.
+ */
+if (skb_shinfo(skb)-&gt;nr_frags &amp;&amp;
+    (!(dev-&gt;features &amp; NETIF_F_SG) || illegal_highdma(dev, skb)) &amp;&amp;
+    __skb_linearize(skb, GFP_ATOMIC))
+        goto out_kfree_skb;
+</pre>
+
+
+
+</li>
+<li>
+接下来是作检验,要使用软件校验的情况:uln:
+
+<ol>
+<li>
+There is no support for hardware checksumming.
+</li>
+<li>
+The interface can use hardware checksumming only for TCP/UDP packets over IP, but the
+packet being transmitted does not use IP or uses another L4 protocol over IP.
+
+
+</li>
+</ol>
+
+
+<pre class="example">/* If packet is not checksummed and device does not support
+* checksumming for this protocol, complete checksumming here.
+*/
+if (skb-&gt;ip_summed == CHECKSUM_HW &amp;&amp;
+(!(dev-&gt;features &amp; (NETIF_F_HW_CSUM | NETIF_F_NO_CSUM)) &amp;&amp;
+(!(dev-&gt;features &amp; NETIF_F_IP_CSUM) ||
+skb-&gt;protocol != htons(ETH_P_IP))))
+if (skb_checksum_help(skb, 0))
+goto out_kfree_skb;
+</pre>
+
+
+
+
+<p>
+对于接收和发送,就算skb-&gt;ip<sub>summed有相同的值</sub>,但是有不同的意思.对于发送的CHECKSUM:uln:The
+protocol has stored into its header the checksum on the pseudoheader only;the device is
+supposed to complete it by adding the checksum on the L4 header and payload.
+</p>
+
+
+
+<pre class="example">#define NETIF_F_HW_CSUM         8       /* Can checksum all the packets. */
+#define NETIF_F_NO_CSUM         4       /* Does not require checksum. F.e. loopack. */
+#define NETIF_F_IP_CSUM         2       /* Can checksum only TCP/UDP over IPv4. */
+</pre>
+
+
+
+</li>
+<li>
+uln:Once the checksum has been handled, all the headers are ready; the next step is to
+decide which frame to transmit.
+</li>
+<li>
+若使用了流量控制,就是说dev-&gt;qdisc-&gt;enqueue虚函数被设置,那么就用qdisc-&gt;enqueue把帧插入队
+列,然后再调用qdisc<sub>run</sub>()来选一个帧发送,被选到的不一定是刚插入的.
+
+
+
+<pre class="example">        q = rcu_dereference(dev-&gt;qdisc);
+#ifdef CONFIG_NET_CLS_ACT
+        skb-&gt;tc_verd = SET_TC_AT(skb-&gt;tc_verd,AT_EGRESS);
+#endif
+        if (q-&gt;enqueue) {
+                /* Grab device queue */
+                spin_lock(&amp;dev-&gt;queue_lock);
+
+                rc = q-&gt;enqueue(skb, q);
+
+                qdisc_run(dev);
+
+                spin_unlock(&amp;dev-&gt;queue_lock);
+                rc = rc == NET_XMIT_BYPASS ? NET_XMIT_SUCCESS : rc;
+                goto out;
+        }
+</pre>
+
+
+
+
+<p>
+以上的代码是在有队列的处理,处理完就goto out了,以下的代码是没有队列的处理
+</p>
+
+
+<pre class="example">if (dev-&gt;flags &amp; IFF_UP) {
+        int cpu = smp_processor_id(); /* ok because BHs are off */
+
+        if (dev-&gt;xmit_lock_owner != cpu) {
+
+                HARD_TX_LOCK(dev, cpu);
+
+                if (!netif_queue_stopped(dev)) {
+                        if (netdev_nit)
+                                dev_queue_xmit_nit(skb, dev);
+
+                        rc = 0;
+                        if (!dev-&gt;hard_start_xmit(skb, dev)) {
+                                HARD_TX_UNLOCK(dev);
+                                goto out;
+                        }
+                }
+                HARD_TX_UNLOCK(dev);
+                if (net_ratelimit())
+                        printk(KERN_CRIT "Virtual device %s asks to "
+                               "queue packet!\n", dev-&gt;name);
+        } else {
+                /* Recursion is detected! It is possible,
+                 * unfortunately */
+                if (net_ratelimit())
+                        printk(KERN_CRIT "Dead loop on virtual device "
+                               "%s, fix it urgently!\n", dev-&gt;name);
+        }
+}
+</pre>
+
+
+
+
+<p>
+从上面代码看,在没有流量控制插入队列的函数的情况下,要设置了IFF<sub>UP才可以发送</sub>
+</p>
+<p>
+从上面代码看,锁的拥有者不能是自己,否则出错.
+</p>
+<p>
+在HARD<sub>TX</sub><sub>LOCK里</sub>,若发现设置了NETIF<sub>F</sub><sub>LLTX</sub>,就不用给dev-&gt;xmit<sub>lock加锁了</sub>,
+</p>
+<p>
+在上面的代码里有一段是和disc<sub>restart</sub>()的一段类似的,就是
+</p><ol>
+<li>
+判断是否使能发送
+
+
+
+<pre class="example">if (!netif_queue_stopped(dev)) {
+</pre>
+
+
+
+
+</li>
+<li>
+是否有nit设备,若有就把帧发给nit设备
+
+
+
+<pre class="example">if (netdev_nit)
+        dev_queue_xmit_nit(skb, dev);
+</pre>
+
+
+
+
+</li>
+<li>
+调用hard<sub>start</sub><sub>xmit</sub>()发送.
+
+
+
+<pre class="example">if (!dev-&gt;hard_start_xmit(skb, dev)) {
+        HARD_TX_UNLOCK(dev);
+        goto out;
+}
+</pre>
+
+
+
+</li>
+</ol>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.26" class="outline-3">
+<h3 id="sec-1.26"><span class="section-number-3">1.26</span> static void net<sub>tx</sub><sub>action</sub>(struct softirq<sub>action</sub> <b>h)  **</b>  net/core/dev.c: </h3>
+<div class="outline-text-3" id="text-1.26">
+
+<ul>
+<li>
+这个函数是NET<sub>TX</sub><sub>SOFTIRQ的软中断处理函数</sub>
+</li>
+<li>
+在两个地方被调用
+
+<p>
+uln:
+</p>
+<p>
+It can be triggered with raise<sub>softirq</sub><sub>irqoff</sub>(NET<sub>TX</sub><sub>SOFTIRQ</sub>) by devices in two
+different contexts, to accomplish two main tasks:
+</p><ol>
+<li>
+By netif<sub>wake</sub><sub>queue</sub> when transmission is enabled on a device. In this case, it makes
+sure that frames waiting to be sent are actually sent when all the needed conditions
+are met (for instance, when the device has enough memory).
+</li>
+<li>
+By dev<sub>kfree</sub><sub>skb</sub><sub>irq</sub> when a transmission has completed and the device driver signals
+with the former routine that the associated buffer can be released. In this case, it
+deallocates the sk<sub>buff</sub> structures associated with successfully transmitted buffers.
+
+</li>
+</ol>
+
+<p>一个是在netif<sub>wake</sub><sub>queue</sub>(),也就是里面调用的_<sub>netif</sub><sub>schedule</sub>(),netif<sub>schedule</sub>()也调
+用_<sub>netif</sub><sub>schedule</sub>().
+</p>
+<p>
+另一个是dev<sub>kfree</sub><sub>skb</sub><sub>irq</sub>(),但是在dev<sub>kfree</sub><sub>skb</sub>()里没有,上面的uln说是为了释放skb
+buffer的,因为释放要占用时间,而中断的执行时间要尽可能的短,所以放到net<sub>tx</sub><sub>action</sub>()里释放已
+完成发送的buffer的.
+</p></li>
+<li>
+一开始是释放buffer
+
+
+
+<pre class="example">if (sd-&gt;completion_queue) {
+        struct sk_buff *clist;
+
+        local_irq_disable();
+        clist = sd-&gt;completion_queue;
+        sd-&gt;completion_queue = NULL;
+        local_irq_enable();
+
+        while (clist) {
+                struct sk_buff *skb = clist;
+                clist = clist-&gt;next;
+
+                BUG_TRAP(!atomic_read(&amp;skb-&gt;users));
+                __kfree_skb(skb);
+        }
+}
+</pre>
+
+
+
+
+<p>
+它是释放所有在队列里的buffer,不是被限制释放多少个buffer.
+</p>
+<p>
+buffer是在中断上下文中调用dev<sub>kfree</sub><sub>skb</sub><sub>irq</sub>()把buffer加入队列的,所以访问
+softdata-&gt;completion<sub>queue时要禁止中断</sub>.
+</p></li>
+<li>
+接下来就是处理发送帧的发送了
+
+
+
+<pre class="example">if (sd-&gt;output_queue) {
+        struct net_device *head;
+
+        local_irq_disable();
+        head = sd-&gt;output_queue;
+        sd-&gt;output_queue = NULL;
+        local_irq_enable();
+
+        while (head) {
+                struct net_device *dev = head;
+                head = head-&gt;next_sched;
+
+                smp_mb__before_clear_bit();
+                clear_bit(__LINK_STATE_SCHED, &amp;dev-&gt;state);
+
+                if (spin_trylock(&amp;dev-&gt;queue_lock)) {
+                        qdisc_run(dev);
+                        spin_unlock(&amp;dev-&gt;queue_lock);
+                } else {
+                        netif_schedule(dev);
+                }
+        }
+</pre>
+
+
+
+<p>
+这个函数也是一次想处理掉所有的输出队列的设备
+</p>
+<p>
+处理每一个buffer前,都会把dev-&gt;state的_<sub>LINK</sub><sub>STATE</sub><sub>SCHED给清掉</sub>
+</p>
+<p>
+接着就是获取设备的输出队列锁,若这个锁被其它CPU给取了,那么现在就不能处理这个设备的输出队
+列,其它CPU获取这个锁的原因可能是因为往队列里加buffer或发送buffer,所以还是重新再调度设备.
+</p>
+<p>
+最终的发送还是在net<sub>tx</sub><sub>action</sub>()里调用qdisc<sub>run</sub>(),转而调用qdisc<sub>restart</sub>(),转而调用设备虚
+函数hard<sub>start</sub><sub>xmit</sub>()
+</p></li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.27" class="outline-3">
+<h3 id="sec-1.27"><span class="section-number-3">1.27</span> not function </h3>
+<div class="outline-text-3" id="text-1.27">
+
+
+</div>
+
+<div id="outline-container-1.27.1" class="outline-4">
+<h4 id="sec-1.27.1"><span class="section-number-4">1.27.1</span> <img src="/home/yj/the big picture.png"  alt="/home/yj/the big picture.png" /> </h4>
+<div class="outline-text-4" id="text-1.27.1">
+
+</div>
+
+</div>
+
+<div id="outline-container-1.27.2" class="outline-4">
+<h4 id="sec-1.27.2"><span class="section-number-4">1.27.2</span> <img src="/home/yj/Data_structure_used_to_store_the_registered_protocol_handlers.png"  alt="/home/yj/Data_structure_used_to_store_the_registered_protocol_handlers.png" /> </h4>
+<div class="outline-text-4" id="text-1.27.2">
+
+
+
+
+<pre class="example">  struct packet_type {
+        __be16                  type;   /* This is really htons(ether_type).    */
+        struct net_device               *dev;   /* NULL is wildcarded here              */
+        int                     (*func) (struct sk_buff *, struct net_device *,
+                                         struct packet_type *);
+        void                    *af_packet_priv;
+        struct list_head        list;
+};
+
+</pre>
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-1.28" class="outline-3">
+<h3 id="sec-1.28"><span class="section-number-3">1.28</span> void dev<sub>add</sub><sub>pack</sub>(struct packet<sub>type</sub> <b>pt)  **</b>  net/core/dev.c: </h3>
+<div class="outline-text-3" id="text-1.28">
+
+<ul>
+<li>
+功能注释有：
+
+
+
+<pre class="example">*      Add a protocol handler to the networking stack. The passed &amp;packet_type
+*      is linked into kernel lists and may not be freed until it has been
+*      removed from the kernel lists.
+</pre>
+
+
+
+</li>
+<li>
+为什么要转ETH<sub>P</sub><sub>ALL的字节序呢</sub>?
+
+
+
+<pre class="example">if (pt-&gt;type == htons(ETH_P_ALL)) {
+</pre>
+
+
+
+<p>
+因为pt-&gt;type的数据是从网络转入的.所以ETH<sub>P</sub><sub>ALL这些值也不是linux内核自己规定的</sub>.
+</p>
+</li>
+<li>
+uln:netdev<sub>nit</sub> represents the number of protocol sniffers registered. If any are
+registered, dev<sub>queue</sub><sub>xmit</sub><sub>nit</sub> is used to deliver a copy of the frame to each.
+
+<p>
+ETH<sub>P</sub><sub>ALL</sub>:This is not a real protocol. It is used as a wildcard for a handler such as a
+packet sniffer that listens to all the protocols.
+</p>
+
+
+
+<pre class="example">if (pt-&gt;type == htons(ETH_P_ALL)) {
+        netdev_nit++;
+        list_add_rcu(&amp;pt-&gt;list, &amp;ptype_all);
+} else {
+</pre>
+
+
+
+</li>
+<li>
+ETH<sub>P</sub><sub>ALL的类型的都是放到ptype</sub><sub>all链表里的</sub>,
+
+
+
+<pre class="example">if (pt-&gt;type == htons(ETH_P_ALL)) {
+        netdev_nit++;
+        list_add_rcu(&amp;pt-&gt;list, &amp;ptype_all);
+</pre>
+
+
+
+</li>
+<li>
+其它的类型放到ptype<sub>base这个hash链表里</sub>,链表是与上15
+
+
+
+<pre class="example">hash = ntohs(pt-&gt;type) &amp; 15;
+list_add_rcu(&amp;pt-&gt;list, &amp;ptype_base[hash]);
+</pre>
+
+
+
+</li>
+<li>
+struct packet<sub>type这个结构体是给第二层用的</sub>.
+<a href="http://blog.csdn.net/jw212/article/details/6738497">http://blog.csdn.net/jw212/article/details/6738497</a>
+</li>
+<li>
+现在有一个问题就是驱动是在哪一层的呢?
+<a href="http://cache.baiducontent.com/c?m=9d78d513d9d430d94f999e697c16c0111c4381132ba6d5020ba2843897732835506692fd76600704a29e3e7000df5e2dece74774200250a0edc89f3aadac935838f82723071d9206528d16f58d0067d621e347f4ff49a6adf04593ad8982c854249b0e5a67dba1cf015751dd6f861532e5a79f5f152913aded4666e8590073d97c1e&amp;p=882a9645d5d21fec1ea4d32d02148f&amp;newp=882a9645d59e16fc57ef8f665443cf231610db2151d3d7122283&amp;user=baidu&amp;fm=sc&amp;query=%CD%F8%C2ç%C7%FD%B6%AF+tcp+ip%C4%C4%D2%BB%B2%E3&amp;qid=&amp;p1=3">http://cache.baiducontent.com/c?m=9d78d513d9d430d94f999e697c16c0111c4381132ba6d5020ba2843897732835506692fd76600704a29e3e7000df5e2dece74774200250a0edc89f3aadac935838f82723071d9206528d16f58d0067d621e347f4ff49a6adf04593ad8982c854249b0e5a67dba1cf015751dd6f861532e5a79f5f152913aded4666e8590073d97c1e&amp;p=882a9645d5d21fec1ea4d32d02148f&amp;newp=882a9645d59e16fc57ef8f665443cf231610db2151d3d7122283&amp;user=baidu&amp;fm=sc&amp;query=%CD%F8%C2%E7%C7%FD%B6%AF+tcp+ip%C4%C4%D2%BB%B2%E3&amp;qid=&amp;p1=3</a>
+
+<p>
+<a href="http://blog.csdn.net/jw212/article/details/6738497">http://blog.csdn.net/jw212/article/details/6738497</a>
+这个文章有说netif<sub>receive</sub><sub>skb</sub>()是第二层的,之前是经过了驱动的了,在process<sub>backlog</sub>()里会调
+用netif<sub>receive</sub><sub>skb</sub>(),process<sub>backlog</sub>()是驱动的下半部分,因为驱动把后半部分的任务交给了软
+中断,在软中断里调用了process<sub>backlog</sub> (),所以驱动还是第二层,而且是第二层的一部分.
+</p></li>
+<li>
+协议是可以以一个模块的方式给加载进去的.  uln:If dev<sub>add</sub><sub>pack</sub> was called within the
+function init<sub>module</sub>, which is in charge of module initialization, dev<sub>remove</sub><sub>pack</sub> is
+most likely within cleanup<sub>module</sub>, which is called by the kernel when the module is to
+be removed.
+</li>
+<li>
+Ethernet这个词是指哪一层呢?  uln:A number of protocols go under the loose term
+Ethernet. The 802.2 and 802.3 standards are represented by the protocols ETH<sub>P</sub><sub>802</sub><sub>2</sub> and
+ETH<sub>P</sub><sub>802</sub><sub>3</sub>, respectively, but there are many other Ethernet protocols, listed in Table
+13-2, as well as the LLC and SNAP extensions. 
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.29" class="outline-3">
+<h3 id="sec-1.29"><span class="section-number-3">1.29</span> not function </h3>
+<div class="outline-text-3" id="text-1.29">
+
+<ul>
+<li>
+以太网头的定义
+
+
+
+<pre class="example">struct ethhdr
+{
+unsigned
+ char
+ h_dest[ETH_ALEN];
+unsigned
+ char
+ h_source[ETH_ALEN];
+unsigned
+ short h_proto;
+} __ATTRIBUTE__((packed));
+</pre>
+
+
+
+</li>
+<li>
+802.2和802.3都是用Ethernet的头,但是使用的不同是h<sub>proto域</sub>,
+
+
+
+<pre class="example">To save space, the IEEE decided to use values greater than 1,536 to represent the
+Ethernet protocol. Some preexisting protocols with identifiers lower than 1,536
+(0x600 hexadecimal) were updated to meet the criteria. The 802.2 and 802.3 protocols,
+however, use the field to store the length of the frame.* Values ranging from
+1,501 to 1,535 are not legal in this field.
+</pre>
+
+
+
+
+<p>
+大于1500表示是Ethernet帧,且h<sub>proto表示协议号</sub>.
+</p>
+<p>
+若小于1500表示是802.2或802.3号,且h<sub>proto表示帧的长度</sub>.
+</p>
+<p>
+<img src="/home/yj/Differences_between_Ethernet_and_802.3_frames.png"  alt="/home/yj/Differences_between_Ethernet_and_802.3_frames.png" />
+</p>
+<p>
+IEEE 802.2 逻辑链路控制(LLC)
+IEEE 802.3 带碰撞检测的载波侦听多路访问(CSMA/CD)方法和物理层规范(以太网)
+</p></li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.30" class="outline-3">
+<h3 id="sec-1.30"><span class="section-number-3">1.30</span> unsigned short eth<sub>type</sub><sub>trans</sub>(struct sk<sub>buff</sub> <b>skb, struct net<sub>device</sub> *dev)  **</b>  net/ethernet/eth.c: </h3>
+<div class="outline-text-3" id="text-1.30">
+
+<ul>
+<li>
+这个函数有两个件务,首先是设置skb-&gt;pkt<sub>type</sub>,再就是确定好正确的协议(skb-&gt;protocol)再返回.
+</li>
+<li>
+skb-&gt;mac的注释是
+
+
+
+<pre class="example">*      @mac: Link layer header
+</pre>
+
+
+
+
+<pre class="example">union {
+        unsigned char   *raw;
+} mac;
+</pre>
+
+
+
+
+<p>
+从下面的代码看出这个函数是在第二层调用的
+</p>
+
+
+<pre class="example">skb-&gt;mac.raw=skb-&gt;data;
+</pre>
+
+
+
+</li>
+<li>
+之后是移skb-&gt;data的指针
+
+
+
+<pre class="example">skb_pull(skb,ETH_HLEN);
+</pre>
+
+
+
+<p>
+从uln的图13-8可以看出,以太网帧的头的确是14(ETH<sub>HLEN</sub>).
+</p></li>
+<li>
+接着就是获取以太网头
+
+
+
+<pre class="example">eth = eth_hdr(skb);
+</pre>
+
+
+
+</li>
+<li>
+设置输入设备
+
+
+
+<pre class="example">*      @input_dev: Device we arrived on
+</pre>
+
+
+
+
+<pre class="example">skb-&gt;input_dev = dev;
+</pre>
+
+
+
+</li>
+<li>
+接下来判断是广播还是多播
+
+<p>
+uln:An Ethernet address is 48 bits or 6 bytes long. The two
+least significant bits of the first byte (in network byte order) have a special meaning
+(see Figure 13-9):
+</p>
+<ol>
+<li>
+Bit 0 distinguishes multicast addresses from unicast addresses. Broadcast addresses
+are a special case of multicast. When set to 1, this bit denotes multicast; when 0,
+it denotes unicast. After checking the bit through if(*eth-&gt;h<sub>dest&amp</sub>;1), the function
+goes on to see whether the frame is a broadcast frame by comparing the address to the
+device’s broadcast address through memcmp(eth-&gt;h<sub>dest</sub>,dev-&gt;broadcast, ETH<sub>ALEN</sub>).
+</li>
+<li>
+Bit 1 distinguishes local addresses from global addresses. Global addresses are
+worldwide unique, local addresses are not: it is up to the system administrator to
+assign local addresses properly.* When set to 1, this bit denotes a global address;
+when 0, it denotes a local address.
+
+
+</li>
+</ol>
+
+
+<pre class="example">if(*eth-&gt;h_dest&amp;1)
+{
+if(memcmp(eth-&gt;h_dest,dev-&gt;broadcast, ETH_ALEN)==0)
+skb-&gt;pkt_type=PACKET_BROADCAST;
+else
+skb-&gt;pkt_type=PACKET_MULTICAST;
+}
+</pre>
+
+
+
+
+<pre class="example">/*
+*     This ALLMULTI check should be redundant by 1.4
+*     so don't forget to remove it.
+*
+*     Seems, you forgot to remove it. All silly devices
+*     seems to set IFF_PROMISC.
+*/
+       
+else if(1 /*dev-&gt;flags&amp;IFF_PROMISC*/)
+{
+if(memcmp(eth-&gt;h_dest,dev-&gt;dev_addr, ETH_ALEN))
+skb-&gt;pkt_type=PACKET_OTHERHOST;
+}
+</pre>
+
+
+
+</li>
+<li>
+接下来就是返回合适的协议
+
+
+
+
+<pre class="example">if (ntohs(eth-&gt;h_proto) &gt;= 1536)
+        return eth-&gt;h_proto;
+        
+rawp = skb-&gt;data;
+
+/*
+ *      This is a magic hack to spot IPX packets. Older Novell breaks
+ *      the protocol design and runs IPX over 802.3 without an 802.2 LLC
+ *      layer. We look for FFFF which isn't a used 802.2 SSAP/DSAP. This
+ *      won't work for fault tolerant netware but does for the rest.
+ */
+if (*(unsigned short *)rawp == 0xFFFF)
+        return htons(ETH_P_802_3);
+        
+/*
+ *      Real 802.2 LLC
+ */
+return htons(ETH_P_802_2);
+</pre>
+
+
+
+</li>
+<li>
+uln:If values bigger than 1,536 are interpreted as protocol IDs, how does a device
+driver find the size of the frames it receives? In both cases, whether protocol/length
+values are less than 1,500 or greater than 1,536, it is the device itself that stores
+the size of the frame into one if its registers, where the device driver can read
+it. Devices can figure out the size of each frame thanks to well-known bit patterns used
+for that purpose.
+
+<p>
+若h<sub>proto表示协议</sub>,那么从设备的寄存器获取帧长度.以下是 drivers/net/3c59x.c 里的
+vortex<sub>rx</sub>()代码.
+</p>
+
+
+<pre class="example">/* The packet length: up to 4.5K!. */
+int pkt_len = rx_status &amp; 0x1fff;
+struct sk_buff *skb;
+skb = dev_al打loc_skb(pkt_len + 5);
+</pre>
+
+
+
+</li>
+<li>
+这个函数的返回值是赋给skb-&gt;protocol的,所以ETH<sub>P</sub><sub>802</sub><sub>2这类东西是给skb</sub>-&gt;protocol的.
+
+<p>
+skb-&gt;protocol是网络字节序的.
+</p></li>
+<li>
+这个是给以太网用的,还有其它类似的如tr<sub>type</sub><sub>trans</sub>().
+</li>
+<li>
+Whenever an incoming frame is classified by eth<sub>type</sub><sub>trans</sub> as using the LLC header
+(because it has a type/length field that is less than 1,536 and no special IPX case is
+detected), the initialization of skb-&gt;protocol to ETH<sub>P</sub><sub>802</sub><sub>2</sub> leads to the selection of
+the llc<sub>rcv</sub> handler (see Table 13-1). This handler will select the right protocol
+handler based on the DSAP field in the LLC header: to do so, it calls the rcv<sub>func</sub>
+handler registered with llc<sub>sap</sub><sub>open</sub> for those SAPs opened by the kernel, and feeds the
+right input to the right state machine when the SAPs were opened with a PF<sub>LLC</sub> socket
+(see Figure 13-10).
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-1.31" class="outline-3">
+<h3 id="sec-1.31"><span class="section-number-3">1.31</span> not function </h3>
+<div class="outline-text-3" id="text-1.31">
+
+
+</div>
+
+<div id="outline-container-1.31.1" class="outline-4">
+<h4 id="sec-1.31.1"><span class="section-number-4">1.31.1</span> Ethernet Versus IEEE 802.3 Frames </h4>
+<div class="outline-text-4" id="text-1.31.1">
+
+<ul>
+<li>
+The data structure used to define a SNAP protocol is datalink<sub>proto</sub>
+
+
+
+<pre class="example">struct datalink_proto {
+        unsigned char   type[8];
+
+        struct llc_sap   *sap;
+
+        unsigned short  header_length;
+
+        int     (*rcvfunc)(struct sk_buff *, struct net_device *,
+                                struct packet_type *);
+        int     (*request)(struct datalink_proto *, struct sk_buff *,
+                                        unsigned char *);
+        struct list_head node;
+};
+</pre>
+
+
+
+</li>
+<li>
+<img src="/home/yj/Figure 13-11. Protocol detection for Ethernet 802.3 802.3 SNAP frames.png"  alt="/home/yj/Figure 13-11. Protocol detection for Ethernet 802.3 802.3 SNAP frames.png" />
+这个图上面就是eth<sub>type</sub><sub>trans</sub>()
+</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-1.32" class="outline-3">
+<h3 id="sec-1.32"><span class="section-number-3">1.32</span> not function </h3>
+<div class="outline-text-3" id="text-1.32">
+
+
+</div>
+
+<div id="outline-container-1.32.1" class="outline-4">
+<h4 id="sec-1.32.1"><span class="section-number-4">1.32.1</span> Chapter 14: Bridging: Concepts </h4>
+<div class="outline-text-4" id="text-1.32.1">
+
+<ul>
+<li>
+<img src="/home/yj/Figure 14-1. (a) Repeater; (b) bridge; (c) router.png"  alt="/home/yj/Figure 14-1. (a) Repeater; (b) bridge; (c) router.png" />
+</li>
+<li>
+<img src="/home/yj/Figure 14-5. Address learning and aging.png"  alt="/home/yj/Figure 14-5. Address learning and aging.png" />
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: 脩卯陆脺
+<a href="mailto:vcprg@126.com">&lt;vcprg@126.com&gt;</a>
+</p>
+<p class="date"> Date: 2014-04-30 12:01:22 CST</p>
+<p class="creator">HTML generated by org-mode 6.33x in emacs 23</p>
+</div>
+</div>
+</body>
+</html>
