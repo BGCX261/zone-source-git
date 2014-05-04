@@ -1098,4 +1098,4 @@ struct datalink_proto {
 ** static struct net_device *new_bridge_dev(const char *name)
 *** net/bridge/br_if.c:
 - 这个函数调用alloc_netdev()分配struct net_device,而net_device->priv作为私有数据会被初始化
-  为struct net_bridge,
+  为struct net_bridge这个结构体所占的大小.
