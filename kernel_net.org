@@ -1094,8 +1094,113 @@ struct datalink_proto {
 ** int br_add_bridge(const char *name)
 *** net/bridge/br_if.c:
 - 这个函数用来建立一个新网桥
-- 先调用new_bridge_dev()新建和初始化一个网桥的结构体,就是strict net_bridge.
+- 先调用new_bridge_dev()新建和初始化一个网桥的结构体,就是strict net_bridge.下面有讲这个函
+  数.
+- 调用dev_alloc_name()来分配一个设备的名字
+
+  uln:When the name of the device passed to alloc_netdev is in the form
+  name%d(e.g.,“eth%d”), the kernel completes the name using the function
+  dev_alloc_name. The latter changes %d to the first unassigned number for that device
+  type.
+- 调用register_netdevice()来注册设备.
+
 ** static struct net_device *new_bridge_dev(const char *name)
 *** net/bridge/br_if.c:
 - 这个函数调用alloc_netdev()分配struct net_device,而net_device->priv作为私有数据会被初始化
-  为struct net_bridge,
+  为struct net_bridge这个结构体所占的大小.
+
+  br_dev_setup()函数初始化了新分配的net_device里的很多成员
+  #+BEGIN_EXAMPLE
+	ether_setup(dev);
+
+	dev->do_ioctl = br_dev_ioctl;
+	dev->get_stats = br_dev_get_stats;
+	dev->hard_start_xmit = br_dev_xmit;
+	dev->open = br_dev_open;
+	dev->set_multicast_list = br_dev_set_multicast_list;
+	dev->change_mtu = br_change_mtu;
+	dev->destructor = free_netdev;
+	SET_MODULE_OWNER(dev);
+	dev->stop = br_dev_stop;
+	dev->tx_queue_len = 0;
+	dev->set_mac_address = NULL;
+	dev->priv_flags = IFF_EBRIDGE;
+  #+END_EXAMPLE
+
+  里面调用的ether_setup()有一些是重复设置的,如change_mtu,但change_mtu最终为br_change_mtu
+  #+BEGIN_EXAMPLE
+void ether_setup(struct net_device *dev)
+{
+	dev->change_mtu		= eth_change_mtu;
+	dev->hard_header	= eth_header;
+	dev->rebuild_header 	= eth_rebuild_header;
+	dev->set_mac_address 	= eth_mac_addr;
+	dev->hard_header_cache	= eth_header_cache;
+	dev->header_cache_update= eth_header_cache_update;
+	dev->hard_header_parse	= eth_header_parse;
+
+	dev->type		= ARPHRD_ETHER;
+	dev->hard_header_len 	= ETH_HLEN;
+	dev->mtu		= 1500; /* eth_mtu */
+	dev->addr_len		= ETH_ALEN;
+	dev->tx_queue_len	= 1000;	/* Ethernet wants good queues */	
+	dev->flags		= IFF_BROADCAST|IFF_MULTICAST;
+	
+	memset(dev->broadcast,0xFF, ETH_ALEN);
+
+}
+  #+END_EXAMPLE 
+- net_bridge->dev指向包含该net_bridge的net_device.
+- 在br_dev_setup()里初始化完了net_device,而net_bridge就在接下来的代码初始化了.
+** struct net_device *alloc_netdev(int sizeof_priv, const char *name, void (*setup)(struct net_device *))
+*** net/core/dev.c:
+- 以下的代码是用来计算net_device.padded的大小的.
+
+  net_device.padded指的就是为了对齐而在所分配的内存开头空出一段内存.
+  #+BEGIN_EXAMPLE
+	dev = (struct net_device *)
+		(((long)p + NETDEV_ALIGN_CONST) & ~NETDEV_ALIGN_CONST);
+	dev->padded = (char *)dev - (char *)p;
+  #+END_EXAMPLE
+- 而net_device是从net_device->padded开始的,所以释放时要注意向后加上这一段.
+- 调用这个函数分配一个net_device时都要传入一个setup函数来设置新分配的struct net_device.所
+  以不同的类型的设备所设置的net_device是不一样的.如网桥和路由器的设置就不一样.
+- 从调用的netdev_priv()可以看出,net_device的私有空间是在struct net_device之后的
+  #+BEGIN_EXAMPLE
+	if (sizeof_priv)
+		dev->priv = netdev_priv(dev);
+
+static inline void *netdev_priv(struct net_device *dev)
+{
+	return (char *)dev + ((sizeof(struct net_device)
+                               + NETDEV_ALIGN_CONST)
+                              & ~NETDEV_ALIGN_CONST);
+}
+  #+END_EXAMPLE 
+** not function
+*** 
+- uln:
+
+  They are two different concepts:
+
+  • Registration and unregistration, if we exclude the act of loading a device driver
+  module, are user independent; the kernel drives them. A device that has been only
+  registered is not operative yet. We will see when a device is registered and
+  unregistered in the sections “When a Device Is Registered” and “When a Device Is
+  Unregistered.”
+
+  • Enabling and disabling a device require user intervention. Once a device has been
+  registered by the kernel, the user can see it by means of user commands, configure it,
+  and enable it. See the later section “Enabling and Disabling a Net- work Device.”
+** int br_add_if(struct net_bridge *br, struct net_device *dev)
+*** net/bridge/br_if.c:
+- 这个函数用来添加一个端口到网桥
+- 第二个参数dev就是要被添加的端口
+- 若是回环接口就不能加
+
+  若设备类型是ARPHDR_ETHER,就不能加
+
+  #+BEGIN_EXAMPLE
+	if (dev->flags & IFF_LOOPBACK || dev->type != ARPHRD_ETHER)
+		return -EINVAL;
+  #+END_EXAMPLE
