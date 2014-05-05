@@ -1,0 +1,14 @@
+digraph free_pidmap{
+	size="110,20";
+	ratio=fill;
+	subgraph cluster_free_pidmap{
+		label="fastcall void free_pidmap(int pid)";
+		set_map_pidmap_array_add_pid_div_BITSPER_PAGE[label="set_map_pidmap_array_add_pid_div_BITSPER_PAGE"];
+		set_offset_pid_BITS_PER_PAGE_MASK_set[label="set_offset_pid_BITS_PER_PAGE_MASK_set"];
+		clear_bit_offset_map_page[label="clear_bit_offset_map_page"];
+		atomic_inc_map_nr_free[label="atomic_inc_map_nr_free"];
+                set_map_pidmap_array_add_pid_div_BITSPER_PAGE -> set_offset_pid_BITS_PER_PAGE_MASK_set;
+                set_offset_pid_BITS_PER_PAGE_MASK_set -> clear_bit_offset_map_page;
+                clear_bit_offset_map_page -> atomic_inc_map_nr_free;
+        }
+}

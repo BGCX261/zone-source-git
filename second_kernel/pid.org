@@ -1,0 +1,95 @@
+#+STARTUP: showall
+* data structure
+** struct pid
+  #+BEGIN_EXAMPLE
+  struct pid
+  {
+  	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
+  	int nr;
+  	struct hlist_node pid_chain;
+  	/* list of pids with the same nr, only one of them is in the hash */
+  	struct list_head pid_list;
+  };
+  #+END_EXAMPLE
+
+- 关于pid->pid\_list:PGID 值相同的进程链在这里，如上3个进程组，分别各自通过这个域链接起来，
+  这里可以认为是第2个维度链.
+
+  所以pid->pid_list是给PGID用的.
+** enum pid_type
+   #+BEGIN_EXAMPLE
+enum pid_type
+{
+	PIDTYPE_PID,
+	PIDTYPE_TGID,
+	PIDTYPE_PGID,
+	PIDTYPE_SID,
+	PIDTYPE_MAX
+};
+   #+END_EXAMPLE
+
+   PIDTYPE_MAX是大小.
+** pidmap_t
+   #+BEGIN_EXAMPLE
+/*
+ * PID-map pages start out as NULL, they get allocated upon
+ * first use and are never deallocated. This way a low pid_max
+ * value does not cause lots of bitmaps to be allocated, but
+ * the scheme scales to up to 4 million PIDs, runtime.
+ */
+typedef struct pidmap {
+	atomic_t nr_free;
+	void *page;
+} pidmap_t;
+   #+END_EXAMPLE
+   #+BEGIN_EXAMPLE
+#define PIDMAP_ENTRIES		((PID_MAX_LIMIT + 8*PAGE_SIZE - 1)/PAGE_SIZE/8)
+static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
+	 { [ 0 ... PIDMAP_ENTRIES-1 ] = { ATOMIC_INIT(BITS_PER_PAGE), NULL } };
+   #+END_EXAMPLE
+** fastcall void free_pidmap(int pid)
+[[]]
+** int alloc_pidmap(void)
+- pid:当前要判断该值的pid是否被使用.
+- offset:pid变量所表示的pid在那一个位图页中.
+- map:pid变量所表示的pid在那一个页中(pidmap_t).
+- alloc_pidmap里的求max_scan的方法为什么要减!offset呢?因为若不在一页的起始位置就要减去0而不
+  是1是因为想多循环一次当前页，所以max_scan指的是将要经过多少次页头（页尾）.
+
+  作一个比喻:假如有两个页,且现在的last_pid在第1个页的中间,且只有last_pid-1才有空pid可用,因
+  为代码里的大循环是扫描次数,每到一个位图页的结尾就会循环一次,但是因为是从last_pid开始扫描
+  的,所以要循环3次,因为第一个页要在第三次循环再被扫描一次到last_pid-1.
+- 用一个全局变量记录上一次搜索到哪里了(last_pid).
+- 用于位图的页可能不只一个,这要看pid_max这个全局变量.
+- 若发现pidmap_t->page的位图页还没有分配,那么就分配一页.
+  #+BEGIN_EXAMPLE
+  		if (unlikely(!map->page)) {
+			unsigned long page = get_zeroed_page(GFP_KERNEL);
+			/*
+			 * Free the page if someone raced with us
+			 * installing it:
+			 */
+			spin_lock(&pidmap_lock);
+			if (map->page)
+				free_page(page);
+			else
+				map->page = (void *)page;
+			spin_unlock(&pidmap_lock);
+			if (unlikely(!map->page))
+				break;
+		}
+  #+END_EXAMPLE 
+- 若一个页被扫描完了,就要切到下一个页,切到下一个页时要区分是不是第一个页,
+  #+BEGIN_EXAMPLE
+		if (map < &pidmap_array[(pid_max-1)/BITS_PER_PAGE]) {
+			++map;
+			offset = 0;
+		} else {
+			map = &pidmap_array[0];
+			offset = RESERVED_PIDS;
+			if (unlikely(last == offset))
+				break;
+		}
+  #+END_EXAMPLE
+** struct pid * fastcall find_pid(enum pid_type type, int nr)
+- 
