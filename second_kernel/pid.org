@@ -16,6 +16,8 @@
   这里可以认为是第2个维度链.
 
   所以pid->pid_list是给PGID用的.
+- pid->pid_chain链起来pid->nr不一样的.
+- pid->pid_list链起来的pid->nr是一样的.
 ** enum pid_type
    #+BEGIN_EXAMPLE
 enum pid_type
@@ -29,6 +31,8 @@ enum pid_type
    #+END_EXAMPLE
 
    PIDTYPE_MAX是大小.
+- 对于PIDTYPE_PID的类型,pid->nr就是进程的pid
+  对于PIDTYPE_TGID类型,pid->nr就是进程的线程组ID
 ** pidmap_t
    #+BEGIN_EXAMPLE
 /*
@@ -92,4 +96,4 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
 		}
   #+END_EXAMPLE
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
-- 
+- 这个函数找类型为参数type的,pid->nr为参数nr的struct pid.
