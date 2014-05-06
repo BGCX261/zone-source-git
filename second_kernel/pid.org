@@ -57,13 +57,13 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
 - pid:当前要判断该值的pid是否被使用.
 - offset:pid变量所表示的pid在那一个位图页中.
 - map:pid变量所表示的pid在那一个页中(pidmap_t).
+- 用一个全局变量记录上一次搜索到哪里了(last_pid).
 - alloc_pidmap里的求max_scan的方法为什么要减!offset呢?因为若不在一页的起始位置就要减去0而不
   是1是因为想多循环一次当前页，所以max_scan指的是将要经过多少次页头（页尾）.
 
   作一个比喻:假如有两个页,且现在的last_pid在第1个页的中间,且只有last_pid-1才有空pid可用,因
   为代码里的大循环是扫描次数,每到一个位图页的结尾就会循环一次,但是因为是从last_pid开始扫描
   的,所以要循环3次,因为第一个页要在第三次循环再被扫描一次到last_pid-1.
-- 用一个全局变量记录上一次搜索到哪里了(last_pid).
 - 用于位图的页可能不只一个,这要看pid_max这个全局变量.
 - 若发现pidmap_t->page的位图页还没有分配,那么就分配一页.
   #+BEGIN_EXAMPLE
@@ -111,7 +111,7 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
 
   总之就是把task->pids[type]的所有成员都作处理了.
 - 若把task->pids[type]->pid_chain从hash表里删除,且task->pids[type]->pid_list链表为空(就是
-  说没有与task->pids[type]->nr相同的pid),那么就返因task->pids[type]->nr.否则返回0.
+  说没有与task->pids[type]->nr相同的pid),那么就返回task->pids[type]->nr.否则返回0.
 
   也就是如果确定了类型为type这个hash表已经没有pid->nr为task->pids[type]->nr的结点时就返回
   task->pids[type]->nr.
@@ -121,5 +121,13 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
   2. 若__detach_pid()返回的不是0,表明type类型的hash表里已经没有pid->nr为nr的pid了,那么就要
      判断其它类型的hash表是否还有pid->nr为nr的pid,若都没有,那么就可以调用free_pidmap()把位
      图的第nr位给释放.
-** task_t *find_task_by_pid_type(int type, int nr)
 
+     这个函数会先扫描所有类型的hash之后发现没有使用这个nr的pid再删除,所以就算type不是
+     PIDTYPE_PID,那么也可以把这个nr的位从位图里删除.
+** task_t *find_task_by_pid_type(int type, int nr)
+- ulk:To comply with this standard, Linux makes use of thread groups. The identifier
+  shared by the threads is the PID of the thread group leader , that is, the PID of the
+  first lightweight process in the group;
+
+  发现一个问题:就是像线程组ID是用线程组的领头进程来标识的,所以线程组ID和PID位图没有冲突的关系.
+- 那么是不是pid->pid_list链表里的第一个pid就是领头进程的pid呢?
