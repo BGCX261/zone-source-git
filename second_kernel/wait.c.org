@@ -17,3 +17,15 @@
   看__wait_event就知道了.
 - is_sync_wait()是用于判断是否是同步等待.但prepare_to_wait()的wait参数一定不是
   NULL,is_sync_wait()里会判断wait是否为空.
+
+  如果是不是同步等待,那么就不用去调度current,让current继续执行.
+
+  若是同步等待的话,wait为空或wait->task为current.
+** void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
+- 与prepare_to_wait_exclusive()的不同是设置了WQ_FLAG_EXCLUSIVE
+** void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
+- 这个函数做 prepare_to_wait() 函数里相反的两件事,第一是设置进程为TASK_RUNNING, 第二是把
+  wait->task_list从链表里删除.
+- 使用了 list_empty_careful() 来判断 wait->task_list 是否为空, 这可以不用锁.
+** int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
+- 这个函数两个地方被使用:1. 被赋给wait_queue_t->func, 2. 在wake_bit_function()里使用.

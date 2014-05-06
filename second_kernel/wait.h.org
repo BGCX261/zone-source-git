@@ -22,6 +22,12 @@ struct __wait_queue {
 	struct list_head task_list;
 };
   #+END_EXAMPLE 
+- wait_queue_t->task是被唤醒的进程.
+- wait_queue_t->func现在不知道在哪里执行的.这个函数一般在使用宏声明wait_queue_t变量时会把
+  func设成default_wake_function或autoremove_wake_function(函数里还是调用
+  default_wake_function),default_wake_function()里会调用try_to_wake_up()唤醒
+  wait_queue_t->task进程.
 - wait_queue_t->task_list和wait_queue_head_t->task_list链起来组成一个进程等待链表.
 ** static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
 - 把new插入到等待队列 _头_.
+
