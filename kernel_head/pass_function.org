@@ -169,12 +169,15 @@
 - 这个用于把current加入等待队列的。
 - 注释有说为什么把设置进程状态放在加入队列的后面
 - 要先判断wait->task_list为空的时候才把wait加入队列。为什么在sleep_on里不用呢?因为
-  prepare_to_wait的应用场合不同，prepare_to_wait会放在一个循环里重复调用，但是finish_wait不会被放到循环里，看看__wait_event就知道了。
-- 虽然在is_sync_wait里会检查wait是否为空，但进入prepare_to_wait是肯定不会为空的，所以is_sync_wait做了多余的事情。
+  prepare_to_wait的应用场合不同，prepare_to_wait会放在一个循环里重复调用，但是finish_wait不
+  会被放到循环里，看看__wait_event就知道了。
+- 虽然在is_sync_wait里会检查wait是否为空，但进入prepare_to_wait是肯定不会为空的，所以
+  is_sync_wait做了多余的事情。
 ** #define is_sync_wait(wait)	(!(wait) || ((wait)->task))
 *** include/linux/wait.h:
-- 有一段注释：Used to distinguish between sync and async io wait context: sync i/o typically specifies a NULL wait queue entry or a wait
-  queue entry bound to a task (current task) to wake up. aio specifies a wait queue entry with an async notification
+- 有一段注释：Used to distinguish between sync and async io wait context: sync i/o
+  typically specifies a NULL wait queue entry or a wait queue entry bound to a task
+  (current task) to wake up. aio specifies a wait queue entry with an async notification
   callback routine, not associated with any task.为什么同步io可以指定一个NULL 的wait呢？
 ** void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
 *** include/linux/wait.h:

@@ -1,0 +1,27 @@
+#+STARTUP: showall
+* data structure
+- wait_queue_head_t
+#+BEGIN_EXAMPLE
+struct __wait_queue_head {
+	spinlock_t lock;
+	struct list_head task_list;
+};
+typedef struct __wait_queue_head wait_queue_head_t;
+#+END_EXAMPLE
+- wait_queue_t
+  #+BEGIN_EXAMPLE
+typedef struct __wait_queue wait_queue_t;
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+struct __wait_queue {
+	unsigned int flags;
+#define WQ_FLAG_EXCLUSIVE	0x01
+	struct task_struct * task;
+	wait_queue_func_t func;
+	struct list_head task_list;
+};
+  #+END_EXAMPLE 
+- wait_queue_t->task_list和wait_queue_head_t->task_list链起来组成一个进程等待链表.
+** static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
+- 把new插入到等待队列 _头_.

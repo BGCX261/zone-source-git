@@ -1,0 +1,19 @@
+#+STARTUP: showall
+* data structure
+** void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
+- 这个函数自己会把wait_queue_t->flags的WQ_FLAG_EXCLUSIVE给清掉.而不管调用者是否保证.
+- 调用__add_wait_queue()把进程加到队列 _头_.
+** void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
+- 与 add_wait_queue() 的不同是这个函数设置了wait_queue_t->flags的WQ_FLAG_EXCLUSIVE.其它都一
+  样.
+** void fastcall remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
+- 把wait->task_list从链表里删除,删除时只需要q->lock,而不需要q->task_list.
+** void fastcall prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
+- 这个函数与 add_wait_queue() 不同的是在 add_wait_queue() 调用 __add_wait_queue() 这一段,
+  prepare_to_wait() 作了很多处理.
+- 开始也清WQ_FLAG_EXCLUSIVE
+- 关于为什么要判断wait->task_list是否已加入到其它的队列中,我觉得是因为prepare_to_wait的应用
+  场合不同，prepare_to_wait会放在一个循环里重复调用，但是finish_wait不会被放到循环里，看
+  看__wait_event就知道了.
+- is_sync_wait()是用于判断是否是同步等待.但prepare_to_wait()的wait参数一定不是
+  NULL,is_sync_wait()里会判断wait是否为空.
