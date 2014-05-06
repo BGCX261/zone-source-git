@@ -97,3 +97,29 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
   #+END_EXAMPLE
 ** struct pid * fastcall find_pid(enum pid_type type, int nr)
 - 这个函数找类型为参数type的,pid->nr为参数nr的struct pid.
+- 若是找到,那么返回的是被用pid->pid_chain链起的pid,返回这个pid就可以找到所有有和它相同
+  pid->nr的pid,因为它们是用pid->pid_list链起来的.
+** int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
+- 作用:把参数task->pids[type]这个pid加到type类型的hash表里去,且nr是参数nr.最终都会把
+  task->pids[type]这个pid的所有成员给初始化:nr, pid_chain, pid_list.
+** static fastcall int __detach_pid(task_t *task, enum pid_type type)
+- 作用:和attach_pid()的作用相反,把task->pids[type]这个pid从类型为type的hash表中删除
+- 删除前要判断这个pid是不是已经hash到hash表.用hlist_unhashed()判断.
+- 先把task->pids[type]这个结点从hash表里删除,再把task->pids[type]->pid_list这个链表的第一
+  个pid结构体重新插入到hash表.最后再删除把task->pids[type].pid_list从链表里删除.最后还清
+  task->pids[type]->nr为零.
+
+  总之就是把task->pids[type]的所有成员都作处理了.
+- 若把task->pids[type]->pid_chain从hash表里删除,且task->pids[type]->pid_list链表为空(就是
+  说没有与task->pids[type]->nr相同的pid),那么就返因task->pids[type]->nr.否则返回0.
+
+  也就是如果确定了类型为type这个hash表已经没有pid->nr为task->pids[type]->nr的结点时就返回
+  task->pids[type]->nr.
+** void fastcall detach_pid(task_t *task, enum pid_type type)
+- 这个函数两个任务:
+  1. 调用__detach_pid()把task->pids[type]这个pid从类型为type的hash表里删除
+  2. 若__detach_pid()返回的不是0,表明type类型的hash表里已经没有pid->nr为nr的pid了,那么就要
+     判断其它类型的hash表是否还有pid->nr为nr的pid,若都没有,那么就可以调用free_pidmap()把位
+     图的第nr位给释放.
+** task_t *find_task_by_pid_type(int type, int nr)
+
