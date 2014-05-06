@@ -122,4 +122,5 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
      判断其它类型的hash表是否还有pid->nr为nr的pid,若都没有,那么就可以调用free_pidmap()把位
      图的第nr位给释放.
 ** task_t *find_task_by_pid_type(int type, int nr)
-
+- 作用:从type类型的hash表里找出所包含的pid的nr为参数nr的task结构体,不管所找到的
+  pid->pid_list是否为空,都只返回第一个pid,就是pid->pid_chain不为空的pid.
