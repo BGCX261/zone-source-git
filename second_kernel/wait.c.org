@@ -1,10 +1,4 @@
 #+STARTUP: showall
-<<<<<<< HEAD
-* data_structure
-
-** void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
-
-=======
 * data structure
 ** void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
 - 这个函数自己会把wait_queue_t->flags的WQ_FLAG_EXCLUSIVE给清掉.而不管调用者是否保证.
@@ -46,4 +40,3 @@
   wait_bit_key的key的所有成员相等.
 
   但arg传给autoremove_wake_function()是不使用的.
->>>>>>> bb203b73b594d6c58b099389e672a28dc03c66f0
