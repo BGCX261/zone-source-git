@@ -29,3 +29,14 @@
 - 使用了 list_empty_careful() 来判断 wait->task_list 是否为空, 这可以不用锁.
 ** int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
 - 这个函数两个地方被使用:1. 被赋给wait_queue_t->func, 2. 在wake_bit_function()里使用.
+- 唤醒成功就把wait_queue_t->task_list从链表里删除.
+- 调用default_wake_function()唤醒, 但是在defualt_wake_function()里没有使用到key参数.
+
+  key这个参数是做什么用的呢?
+** int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *arg)
+- 传入的arg被转换成struct wait_bit_key类型.
+
+  在函数里会比较arg里的所有成员是否和包含参数wait的struct wait_bit_queue的类型为struct
+  wait_bit_key的key的所有成员相等.
+
+  但arg传给autoremove_wake_function()是不使用的.
