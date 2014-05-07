@@ -3,11 +3,14 @@
 ** void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
 - 这个函数自己会把wait_queue_t->flags的WQ_FLAG_EXCLUSIVE给清掉.而不管调用者是否保证.
 - 调用__add_wait_queue()把进程加到队列 _头_.
+
 ** void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
 - 与 add_wait_queue() 的不同是这个函数设置了wait_queue_t->flags的WQ_FLAG_EXCLUSIVE.其它都一
   样.
+
 ** void fastcall remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
 - 把wait->task_list从链表里删除,删除时只需要q->lock,而不需要q->task_list.
+
 ** void fastcall prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
 - 这个函数与 add_wait_queue() 不同的是在 add_wait_queue() 调用 __add_wait_queue() 这一段,
   prepare_to_wait() 作了很多处理.
@@ -18,9 +21,14 @@
 - is_sync_wait()是用于判断是否是同步等待.但prepare_to_wait()的wait参数一定不是
   NULL,is_sync_wait()里会判断wait是否为空.
 
-  如果是不是同步等待,那么就不用去调度current,让current继续执行.
+  如果是不是同步等待,那么就不用去调度current,让current继续执行.但在__wait_event()看来,调
+  用__wait_event()就是同步等待的,如果不是同步的,那么调用__wait_event()过程中在
+  prepare_to_wait()里没有设置current的状态,那么退出prepare_to_wait()之后调shedule(),这是不
+  合理的,所以__wait_event()应该是用于同步等待的.
+
 
   若是同步等待的话,wait为空或wait->task为current.
+
 ** void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
 - 与prepare_to_wait_exclusive()的不同是设置了WQ_FLAG_EXCLUSIVE
 ** void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
@@ -34,9 +42,13 @@
 
   key这个参数是做什么用的呢?
 ** int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *arg)
+- 这个函数 _只在_ 在使用DEFINE_WAIT_BIT()定义struct wait_bit_queue变量时会初始化给func成员
+  时使用.
 - 传入的arg被转换成struct wait_bit_key类型.
 
   在函数里会比较arg里的所有成员是否和包含参数wait的struct wait_bit_queue的类型为struct
   wait_bit_key的key的所有成员相等.
 
   但arg传给autoremove_wake_function()是不使用的.
+** int __sched fastcall __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode)
+- 这个函数有点类似__wait_event()宏.
