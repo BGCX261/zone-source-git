@@ -125,6 +125,8 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
      这个函数会先扫描所有类型的hash之后发现没有使用这个nr的pid再删除,所以就算type不是
      PIDTYPE_PID,那么也可以把这个nr的位从位图里删除.
 ** task_t *find_task_by_pid_type(int type, int nr)
+- 作用:从type类型的hash表里找出所包含的pid的nr为参数nr的task结构体,不管所找到的
+  pid->pid_list是否为空,都只返回第一个pid,就是pid->pid_chain不为空的pid.
 - ulk:To comply with this standard, Linux makes use of thread groups. The identifier
   shared by the threads is the PID of the thread group leader , that is, the PID of the
   first lightweight process in the group;
