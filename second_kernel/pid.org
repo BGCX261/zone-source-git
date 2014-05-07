@@ -131,3 +131,17 @@ static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
 
   发现一个问题:就是像线程组ID是用线程组的领头进程来标识的,所以线程组ID和PID位图没有冲突的关系.
 - 那么是不是pid->pid_list链表里的第一个pid就是领头进程的pid呢?
+** void switch_exec_pids(task_t *leader, task_t *thread)
+- 这个方法只有de_thread()这个函数调用
+- 作用:
+
+  把leader->pid, leader->tgid改成thread->pid
+
+  把thread->pid改成thread->tgid
+
+  就是leader->pid, leader->tgid, thread->pid被修改了.
+
+  thread成了自己所在的线程组的领头线程,leader自已也成了自已线程组的领头进程,leader->pid改
+  成了thread->pid.
+
+  
