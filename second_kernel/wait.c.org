@@ -52,3 +52,22 @@
   但arg传给autoremove_wake_function()是不使用的.
 ** int __sched fastcall __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode)
 - 这个函数有点类似__wait_event()宏.
+- prepare_to_wait()也可以用于等待位的.
+- 与__wait_event()不同的是struct wait_queue_t在__wait_event()里定义
+
+  都是在一个循环里调用prepare_to_wait(),然后判断条件,最后要么是休眠要么是调用finish_wait().
+
+  __wait_on_bit()用action()函数休眠, __wait_event()用schedule()休眠.
+** int __sched fastcall out_of_line_wait_on_bit(void *word, int bit, int (*action)(void *), unsigned mode)
+- 这个函数只有wait_on_bit()调用
+- 要唤醒一个等待bitflag的进程的时候,是先 _清_ 位后调用wake_up_bit().
+- 说明word参数是如何被使用的,
+
+  看一看__wait_on_buffer()这个函数,这个函数是用来等待buffer_header->b_state里某一个位的函数
+
+  __wait_on_buffer()是这样调用wait_on_bit()的
+
+  #+BEGIN_EXAMPLE
+  wait_on_bit(&bh->b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
+  #+END_EXAMPLE
+** 

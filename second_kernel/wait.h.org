@@ -42,7 +42,10 @@ struct wait_bit_queue {
 	wait_queue_t wait;
 };
   #+END_EXAMPLE
-
+- 如何使用bit等待队列, wait_bit_key->flags是一void类型的指针,它应该在一个地方被分配的,然后
+  当要建一个struct wait_bit_queue时,就会初始化wait_bit_queue->key->flags为所分配的空间,这个
+  空间的大小不管,只要是连续的就可以,因为是被test_bit()之类的函数使用的,同时还要初始化
+  wait_bit_queue->key->bit_nr来表示等待flags里的哪个位.
 ** static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
 - 把new插入到等待队列 _头_.
 
