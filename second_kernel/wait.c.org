@@ -58,6 +58,9 @@
   都是在一个循环里调用prepare_to_wait(),然后判断条件,最后要么是休眠要么是调用finish_wait().
 
   __wait_on_bit()用action()函数休眠, __wait_event()用schedule()休眠.
+- 为什么若位没清且休眠函数返回0时才会继续休眠呢?而不是发现位没清就可以满足休眠的条件呢?
+- action函数一般为inode_wait()和sync_buffer(),这两个函数里都调用schedule(),且都只会返回0,
+  表示休眠成功.
 ** int __sched fastcall out_of_line_wait_on_bit(void *word, int bit, int (*action)(void *), unsigned mode)
 - 这个函数只有wait_on_bit()调用
 - 要唤醒一个等待bitflag的进程的时候,是先 _清_ 位后调用wake_up_bit().
@@ -70,4 +73,22 @@
   #+BEGIN_EXAMPLE
   wait_on_bit(&bh->b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
   #+END_EXAMPLE
-** 
+** int __sched fastcall __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode)
+- 这个函数与__wait_on_bit()的不同是使用了prepare_to_wait_exclusive()而不是
+  prepare_to_wait()
+
+  还有就是使用了test_and_set_bit()而不是test_bit()
+
+  还有就是如果休眠函数action返回非0就会退出休眠循环, 而__wait_on_bit()是在发现位没清同时休
+  眠函数返回值为0时就继续休眠.action返回0表示休眠成功了.所以返回非0就退出没有必要再体眠,但
+  是在__wait_on_bit()里如果休眠不成功也是会退出的,但为什么写法不一样呢?因为调用
+  test_and_set_bit()会对位产生作用,所以不合适采用__wait_on_bit()的写法.
+- 为什么要使用test_and_set_bit()呢?
+
+  因为是互斥等待的原因,因为调用prepare_to_wait_exclusive()所以只会唤醒一个进程,如果退出时
+  没有设置位就会唤醒下一个等待进程,那么这就不是互斥等待了.
+** fastcall wait_queue_head_t *bit_waitqueue(void *word, int bit)
+- 这个zone->wait_table不太明白,
+- 通过word和bit来找到word所对应的等待队列头在什么地方.
+- 与位等待相关的队列头都在zone->wait_table这个hash表里,虽是hash表,但是zone->wait_table是一
+  个数组而已,只是通过word和bit通过hash函数找到下标.能保证hash出的下标是唯一性的吗?

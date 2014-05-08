@@ -7391,3 +7391,8 @@ http://bbs.chinaunix.net/thread-4134347-4-1.html
 当遇到 cache pingpong 时，cache 得不到最大发挥，就要频繁读写内存，程序执行效率就会大幅度下降
 
 #error命令是C/C++语言的预处理命令之一，当预处理器预处理到#error命令时将停止编译并输出用户自定义的错误消息。
+
+要用tar文件的内容都要加上vf参数,tar tvf kernel_head.tar
+
+tar cf kernel_head.tar kernel_head/pass_function.org
+这样就会有kernel_head这个目录了.
