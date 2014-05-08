@@ -87,6 +87,19 @@
 
   因为是互斥等待的原因,因为调用prepare_to_wait_exclusive()所以只会唤醒一个进程,如果退出时
   没有设置位就会唤醒下一个等待进程,那么这就不是互斥等待了.
+** int __sched fastcall out_of_line_wait_on_bit_lock(void *word, int bit, int (*action)(void *), unsigned mode)
+- 这个函数分三步:
+
+  1. 调用bit_waitqueue()找到对应的等待队列头
+
+  2. 调用DEFINE_WAIT_BIT()声明一个等待
+
+  3. 调用__wait_on_bit_lock()进行等待.
+** void fastcall __wake_up_bit(wait_queue_head_t *wq, void *word, int bit)
+- 最后也还是调用__wait_up()来唤醒.
+- 调用__wait_up()之前要先声明struct wait_bit_key, 再判断队列头是否已经激活.
+** void fastcall wake_up_bit(void *word, int bit)
+- 直接调用__wake_up_bit()
 ** fastcall wait_queue_head_t *bit_waitqueue(void *word, int bit)
 - 这个zone->wait_table不太明白,
 - 通过word和bit来找到word所对应的等待队列头在什么地方.
