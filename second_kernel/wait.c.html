@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>wait.c</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2014-05-09 11:16:14 CST"/>
+<meta name="author" content="脩卯陆脺"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">wait.c</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 data structure </a></li>
+<li><a href="#sec-2">2 function </a>
+<ul>
+<li><a href="#sec-2.1">2.1 void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait) </a></li>
+<li><a href="#sec-2.2">2.2 void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait) </a></li>
+<li><a href="#sec-2.3">2.3 void fastcall remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait) </a></li>
+<li><a href="#sec-2.4">2.4 void fastcall prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state) </a></li>
+<li><a href="#sec-2.5">2.5 void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state) </a></li>
+<li><a href="#sec-2.6">2.6 void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait) </a></li>
+<li><a href="#sec-2.7">2.7 int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key) </a></li>
+<li><a href="#sec-2.8">2.8 int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *arg) </a></li>
+<li><a href="#sec-2.9">2.9 int __sched fastcall __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode) </a></li>
+<li><a href="#sec-2.10">2.10 int __sched fastcall out_of_line_wait_on_bit(void *word, int bit, int (*action)(void *), unsigned mode) </a></li>
+<li><a href="#sec-2.11">2.11 int __sched fastcall __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode) </a></li>
+<li><a href="#sec-2.12">2.12 int __sched fastcall out_of_line_wait_on_bit_lock(void *word, int bit, int (*action)(void *), unsigned mode) </a></li>
+<li><a href="#sec-2.13">2.13 void fastcall __wake_up_bit(wait_queue_head_t *wq, void *word, int bit) </a></li>
+<li><a href="#sec-2.14">2.14 void fastcall wake_up_bit(void *word, int bit) </a></li>
+<li><a href="#sec-2.15">2.15 fastcall wait_queue_head_t *bit_waitqueue(void *word, int bit) </a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> data structure </h2>
+<div class="outline-text-2" id="text-1">
+
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> function </h2>
+<div class="outline-text-2" id="text-2">
+
+
+</div>
+
+<div id="outline-container-2.1" class="outline-3">
+<h3 id="sec-2.1"><span class="section-number-3">2.1</span> void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait) </h3>
+<div class="outline-text-3" id="text-2.1">
+
+<ul>
+<li>
+这个函数自己会把wait_queue_t-&gt;flags的WQ_FLAG_EXCLUSIVE给清掉.而不管调用者是否保证.
+</li>
+<li>
+调用__add_wait_queue()把进程加到队列 <span style="text-decoration:underline;">头</span>.
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.2" class="outline-3">
+<h3 id="sec-2.2"><span class="section-number-3">2.2</span> void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait) </h3>
+<div class="outline-text-3" id="text-2.2">
+
+<ul>
+<li>
+与 add_wait_queue() 的不同是这个函数设置了wait_queue_t-&gt;flags的WQ_FLAG_EXCLUSIVE.其它都一
+样.
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.3" class="outline-3">
+<h3 id="sec-2.3"><span class="section-number-3">2.3</span> void fastcall remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait) </h3>
+<div class="outline-text-3" id="text-2.3">
+
+<ul>
+<li>
+把wait-&gt;task_list从链表里删除,删除时只需要q-&gt;lock,而不需要q-&gt;task_list.
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.4" class="outline-3">
+<h3 id="sec-2.4"><span class="section-number-3">2.4</span> void fastcall prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state) </h3>
+<div class="outline-text-3" id="text-2.4">
+
+<ul>
+<li>
+这个函数与 add_wait_queue() 不同的是在 add_wait_queue() 调用 __add_wait_queue() 这一段,
+prepare_to_wait() 作了很多处理.
+</li>
+<li>
+开始也清WQ_FLAG_EXCLUSIVE
+</li>
+<li>
+关于为什么要判断wait-&gt;task_list是否已加入到其它的队列中,我觉得是因为prepare_to_wait的应用
+场合不同，prepare_to_wait会放在一个循环里重复调用，但是finish_wait不会被放到循环里，看
+看__wait_event就知道了.
+</li>
+<li>
+is_sync_wait()是用于判断是否是同步等待.但prepare_to_wait()的wait参数一定不是
+NULL,is_sync_wait()里会判断wait是否为空.
+
+<p>
+如果是不是同步等待,那么就不用去调度current,让current继续执行.但在__wait_event()看来,调
+用__wait_event()就是同步等待的,如果不是同步的,那么调用__wait_event()过程中在
+prepare_to_wait()里没有设置current的状态,那么退出prepare_to_wait()之后调shedule(),这是不
+合理的,所以__wait_event()应该是用于同步等待的.
+</p>
+
+<p>
+若是同步等待的话,wait为空或wait-&gt;task为current.
+</p>
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.5" class="outline-3">
+<h3 id="sec-2.5"><span class="section-number-3">2.5</span> void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state) </h3>
+<div class="outline-text-3" id="text-2.5">
+
+<ul>
+<li>
+与prepare_to_wait_exclusive()的不同是设置了WQ_FLAG_EXCLUSIVE
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.6" class="outline-3">
+<h3 id="sec-2.6"><span class="section-number-3">2.6</span> void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait) </h3>
+<div class="outline-text-3" id="text-2.6">
+
+<ul>
+<li>
+这个函数做 prepare_to_wait() 函数里相反的两件事,第一是设置进程为TASK_RUNNING, 第二是把
+wait-&gt;task_list从链表里删除.
+</li>
+<li>
+使用了 list_empty_careful() 来判断 wait-&gt;task_list 是否为空, 这可以不用锁.
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.7" class="outline-3">
+<h3 id="sec-2.7"><span class="section-number-3">2.7</span> int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key) </h3>
+<div class="outline-text-3" id="text-2.7">
+
+<ul>
+<li>
+这个函数两个地方被使用:1. 被赋给wait_queue_t-&gt;func, 2. 在wake_bit_function()里使用.
+</li>
+<li>
+唤醒成功就把wait_queue_t-&gt;task_list从链表里删除.
+</li>
+<li>
+调用default_wake_function()唤醒, 但是在defualt_wake_function()里没有使用到key参数.
+
+<p>
+key这个参数是做什么用的呢?
+</p>
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.8" class="outline-3">
+<h3 id="sec-2.8"><span class="section-number-3">2.8</span> int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *arg) </h3>
+<div class="outline-text-3" id="text-2.8">
+
+<ul>
+<li>
+这个函数 _只在_ 在使用DEFINE_WAIT_BIT()定义struct wait_bit_queue变量时会初始化给func成员
+时使用.
+</li>
+<li>
+传入的arg被转换成struct wait_bit_key类型.
+
+<p>
+在函数里会比较arg里的所有成员是否和包含参数wait的struct wait_bit_queue的类型为struct
+wait_bit_key的key的所有成员相等.
+</p>
+<p>
+但arg传给autoremove_wake_function()是不使用的.
+</p>
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.9" class="outline-3">
+<h3 id="sec-2.9"><span class="section-number-3">2.9</span> int __sched fastcall __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode) </h3>
+<div class="outline-text-3" id="text-2.9">
+
+<ul>
+<li>
+这个函数有点类似__wait_event()宏.
+</li>
+<li>
+prepare_to_wait()也可以用于等待位的.
+</li>
+<li>
+与__wait_event()不同的是struct wait_queue_t在__wait_event()里定义
+
+<p>
+都是在一个循环里调用prepare_to_wait(),然后判断条件,最后要么是休眠要么是调用finish_wait().
+</p>
+<p>
+__wait_on_bit()用action()函数休眠, __wait_event()用schedule()休眠.
+</p></li>
+<li>
+为什么若位没清且休眠函数返回0时才会继续休眠呢?而不是发现位没清就可以满足休眠的条件呢?
+</li>
+<li>
+action函数一般为inode_wait()和sync_buffer(),这两个函数里都调用schedule(),且都只会返回0,
+表示休眠成功.
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.10" class="outline-3">
+<h3 id="sec-2.10"><span class="section-number-3">2.10</span> int __sched fastcall out_of_line_wait_on_bit(void *word, int bit, int (*action)(void *), unsigned mode) </h3>
+<div class="outline-text-3" id="text-2.10">
+
+<ul>
+<li>
+这个函数只有wait_on_bit()调用
+</li>
+<li>
+要唤醒一个等待bitflag的进程的时候,是先 <span style="text-decoration:underline;">清</span> 位后调用wake_up_bit().
+</li>
+<li>
+说明word参数是如何被使用的,
+
+<p>
+看一看__wait_on_buffer()这个函数,这个函数是用来等待buffer_header-&gt;b_state里某一个位的函数
+</p>
+<p>
+__wait_on_buffer()是这样调用wait_on_bit()的
+</p>
+
+
+
+<pre class="example">wait_on_bit(&amp;bh-&gt;b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
+</pre>
+
+
+
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.11" class="outline-3">
+<h3 id="sec-2.11"><span class="section-number-3">2.11</span> int __sched fastcall __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode) </h3>
+<div class="outline-text-3" id="text-2.11">
+
+<ul>
+<li>
+这个函数与__wait_on_bit()的不同是使用了prepare_to_wait_exclusive()而不是
+prepare_to_wait()
+
+<p>
+还有就是使用了test_and_set_bit()而不是test_bit()
+</p>
+<p>
+还有就是如果休眠函数action返回非0就会退出休眠循环, 而__wait_on_bit()是在发现位没清同时休
+眠函数返回值为0时就继续休眠.action返回0表示休眠成功了.所以返回非0就退出没有必要再体眠,但
+是在__wait_on_bit()里如果休眠不成功也是会退出的,但为什么写法不一样呢?因为调用
+test_and_set_bit()会对位产生作用,所以不合适采用__wait_on_bit()的写法.
+</p></li>
+<li>
+为什么要使用test_and_set_bit()呢?
+
+<p>
+因为是互斥等待的原因,因为调用prepare_to_wait_exclusive()所以只会唤醒一个进程,如果退出时
+没有设置位就会唤醒下一个等待进程,那么这就不是互斥等待了.
+</p>
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.12" class="outline-3">
+<h3 id="sec-2.12"><span class="section-number-3">2.12</span> int __sched fastcall out_of_line_wait_on_bit_lock(void *word, int bit, int (*action)(void *), unsigned mode) </h3>
+<div class="outline-text-3" id="text-2.12">
+
+<ul>
+<li>
+这个函数分三步:
+
+<ol>
+<li>
+调用bit_waitqueue()找到对应的等待队列头
+
+</li>
+<li>
+调用DEFINE_WAIT_BIT()声明一个等待
+
+</li>
+<li>
+调用__wait_on_bit_lock()进行等待.
+
+
+</li>
+</ol>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.13" class="outline-3">
+<h3 id="sec-2.13"><span class="section-number-3">2.13</span> void fastcall __wake_up_bit(wait_queue_head_t *wq, void *word, int bit) </h3>
+<div class="outline-text-3" id="text-2.13">
+
+<ul>
+<li>
+最后也还是调用__wait_up()来唤醒.
+</li>
+<li>
+调用__wait_up()之前要先声明struct wait_bit_key, 再判断队列头是否已经激活.
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.14" class="outline-3">
+<h3 id="sec-2.14"><span class="section-number-3">2.14</span> void fastcall wake_up_bit(void *word, int bit) </h3>
+<div class="outline-text-3" id="text-2.14">
+
+<ul>
+<li>
+调用bit_waitqueue()找到wait_queue_head_t之后再调用__wake_up_bit()
+</li>
+<li>
+wake_up_bit()和wake_up()在调用__wake_up()参数上的区别, wake_up_bit()是在调用
+的__wake_up_bit()里调用__wake_up()的.
+
+<ol>
+<li>
+wake_up()只有接收一个参数,
+
+
+
+<pre class="example">#define wake_up(x)                 __wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, 1, NULL)
+</pre>
+
+
+
+
+<p>
+wak_up_bit()接收2个参数,在__wake_up_bit()里调用__wake_up()与wake_up()最大的不同是最后
+一个参数不为NULL
+</p>
+
+
+<pre class="example">     
+   void fastcall __wake_up_bit(wait_queue_head_t *wq, void *word, int bit)
+{
+        struct wait_bit_key key = __WAIT_BIT_KEY_INITIALIZER(word, bit);
+        if (waitqueue_active(wq))
+                __wake_up(wq, TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE, 1, &amp;key);
+}
+</pre>
+
+
+
+
+</li>
+</ol>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2.15" class="outline-3">
+<h3 id="sec-2.15"><span class="section-number-3">2.15</span> fastcall wait_queue_head_t *bit_waitqueue(void *word, int bit) </h3>
+<div class="outline-text-3" id="text-2.15">
+
+<ul>
+<li>
+这个zone-&gt;wait_table不太明白,
+</li>
+<li>
+通过word和bit来找到word所对应的等待队列头在什么地方.
+</li>
+<li>
+与位等待相关的队列头都在zone-&gt;wait_table这个hash表里,虽是hash表,但是zone-&gt;wait_table是一
+个数组而已,只是通过word和bit通过hash函数找到下标.能保证hash出的下标是唯一性的吗?
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: 脩卯陆脺
+<a href="mailto:vcprg@126.com">&lt;vcprg@126.com&gt;</a>
+</p>
+<p class="date"> Date: 2014-05-09 11:16:14 CST</p>
+<p class="creator">HTML generated by org-mode 6.33x in emacs 23</p>
+</div>
+</div>
+</body>
+</html>

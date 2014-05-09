@@ -1,107 +1,149 @@
 #+STARTUP: showall
 * data structure
-** void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
-- 这个函数自己会把wait_queue_t->flags的WQ_FLAG_EXCLUSIVE给清掉.而不管调用者是否保证.
-- 调用__add_wait_queue()把进程加到队列 _头_.
+* function
+** void fastcall add\_wait\_queue(wait\_queue\_head\_t *q, wait\_queue\_t *wait)
+- 这个函数自己会把wait\_queue\_t->flags的WQ\_FLAG\_EXCLUSIVE给清掉.而不管调用者是否保证.
+- 调用\_\_add\_wait\_queue()把进程加到队列 _头_.
 
-** void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
-- 与 add_wait_queue() 的不同是这个函数设置了wait_queue_t->flags的WQ_FLAG_EXCLUSIVE.其它都一
+
+** void fastcall add\_wait\_queue\_exclusive(wait\_queue\_head\_t *q, wait\_queue\_t *wait)
+- 与 add\_wait\_queue() 的不同是这个函数设置了wait\_queue\_t->flags的WQ\_FLAG\_EXCLUSIVE.其它都一
   样.
 
-** void fastcall remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
-- 把wait->task_list从链表里删除,删除时只需要q->lock,而不需要q->task_list.
 
-** void fastcall prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state)
-- 这个函数与 add_wait_queue() 不同的是在 add_wait_queue() 调用 __add_wait_queue() 这一段,
-  prepare_to_wait() 作了很多处理.
-- 开始也清WQ_FLAG_EXCLUSIVE
-- 关于为什么要判断wait->task_list是否已加入到其它的队列中,我觉得是因为prepare_to_wait的应用
-  场合不同，prepare_to_wait会放在一个循环里重复调用，但是finish_wait不会被放到循环里，看
-  看__wait_event就知道了.
-- is_sync_wait()是用于判断是否是同步等待.但prepare_to_wait()的wait参数一定不是
-  NULL,is_sync_wait()里会判断wait是否为空.
+** void fastcall remove\_wait\_queue(wait\_queue\_head\_t *q, wait\_queue\_t *wait)
+- 把wait->task\_list从链表里删除,删除时只需要q->lock,而不需要q->task\_list.
 
-  如果是不是同步等待,那么就不用去调度current,让current继续执行.但在__wait_event()看来,调
-  用__wait_event()就是同步等待的,如果不是同步的,那么调用__wait_event()过程中在
-  prepare_to_wait()里没有设置current的状态,那么退出prepare_to_wait()之后调shedule(),这是不
-  合理的,所以__wait_event()应该是用于同步等待的.
+
+** void fastcall prepare\_to\_wait(wait\_queue\_head\_t *q, wait\_queue\_t *wait, int state)
+- 这个函数与 add\_wait\_queue() 不同的是在 add\_wait\_queue() 调用 \_\_add\_wait\_queue() 这一段,
+  prepare\_to\_wait() 作了很多处理.
+- 开始也清WQ\_FLAG\_EXCLUSIVE
+- 关于为什么要判断wait->task\_list是否已加入到其它的队列中,我觉得是因为prepare\_to\_wait的应用
+  场合不同，prepare\_to\_wait会放在一个循环里重复调用，但是finish\_wait不会被放到循环里，看
+  看\_\_wait\_event就知道了.
+- is\_sync\_wait()是用于判断是否是同步等待.但prepare\_to\_wait()的wait参数一定不是
+  NULL,is\_sync\_wait()里会判断wait是否为空.
+
+  如果是不是同步等待,那么就不用去调度current,让current继续执行.但在\_\_wait\_event()看来,调
+  用\_\_wait\_event()就是同步等待的,如果不是同步的,那么调用\_\_wait\_event()过程中在
+  prepare\_to\_wait()里没有设置current的状态,那么退出prepare\_to\_wait()之后调shedule(),这是不
+  合理的,所以\_\_wait\_event()应该是用于同步等待的.
 
 
   若是同步等待的话,wait为空或wait->task为current.
 
-** void fastcall prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
-- 与prepare_to_wait_exclusive()的不同是设置了WQ_FLAG_EXCLUSIVE
-** void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
-- 这个函数做 prepare_to_wait() 函数里相反的两件事,第一是设置进程为TASK_RUNNING, 第二是把
-  wait->task_list从链表里删除.
-- 使用了 list_empty_careful() 来判断 wait->task_list 是否为空, 这可以不用锁.
-** int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
-- 这个函数两个地方被使用:1. 被赋给wait_queue_t->func, 2. 在wake_bit_function()里使用.
-- 唤醒成功就把wait_queue_t->task_list从链表里删除.
-- 调用default_wake_function()唤醒, 但是在defualt_wake_function()里没有使用到key参数.
+
+** void fastcall prepare\_to\_wait\_exclusive(wait\_queue\_head\_t *q, wait\_queue\_t *wait, int state)
+- 与prepare\_to\_wait\_exclusive()的不同是设置了WQ\_FLAG\_EXCLUSIVE
+
+
+** void fastcall finish\_wait(wait\_queue\_head\_t *q, wait\_queue\_t *wait)
+- 这个函数做 prepare\_to\_wait() 函数里相反的两件事,第一是设置进程为TASK\_RUNNING, 第二是把
+  wait->task\_list从链表里删除.
+- 使用了 list\_empty\_careful() 来判断 wait->task\_list 是否为空, 这可以不用锁.
+
+
+** int autoremove\_wake\_function(wait\_queue\_t *wait, unsigned mode, int sync, void *key)
+- 这个函数两个地方被使用:1. 被赋给wait\_queue\_t->func, 2. 在wake\_bit\_function()里使用.
+- 唤醒成功就把wait\_queue\_t->task\_list从链表里删除.
+- 调用default\_wake\_function()唤醒, 但是在defualt\_wake\_function()里没有使用到key参数.
 
   key这个参数是做什么用的呢?
-** int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *arg)
-- 这个函数 _只在_ 在使用DEFINE_WAIT_BIT()定义struct wait_bit_queue变量时会初始化给func成员
+
+
+** int wake\_bit\_function(wait\_queue\_t *wait, unsigned mode, int sync, void *arg)
+- 这个函数 \_只在\_ 在使用DEFINE\_WAIT\_BIT()定义struct wait\_bit\_queue变量时会初始化给func成员
   时使用.
-- 传入的arg被转换成struct wait_bit_key类型.
+- 传入的arg被转换成struct wait\_bit\_key类型.
 
-  在函数里会比较arg里的所有成员是否和包含参数wait的struct wait_bit_queue的类型为struct
-  wait_bit_key的key的所有成员相等.
+  在函数里会比较arg里的所有成员是否和包含参数wait的struct wait\_bit\_queue的类型为struct
+  wait\_bit\_key的key的所有成员相等.
 
-  但arg传给autoremove_wake_function()是不使用的.
-** int __sched fastcall __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode)
-- 这个函数有点类似__wait_event()宏.
-- prepare_to_wait()也可以用于等待位的.
-- 与__wait_event()不同的是struct wait_queue_t在__wait_event()里定义
+  但arg传给autoremove\_wake\_function()是不使用的.
 
-  都是在一个循环里调用prepare_to_wait(),然后判断条件,最后要么是休眠要么是调用finish_wait().
 
-  __wait_on_bit()用action()函数休眠, __wait_event()用schedule()休眠.
+** int \_\_sched fastcall \_\_wait\_on\_bit(wait\_queue\_head\_t *wq, struct wait\_bit\_queue *q, int (*action)(void *), unsigned mode)
+- 这个函数有点类似\_\_wait\_event()宏.
+- prepare\_to\_wait()也可以用于等待位的.
+- 与\_\_wait\_event()不同的是struct wait\_queue\_t在\_\_wait\_event()里定义
+
+  都是在一个循环里调用prepare\_to\_wait(),然后判断条件,最后要么是休眠要么是调用finish\_wait().
+
+  \_\_wait\_on\_bit()用action()函数休眠, \_\_wait\_event()用schedule()休眠.
 - 为什么若位没清且休眠函数返回0时才会继续休眠呢?而不是发现位没清就可以满足休眠的条件呢?
-- action函数一般为inode_wait()和sync_buffer(),这两个函数里都调用schedule(),且都只会返回0,
+- action函数一般为inode\_wait()和sync\_buffer(),这两个函数里都调用schedule(),且都只会返回0,
   表示休眠成功.
-** int __sched fastcall out_of_line_wait_on_bit(void *word, int bit, int (*action)(void *), unsigned mode)
-- 这个函数只有wait_on_bit()调用
-- 要唤醒一个等待bitflag的进程的时候,是先 _清_ 位后调用wake_up_bit().
+
+
+** int \_\_sched fastcall out\_of\_line\_wait\_on\_bit(void *word, int bit, int (*action)(void *), unsigned mode)
+- 这个函数只有wait\_on\_bit()调用
+- 要唤醒一个等待bitflag的进程的时候,是先 _清_ 位后调用wake\_up\_bit().
 - 说明word参数是如何被使用的,
 
-  看一看__wait_on_buffer()这个函数,这个函数是用来等待buffer_header->b_state里某一个位的函数
+  看一看\_\_wait\_on\_buffer()这个函数,这个函数是用来等待buffer\_header->b\_state里某一个位的函数
 
-  __wait_on_buffer()是这样调用wait_on_bit()的
+  \_\_wait\_on\_buffer()是这样调用wait\_on\_bit()的
 
   #+BEGIN_EXAMPLE
   wait_on_bit(&bh->b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
   #+END_EXAMPLE
-** int __sched fastcall __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q, int (*action)(void *), unsigned mode)
-- 这个函数与__wait_on_bit()的不同是使用了prepare_to_wait_exclusive()而不是
-  prepare_to_wait()
 
-  还有就是使用了test_and_set_bit()而不是test_bit()
 
-  还有就是如果休眠函数action返回非0就会退出休眠循环, 而__wait_on_bit()是在发现位没清同时休
+** int \_\_sched fastcall \_\_wait\_on\_bit\_lock(wait\_queue\_head\_t *wq, struct wait\_bit\_queue *q, int (*action)(void *), unsigned mode)
+- 这个函数与\_\_wait\_on\_bit()的不同是使用了prepare\_to\_wait\_exclusive()而不是
+  prepare\_to\_wait()
+
+  还有就是使用了test\_and\_set\_bit()而不是test\_bit()
+
+  还有就是如果休眠函数action返回非0就会退出休眠循环, 而\_\_wait\_on\_bit()是在发现位没清同时休
   眠函数返回值为0时就继续休眠.action返回0表示休眠成功了.所以返回非0就退出没有必要再体眠,但
-  是在__wait_on_bit()里如果休眠不成功也是会退出的,但为什么写法不一样呢?因为调用
-  test_and_set_bit()会对位产生作用,所以不合适采用__wait_on_bit()的写法.
-- 为什么要使用test_and_set_bit()呢?
+  是在\_\_wait\_on\_bit()里如果休眠不成功也是会退出的,但为什么写法不一样呢?因为调用
+  test\_and\_set\_bit()会对位产生作用,所以不合适采用\_\_wait\_on\_bit()的写法.
+- 为什么要使用test\_and\_set\_bit()呢?
 
-  因为是互斥等待的原因,因为调用prepare_to_wait_exclusive()所以只会唤醒一个进程,如果退出时
+  因为是互斥等待的原因,因为调用prepare\_to\_wait\_exclusive()所以只会唤醒一个进程,如果退出时
   没有设置位就会唤醒下一个等待进程,那么这就不是互斥等待了.
-** int __sched fastcall out_of_line_wait_on_bit_lock(void *word, int bit, int (*action)(void *), unsigned mode)
+
+
+** int \_\_sched fastcall out\_of\_line\_wait\_on\_bit\_lock(void *word, int bit, int (*action)(void *), unsigned mode)
 - 这个函数分三步:
 
-  1. 调用bit_waitqueue()找到对应的等待队列头
+  1. 调用bit\_waitqueue()找到对应的等待队列头
 
-  2. 调用DEFINE_WAIT_BIT()声明一个等待
+  2. 调用DEFINE\_WAIT\_BIT()声明一个等待
 
-  3. 调用__wait_on_bit_lock()进行等待.
-** void fastcall __wake_up_bit(wait_queue_head_t *wq, void *word, int bit)
-- 最后也还是调用__wait_up()来唤醒.
-- 调用__wait_up()之前要先声明struct wait_bit_key, 再判断队列头是否已经激活.
-** void fastcall wake_up_bit(void *word, int bit)
-- 直接调用__wake_up_bit()
-** fastcall wait_queue_head_t *bit_waitqueue(void *word, int bit)
-- 这个zone->wait_table不太明白,
+  3. 调用\_\_wait\_on\_bit\_lock()进行等待.
+
+
+** void fastcall \_\_wake\_up\_bit(wait\_queue\_head\_t *wq, void *word, int bit)
+- 最后也还是调用\_\_wait\_up()来唤醒.
+- 调用\_\_wait\_up()之前要先声明struct wait\_bit\_key, 再判断队列头是否已经激活.
+
+** void fastcall wake\_up\_bit(void *word, int bit)
+- 调用bit\_waitqueue()找到wait\_queue\_head\_t之后再调用\_\_wake\_up\_bit()
+- wake\_up\_bit()和wake\_up()在调用\_\_wake\_up()参数上的区别, wake\_up\_bit()是在调用
+  的\_\_wake\_up\_bit()里调用\_\_wake\_up()的.
+
+  1. wake\_up()只有接收一个参数,
+     #+BEGIN_EXAMPLE
+     #define wake_up(x)			__wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, 1, NULL)
+     #+END_EXAMPLE
+
+     wak\_up\_bit()接收2个参数,在\_\_wake\_up\_bit()里调用\_\_wake\_up()与wake\_up()最大的不同是最后
+     一个参数不为NULL
+     #+BEGIN_EXAMPLE
+     
+   void fastcall __wake_up_bit(wait_queue_head_t *wq, void *word, int bit)
+{
+	struct wait_bit_key key = __WAIT_BIT_KEY_INITIALIZER(word, bit);
+	if (waitqueue_active(wq))
+		__wake_up(wq, TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE, 1, &key);
+}
+  #+END_EXAMPLE 
+
+** fastcall wait\_queue\_head\_t *bit\_waitqueue(void *word, int bit)
+- 这个zone->wait\_table不太明白,
 - 通过word和bit来找到word所对应的等待队列头在什么地方.
-- 与位等待相关的队列头都在zone->wait_table这个hash表里,虽是hash表,但是zone->wait_table是一
+- 与位等待相关的队列头都在zone->wait\_table这个hash表里,虽是hash表,但是zone->wait\_table是一
   个数组而已,只是通过word和bit通过hash函数找到下标.能保证hash出的下标是唯一性的吗?
