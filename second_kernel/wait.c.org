@@ -1,6 +1,18 @@
 #+STARTUP: showall
 * data structure
 * function
+- wake_up()在wait.h
+  wake_up_bit()在wait.c
+
+  wait_on_bit()在wait.h
+  wait_event(), wait_event_timeout(), wait_event_interruptible(),
+  wait_event_interruptible_timeout(), wait_event_interruptible_exclusive() 也在wait.h. 但
+  wait_on_bit()没有timeout, interruptible, exclusive这些, 有与exclusive同类似的
+  wait_on_bit_lock().
+
+  default_wake_function()在wait.h
+  autoremove_wake_function()在wait.c
+  wake_bit_function()在wait.c
 ** void fastcall add\_wait\_queue(wait\_queue\_head\_t *q, wait\_queue\_t *wait)
 - 这个函数自己会把wait\_queue\_t->flags的WQ\_FLAG\_EXCLUSIVE给清掉.而不管调用者是否保证.
 - 调用\_\_add\_wait\_queue()把进程加到队列 _头_.
