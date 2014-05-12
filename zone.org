@@ -7529,3 +7529,9 @@ http://www.ruanyifeng.com/blog/2012/08/how_to_read_diff.html
 自动生成Makefile
 http://blog.csdn.net/21aspnet/article/details/6724477
 http://www.ibm.com/developerworks/cn/linux/l-makefile/
+
+
+==============================[2014-05-11 日]==============================
+
+突然想到一个方法来画内核函数的图, 就是画程序结构图, 但是要加多一点就是越上层对于理解该函数
+更在意义, 所以一些不是那么重要的就可以向下延伸更长一点到合理的位置, 就算它是在一级处理的.

@@ -184,7 +184,8 @@
 - 不同的是设置了exclusive标志。
 ** void fastcall finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
 *** kernel/wait.c:
-- 用了list_empty_careful，为什么呢？只能用于调用list_del_init的情况，因为list_del_init里调用了INIT_LIST_HEAD
+- 用了list_empty_careful，为什么呢？只能用于调用list_del_init的情况，因为list_del_init里调
+  用了INIT_LIST_HEAD
 - sleep_on是状态->插入队列->schedule->删除队列;插入队列(prepare)（检测是否已插入）->状态
   (prepare)（检查同步）->schedule->状态(finish)->删除队列(finish)(先list_empty_careful)
 - 有一个例子：
@@ -280,7 +281,7 @@
 ** void fastcall wake_up_new_task(task_t * p, unsigned long clone_flags)
 *** kernel/sched.c:
 - 再次说一下task_t->array是指向CPU运行队列里的某一个active或expire成员.
-- 如何通过一个task_t来获得一个运行队列:从task_t里的thread_inof里的CPU来找到task是在哪一个
+- 如何通过一个task_t来获得一个运行队列:从task_t里的thread_info里的CPU来找到task是在哪一个
   CPU上,知道哪个CPU就可以找出相应的运行队列了.task_t里的run_list就是task_t->array链表里的一
   个结点.
 - 会根据是否共用相同的VM和是否在同一个CPU来插入进程和父进程的相对位置。

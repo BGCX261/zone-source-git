@@ -7,13 +7,57 @@ struct task_struct {
 
 	int lock_depth;		/* BKL lock depth */
 
+    /* ulk: The prio field of the process descriptor stores the dynamic
+       priority of the process,
+       在dequeue_task()里出现,
+       在recalc_task_prio()里修改.
+    */
 	int prio, static_prio;
+    /* ulk:The trick used to achieve the scheduler speedup consists of
+       splitting the runqueue in many lists of runnable processes, one list
+       per process priority. Each task_struct descriptor includes a run_list
+       field of type list_head. If the process priority is equal to k (a
+       value ranging between 0 and 139), the run_list field links the process
+       descriptor into the list of runnable processes having priority k.
+       Furthermore, on a multiprocessor system, each CPU has its own runqueue,
+       that is, its own set of lists of processes. This is a classic example
+       of making a data structures more complex to improve performance: to
+       make scheduler operations more efficient, the runqueue list has been
+       split into 140 different lists!
+
+       在dequeue_task()里出现.
+    */
 	struct list_head run_list;
+    /* ulk:while the array field is a pointer to the prio_array_t data
+       structure of its current runqueue.
+
+       在dequeue_task()里出现.
+    */
 	prio_array_t *array;
 
 	unsigned long sleep_avg;
+    /* timestamp : ulk: Time of last insertion of the process in the
+       runqueue, or time of timestamp last process switch involving the
+       process.
+
+       appear in recalc_task_prio().
+    */
 	unsigned long long timestamp, last_ran;
 	unsigned long long sched_time; /* sched_clock time spent running */
+    /* activated为-1表示是从TASK_UNINTERRUPTIBLE唤醒的，在try_to_wake_up()
+       里可以看出。
+
+       ulk:
+       0    The process was in TASK_RUNNING state.
+       1    The process was in TASK_INTERRUPTIBLE or
+            TASK_STOPPED state, and it is being awakened by a system call
+            service routine or a kernel thread.
+       2    The process was in TASK_INTERRUPTIBLE or TASK_STOPPED state,
+            and it is being awakened by an interrupt handler or a deferrable
+            function.
+      -1    The process was in TASK_UNINTERRUPTIBLE state and it is being
+            awakened.
+    */
 	int activated;
 
 	unsigned long policy;
@@ -32,6 +76,7 @@ struct task_struct {
 	struct list_head ptrace_children;
 	struct list_head ptrace_list;
 
+    /* mm为NULL表示是内核线程 */
 	struct mm_struct *mm, *active_mm;
 
 /* task state */
@@ -166,5 +211,113 @@ struct task_struct {
 	struct cpuset *cpuset;
 	nodemask_t mems_allowed;
 	int cpuset_mems_generation;
+#endif
+};
+
+struct thread_info {
+	struct task_struct	*task;		/* main task structure */
+	struct exec_domain	*exec_domain;	/* execution domain */
+	unsigned long		flags;		/* low level flags */
+	unsigned long		status;		/* thread-synchronous flags */
+	__u32			cpu;		/* current CPU ,
+                                                   进程现在是在该CPU的运行队列里,
+                                                   在task_cpu()函数里使用 */
+	__s32			preempt_count; /* 0 => preemptable, <0 => BUG */
+
+
+	mm_segment_t		addr_limit;	/* thread address space:
+					 	   0-0xBFFFFFFF for user-thead
+						   0-0xFFFFFFFF for kernel-thread
+						*/
+	struct restart_block    restart_block;
+
+	unsigned long           previous_esp;   /* ESP of the previous stack in case
+						   of nested (IRQ) stacks
+						*/
+	__u8			supervisor_stack[0];
+};
+
+/* 一个prio_array用来维护一个CPU的runqueue里的所有进程, 维护是为了使用优先级来查找时方便,
+ */
+struct prio_array {
+    
+	unsigned int nr_active; /* ulk: The number of process descriptors
+                                   linked into the lists, 在dequeue_task()里出现
+                                */
+	unsigned long bitmap[BITMAP_SIZE]; /* ulk:A priority bitmap: each flag
+                                              is set if and only if the
+                                              corresponding priority list is
+                                              not empty
+
+                                              dequeue_task()里出现
+                                           */
+	struct list_head queue[MAX_PRIO]; /* ulk: The 140 heads of the
+                                             priority lists
+                                             因为是140, 所以每一个优先级的进程都有
+                                             独立的链表头.
+
+                                             dequeue_task()里出现
+                                          */
+};
+
+
+struct runqueue {
+	spinlock_t lock;
+
+	/*
+	 * nr_running and cpu_load should be in the same cacheline because
+	 * remote CPUs use both these fields when doing load calculation.
+	 */
+	unsigned long nr_running; /* appear in __activate_task() */
+#ifdef CONFIG_SMP
+	unsigned long cpu_load;
+#endif
+	unsigned long long nr_switches;
+
+	/*
+	 * This is part of a global counter where only the total sum
+	 * over all CPUs matters. A task can increase this counter on
+	 * one CPU and if it got migrated afterwards it may decrease
+	 * it on another CPU. Always updated under the runqueue lock:
+	 */
+	unsigned long nr_uninterruptible;
+
+	unsigned long expired_timestamp;
+	unsigned long long timestamp_last_tick;
+	task_t *curr, *idle;
+	struct mm_struct *prev_mm;
+	prio_array_t *active, *expired, arrays[2];
+	int best_expired_prio;
+	atomic_t nr_iowait;
+
+#ifdef CONFIG_SMP
+	struct sched_domain *sd;
+
+	/* For active balancing */
+	int active_balance;
+	int push_cpu;
+
+	task_t *migration_thread;
+	struct list_head migration_queue;
+#endif
+
+#ifdef CONFIG_SCHEDSTATS
+	/* latency stats */
+	struct sched_info rq_sched_info;
+
+	/* sys_sched_yield() stats */
+	unsigned long yld_exp_empty;
+	unsigned long yld_act_empty;
+	unsigned long yld_both_empty;
+	unsigned long yld_cnt;
+
+	/* schedule() stats */
+	unsigned long sched_switch;
+	unsigned long sched_cnt;
+	unsigned long sched_goidle;
+
+	/* try_to_wake_up() stats */
+	unsigned long ttwu_cnt;
+	unsigned long ttwu_local;
 #endif
 };

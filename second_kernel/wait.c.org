@@ -1,18 +1,22 @@
 #+STARTUP: showall
 * data structure
 * function
-- wake_up()在wait.h
-  wake_up_bit()在wait.c
+- 唤醒函数
+  wake_up()在 _wait.h_
+  wake_up_bit()在 _wait.c_
 
-  wait_on_bit()在wait.h
+  等待函数都在wait.h
+  wait_on_bit()在 _wait.h_
   wait_event(), wait_event_timeout(), wait_event_interruptible(),
   wait_event_interruptible_timeout(), wait_event_interruptible_exclusive() 也在wait.h. 但
   wait_on_bit()没有timeout, interruptible, exclusive这些, 有与exclusive同类似的
   wait_on_bit_lock().
-
-  default_wake_function()在wait.h
+  
+  default_wake_function()在 _wait.h_
   autoremove_wake_function()在wait.c
   wake_bit_function()在wait.c
+
+
 ** void fastcall add\_wait\_queue(wait\_queue\_head\_t *q, wait\_queue\_t *wait)
 - 这个函数自己会把wait\_queue\_t->flags的WQ\_FLAG\_EXCLUSIVE给清掉.而不管调用者是否保证.
 - 调用\_\_add\_wait\_queue()把进程加到队列 _头_.
@@ -45,7 +49,14 @@
 
   若是同步等待的话,wait为空或wait->task为current.
 
-
+- 注释说为什么把设置状态放在添加到等待队列之后
+  #+BEGIN_EXAMPLE
+ * Note: we use "set_current_state()" _after_ the wait-queue add,
+ * because we need a memory barrier there on SMP, so that any
+ * wake-function that tests for the wait-queue being active
+ * will be guaranteed to see waitqueue addition _or_ subsequent
+ * tests in this thread will see the wakeup having taken place.
+  #+END_EXAMPLE
 ** void fastcall prepare\_to\_wait\_exclusive(wait\_queue\_head\_t *q, wait\_queue\_t *wait, int state)
 - 与prepare\_to\_wait\_exclusive()的不同是设置了WQ\_FLAG\_EXCLUSIVE
 

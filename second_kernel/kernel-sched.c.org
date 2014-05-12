@@ -1,0 +1,430 @@
+#+STARTUP: showall
+* data structure
+- 有些结构体在sched.c文件里, 那就说明这个结构体只在sched.c的文件里使用, 如runqueue.
+* function
+
+** static inline unsigned int task_timeslice(task_t *p)
+- 根据进程的静态优先级来计算进程的时间片
+
+
+** static inline runqueue_t *task_rq_lock(task_t *p, unsigned long *flags)
+- 和task_rq_unlock()是一套, 用来获取task所在的runqueue的lock(runqueue->lock)
+- 为什么要实现这一对API呢?
+
+  因为从task_t获取到runqueue,再获取runqueue->lock不是原子的, 中间可能进程被迁移到其它CPU,
+  就算禁止本地中断,因为p进程可能不在本地,若是本地的进程调用this_rq_lock().
+  所以获得锁以后还要判断一下获取的runqueue->lock是不是进程当前所在的CPU的runqueue->lock,
+  不是就再获取.
+
+  这个函数保证退出后获取锁成功.
+
+
+** static inline runqueue_t *this_rq_lock(void)
+- 这个是获取当前进程的runqueue->lock, 所以不需要task_rq_lock()那样复杂.
+
+  但之前也要把本地的中断关掉.
+
+
+** static void dequeue_task(struct task_struct *p, prio_array_t *array)
+- 把进程从优先级数组里删除
+
+
+** static void enqueue_task(struct task_struct *p, prio_array_t *array)
+- 和dequeue_task()相反.
+
+
+** static int effective_prio(task_t *p)
+- 根据静态优先级和bonuse来计算优先级。
+
+
+** static inline void __activate_task(task_t *p, runqueue_t *rq)
+- 调用enqueue_task()把进程插入active这个prio_array_t,还有一个对应的expired的prio_array_t,
+  并自增nr_running,nr_running与nr_active是不一样的。
+- 这个函数不是把在runqueue->expire的进程移到runqueue->active, 而是把不在runqueue里的进程移
+  到runqueue.好像也不会把进程从runqueue->expire移到runqueue->active里, 只会交换这active和
+  expire的指针.
+
+- 在runqueue->expired里的进程也是在runable状态的, 进程的状态有
+
+  TASK_RUNNING
+
+  TASK_INTERRUPTIBLE
+
+  TASK_UNINTERRUPTIBLE
+
+  TASK_STOPPED
+
+  TASK_TRACED
+
+  EXIT_ZOMBIE
+
+  EXIT_DEAD
+
+  runqueue->expired里的进程只是消耗掉时间片的TASK_RUNNING进程.
+
+** static void requeue_task(struct task_struct *p, prio_array_t *array)
+- 把进程插入到优先级队列尾, 因为是调用list_move_tail(), 所以p进程一定要在array里,因为这个函
+  数没有实现迁移.
+
+
+** static inline void enqueue_task_head(struct task_struct *p, prio_array_t *array)
+- 作用:把进程'p'插入到'array'.
+- 'p'现在一定是不在'array'里的.因为这个函数会根据进程优先级设置bitmap的位,加
+  array->nr_active等操作.
+
+
+** static inline void __activate_idle_task(task_t *p, runqueue_t *rq)
+- 作用:把'p'进程插入到'rq'里,
+- 'p'进程现在一定是不在'rq'里的,所以可以使用enqueue_task_head()把进程加入到'rq'.且是加入
+  到'rq'的头.
+
+** static void recalc_task_prio(task_t *p, unsigned long long now)
+- task->activated为-1表示是从TASK_UNINTERRUPTIBLE唤醒的，在try_to_wake_up()里可以看出。
+- task->activated为-1表示是从TASK_UNINTERRUPTIBLE唤醒的，在try_to_wake_up()里可以看出。
+- ULK:Checks whether the process is not a kernel thread, whether it is awakening from the
+  TASK_UNINTERRUPTIBLE state (p->activated field equal to -1; see step 5 in the previous
+  section), and whether it has been continuously asleep beyond a given sleep time
+  threshold. If these three conditions are fulfilled, the function sets the p->sleep_avg
+  field to the equivalent of 900 ticks
+- ULK:The sleep time threshold depends on the static priority of the process;休眠时间的阀值
+  依赖进程的静态优先级。
+- 这个函数前面一大段是算出合适的task->sleep_avg,最后调用effective_prio()算出task->prio.而前
+  面一段就注意两种情况：1.进程不是内核线程(task->mm)且进程不是从TASK_UNINTERRUPTIBLE唤醒且
+  这一次的休眠时间已大于阀值就把task->sleep_avg设为最大的值；2.进程从TASK_UNINTERRUPTIBLE唤醒且进程
+  不是内核线程且task->sleep_avg大于或等于阀值或task->sleep_avg加上这一次的休眠时间大于或等于阀值。
+- 从这个函数可以看出进程的动态优先级是在这里修改的。
+
+
+** static void activate_task(task_t *p, runqueue_t *rq, int local)
+- 这个函数主要作用是
+  1. 更新进程的动态优先级(recalc_task_prio()),
+  2. 更新task->activated状态，
+  3. 更新task->timestamp,
+  4. 调用__activate_task()把进程插入运行队列的激活链表里.
+- 这个函数被try_to_wake_up()和__migrate_task()调用.
+- 要用sched_clock()来获取时间
+- 若是多核的话且进程不在本地CPU的话就要结合timestamp_last_tick来调整时间。
+- 这个函数调用in_interrupt(),可见这个函数可以在中断上下文调用.
+
+
+** static void deactivate_task(struct task_struct *p, runqueue_t *rq)
+- 把'p'进程从'rq'优先级队列里删除
+
+
+** static void resched_task(task_t *p)
+- 这个函数是说进程'p'被调度,好像这个函数不管'p'是不是真的正在运行, 就是说不一定是某个CPU的
+  current
+
+  但保证了不是当前CPU的current.若是当前CPU的current就不会发送smp_send_reschedule(), 白是还
+  是会设置'p'的TIF_NEED_RESCHED.
+- 调用这个函数之后一定会设置'p'的TIF_NEED_RESCHED.
+- 'p'设置了TIF_NEED_RESCHED了就不会调用smp_send_reschedule()发中断.是不是为了不重复调度'p'
+  呢?
+- 调用这个函数使用的参数'p'都是某个CPU的current.
+- ulk: if so, invokes resched_task( ) to preempt rq->curr . In uniprocessor systems the
+  latter function just executes set_tsk_need_resched( ) to set the TIF_NEED_RESCHED flag
+  of the rq->curr process. In multiprocessor systems resched_task( ) also checks whether
+  the old value of whether TIF_NEED_RESCHED flag was zero, the target CPU is different
+  from the local CPU, and whether the TIF_POLLING_NRFLAG flag of the rq->curr process is
+  clear (the target CPU is not actively polling the status of the TIF_NEED_RESCHED flag of
+  the process). If so, resched_task( ) invokes smp_send_reschedule( ) to raise an IPI and
+  force rescheduling on the target CPU.
+- 还挻多函数调用它的。
+- 这个函数有单多核版，单核版的只是调用set_tsk_need_resched(), 而多核版的话除了设置
+  TIF_NEED_RESCHED之外还要给所在的CPU发一个调度中断。
+
+
+** static int migrate_task(task_t *p, int dest_cpu, migration_req_t *req)
+- 把进程'p'移到'dest_cpu'这个CPU, 用complettion同步的.
+- 这个函数里有一段检查代码很奇怪，p->array为空了难道task_running()还有可能是真吗?
+
+
+** ** void wait_task_inactive(task_t * p)
+- 这个函数只被在跟踪时调用两次。
+- 这个函数就是等待进程从运行队列里删掉，这个函数有做优化，就是若被等待的进程没有正在运行那
+  么就调用yeild()让进程等待时间长一点。
+
+  调用yeild之前要runqueue的锁, 注释里有说
+
+  #+BEGIN_EXAMPLE
+ * The caller must ensure that the task *will* unschedule sometime soon,
+ * else this function might spin for a *long* time. This function can't
+ * be called with interrupts off, or it may introduce deadlock with
+ * smp_call_function() if an IPI is sent by the same process we are
+ * waiting to become inactive.
+  #+END_EXAMPLE
+
+
+** void kick_process(task_t *p)
+- 作用:让进程进入或退出内核态,注释
+  #+BEGIN_EXAMPLE
+ * kick_process - kick a running thread to enter/exit the kernel
+ * @p: the to-be-kicked thread
+ *
+ * Cause a process which is running on another CPU to enter
+ * kernel-mode, without any delay. (to get signals handled.)
+  #+END_EXAMPLE
+
+   本质就是让'p'所在的CPU调度(发调度中断), 但要满足:
+   1. 'p'所在的CPU不是当前CPU
+   2. 'p'不是current进程.
+
+
+** static inline unsigned long source_load(int cpu)
+- 作用:返回'cpu'的负载和当前CPU的负载较小的一个.
+- 计算负载的方式就是rq->nr_running乘以一个常量。
+
+
+** static inline unsigned long target_load(int cpu)
+- 与source_load()不同的是返回较大的一个.
+
+
+** static int wake_idle(int cpu, task_t *p)
+- 作用:
+  注释:
+  #+BEGIN_EXAMPLE
+ * wake_idle() will wake a task on an idle cpu if task->cpu is
+ * not idle and an idle cpu is available.  The span of cpus to
+ * search starts with cpus closest then further out as needed,
+ * so we always favor a closer, idle cpu.
+ *
+ * Returns the CPU we should wake onto.
+  #+END_EXAMPLE
+   若'cpu'idle, 那么把'p'移到'cpu'上, 否则就从'cpu'开始搜索CPU来移.
+
+
+** static int try_to_wake_up(task_t * p, unsigned int state, int sync)
+- 函数步骤:
+  1. 找到所要移到哪个CPU上
+  2. 把进程插到所移到那个CPU上的runqueue
+  3. 发出调度中断
+  4. 设置TASK_RUNNING状态
+- p->state的状态要包含在state里才会往下执行。
+- 当p->array不为空时就说明进程已是在运行状态，不管是在active还是在expires链表中。
+- 这个函数主要是在让被唤醒的进程在哪个CPU运行的选择上做了很多工作，就是调度域的问题。
+- 一般情况下,被唤醒的进程是在进程描述符指定的那个CPU上执行的.进程只会在进程描述符指定的CPU
+  和当前CPU上迁移.
+- 如果当前的CPU的负载很高而进程描述符指定的CPU的负载很低,那么就不要移了.
+  #+BEGIN_EXAMPLE
+	/* Don't pull the task off an idle CPU to a busy one */
+	if (load < SCHED_LOAD_SCALE/2 && this_load > SCHED_LOAD_SCALE/2)
+		goto out_set_cpu;
+  #+END_EXAMPLE 
+- 文档sched-domain.txt:A sched domain's span means "balance process load among these
+  CPUs".base scheduling domain就是一个物理CPU的scheduling domain,CPU i一定被包含在CPU i的
+  base scheduling domain里.每个scheduling domain会span几个CPU.Each scheduling domain must
+  have one or more CPU groups (struct sched_group).每个scheduling domain有一个或多个组.The
+  union of cpumasks of these groups MUST be the same as the domain's span.某个scheduling
+  domain内的所有组的cpumasks的和一定是这个scheduling domain所包含的CPU.The intersection of
+  cpumasks from any two of these groups MUST be the empty set.Groups may be shared among
+  CPUs as they contain read only data after they have been set up.平衡是在组与组之间的进行
+  的,那么在不同scheduling domain之间移也是通过组来进行的吗?Balancing within a sched domain
+  occurs between groups.组的负载是组中所有CPU负载的总和,组负载超时就移,那么如果组中的一个
+  CPU很大负载而其它负载很小呢?我觉得有这种情况的组应该还有子组.The load of a group is
+  defined as the sum of the load of each of its member CPUs, and only when the load of a
+  group becomes out of balance are tasks moved between groups.
+- At the hyperthreaded processor level: balancing attempts can happen often (every 1-2ms),
+  even when the imbalance between processors is small. There is no cache affinity at all:
+  since hyperthreaded processors share cache, there is no cost to moving a process from
+  one to another. Domains at this level are also marked as sharing CPU power; we'll see
+  how that information is used shortly.超线程一级里的CPU是会每1-2ms就均衡一次就算差别很小,
+  之间没有亲和之说因为CPU之间是共享cache的.
+- At the physical processor level: balancing attempts do not have to happen quite so
+  often, and they are curtailed fairly sharply if the system as a whole is busy. Processor
+  loads must be somewhat farther out of balance before processes will be moved within the
+  domain. Processes lose their cache affinity after a few milliseconds.
+- balancing attempts are made relatively rarely, and cache affinity lasts longer. The cost
+  of moving a process between NUMA nodes is relatively high, and the policy reflects that.
+- SD_WAKE_IDLE:when a sleeping process is about to be awakened, the normal behavior would
+  be to keep it on the same processor it was using before, on the theory that there might
+  still be some useful cache information there. If that processor's scheduling domain has
+  the SD_WAKE_IDLE flag set, however, the scheduler will look for an idle processor within
+  the domain and move the process immediately if one is found. This flag is used at the
+  hyperthreading level; since the cost of moving processes is insignificant, there is no
+  point in leaving a processor idle when a process wants to run.调度域有SD_WAKE_IDLE标志说
+  明会把该调度域的进程移到IDLE CPU上去.用于hyperthreading level.
+- When a process calls exec() to run a new program, its current cache affinity is lost. At
+  that point, it may make sense to move it elsewhere. So the scheduler works its way up
+  the domain hierarchy looking for the highest domain which has the SD_BALANCE_EXEC flag
+  set. The process will then be shifted over to the CPU within that domain with the lowest
+  load. Similar decisions are made when a process forks.调度域设置SD_BALANCE_EXEC时,若执行
+  了exec()那么就移到其它CPU,因为cache肯定丢失.
+- If a processor becomes idle, and its domain has the SD_BALANCE_NEWIDLE flag set, the
+  scheduler will go looking for processes to move over from a busy processor within the
+  domain. A NUMA system might set this flag within NUMA nodes, but not at the top level.这
+  个与SD_WAKE_IDLE是不一样的,SD_WAKE_IDLE是进程被唤醒后发现有IDLE的CPU说移过去,而
+  SD_BALANCE_NEWIDLE是某个CPU发现自已IDLE了就从其它的CPU上移进程过来.
+- Every scheduling domain has an interval which describes how often balancing efforts
+  should be made; if the system tends to stay in balance, that interval will be allowed to
+  grow. The scheduler "rebalance tick" function runs out of the clock interrupt handler;
+  it works its way up the domain hierarchy and checks each one to see if the time has come
+  to balance things out. If so, it looks at the load within each CPU group in the domain;
+  if the loads differ by too much, the scheduler will try to move processes from the
+  busiest group in the domain to the most idle group. In doing so, it will take into
+  account factors like the cache affinity time for the domain.
+- 调度域有四种:根据不同的硬件结构自上而下有NUMA、物理、核和超线程.一个NUMA可以有多个物理
+  CPU组成,一个物理CUP有多个核组成,一个核可以有多个逻辑CPU.
+- 系统中的每一个逻辑CPU都会关联一组调度域，相同类型的逻辑CPU处于同一个调度域中。
+  http://blog.chinaunix.net/uid-7295895-id-2941412.html
+- 系统中存在的负载有：中断、异常、软中断、系统调用、任务；系统调用是在任务的上下文中执行的，
+  异常不可控制且一般也是由于任务触发可以忽略，只剩下中断、软中断和任务；有些中断可以通过
+  CPU的中断亲和掩码在多个CPU上做均衡(X86架构中已有此实现，CONFIG_IRQBALANCE)，软中断过高的
+  系统可以考虑软中断线程化后算成任务或RPS补丁(CONFIG_NETDEVICES_RPS)将软中断负载均衡至多个
+  CPU间；标准内核的负载均衡算法是针对任务的。
+- 历史权重目的是用来平滑静态权重，以缓解负载均衡时系统性能发生抖动。
+- 系统运行过程中，内核会不停地进入负载均衡流程对当前cpu遍历其所关联的所有调度域（自下向上）；
+  对每一个调度域遍历所属的所有调度组，找出一个负载最大的调度组（不能是当前cpu所属的调度组）；
+  遍历此调度组中所属的cpu，找出静态权重符合条件的目标cpu，最后将此cpu上的可运行任务迁移至当
+  前cpu（称为拉任务），以期达到负载均衡状态。整个过程可抽象为如下步骤：负载均衡算法会将静态
+  权重load_rq、调度域参数、历史权重cpu_load[i]等信息，按照一定的规则计算出一个动态权重load
+- 有了动态权重后，就可以用来判别系统负载是否均衡了：记当前cpu动态权重值为load_current，目标
+  cpu动态权重值为load_target，判别规则类似如下：imbalance_pct *load_current <
+  100*load_target(try_to_wake_up()函数有用到这个判断)其中，imbalance_pct为当前cpu的某个调度
+  域参数，例如物理和核域为125；判别结果为真表示目标cpu负载过重，就会从目标cpu迁移任务至当前
+  cpu。
+- 算法均衡的时机共有定时均衡、闲时均衡、唤醒均衡和创建时均衡四种。时钟中断时，会根据条件触
+  发均衡软中断（内核为其设置了专门的软中断），相应均衡函数为load_balance()，此函数只在调度
+  组中的第一个cpu或第一个idle状态cpu上作均衡；此称为定时均衡（又可分为定时忙均衡和定时闲均
+  衡）。任务调度时，会检查当前cpu是否空闲，如果空闲则进行负载均衡，相应均衡函数为
+  idle_balance()，与定时均衡相比，只要拉到任务就会返回属于轻量级均衡算法(但实时系统中，此为
+  主要均衡时机，因为发生频率较高)；此称为闲时均衡（又称NEW_IDLE均衡）。唤醒任务时，会在
+  try_to_wake_up()中根据当前cpu的调度域参数决定是否进行负载均衡；此称为唤醒均衡（唤醒均衡倾
+  向于将被唤醒任务迁移至当前cpu所在的调度域中的某个cpu上，如果系统中存在过于频繁的唤醒，此
+  操作在某些NUMA系统中反而会造成负载不均衡）。创建任务时，会在sched_fork()/sched_exec()中，
+  将此任务迁移至一个相对空闲的CPU上运行。称此为创建时均衡(包括fork和execve)。
+- 任务迁移包括拉任务(一次操作多个任务)和推任务(一次操作一个任务)。拉任务指的是从目的CPU迁移
+  任务至当前CPU，对应实现为pull_task()；定时均衡、闲时均衡和唤醒均衡对应的是拉任务。推任务
+  指的是从当前CPU迁移任务至目的CPU，内核在每个运行队列中存放一个内核线程负责处理推任务请求；
+  定时均衡多次失败时，置推任务标志，唤醒相应内核线程；创建时均衡(sched_exec)，发推任务请求，
+  唤醒相应内核线程；设置任务的cpu亲和掩码时，发推任务请求，唤醒相应内核线程。实际负载均衡过
+  程中，主要为拉任务操作。
+- 任务迁移也要符合一定的规则，不同优先级按照由高到低、同种优先级按照LIFO的顺序进行选择任务。
+  但对如下几种类型的任务不能被迁移：1) 任务的cpu亲和（见1.9）不允许被迁移到当前cpu；2) 为目
+  标cpu上的当前运行任务；3) 任务具有cache亲和性(参考try_to_wake_up)；4) 任务被迁移到当前
+  cpu上会产生新的失衡。但如果任务迁移到当前cpu后优先级为最高，这时就考虑让优先级高的任务先
+  运行；但如果要迁移的是目标cpu上的最高优先级任务，且最高优先级任务只有一个，也不允许迁移。
+- 每一个任务都会关联一个cpu亲和属性，该属性值的每一位表示此任务运行及迁移所允许的cpu集合
+  （置位表示允许），cpu亲和影响均衡操作中的任务迁移（见1.8）。cpu亲和的设置可通过线程绑定和
+  排它绑定来实现（见2.2和2.3）。
+- sched_domain->span:表示调度域包含的CPU集合.sched_domain->last_balance记录了上次做定时均衡
+  的时间点，单位为tick，只在定时均衡中更新，和balance_interval一起用于计算下次做定时均衡的
+  时间；sched_domain->balance_interval也只在定时均衡中更新，单位为毫秒，用于计算下次做定时
+  均衡的时间：last_balance+msecs_to_jiffies(balance_interval)，最终根据情况将结果更新记录于
+  运行队列rq->next_balance中；定时均衡成功迁移任务后，意味着此时系统的负载倾向于不均衡，将
+  balance_interval置为min_interval；定时均衡没有发生任务迁移，意味着此时系统的负载倾向于均
+  衡，将balance_interval加倍，但不超过max_interval(如果当前CPU的任务都已绑定，则不超过
+  MAX_PINNED_INTERVAL，定义为512ms)；sched_domain->busy_factor只用于定时均衡，如果当前CPU不
+  是空闲的(定时忙平衡)，就将变量interval间隔乘上此字段，这样在当前CPU忙时不会太频繁进入负载
+  均衡算法，避免负载均衡算法本身带来较大的开销。sched_domain->imbalance_pct用作均衡判别，见
+  1.5节；此值增大可放宽负载失衡的判别条件，从而降低负载均衡的频率；
+  sched_domain->cache_nice_tries，sched_domain->nr_balance_failed用于定时均衡中连续迁移任务
+  失败后，发起推任务操作，判断条件为nr_balance_failed > (cache_nice_tries+2)；busy_idx,
+  idle_idx, newidle_idx, wake_idx, forkexec_idx用作下标选择运行队列中的历史权重cpu_load[]数
+  组中的元素
+- SD_LOAD_BALANCE表示做负载均衡；做负载均衡就会做定时均衡，定时均衡不能单独关闭；
+- SD_BALANCE_NEWIDLE表示做闲时均衡；
+- SD_BALANCE_EXEC表示做创建时均衡中的execve均衡；
+- SD_BLANCE_FORK表示做创建时均衡中的fork均衡；
+- SD_WAKE_IDLE表示开启超线程后在try_to_wake_up()中将被唤醒任务迁移至一个空闲CPU的上运行(如
+  果有的话)；
+- SD_WAKE_AFFINE表示在try_to_wake_up()中考虑任务的cache亲和，如果存在cache亲和就不将此任务
+  拉至当前CPU；
+- SD_WAKE_BALANCE功能类似于SD_WAKE_AFFINE，只是算法判别准则不同；
+- SD_SHARE_CPUPOWER表示共享CPU的处理能力，主要用于同一个核的超线程CPU间；从而让操作系统感知
+  到超线程硬件特性予以特殊处理；
+- SD_SHARE_PKG_RESOURCES用于初始化调度组的CPU能力；
+- SD_SERIALIZE主要用于不同CPU间的负载均衡算法的串行化(增加了一把自旋锁)，一般NUMA域可设置此
+  选项；
+- BALANCE_FOR_MC_POWER和BALANCE_FOR_PKG_POWER用于节能，负载均衡可以和CPU的变频技术以及S5节
+  能技术结合起来，用以将空闲的CPU降频或休眠，
+- 任务的亲和性计算是指在被唤醒时选择一个可运行的CPU，该CPU最好保存有任务以前的cache内容。任
+  务的亲和性计算在try_to_wake_up中进行，计算内容是在任务所属CPU和执行唤醒操作的本地CPU之间
+  选择一个运行，选择的依据是CPU的cache内容是否失效和CPU的负载情况。Linux 2.6最初的亲和性计
+  算是为每个调度域设一个cache失效的时间值，当被唤醒任务的睡眠时间超过失效时间时就认为任务与
+  CPU之间已失去亲和性。这种算法的缺点是无法准确估计cache是否失效，因为如果一个时间片很长的
+  任务一直在运行那么cache失效的可能性就很小。当前Linux 2.6的亲和性计算是根据CPU的任务切换频
+  率来估计cache的失效可能性，如果有很多时间片很短的任务在CPU上运行，那么cache失效的可能性就
+  很大。
+- blog.chinaunix.net/uid-7295895-id-2941412.html有关于任务亲和性的计算过程
+- 如果目的CPU和任务之间具有亲和性，即cond1和cond2条件同时为假，那么应该选择目的CPU。这时目
+  的CPU上cache失效的可能性小且任务加在本地CPU上以后会造成负载失衡。对于任务加在本地CPU上造
+  成负载失衡的原因，可以分为三种情况：i.  本地CPU负载小于目的CPU，且处于失衡状态。但任务权
+  重很大，在本地CPU加上任务以后打破了失衡，使本地CPU负载反大于目的CPU而产生新的失衡；但如果
+  将任务加载目的CPU上反而会扩大失衡。ii.  本地CPU负载接近目的CPU，处于均衡状态。本地CPU权重
+  加上任务权重以后造成负载的失衡。iii.  本地CPU负载大于目的CPU，且处于失衡状态。这时本地
+  CPU加上任务以后使失衡更加扩大。对于情况a)鼓励将任务加在本地CPU上；对于情况b)在考虑cache有
+  效性的因素下鼓励任务加在目的CPU上；对于情况c)鼓励任务加在目的CPU上。因此在调度域设置允许
+  的情况下需要对本地CPU和目的CPU的负载进行判断，判断的条件如下：imbalance*this_load <=
+  100*load等价于(imbalance/100)*this_load <= load其中this_load是本地CPU的权重值；imbalance
+  是负载平衡系数；load是目的CPU的权重值。(imbalance/100)恒大于1，因此可以看出，如果条件成立
+  那么目的CPU与本地CPU的权重值之比超过负载平衡系数，而产生负载失衡。如果以上的条件成立则出
+  现了情况a)，这时应选择本地CPU；否则应选择目的CPU。
+- 然而实时性系统多为实时任务，实时任务的权重值固定为177522（见1.2节），再加上某些业务过高的
+  网络软中断的影响，导致内核原有的亲和算法不能很好地发挥作用，反而会起到副作用。1. 在电信级
+  业务的场景中，NUMA域默认参数存在两个问题。a)产品会伴随着大量的网络收发包，进而产生大量的
+  网口中断和软中断，频繁的网络软中断就会产生大量的唤醒任务操作，导致唤醒均衡算法不停地将任
+  务拉至中断所在的NUMA节点的CPU上；b)同时很多业务对系统中每一个CPU的利用率比较敏感，要求各
+  个CPU利用率严格均衡。所以需要更改NUMA域的默认配置参数来解决这两个问题：第1个需要去掉NUMA
+  域的唤醒均衡；第2个需要配上NUMA域的闲时均衡。2. 超线程域默认参数配有SD_WAKE_AFFINE算法。
+  此参数在某些业务场景会导致系统性能发生抖动，进而影响系统性能；但与SD_WAKE_BALANCE算法相比
+  影响相对较小，在出现开启硬件超线程特性后如果出现了性能抖动，就可以考虑去除此参数。
+- 2.6.12的内核好像只是把运行队列里的进程数乘SCHED_LOAD_SCALE就用负载了，与进程优先级没有关
+  系。
+- source_load()取rq->cpu_load与当前负载的最小值，target_load()取rq->cpu_load与当前负载的最
+  大值，值越大进程数越多。
+- 同步唤醒就是唤醒后不马上执行。这种情况下把本地CPU的负载减小被唤醒进程的负载量,就是说用假
+  设被唤醒进程加到当前CPU后的负载量所算出的当前的本地CPU的负载量来进行以后的计算。
+- 若task->cpu的负载小于SCHED_LOAD_SCALE/2且本地CPU的负载大于SCHED_LOAD_SCALE/2就说明
+  task->cpu的负载小而本地CPU的负载大。
+- task->last_ran只在schedule()与task->timestamp赋相同的值。
+- task_hot()用rq->timestamp_last_tick(运行队列的上一次切换时间)减去被唤醒进程在rq里被切换出
+  去的时间所得到的时间差与调度域的cache_hot_time比，若后者大就说明进程的cache亲和力不大了，
+  可以拉到本地CPU上运行。在做这个判断之前要先确定SD_WAKE_AFFINE已经设置。
+- 用imbalance*this_load <= 100*load来判断不均衡度是否超过了所要求的，在这判断之前要确定是否
+  设置了SD_WAKE_BALANCE.
+- 调用wake_idle()处理设置了SD_WAKE_IDLE标志的情况。
+- 进程要移出task->cpu时，就要解原rq的锁和给新的rq加上锁，这里有个时间窗口，在这个时间窗口里
+  可能会修改进程的状态使它与参数state不相符或将task->array不为空以示进程在运行状态，这些都
+  要做相应的处理，但无论是否出现这两种情况，进程已经是被移到其它CPU上了。但在状态不相符的情
+  况下是把task->cpu修改了，但没有将进程的task->array赋予相应CPU的运行队列（但这没有问题，若
+  在加上锁时state被其它进程调用try_to_wake_up()改成了TASK_RUNNING的时候也会把task->array改
+  成相应的运行队列，若在加上锁时已被改成了TASK_INTERRUPTIBLE(与参数的state不相同)，那么不用
+  给task->array赋值。所以加上锁之后发现task->state若与参数的state不相同就不用管task->array
+  了，也不用设置task->state了。
+- http://linux.cn/thread/2082/1/1/
+- rq->nr_uninterruptible有什么用呢？ULK：Number of processes that were previously in the
+  runqueue lists and are now sleeping in TASK_UNINTERRUPTIBLE state(only the sum of these
+  fields across all runqueues is meaningful)为什么说要加起来才有用效呢？因为从
+  try_to_wake_up()可以看出：如果进程已经确定要拉到本地CPU上执行了，也就是改了task->cpu，这
+  时的rq(假设是rq1)与之前的rq(假设是rq2)不一样了，所以进程在进入TASK_UNINTERRUPTIBLE时是在
+  rq1上对nr_uninterruptible上做自加操作的，而拉到rq2之后就在rq2上对nr_uninterruptible做自减
+  操作。
+- task->activated改为-1有什么用呢？是在设置task->activated之后调用一大堆的函数后才设置
+  task->state为TASK_RUNNING
+- 为什么要调用resched_task()之后才设置TASK_RUNNING呢?其实这没关系,因为在这两个操作前后获取
+  了runqueue的锁,所以可以这两个操作是原子的了.
+
+
+** int fastcall wake_up_process(task_t * p)
+- 调用try_to_wake_up()唤醒'p',
+
+  包括状态TASK_STOPPED, TASK_TRACED, TASK_INTERRUPTIBLE, TASK_UNINTERRUPTIBLE, 进程状态除
+  了这些还有TASK_RUNNING, EXIT_ZOMBIE, EXIT_DEAD
+
+  但是不是同步唤醒.
+
+
+** int fastcall wake_up_state(task_t *p, unsigned int state)
+- 与wake_up_process()不同的是指了唤醒了什么状态的进程, 也不是同步唤醒.
+
+
+** void fastcall sched_fork(task_t *p)
+- 只给copy_process()调用。
+- 注释说了，这个函数是为一个新fork的进程做调度相关的设置。
+- 注释有说，这个函数里把进程标为正在执行的，但是并没有实际插入到运行队列，这可以保证没有谁
+  可以让它运行，就算是一个信号或其它的外部事件不能唤醒和把它插入到一个运行队列。
+- 因为fork一个进程时，那个新的进程其实是有一个自旋锁的，所以要给thread_info->preempt_count
+  补尝1。
+- 上面有关于时间片父进程如何共享的说明。
+- 因为如果current->time_slice的时间为1，那么分享之后的时间就是0了，这时要把它改回1(为什么要
+  改回1呢？)并调用scheduler_tick()
