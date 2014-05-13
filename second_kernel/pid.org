@@ -1,4 +1,77 @@
 #+STARTUP: showall
+* change
+-
+  1. find_pid()用hlist_for_each_entry_rcu()代替了hlist_for_each_entry()
+     attach_pid()也都使用了rcu版的.__detach_pid()也用了rcu版.
+     log:
+     #+BEGIN_EXAMPLE
+     [PATCH] RCU signal handling
+     
+     RCU tasklist_lock and RCU signal handling: send signals RCU-read-locked
+     instead of tasklist_lock read-locked.  This is a scalability improvement on
+     SMP and a preemption-latency improvement under PREEMPT_RCU.
+     #+END_EXAMPLE 
+
+  2. 删除了switch_exec_pids()函数
+     log:
+     #+BEGIN_EXAMPLE
+     [PATCH] pidhash: kill switch_exec_pids
+     
+     switch_exec_pids is only called from de_thread by way of exec, and it is
+     only called when we are exec'ing from a non thread group leader.
+     
+     Currently switch_exec_pids gives the leader the pid of the thread and
+     unhashes and rehashes all of the process groups.  The leader is already in
+     the EXIT_DEAD state so no one cares about it's pids.  The only concern for
+     the leader is that __unhash_process called from release_task will function
+     correctly.  If we don't touch the leader at all we know that
+     __unhash_process will work fine so there is no need to touch the leader.
+     
+     For the task becomming the thread group leader, we just need to give it the
+     pid of the old thread group leader, add it to the task list, and attach it
+     to the session and the process group of the thread group.
+     
+     Currently de_thread is also adding the task to the task list which is just
+     silly.
+     
+     Currently the only leader of __detach_pid besides detach_pid is
+     switch_exec_pids because of the ugly extra work that was being
+     performed.
+     
+     So this patch removes switch_exec_pids because it is doing too much, it is
+     creating an unnecessary special case in pid.c, duing work duplicated in
+     de_thread, and generally obscuring what it is going on.
+     
+     The necessary work is added to de_thread, and it seems to be a little
+     clearer there what is going on.
+     #+END_EXAMPLE 
+
+  3. 删除了pidmap_init()函数里初始化所有PIDTYPE的循环
+     log:
+     #+BEGIN_EXAMPLE
+     [PATCH] pidhash: don't count idle threads
+     
+     fork_idle() does unhash_process() just after copy_process().  Contrary,
+     boot_cpu's idle thread explicitely registers itself for each pid_type with nr
+     = 0.
+     
+     copy_process() already checks p->pid != 0 before process_counts++, I think we
+     can just skip attach_pid() calls and job control inits for idle threads and
+     kill unhash_process().  We don't need to cleanup ->proc_dentry in fork_idle()
+     because with this patch idle threads are never hashed in
+     kernel/pid.c:pid_hash[].
+     
+     We don't need to hash pid == 0 in pidmap_init().  free_pidmap() is never
+     called with pid == 0 arg, so it will never be reused.  So it is still possible
+     to use pid == 0 in any PIDTYPE_xxx namespace from kernel/pid.c's POV.
+     
+     However with this patch we don't hash pid == 0 for PIDTYPE_PID case.  We still
+     have have PIDTYPE_PGID/PIDTYPE_SID entries with pid == 0: /sbin/init and
+     kernel threads which don't call daemonize().
+     #+END_EXAMPLE
+
+  4. 
+     
 * data structure
 ** struct pid
   #+BEGIN_EXAMPLE
