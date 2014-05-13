@@ -11,10 +11,177 @@
     
      Create one lock class for all waitqueue locks in the kernel.  Has no effect on
      non-lockdep kernels.
-  3. 
+  3. 把waitqueue_lock_key锁给删除了,加了以下的内容
+     #+BEGIN_EXAMPLE
+     void init_waitqueue_head(wait_queue_head_t *q)
+     {
+	spin_lock_init(&q->lock);
+	INIT_LIST_HEAD(&q->task_list);
+     }
 
+     EXPORT_SYMBOL(init_waitqueue_head);
+     #+END_EXAMPLE
+     log是这样说的
+     #+BEGIN_EXAMPLE
+    [PATCH] uninline init_waitqueue_head()
+    
+    allyesconfig vmlinux size delta:
+    
+      text            data    bss     dec          filename
+      20736884        6073834 3075176 29885894     vmlinux.before
+      20721009        6073966 3075176 29870151     vmlinux.after
+    
+    ~18 bytes per callsite, 15K of text size (~0.1%) saved.
+    
+    (as an added bonus this also removes a lockdep annotation.)
+     #+END_EXAMPLE 
+  4. 在__wait_up_bit()里调用__wake_up()的时候用TASK_NORMAL代替了
+     TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE的参数.
+     log是这样说的:
+     #+BEGIN_EXAMPLE
+     wait: Use TASK_NORMAL
+    
+     Also move wake_up_locked() to be with the related functions
+     #+END_EXAMPLE 
+  5. 去掉所有函数前缀fastcall
+     log是这样说的:
+     #+BEGIN_EXAMPLE
+     kernel: remove fastcall in kernel/*
+     #+END_EXAMPLE 
+  6. 在prepare_to_wait()和prepare_to_wait_exclusive()里把is_sync_wait()去掉
+     log是这样说的:
+     #+BEGIN_EXAMPLE
+     wait: kill is_sync_wait()
+     
+     is_sync_wait() is used to distinguish between sync and async waits.
+     Basically sync waits are the ones initialized with init_waitqueue_entry()
+     and async ones with init_waitqueue_func_entry().  The sync/async
+     distinction is used only in prepare_to_wait[_exclusive]() and its only
+     function is to skip setting the current task state if the wait is async.
+     This has a few problems.
+     
+    * No one uses it.  None of func_entry users use prepare_to_wait()
+      functions, so the code path never gets executed.
+      
+    * The distinction is bogus.  Maybe back when func_entry is used only
+      by aio but it's now also used by epoll and in future possibly by 9p
+      and poll/select.
+      
+    * Taking @state as argument and ignoring it silenly depending on how
+      @wait is initialized is just a bad error-prone API.
+      
+    * It prevents func_entry waits from using wait->private for no good
+      reason.
+      
+      This patch kills is_sync_wait() and the associated code paths from
+      prepare_to_wait[_exclusive]().  As there was no user of these code paths,
+      this patch doesn't cause any behavior difference.
+     #+END_EXAMPLE 
+  7. 添加了abort_exclusive_wait()并在__wait_on_bit_lock()里调用了,__wait_on_bit_lock()还做
+     了其它的调整.
+     log:
 
+     #+BEGIN_EXAMPLE
+     wait: prevent exclusive waiter starvation
+     
+     With exclusive waiters, every process woken up through the wait queue must
+     ensure that the next waiter down the line is woken when it has finished.
+     
+     Interruptible waiters don't do that when aborting due to a signal.  And if
+     an aborting waiter is concurrently woken up through the waitqueue, noone
+     will ever wake up the next waiter.
+     
+     This has been observed with __wait_on_bit_lock() used by
+     lock_page_killable(): the first contender on the queue was aborting when
+     the actual lock holder woke it up concurrently.  The aborted contender
+     didn't acquire the lock and therefor never did an unlock followed by
+     waking up the next waiter.
+     
+     Add abort_exclusive_wait() which removes the process' wait descriptor from
+     the waitqueue, iff still queued, or wakes up the next waiter otherwise.
+     It does so under the waitqueue lock.  Racing with a wake up means the
+     aborting process is either already woken (removed from the queue) and will
+     wake up the next waiter, or it will remove itself from the queue and the
+     concurrent wake up will apply to the next waiter after it.
+     
+     Use abort_exclusive_wait() in __wait_event_interruptible_exclusive() and
+     __wait_on_bit_lock() when they were interrupted by other means than a wake
+     up through the queue.
+     #+END_EXAMPLE 
+  8. abort_exclusive_wait()里不用__wake_up_common(),而用__wake_up_locked_key()
+     log:
+     #+BEGIN_EXAMPLE
+     wait: don't use __wake_up_common()
+     
+     '777c6c5 wait: prevent exclusive waiter starvation' made
+     __wake_up_common() global to be used from abort_exclusive_wait().
+     
+     It was needed to do a wake-up with the waitqueue lock held while
+     passing down a key to the wake-up function.
+     
+     Since '4ede816 epoll keyed wakeups: add __wake_up_locked_key() and
+     __wake_up_sync_key()' there is an appropriate wrapper for this case:
+     __wake_up_locked_key().
+     
+     Use it here and make __wake_up_common() private to the scheduler
+     again.
+     #+END_EXAMPLE
+     777c6c5是上一个commit的SHA值.
+  9. 在__init_waitqueue_head()里加多了struct lock_class_key参数.
+     log:
+     #+BEGIN_EXAMPLE
+     locking, sched: Give waitqueue spinlocks their own lockdep classes
+     
+     Give waitqueue spinlocks their own lockdep classes when they
+     are initialised from init_waitqueue_head().  This means that
+     struct wait_queue::func functions can operate other waitqueues.
+     
+     This is used by CacheFiles to catch the page from a backing fs
+     being unlocked and to wake up another thread to take a copy of
+     it.
+     #+END_EXAMPLE
+  10. 把注释/*改成/**,这样就可以添加到docbook里
+      log:
+      #+BEGIN_EXAMPLE
+      docbook: add more wait/wake/completion to device-drivers docbook
+      
+      Add more wait, wake, and completion interfaces to the device-drivers
+      docbook.
+      
+      Fix kernel-doc notation in the added files.
 
+      #+END_EXAMPLE 
+  11. 修改一个注释, 单词写错了
+  12. 把包含module.h头文件改成包含export.h头文件.
+      log:
+      #+BEGIN_EXAMPLE
+      kernel: Map most files to use export.h instead of module.h
+      
+      The changed files were only including linux/module.h for the
+      EXPORT_SYMBOL infrastructure, and nothing else.  Revector them
+      onto the isolated export header for faster compile times.
+      
+      Nothing to see here but a whole lot of instances of:
+      
+      -#include <linux/module.h>
+      +#include <linux/export.h>
+      
+      This commit is only changing the kernel dir; next targets
+      will probably be mm, fs, the arch dirs, etc.
+      #+END_EXAMPLE 
+  13. __init_waitqueue_head()函数加多一个字符串参数, 把__init_waitqueue_head()里调用的
+      lockdep_set_class()改成了lockdep_set_class_and_name(), 而
+      lockdep_set_class_and_name()使用多加的字符串参数.
+      log:
+      #+BEGIN_EXAMPLE
+      lockdep/waitqueues: Add better annotation
+      
+      -> #2 (&tty->write_wait){-.-...}:
+      
+      is a lot more informative than:
+      
+      -> #2 (key#19){-.....}:
+      #+END_EXAMPLE
 
 * data structure
 * function
