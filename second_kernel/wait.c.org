@@ -1,4 +1,21 @@
 #+STARTUP: showall
+* change
+-  
+  1. 去掉荒废的#include <linux/config.h>头文件
+  2. 加多了这个锁
+     struct lock_class_key waitqueue_lock_key;
+
+     EXPORT_SYMBOL(waitqueue_lock_key);
+     log是这样说的:
+     [PATCH] lockdep: annotate waitqueues
+    
+     Create one lock class for all waitqueue locks in the kernel.  Has no effect on
+     non-lockdep kernels.
+  3. 
+
+
+
+
 * data structure
 * function
 - 唤醒函数
