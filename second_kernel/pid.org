@@ -70,7 +70,30 @@
      kernel threads which don't call daemonize().
      #+END_EXAMPLE
 
-  4. 
+  4. http://www.cnblogs.com/hazir/p/linux_kernel_pid.html
+     http://blog.chinaunix.net/uid-27767798-id-3470592.html
+
+     知道为什么struct pid->tasks[PIDTYPE_MAX], task有PIDTYPE_MAX个成员, struct
+     pid_link->pid是一个指向struct pid, struct task_struct->pids[PIDTYPE_MAX]是struct
+     pid_link类型, pid->tasks为什么要PIDTYPE_MAX, task_struct->pids要PIDTYPE_MAX.若进程A是
+     一个线程组父进程和session的领头进程, 那么task_struct->pids[1]和task_struct->pids[2]不
+     会指向其它的pid, 因为这个是指向领头线程的task_struct->pids的和指向session领头进程的
+     task_struct->pids, 能看懂http://www.cnblogs.com/hazir/p/linux_kernel_pid.html 里的图4
+     就可以理解相关的结构体了.图4说明,level为2:在level2这个命名空间建进程那么level就为2,那
+     么怎样才可以在level2建进程呢?pid->level有一个这样的作用,若level为2,那么就知道该进程是
+     在level2创建的,且在level0和level1都有pid值,但是在level3就没有,这个在
+     http://blog.chinaunix.net/uid-27767798-id-3470592.html 里开始有讲.
+
+     task_struct->pids[1]是在进程为线程组里的子线程时用于链到它的父进程的
+     task_struct->pids[0]->tasks[1]的.用pids[1]->node来链.
+
+     若一个进程的task_struct->pids[0]->level为2,那么task_struct->pids[0]->numbers[3]是没有
+     东西的,因为在level3没有这个进程的pid.用来链到pid_hash这个hash表的pid_chain是在
+     task_strcut->pids[]->numbers[]->pid_chain的.每一个level的pid值是在
+     task_strcut->pids[]->numbers[]->nr里的.
+
+     如果在很熟悉一个函数涉及到的所有数据结构之后其实不需要,只要这个函数实现简单的话就不需
+     要怎么样去记这个函数了.
      
 * data structure
 ** struct pid
