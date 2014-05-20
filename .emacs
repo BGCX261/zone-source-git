@@ -1,34 +1,27 @@
-;Èç¹ûÓĞÆäËüÅäÖÃÎÄ¼ş£¬Ê¹´ËÃüÁî¶ÁÈ¡
-;(load "addon.el")
-      
 ;;========================================
-;; Íâ¹ÛÉèÖÃ
-;;ÓÃ¹öÖáÊó±ê
+;; è„¥èŠ’é¹¿è„¹è„¡çŒ«è„°è„™
+;;è„«è„™é¹¿æšè„°è°©è„¢è´¸å¤é”š
 (mouse-wheel-mode t)
 (global-set-key [(control f1)] (quote setnu-mode))
-;;¹â±ê¿¿½üÊó±êÖ¸ÕëÊ±£¬ÈÃÊó±êÖ¸Õë×Ô¶¯ÈÃ¿ª£¬±ğµ²×¡ÊÓÏß
-(mouse-avoidance-mode 'animate)
-;;È¥µô¹¤¾ßÀ¸
-(tool-bar-mode nil)
-;;È¥µô²Ëµ¥À¸£¬ÎÒ½«F10°ó¶¨ÎªÏÔÊ¾²Ëµ¥À¸£¬ÍòÒ»Ê²Ã´¶«Î÷ÍüÁË£¬ĞèÒª²Ëµ¥À¸ÁËÄÜŞôF10µ÷³ö£¬ÔÙŞôF10¾ÍÈ¥µô²Ëµ¥
-(menu-bar-mode nil)
-;;È¥µô¹ö¶¯Ìõ
+;;é¹¿èŠ’å¤é”šé©´é©´é™†çœ‰è„¢è´¸å¤é”šè„°èµ‚è„®æ¯›è„¢å¤æ‹¢å¢è„ è„™è„¢è´¸å¤é”šè„°èµ‚è„®æ¯›è„³è„­éœ²ç‚‰è„ è„™é©´é™‹æ‹¢å¢å¤å†’ç¢Œè™è„³éš†è„¢è„«è„§è„½
+;; (mouse-avoidance-mode 'animate)
+;;è„ æ¥¼ç¢Œä¹ˆé¹¿æšéœ²ç‚‰è„¤ç«
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 ;;========================================
-;;½ûÓÃÆô¶¯»­Ãæ
+;;é™†æ²¡è„«è„™è„ä¹ˆéœ²ç‚‰ç¦„é¢…è„™å¿™
 (setq inhibit-startup-message t)
 
 ;;========================================
-;; ¼ü°ó¶¨
+;; å½•çœ‰æ³è´¸éœ²ç¯“
 ;;========================================
-;µ±ÄãÃ»ÓĞÑ¡ÖĞÒ»¸öÇøÓòµÄÊ±ºò£¬C-w»á¼ôÇĞ¹â±êËùÔÚĞĞ£¬²»¹Ü¹â±êµÄÎ»ÖÃÔÚÄÄÀï£»
-;¶øÓÃM-wµÄÊ±ºò£¬Ôò»á¸´ÖÆ¹â±êËùÔÚµÄĞĞ£¬²»¹Ü¹â±êµÄÎ»ÖÃÔÚĞĞÊ×»¹ÊÇĞĞÎ²»¹ÊÇĞĞÖĞ¼äµÄ
-;ÈÎÒâÎ»ÖÃ¡£µ±ÄãÓĞÑ¡ÖĞÇøÓòµÄÊ±ºò£¬C-wºÍM-wµÄ¹¦ÄÜºÍEmacs×Ô´øµÄÃ»É¶Á½Ñù¡£
+;ç¢Œå¤è„›èŒ«è„™ç¦„è„«è„¨è„©éš†è„°è„¨è„ªç¦„èµ‚æšè„Ÿé…¶è„«è²Œç¢Œè„›è„¢å¤æ½è²Œæ‹¢å¢C-wç¦„è°©å½•ä¹ˆè„Ÿè„¨é¹¿èŠ’å¤é”šè„£éœ‰è„­è„·è„¨è„¨æ‹¢å¢è™ç¦„é¹¿è„ºé¹¿èŠ’å¤é”šç¢Œè„›è„¦ç¦„è„°è„™è„­è„·è„›è„›è„ŒèŒ‚æ‹¢ç¦„
+;éœ²é…¶è„«è„™M-wç¢Œè„›è„¢å¤æ½è²Œæ‹¢å¢è„­è²Œç¦„è°©èµ‚éº“è„°è„é¹¿èŠ’å¤é”šè„£éœ‰è„­è„·ç¢Œè„›è„¨è„¨æ‹¢å¢è™ç¦„é¹¿è„ºé¹¿èŠ’å¤é”šç¢Œè„›è„¦ç¦„è„°è„™è„­è„·è„¨è„¨è„¢è„³ç¦„é¹¿è„¢è„Ÿè„¨è„¨è„¦è™ç¦„é¹¿è„¢è„Ÿè„¨è„¨è„°è„¨å½•ç›²ç¢Œè„›
+;è„ è„¦è„ªèŠ’è„¦ç¦„è„°è„™éš†æ‹¢ç¢Œå¤è„›èŒ«è„«è„¨è„©éš†è„°è„¨è„Ÿé…¶è„«è²Œç¢Œè„›è„¢å¤æ½è²Œæ‹¢å¢C-wæ½è„¥M-wç¢Œè„›é¹¿å¨„è„›è„ºæ½è„¥Emacsè„³è„­éº“é…¶ç¢Œè„›è„™ç¦„è„¡éœ²è„•é™†è„©éœ‰éš†æ‹¢
 (defadvice kill-ring-save (before slickcopy activate compile)
-(interactive
-(if mark-active (list (region-beginning) (region-end))
-(list (line-beginning-position)
-(line-beginning-position 2)))))
+ (interactive
+ (if mark-active (list (region-beginning) (region-end))
+ (list (line-beginning-position)
+ (line-beginning-position 2)))))
  
 (defadvice kill-region (before slickcut activate compile)
  (interactive
@@ -36,7 +29,8 @@
  (list (line-beginning-position)
  (line-beginning-position 2)))))
 
-;;¸´ÖÆÒ»¸öµ¥´Ê
+
+;;èµ‚éº“è„°è„è„ªç¦„èµ‚æšç¢Œæ¥¼éº“è„¢
 (defun huangq-save-word-at-point()
   (interactive)
   (save-excursion
@@ -46,98 +40,88 @@
       (message (substring-no-properties (current-kill 0))))))
 (global-set-key (kbd "C-c w") 'huangq-save-word-at-point)
 
-;; C-t ÉèÖÃ±ê¼Ç ;; 
-;; (global-set-key (kbd "C-z") 'undo)
-
-;; C-t ÉèÖÃ±ê¼Ç ;; 
-(global-set-key (kbd "C-z") 'set-mark-command)
+;; C-t è„¡çŒ«è„°è„™å¤é”šå½•è„Ÿ ;; 
+;; (global-set-key (kbd "C-t") 'set-mark-command)
 
 ;; C-x b => CRM bufer list
 ;; (global-set-key "\C-xb" 'electric-buffer-list)
 
 ;;---------- redo
-;; (global-set-key ( kbd "C-.") 'other-window)
-(global-set-key ( kbd "M-n") 'other-window)
+;; (global-set-key ( kbd "C-.") 'undo) ;; having being C-/
 
 
-;; F8´°¿Ú¼äÌø×ª
+;; F8éº“æ³é©´è„·å½•ç›²è„¤é…¶è„³é™‹
 (global-set-key [f8] 'other-window)
-;; F9ÇĞ»»buffer
-(global-set-key [f9] 'switch-to-buffer)
-
-;; F5µ÷revert-bufferË¢ĞÂ
-(defun revert-buffer-no-confirm ()
-  "Revert buffer without confirmation."
-  (interactive) (revert-buffer t t))
-(global-set-key [f5] 'revert-buffer-no-confirm)
+(global-set-key (kbd "C-z")'set-mark-command)
+(global-set-key (kbd "C-.")'other-window)
+(global-set-key [f5] 'revert-buffer)
 
 
-;È«ÆÁ
+;è„ èŠ¦è„è„•
 (defun my-fullscreen ()
 (interactive)
 (x-send-client-message
 nil 0 nil "_NET_WM_STATE" 32
 '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
-(global-set-key [f11] 'my-fullscreen);F11 È«ÆÁ
+(global-set-key [f11] 'my-fullscreen);F11 è„ èŠ¦è„è„•
 
 
-;Êó±ê¹öÂÖ£¬Ä¬ÈÏµÄ¹ö¶¯Ì«¿ì£¬ÕâÀï¸ÄÎª3ĞĞ£¬µ«Õâ¸ö¸Ä·¨Ö»ÄÜÔÚ¹â±êËùÔÚµÄ»º³åÇøÖĞ¹ö¶¯
-;; Ô­À´ÊÇÔÚÊó±êËùÔÚµÄ»º³åÇøÖĞ¹ö¶¯µÄ
-;; (defun up-slightly () (interactive) (scroll-up 3))
-;; (defun down-slightly () (interactive) (scroll-down 3))
-;; (global-set-key [mouse-4] 'down-slightly)
-;; (global-set-key [mouse-5] 'up-slightly)
-
-;;========================================
-;; ;;¹Ø±Õµ±Ç°»º³åÇø Alt+4  ;; C-x 0
-;; (global-set-key (kbd "M-4") 'delete-window)
-;; ;;¹Ø±ÕÆäËü»º³åÇø Alt+1  ;; C-x 1
-;; (global-set-key (kbd "M-1") 'delete-other-windows)
-;; ;;Ë®Æ½·Ö¸î»º³åÇø Alt+2  ;; C-x 2
-;; (global-set-key (kbd "M-2") 'split-window-vertically)
-;; ;;´¹Ö±·Ö¸î»º³åÇø Alt+3  ;; C-x 3
-;; (global-set-key (kbd "M-3") 'split-window-horizontally)
-;; ;;ÇĞ»»µ½ÆäËü»º³åÇø Alt+0 ;; C-x o 
-;; (global-set-key (kbd "M-0") 'other-window)
+;è„¢è´¸å¤é”šé¹¿æšè„—è„°æ‹¢å¢è„›å¢è„ è„§ç¢Œè„›é¹¿æšéœ²ç‚‰è„¤èŠ¦é©´çŸ›æ‹¢å¢è„®èŠ’è„ŒèŒ‚èµ‚è„›è„¦é™‹3è„¨è„¨
+(defun up-slightly () (interactive) (scroll-up 5))
+(defun down-slightly () (interactive) (scroll-down 5))
+(global-set-key [mouse-4] 'down-slightly)
+(global-set-key [mouse-5] 'up-slightly)
 
 ;;========================================
-;; »º³åÇø
+;;é¹¿è„´å¤è„®ç¢Œå¤è„Ÿæ³ç¦„æ½é²æ°“è„Ÿé…¶ Alt+4  ;; C-x 0
+(global-set-key (kbd "M-4") 'delete-window)
+;;é¹¿è„´å¤è„®è„ç›²è„£çœ‰ç¦„æ½é²æ°“è„Ÿé…¶ Alt+1  ;; C-x 1
+(global-set-key (kbd "M-1") 'delete-other-windows)
+;;è„£åºè„é™†è·¯è„°èµ‚å¯ç¦„æ½é²æ°“è„Ÿé…¶ Alt+2  ;; C-x 2
+(global-set-key (kbd "M-2") 'split-window-vertically)
+;;éº“é¹¿è„°å¤è·¯è„°èµ‚å¯ç¦„æ½é²æ°“è„Ÿé…¶ Alt+3  ;; C-x 3
+(global-set-key (kbd "M-3") 'split-window-horizontally)
+;;è„Ÿè„¨ç¦„ç¦„ç¢Œé™†è„ç›²è„£çœ‰ç¦„æ½é²æ°“è„Ÿé…¶ Alt+0 ;; C-x o 
+(global-set-key (kbd "M-0") 'other-window)
+
+;;========================================
+;; ç¦„æ½é²æ°“è„Ÿé…¶
 ;;========================================
 
-;; ;;Éè¶¨ĞĞ¾à
+;;è„¡çŒ«éœ²ç¯“è„¨è„¨æˆ®è„¿
 (setq default-line-spacing 0)
 
-;; ;;Ò³¿í 
+;;è„ªé²é©´é“† 
 (setq default-fill-column 90)
 
-;; ;;È±Ê¡Ä£Ê½ text-mode
+;;è„ å¤è„¢éš†è„›æ‹¢è„¢é™† text-mode
 (setq default-major-mode 'text-mode)
 
-;; ;;ÉèÖÃÉ¾³ı¼ÍÂ¼
+;;è„¡çŒ«è„°è„™è„¡æˆ®é²åª’å½•è„¥è„—å½•
 (setq kill-ring-max 200)
 
-;; ;;ÒÔ¿ÕĞĞ½áÊø
+;;è„ªè„­é©´è„®è„¨è„¨é™†è°©è„¢é…¶
 (setq require-final-newline t) 
 
 
-;; ;;Óï·¨¼ÓÁÁ
+;;è„«èŒ‚è·¯ç¯“å½•è„«è„•è„•
 (global-font-lock-mode t)
 
-;;¸ßÁÁÏÔÊ¾ÇøÓòÑ¡Ôñ
+;;èµ‚è„½è„•è„•è„§è„­è„¢æˆ®è„Ÿé…¶è„«è²Œè„©éš†è„­å¸½
 (transient-mark-mode t)
 
-;;Ò³ÃæÆ½»¬¹ö¶¯£¬ scroll-margin 2 ¿¿½üÆÁÄ»±ßÑØ2ĞĞÊ±¿ªÊ¼¹ö¶¯£¬¿ÉÒÔºÜºÃµÄ¿´µ½ÉÏÏÂÎÄ¡£
-(setq scroll-margin 2
+;;è„ªé²è„™å¿™è„é™†ç¦„å¢é¹¿æšéœ²ç‚‰æ‹¢å¢ scroll-margin 3 é©´é©´é™†çœ‰è„è„•è„›ç¦„å¤è„½è„©è„´3è„¨è„¨è„¢å¤é©´é™‹è„¢å½•é¹¿æšéœ²ç‚‰æ‹¢å¢é©´è„¡è„ªè„­æ½è„ºæ½è„™ç¢Œè„›é©´éº“ç¢Œé™†è„¡è„§è„§è„—è„¦è„›éš†æ‹¢
+(setq scroll-margin 3
       scroll-conservatively 10000)
 
-;¸ßÁÁÏÔÊ¾³É¶ÔÀ¨ºÅ£¬µ«²»À´»Øµ¯Ìø
+;èµ‚è„½è„•è„•è„§è„­è„¢æˆ®é²è„¡éœ²è„­è„Œç¯“æ½è„œæ‹¢å¢ç¢ŒèŠ¦è™ç¦„è„Œéº“ç¦„è„´ç¢Œç‚‰è„¤é…¶
 (show-paren-mode t)
 (setq show-paren-style 'parentheses)
 
-;;Õ³ÌùÓÚ¹â±ê´¦£¬¶ø²»ÊÇÊó±êÖ¸Õë´¦
+;;è„®é²è„¤éœ‰è„«è„·é¹¿èŠ’å¤é”šéº“å¨„æ‹¢å¢éœ²é…¶è™ç¦„è„¢è„Ÿè„¢è´¸å¤é”šè„°èµ‚è„®æ¯›éº“å¨„
 (setq mouse-yank-at-point t)
 
-;;M-;¿ì
+;;M-;é©´çŸ›
 (defun qiang-comment-dwim-line (&optional arg)
   "Replacement for the comment-dwim command.
 If no region is selected and current line is not blank and we are not at the end of the line,
@@ -151,72 +135,72 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 (global-set-key "\M-;" 'qiang-comment-dwim-line)
 
 ;;========================================
-;; »ØÏÔÇø
+;; ç¦„è„´è„§è„­è„Ÿé…¶
 ;;========================================
 
-;;ÉÁÆÁ±¨¾¯
+;;è„¡è„•è„è„•å¤ç¯“æˆ®ç‚‰
 (setq visible-bell t)
 
-;;Ê¹ÓÃ y or n ÌáÎÊ
+;;è„¢é¹¿è„«è„™ y or n è„¤è°©è„¦è„¢
 (fset 'yes-or-no-p 'y-or-n-p)
 
-;;Ëø¶¨ĞĞ¸ß
+;;è„£é…¶éœ²ç¯“è„¨è„¨èµ‚è„½
 (setq resize-mini-windows nil)
 
-;;µİ¹é minibuffer
+;;ç¢Œè„»é¹¿èŒ… minibuffer
 (setq enable-recursive-minibuffers t)
 
 ;;========================================
-;; ×´Ì¬À¸
+;; è„³éº“è„¤å¢è„Œèµ‚
 ;;========================================
 
-;;ÏÔÊ¾Ê±¼ä
+;;è„§è„­è„¢æˆ®è„¢å¤å½•ç›²
 (display-time)
-;;Ê±¼ä¸ñÊ½
+;;è„¢å¤å½•ç›²èµ‚å¸½è„¢é™†
 (setq display-time-24hr-format t)
 (setq display-time-day-and-date t)
 (setq display-time-interval 10)
 
-;;ÏÔÊ¾ÁĞºÅ
+;;è„§è„­è„¢æˆ®è„•è„¨æ½è„œ
 (setq column-number-mode t)
 
-;;±êÌâÀ¸ÏÔÊ¾ %f »º³åÇøÍêÕûÂ·¾¶ %p Ò³Ãæ°Ù·ÖÊı %l ĞĞºÅ
+;;å¤é”šè„¤èŠ’è„Œèµ‚è„§è„­è„¢æˆ® %f ç¦„æ½é²æ°“è„Ÿé…¶è„¥é”šè„®æ²¡è„—è·¯æˆ®éœ² %p è„ªé²è„™å¿™æ³è„µè·¯è„°è„¢åª’ %l è„¨è„¨æ½è„œ
 (setq frame-title-format "%f")
 
 
 ;;========================================
-;; ±à¼­Æ÷Éè¶¨
+;; å¤è„¿å½•é¢…è„æ¢…è„¡çŒ«éœ²ç¯“
 ;;========================================
 
-;;²»Éú³ÉÁÙÊ±ÎÄ¼ş
+;;è™ç¦„è„¡ç…¤é²è„¡è„•è„µè„¢å¤è„¦è„›å½•é•
 (setq-default make-backup-files nil)
 
-;;Ö»äÖÈ¾µ±Ç°ÆÁÄ»Óï·¨¸ßÁÁ£¬¼Ó¿ìÏÔÊ¾ËÙ¶È
+;;è„°ç¦„ç›²è„°è„ æˆ®ç¢Œå¤è„Ÿæ³è„è„•è„›ç¦„è„«èŒ‚è·¯ç¯“èµ‚è„½è„•è„•æ‹¢å¢å½•è„«é©´çŸ›è„§è„­è„¢æˆ®è„£è„µéœ²è„ 
 (setq font-lock-maximum-decoration t)
 
-;;Ê¹ÓÃX¼ôÌù°å
+;;è„¢é¹¿è„«è„™Xå½•ä¹ˆè„¤éœ‰æ³æ°“
 (setq x-select-enable-clipboard t) 
-;;;;;;;; Ê¹ÓÃ¿Õ¸ñËõ½ø ;;;;;;;;
-;;indent-tabs-mode  t Ê¹ÓÃ TAB ×÷¸ñÊ½»¯×Ö·û  nil Ê¹ÓÃ¿Õ¸ñ×÷¸ñÊ½»¯×Ö·û
+;;;;;;;; è„¢é¹¿è„«è„™é©´è„®èµ‚å¸½è„£ç«é™†é…¶ ;;;;;;;;
+;; indent-tabs-mode  t è„¢é¹¿è„«è„™ TAB è„³æ¢…èµ‚å¸½è„¢é™†ç¦„ç‚‰è„³è„°è·¯æ²¡  nil è„¢é¹¿è„«è„™é©´è„®èµ‚å¸½è„³æ¢…èµ‚å¸½è„¢é™†ç¦„ç‚‰è„³è„°è·¯æ²¡
 (setq indent-tabs-mode nil)
-(setq tab-always-indent t)
+;; (setq tab-always-indent nil)
 (setq tab-width 4)
-;;ÉèÖÃÄ¬ÈÏÂ·¾¶
+;;è„¡çŒ«è„°è„™è„›å¢è„ è„§è„—è·¯æˆ®éœ²
 (setq default-directory "~/")
 
 ;;========================================
-;; ÑÕÉ«ÉèÖÃ
+;; è„©è„®è„¡èŠ¦è„¡çŒ«è„°è„™
 ;;========================================
 
-;; Ö¸ÕëÑÕÉ«
+;; è„°èµ‚è„®æ¯›è„©è„®è„¡èŠ¦
 (set-cursor-color "black")
-;; Êó±êÑÕÉ«
+;; è„¢è´¸å¤é”šè„©è„®è„¡èŠ¦
 (set-mouse-color "black")
-;; ±³¾°ºÍ×ÖÌåÑÕÉ«
+;; å¤é²æˆ®æ³æ½è„¥è„³è„°è„¤æ°“è„©è„®è„¡èŠ¦
 (set-foreground-color "gainsboro")
 (set-background-color "black")
 (set-border-color "black")
-;;Óï·¨¸ßÁÁÏÔÊ¾£¬ÇøÓòÑ¡Ôñ£¬¶ş´ÎÑ¡Ôñ ;;Ç°¾°ºÍ±³¾°É«
+;; è„«èŒ‚è·¯ç¯“èµ‚è„½è„•è„•è„§è„­è„¢æˆ®æ‹¢å¢è„Ÿé…¶è„«è²Œè„©éš†è„­å¸½æ‹¢å¢éœ²é•éº“è„¦è„©éš†è„­å¸½ ;;è„Ÿæ³æˆ®æ³æ½è„¥å¤é²æˆ®æ³è„¡èŠ¦
 (set-face-foreground 'highlight "white")
 (set-face-background 'highlight "blue")
 (set-face-foreground 'region "cyan")
@@ -224,45 +208,55 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 (set-face-foreground 'secondary-selection "skyblue")
 (set-face-background 'secondary-selection "darkblue")
 
-;;ÏÔÊ¾ĞĞºÅ
+;;è„§è„­è„¢æˆ®è„¨è„¨æ½è„™
 ;; (global-linum-mode t)
 
 
 ;; Load CEDET
-(add-to-list 'load-path "/usr/share/emacs-23.3/site-lisp/cedet/common")
-(require 'cedet)
-(require 'semantic-ia)
+;; (add-to-list 'load-path "~/.emacs.d/cedet-1.1/common")
+;; (load-file "~/.emacs.d/cedet-1.1/common/cedet.el")
+;; (load-file "..../cedet/common/cedet.el")
+;; (semantic-load-enable-excessive-code-helpers)
+;; (require 'cedet)
+;; (require 'semantic-ia)
  
 ;; Enable EDE (Project Management) features
-(global-ede-mode 1)
+;; (global-ede-mode 1)
  
 ;; Enable SRecode (Template management) minor-mode.
-;(semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers)
-(semantic-load-enable-guady-code-helpers)
-;; (semantic-load-enable-excessive-code-helpers)
+;; (semantic-load-enable-minimum-features)
+;; (semantic-load-enable-code-helpers)
+;; (semantic-load-enable-guady-code-helpers)
+;(semantic-load-enable-excessive-code-helpers)
 ;; (semantic-load-enable-semantic-debugging-helpers)
 ;; (semantic-idle-completions-mode)
-;(setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
-;                                  global-semanticdb-minor-mode
-;                                  global-semantic-idle-summary-mode
-;                                  global-semantic-mru-bookmark-mode))
-;(semantic-mode 1)
+
+(setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
+                                 global-semanticdb-minor-mode
+                                 global-semantic-idle-summary-mode
+                                 global-semantic-mru-bookmark-mode
+                                 global-semantic-stickyfunc-mode))
+(semantic-mode 1)
+(global-semantic-highlight-edits-mode (if window-system 1 -1))
+;; (global-semantic-show-unmatched-syntax-mode 1)
+(global-semantic-show-parser-state-mode 1)
+
+
 ;; (global-srecode-minor-mode 1)
 ;; (setq semanticdb-project-roots (list (expand-file-name "/")))
-;;CC-modeÅäÖÃ  http://cc-mode.sourceforge.net/
+;;;; CC-modeè„œç›²è„°è„™  http://cc-mode.sourceforge.net/
 (require 'cc-mode)
 (c-set-offset 'inline-open 0)
 (c-set-offset 'friend '-)
 (c-set-offset 'substatement-open 0)
-(setq-default indent-tabs-mode  t)
-(setq tab-width 4
-      c-basic-offset 4)
+(setq-default indent-tabs-mode nil)
+ (setq tab-width 4
+       c-basic-offset 4)
 
-;;Ìí¼ÓÍ·ÎÄ¼şÄ¿Â¼
+;;è„¤é“†å½•è„«è„¥è·¯è„¦è„›å½•é•è„›é©´è„—å½•
 (defconst cedet-user-include-dirs
   (list ".." "../include" "../inc" "../common" "../public"
-        "../.." "../../include" "../../inc" "../../common" "../../public"))
+        "../.." "../../include" "../../inc" "../../common" "../../public" "/usr/include/" "/usr/local/include/"))
 (defconst cedet-win32-include-dirs
   (list "H:/Keil/ARM/INC/Samsung"
         ))
@@ -274,9 +268,9 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
           (semantic-add-system-include dir 'c++-mode)
           (semantic-add-system-include dir 'c-mode))
         include-dirs))
-;;ÉèÖÃÌø×ª¿ì½İ¼üF12
+;;è„¡çŒ«è„°è„™è„¤é…¶è„³é™‹é©´çŸ›é™†è„»å½•çœ‰F12
 (global-set-key [f12] 'semantic-ia-fast-jump)
-;°´shift + F12¿ÉÂíÉÏÌø»Ø
+;æ³éº“shift + F12é©´è„¡è„—é“†è„¡è„§è„¤é…¶ç¦„è„´
 (global-set-key [S-f12]
                 (lambda ()
                   (interactive)
@@ -289,77 +283,83 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
                                                    (semantic-current-tag))
                         (setq first (cdr (car (cdr alist)))))
                     (semantic-mrub-switch-tags first))))
-;ÔÚº¯ÊıÉùÃ÷´¦ºÍ¶¨Òå´¦»¥Ìø
+;è„­è„·æ½ç‚‰è„¢åª’è„¡éœ‰è„™æ¢…éº“å¨„æ½è„¥éœ²ç¯“è„ªæ°“éº“å¨„ç¦„æ¥¼è„¤é…¶
 (define-key c-mode-base-map [M-S-f12] 'semantic-analyze-proto-impl-toggle)
-;µ¯³ö²¹È«²Ëµ¥M-n
+;ç¢Œç‚‰é²æšè™é¹¿è„ èŠ¦è™è„£ç¢Œæ¥¼M-n
 (define-key c-mode-base-map (kbd "M-m") 'semantic-ia-complete-symbol-menu)
-;´úÂëÕÛµş,°´¼ü°ó¶¨µ½ÁË[C-c -]ºÍ[C-c =]
-(require 'semantic-tag-folding nil 'noerror)
-(global-semantic-tag-folding-mode 1)
-(define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
-(define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
+;éº“ç…¤è„—æ¯›è„®è„¹ç¢Œé•,æ³éº“å½•çœ‰æ³è´¸éœ²ç¯“ç¢Œé™†è„•è„£[C-c -]æ½è„¥[C-c =]
+;; (require 'semantic-tag-folding nil 'noerror)
+;; (global-semantic-tag-folding-mode 1)
+;; (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
+;; (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ÒÔÉÏÊÇCEDETµÄÅäÖÃ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;è„ªè„­è„¡è„§è„¢è„ŸCEDETç¢Œè„›è„œç›²è„°è„™;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;setup ecb
-(add-to-list 'load-path "/usr/share/emacs-23.3/site-lisp/ecb-2.40/")
-     ;(load-file "/usr/share/emacs/site-lisp/ecb-2.32/ecb.el")
-(require 'ecb)
+(require 'semantic/analyze)
+(provide 'semantic-analyze)
+(provide 'semantic-ctxt)
+(provide 'semanticdb)
+(provide 'semanticdb-find)
+(provide 'semanticdb-mode)
+(provide 'semantic-load)
+;; (add-to-list 'load-path "~/.emacs.d/ecb-snap/")
+;; (load-file "~/.emacs.d/ecb-2.40/ecb.el");é–¿æ¬’\F5\A2\8B\81é¨\84
+;; (require 'ecb)
 
-
-
-(add-to-list 'load-path "/usr/share/emacs-23.3/site-lisp/color-theme-6.6.0") 
+(add-to-list 'load-path "~/.emacs.d/color-theme-6.6.0") 
 (require 'color-theme) 
 (color-theme-initialize) 
-(color-theme-calm-forest)
-;; (color-theme-pok-wog)
-     ;; (color-theme-oswald)
+(color-theme-pok-wog)
+;; (color-theme-oswald)
 
 
-      ;; ¸øEmacsÌí¼ÓTab¹¦ÄÜ: http://emhacks.sourceforge.net/
-;; (load-file "/usr/share/emacs-23.3/site-lisp/tabbar.el")
+;; ;; èµ‚é…¶Emacsè„¤é“†å½•è„«Tabé¹¿å¨„è„›è„º: http://emhacks.sourceforge.net/
+;; (load-file "~/.emacs.d/tabbar.el")
 ;; (require 'tabbar)
 ;; (tabbar-mode 1)
-;;(setq tabbar-buffer-groups-function   ;Õâ¸ö»áÊ¹ËùÓĞµÄ±êÇ©²»·Ö×é
-     ;; (lambda (buffer)
-    ;; (list "All buffers")))
+;; ;; (setq tabbar-buffer-groups-function
+;; ;; (lambda (buffer)
+;; ;; (list "All buffers")))
 ;; (global-set-key (kbd "M-[") 'tabbar-backward-group)
 ;; (global-set-key (kbd "M-]") 'tabbar-forward-group)
-;; (global-set-key (kbd "M-9") 'tabbar-backward-tab)
-;; (global-set-key (kbd "M-0") 'tabbar-forward-tab)
+;; (global-set-key (kbd "M-p") 'tabbar-backward-tab)
+;; (global-set-key (kbd "M-n") 'tabbar-forward-tab)
 ;; (global-set-key [(control tab)] 'tabbar-forward-tab)
-
-   ;;cscope http://fhf25.blog.sohu.com/74454393.html
-(load-file "/usr/share/emacs-23.3/site-lisp/cscope-15.7a/contrib/xcscope/xcscope.el")
-(require 'xcscope)
 
 ;; Use this mode for editing files in the dot-language (www.graphviz.org and
 ;; http://www.research.att.com/sw/tools/graphviz/).
-;;
-;; To use graphviz-dot-mode, add
-(load-file "~/.emacs.d/graphviz-dot-mode.el")
-;; to your .emacs or ~/.xemacs/init.el
+;; To use graphviz-dot-mode, add 
+(load-file "~/.emacs.d/graphviz-dot-mode.el") 
+;; http://emacser.com/emacs_graphviz_ds.htm
+;; (load "graphviz-dot-mode.el" nil t t)
 
-;; Ê¹ecbµÄfile-symboldefµÄ´°¿Ú²»´ò¿ª¶Ô»°¿ò
-;; (setq use-file-dialog nil)
+;; (add-hook 'find-file-hook (lambda()
+;;                             (if (string= "dot" (file-name-extension
+;;                                                 buffer-file-name))
+;;                                 (progn
+;;                                   (message "Enabling Setings for dot-mode")
+;;                                   (setq fill-column 1000)
+;;                                   (base-auto-pair)
+;;                                   (local-set-key (kbd "<C-f6>") 'compile)
+;;                                   )
+;;                               )))
 
-(setq default-tab-width 4)
+;; (put 'downcase-region 'disabled nil)
+(load-file "~/.emacs.d/cscope-15.8a/contrib/xcscope/xcscope.el")
+(require 'xcscope)
 
-(setq indent-tabs-mode t)
-
-;;(setq default-tab-width 4)ÕâÒ»ĞĞÆğ×÷ÓÃ£¬ÏÂÃæÄÇĞĞ²»Æğ×÷ÓÃ¡£
-(setq tab-width 4)
 
 (setq gnus-select-method '(nntp "comp.os.linux.answers"))
  ;; or news.cn99.com; news.yaako.com 
 (setq mail-sources
-      '((pop :server "pop.126.com"   ;; ÔÚÕâÀïÉèÖÃ pop3 ·şÎñÆ÷
-             :user "vcprg"            ;; ÓÃ»§Ãû
+      '((pop :server "pop.126.com"   ;; è„­è„·è„®èŠ’è„ŒèŒ‚è„¡çŒ«è„°è„™ pop3 è·¯é•è„¦å¸½è„æ¢…
+             :user "vcprg"            ;; è„«è„™ç¦„æ‚è„™æ²¡
              :port "pop3"
-             :password "YANG89726"))) ;; ÃÜÂë 
+             :password "YANG89726"))) ;; è„™è„ºè„—æ¯› 
 
-(setq gnus-secondary-select-methods '((nnfolder ""))) ;;ÓÊ¼ş´æ·ÅµÄµØ·½
+(setq gnus-secondary-select-methods '((nnfolder ""))) ;;è„«è„¢å½•é•éº“å¿™è·¯è„œç¢Œè„›ç¢Œè„´è·¯é™†
 
-;; smtpmail.el ·¢ÓÊ¼ş
+;; smtpmail.el è·¯å„è„«è„¢å½•é•
 
 ;; (setq user-full-name "YangJie")
 
@@ -377,18 +377,18 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 ;; ;; (setq smtpmail-smtp-server "smtp.163.com")
 ;; ;; (setq message-send-mail-function 'smtpmail-send-it)
 
-;; (setq user-full-name "YangJie") ;; Íâ·¢µÄÓÊ¼ş²ÉÓÃÕâ¸öÃû×Ö
-;; (setq user-mail-address "vcprg@126.com") ;;Íâ·¢µÄÓÊ¼ş²ÉÓÃÕâ¸öµØÖ·
+;; (setq user-full-name "YangJie") ;; è„¥èŠ’è·¯å„ç¢Œè„›è„«è„¢å½•é•è™è„¡è„«è„™è„®èŠ’èµ‚æšè„™æ²¡è„³è„°
+;; (setq user-mail-address "vcprg@126.com") ;;è„¥èŠ’è·¯å„ç¢Œè„›è„«è„¢å½•é•è™è„¡è„«è„™è„®èŠ’èµ‚æšç¢Œè„´è„°è·¯
 ;; (setq smtpmail-auth-credentials
-;;     '(("smtp.126.com"  ;; SMTP ·şÎñÆ÷
+;;     '(("smtp.126.com"  ;; SMTP è·¯é•è„¦å¸½è„æ¢…
 ;;        25
-;;        "vcprg"          ;; ÓÃ»§Ãû
-;;        "YANG89726")))   ;; ÃÜÂë
+;;        "vcprg"          ;; è„«è„™ç¦„æ‚è„™æ²¡
+;;        "YANG89726")))   ;; è„™è„ºè„—æ¯›
 ;; (setq smtpmail-default-smtp-server "smtp.126.com")
 ;; (setq smtpmail-smtp-server "smtp.126.com")
 ;; (setq message-send-mail-function 'smtpmail-send-it)
 
-;; ;; ÓÊ¼şÖĞÎÄÉèÖÃ
+;; ;; è„«è„¢å½•é•è„°è„¨è„¦è„›è„¡çŒ«è„°è„™
 ;; (set-language-environment 'Chinese-GB)
 ;; (setq gnus-default-charset 'chinese-iso-8bit
 ;;    gnus-group-name-charset-group-alist '((".*" . chinese-iso-8bit))
@@ -400,52 +400,52 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 ;;    gnus-newsgroup-ignored-charsets
 ;;        '(unknown-8bit x-unknown iso-8859-1))
 
-;; ;; ÓĞĞ©ÓÃ web ·½Ê½·¢³öµÄÓÊ¼şÀïÓĞ html£¬¼ÓÈëÏÂÃæµÄÉèÖÃ£¬Ö»¿´ÆäÖĞµÄplain text ²¿·Ö£º
+;; ;; è„«è„¨è„¨æ¼è„«è„™ web è·¯é™†è„¢é™†è·¯å„é²æšç¢Œè„›è„«è„¢å½•é•è„ŒèŒ‚è„«è„¨ htmlæ‹¢å¢å½•è„«è„ æ¯›è„§è„—è„™å¿™ç¢Œè„›è„¡çŒ«è„°è„™æ‹¢å¢è„°ç¦„é©´éº“è„ç›²è„°è„¨ç¢Œè„›plain text è™é©´è·¯è„°æ‹¢æ½
 ;; (eval-after-load "mm-decode"
 ;;   '(progn
 ;;      (add-to-list 'mm-discouraged-alternatives "text/html")
 ;;      (add-to-list 'mm-discouraged-alternatives "text/richtext")))
 
-;; Ê¹mewÔÚpopÈ¡ĞÅÊ±½«ĞÅ¼ş±£ÁôÔÚ·şÎñÆ÷ÉÏ
+;; è„¢é¹¿mewè„­è„·popè„ éš†è„¨è„œè„¢å¤é™†èŠ¦è„¨è„œå½•é•å¤æ‹¢è„•ä¹ˆè„­è„·è·¯é•è„¦å¸½è„æ¢…è„¡è„§
 (setq mew-pop-delete nil)
-;;ÉèÖÃĞÂÎÅ×é
+;;è„¡çŒ«è„°è„™è„¨è„—è„¦è„œè„³èŒ…
 ;; (setq gnus-select-method '(nntp "news.cLinux.ml.org"))
 ;; (setq gnus-select-method '(nntp "forums.sybase.com"))
 (setq gnus-select-method '(nntp "freenews.netfront.net"))
-;;(setq gnus-select-method '(nntp "news.newsfan.net"));;¹úÄÚµÄ·şÎñÆ÷
+;;(setq gnus-select-method '(nntp "news.newsfan.net"));;é¹¿ç…¤è„›è„·ç¢Œè„›è·¯é•è„¦å¸½è„æ¢…
 ;;(setq gnus-select-method '(nntp "news.newsgroup.com.hk"))
-;;ÉèÖÃgunsÓÊ¼ş·şÎñÆ÷
+;;è„¡çŒ«è„°è„™gunsè„«è„¢å½•é•è·¯é•è„¦å¸½è„æ¢…
 (setq mail-sources
-      '((pop :server "pop.126.com"   ;; ÔÚÕâÀïÉèÖÃ pop3 ·şÎñÆ÷
-             :user "vcprg"            ;; ÓÃ»§Ãû
+      '((pop :server "pop.126.com"   ;; è„­è„·è„®èŠ’è„ŒèŒ‚è„¡çŒ«è„°è„™ pop3 è·¯é•è„¦å¸½è„æ¢…
+             :user "vcprg"            ;; è„«è„™ç¦„æ‚è„™æ²¡
              :port "pop3"
-             :password "YANG89726"))) ;; ÃÜÂë 
+             :password "YANG89726"))) ;; è„™è„ºè„—æ¯› 
 
-(setq gnus-secondary-select-methods '((nnfolder "")));;´æ·ÅÓÊ¼şµÄµØ·½
+(setq gnus-secondary-select-methods '((nnfolder "")));;éº“å¿™è·¯è„œè„«è„¢å½•é•ç¢Œè„›ç¢Œè„´è·¯é™†
 
-;; (setq user-full-name "Ñî½Ü") ;; Íâ·¢µÄÓÊ¼ş²ÉÓÃÕâ¸öÃû×Ö
-;; (setq user-mail-address "vcprg@126.com") ;;Íâ·¢µÄÓÊ¼ş²ÉÓÃÕâ¸öµØÖ·
+;; (setq user-full-name "è„©å¯é™†è„º") ;; è„¥èŠ’è·¯å„ç¢Œè„›è„«è„¢å½•é•è™è„¡è„«è„™è„®èŠ’èµ‚æšè„™æ²¡è„³è„°
+;; (setq user-mail-address "vcprg@126.com") ;;è„¥èŠ’è·¯å„ç¢Œè„›è„«è„¢å½•é•è™è„¡è„«è„™è„®èŠ’èµ‚æšç¢Œè„´è„°è·¯
 ;; (setq smtpmail-auth-credentials
-;;     '(("smtp.126.com";; SMTP ·şÎñÆ÷
+;;     '(("smtp.126.com";; SMTP è·¯é•è„¦å¸½è„æ¢…
 ;;        25
-;;        "vcprg"          ;; ÓÃ»§Ãû
-;;        "YANG89726")))   ;; ÃÜÂë
+;;        "vcprg"          ;; è„«è„™ç¦„æ‚è„™æ²¡
+;;        "YANG89726")))   ;; è„™è„ºè„—æ¯›
 ;; (setq smtpmail-default-smtp-server "smtp.126.com")
 ;; (setq smtpmail-smtp-server "smtp.126.com")
 ;; (setq message-send-mail-function 'smtpmail-send-it)
 
-(setq user-full-name "Ñî½Ü") ;; Íâ·¢µÄÓÊ¼ş²ÉÓÃÕâ¸öÃû×Ö
-(setq user-mail-address "vcprg@126.com") ;;Íâ·¢µÄÓÊ¼ş²ÉÓÃÕâ¸öµØÖ·
+(setq user-full-name "yangj") ;; è„¥èŠ’è·¯å„ç¢Œè„›è„«è„¢å½•é•è™è„¡è„«è„™è„®èŠ’èµ‚æšè„™æ²¡è„³è„°
+(setq user-mail-address "vcprg@126.com") ;;è„¥èŠ’è·¯å„ç¢Œè„›è„«è„¢å½•é•è™è„¡è„«è„™è„®èŠ’èµ‚æšç¢Œè„´è„°è·¯
 (setq smtpmail-auth-credentials
-    '(("smtp.126.com";; SMTP ·şÎñÆ÷
+    '(("smtp.126.com";; SMTP è·¯é•è„¦å¸½è„æ¢…
        25
-       "vcprg")))          ;; ÓÃ»§Ãû
-       ;; "")))   ;; ÃÜÂë
+       "vpcrg")))          ;; è„«è„™ç¦„æ‚è„™æ²¡
+       ;; "")))   ;; è„™è„ºè„—æ¯›
 (setq smtpmail-default-smtp-server "smtp.126.com")
 (setq smtpmail-smtp-server "smtp.126.com")
 (setq message-send-mail-function 'smtpmail-send-it)
 
-;;±àÂë
+;;å¤è„¿è„—æ¯›
 ;; (set-language-environment 'Chinese-GB)
 (setq gnus-default-charset 'chinese-iso-8bit
    gnus-group-name-charset-group-alist '((".*" . chinese-iso-8bit))
@@ -457,64 +457,55 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
    gnus-newsgroup-ignored-charsets
        '(unknown-8bit x-unknown iso-8859-1))
 
-;;ÁíÍâ£¬ÓĞĞ©ÓÃ web ·½Ê½·¢³öµÄÓÊ¼şÀïÓĞ html£¬¼ÓÈëÏÂÃæµÄÉèÖÃ£¬Ö»¿´ÆäÖĞµÄplain text ²¿·Ö£º
+;;è„•é“†è„¥èŠ’æ‹¢å¢è„«è„¨è„¨æ¼è„«è„™ web è·¯é™†è„¢é™†è·¯å„é²æšç¢Œè„›è„«è„¢å½•é•è„ŒèŒ‚è„«è„¨ htmlæ‹¢å¢å½•è„«è„ æ¯›è„§è„—è„™å¿™ç¢Œè„›è„¡çŒ«è„°è„™æ‹¢å¢è„°ç¦„é©´éº“è„ç›²è„°è„¨ç¢Œè„›plain text è™é©´è·¯è„°æ‹¢æ½
 (eval-after-load "mm-decode"
   '(progn
      (add-to-list 'mm-discouraged-alternatives "text/html")
      (add-to-list 'mm-discouraged-alternatives "text/richtext")))
 
 (setq gnus-default-subscribed-newsgroups
-  '("gnu.emacs.help"     ;; ÕâÀï²»´íàŞ£¬ÓĞ¹Ø emacs Ê¹ÓÃµÄÎÊÌâ¶¼ÔÚÕâÀïÌÖÂÛ
+  '("gnu.emacs.help"     ;; è„®èŠ’è„ŒèŒ‚è™ç¦„éº“é“†è„¿è„¼æ‹¢å¢è„«è„¨é¹¿è„´ emacs è„¢é¹¿è„«è„™ç¢Œè„›è„¦è„¢è„¤èŠ’éœ²å½•è„­è„·è„®èŠ’è„ŒèŒ‚è„¤è„°è„—è„¹
 	"fa.linux.kernel"
 	"linux.kernel"    
 	"comp.os.linux.advocacy"
 	"cn.bbs.comp.linux"
-	"cn.comp.os.linux")) ;; ÕâÀïÒ²ÓĞÒ»¸ö emacs Ğ¡ÍÅ»ï£¬
-                         ;; ÓĞ¿ÕÈ¥´Õ¸öÈÈÄÖ°É£¬ÖĞÎÄµÄÓ´ 
+	"cn.comp.os.linux")) ;; è„®èŠ’è„ŒèŒ‚è„ªè™è„«è„¨è„ªç¦„èµ‚æš emacs è„¨éš†è„¥è„œç¦„èŒ‚æ‹¢å¢
+                         ;; è„«è„¨é©´è„®è„ æ¥¼éº“è„®èµ‚æšè„ è„ è„›è„°æ³è„¡æ‹¢å¢è„°è„¨è„¦è„›ç¢Œè„›è„«éº“ 
 
-;; (setq scheme-program-name "mit-scheme")
-(load-file "~/.emacs.d/quack.el")
-(require 'quack)
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(column-number-mode t)
  '(display-time-mode t)
- '(ecb-layout-name "left9")
- '(ecb-options-version "2.40")
- '(ecb-windows-width 0.18)
  '(menu-bar-mode nil)
- '(quack-programs (quote ("mzscheme" "bigloo" "csi" "csi -hygienic" "gosh" "gracket" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "racket" "racket -il typed/racket" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
  '(show-paren-mode t)
  '(tool-bar-mode nil))
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "gray12" :foreground "green" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))))
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "DejaVu Sans Mono" :foundry "unknown" :slant normal :weight bold :height 98 :width normal)))))
 
-(setq org-latex-to-pdf-process '("pdftexi2dvi --pdf --clean --verbose --batch %f"))
-
+(setq-default indent-tabs-mode nil)
 
 ;; (fset 'node-label
-;; 	  "\341\C-k\C-y[]\C-blabel=\"\"\C-b\C-y\C-e;\C-j")
+;;       "\341\C-k\C-y[]\C-blabel=\"\"\C-b\C-y\C-e;\C-j\C-x\C-s")
 ;; (global-set-key (kbd "C-2") 'node-label)
 
-;; (fset 'subgraph-cluster
-;;    [tab ?\C-. ?\C-s ?\( ?\C-r ?\C-m ?\C-r ?  ?\C-s ?\C-m ?\M-z ?\( ?\C-y ?\C-/ ?\C-/ ?\C-. ?s ?u ?b ?g ?r ?a ?p ?h ?  ?c ?l ?u ?s ?t ?e ?r ?_ ?\C-y backspace ?\{ return ?\} ?\C-a ?\C-o tab ?l ?a ?b ?e ?l ?= ?\" ?\" ?\C-b ?\C-. ?\C-a ?\M-z ?\{ ?\C-/ ?\C-. ?\C-y backspace backspace ?\C-e ?\; ?\C-j ?\C-x ?\C-s])
-;; (global-set-key (kbd "C-1") 'subgraph-cluster)
+;; (fset 'subgraph-cluster-label
+;;       [tab ?s ?u ?b ?g ?r ?a ?p ?h ?  ?c ?l ?u ?s ?t ?e ?r ?_ ?\C-. ?\C-s ?\( ?\C-r ?\C-m ?\C-r ?  ?\C-s ?\C-m ?\M-z ?\( ?\C-/ ?\C-. ?\C-y backspace ?\{ return ?\} ?\C-a ?\C-o ?l ?a ?b ?e ?l ?= tab ?\" ?\" ?\C-b ?\C-. ?\C-a ?\M-z ?\{ ?\C-y ?\C-/ ?\C-/ ?\C-. ?\C-y backspace ?\C-e ?\; ?\C-j ?\C-x ?\C-s])
+;; (global-set-key (kbd "C-1") 'subgraph-cluster-label)
 
-;; (fset 'narrow
-;; 	  "\C-r \C-s\C-m\C-k\C-y;\C-y -> ")
+;; (fset 'parse-cluster
+;;    "\C-r \C-s\C-m\C-k\C-y\C-j\C-y ")
+;; (global-set-key (kbd "C-3") 'parse-cluster)
 
-;; (global-set-key (kbd "C-3") 'narrow)
-
-(load-file "~/.emacs.d/window-number.el")
-(window-number-mode t)
-(window-number-meta-mode t)
+;; (load-file "~/.emacs.d/window-number.el")
+;; (window-number-mode t)
+;; (window-number-meta-mode t)
 
 ;; Toggle window dedication
 
@@ -540,19 +531,51 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
  (current-buffer)))
 (global-set-key [pause] 'toggle-window-dedicated)
 
+;; è¿™ä¸ªä¸èƒ½åˆ†è¾¨å¤§å°å†™.
+;; (defun zap-upto-char (arg char)
+;;   "Kill up to and including ARG'th occurrence of CHAR.
+;; Goes backward if ARG is negative; error if CHAR not found."
+;;   (interactive "*p\ncZap upto char: ")
+;;   (kill-region (point) (progn
+;; 			 (search-backward (char-to-string char) nil nil arg)
+;; 			 (goto-char (if (> arg 0) (point) (1+ (point))))
+;; 			 (point))))
+;; (global-set-key (kbd "M-,") 'zap-upto-char)
+;; ;; (global-set-key "M-Z" 'zap-upto-char)
 
-(defun zap-upto-char (arg char)
+(defun copy-upto-char (arg char)
   "Kill up to and including ARG'th occurrence of CHAR.
 Goes backward if ARG is negative; error if CHAR not found."
-  (interactive "*p\ncZap upto char: ")
-  (kill-region (point) (progn
+  (interactive "*p\ncCopy upto char: ")
+  (copy-region-as-kill (point) (progn
 			 (search-backward (char-to-string char) nil nil arg)
 			 (goto-char (if (> arg 0) (point) (1+ (point))))
 			 (point))))
-(global-set-key (kbd "M-,") 'zap-upto-char)
-;; (global-set-key "M-Z" 'zap-upto-char)
+(global-set-key (kbd "C-,") 'copy-upto-char)
 
 
+;;èµ‚éº“è„°è„è„ªç¦„èµ‚æšç¢Œæ¥¼éº“è„¢
+;; (defun huangq-save-token-at-point(count)
+;;   (interactiveze)
+;;   (save-excursion
+;;     (let ((end (progn (search-backward-regexp "[a-zA-Z0-9_]*" nil nil count) (forward-word 1) (point)))
+;;           (beg (progn (search-forward-regexp "*[a-zA-Z0-9_]" nil nil count) (forward-word -1) (point))))
+;;       (copy-region-as-kill beg end)
+;;       (message (substring-no-properties (current-kill 0))))))
+;; (global-set-key (kbd "C-c t") 'huangq-save-token-at-point)
+
+(defun huangq-save-token-at-point()
+  (interactive)
+  (save-excursion
+    (let ((end (progn (unless (search-backward-regexp "[^a-zA-Z0-9_]" nil nil nil) (forward-char 1)) (point)))
+          ;; (beg (progn (forward-word -1) (point)))
+(beg (progn (unless (search-forward-regexp "[a-zA-Z0-9_]*" nil nil nil)) (forward-char 1)(point)))
+          )
+      (copy-region-as-kill beg end)
+      (message (substring-no-properties (current-kill 0))))))
+(global-set-key (kbd "C-c t") 'huangq-save-token-at-point)
+
+;; è¿™ä¸ªå¯ä»¥åˆ†è¾¨å¤§å°å†™
 (defun zap-up-to-char (arg char)
   "Kill up to, but not including ARGth occurrence of CHAR.
 Case is ignored if `case-fold-search' is non-nil in the current buffer.
@@ -567,11 +590,28 @@ Ignores CHAR at point."
                        (search-backward (char-to-string char) nil nil arg)
                      (backward-char direction))
                     (point)))))
-(global-set-key (kbd "M-Z") 'zap-up-to-char)
+(global-set-key (kbd "M-,") 'zap-up-to-char)
+
+(add-hook 'dired-mode-hook (lambda ()
+  (interactive)
+  (make-local-variable  'dired-sort-map)
+  (setq dired-sort-map (make-sparse-keymap))
+  (define-key dired-mode-map "s" dired-sort-map)
+  (define-key dired-sort-map "s" 
+              '(lambda () "sort by Size" 
+                (interactive) (dired-sort-other (concat dired-listing-switches "S"))))
+  (define-key dired-sort-map "x" 
+              '(lambda () "sort by eXtension" 
+                 (interactive) (dired-sort-other (concat dired-listing-switches "X"))))
+  (define-key dired-sort-map "t" 
+              '(lambda () "sort by Time" 
+                 (interactive) (dired-sort-other (concat dired-listing-switches "t"))))
+  (define-key dired-sort-map "n" 
+              '(lambda () "sort by Name" 
+                 (interactive) (dired-sort-other (concat dired-listing-switches ""))))))
 
 
-;; (autoload 'zap-up-to-char "misc"
-;;     "Kill up to, but not including ARGth occurrence of CHAR.(fn arg char)"
-;;     'interactive)
-;; (global-set-key (kbd "M-Z") 'zap-up-to-char)
-;;   ;; (global-set-key "\M-z" 'zap-up-to-char)
+(global-set-key (kbd "M-2") 'windmove-left)          ; move to left windnow
+(global-set-key (kbd "M-3") 'windmove-right)        ; move to right window
+(global-set-key (kbd "M-p") 'windmove-up)              ; move to upper window
+(global-set-key (kbd "M-n") 'windmove-down)          ; move to downer window

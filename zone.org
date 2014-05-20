@@ -7560,3 +7560,28 @@ http://www.cnblogs.com/frydsh/archive/2012/08/25/2655569.html
   PREV：COMMITTED - 1。
 
   HEAD针对于版本库，另外3个针对于某个工作副本目录或文件。
+
+==============================[2014-05-16 五]==============================
+
+
+scp 是没有-f这个参数的,加上这个参数就会一直卡在哪里的.
+
+IT好处:不工作可以学习.所以离职后可以边放松边学习.
+
+
+==============================[2014-05-17 六]==============================
+
+加了一些emacs dired的一些功能:如可以用s s来按大小排序.
+http://www.newsmth.net/pc/pccon.php?id=2525&nid=58509
+
+
+==============================[2014-05-20 二]==============================
+
+如何使用emacs+cscope看remote服务器的代码,emacs是本地的,cscope是remote服务器的,要修改
+xcscope.el文件:把start-process替换为start-file-process, call-process替换为process-file. 这
+个修改是根据这里的:http://lists.gnu.org/archive/html/help-gnu-emacs/2009-02/msg00372.html.
+cscope.out, cscope.po.out, cscope.in.out,这些文件是使用remote服务器的cscope生成的.使用这种
+方法还可以绕过一些加密系统.就是说本不用使用加密客户端也可以.
+
+
+叫我审代码,几千行的代码怎么审啊,我就只能找我最熟悉的那一段来审,其它的看一看格式就算了,这是一个好的方法.
