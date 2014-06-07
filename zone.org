@@ -7616,3 +7616,17 @@ http://www.ibm.com/developerworks/cn/linux/l-graphvis/
 
 今天编译内核的时候发现每一次编译都会把代码根目录的cscope文件给删除掉, 所以在编译之后加一句
 话把副本给拷贝过去.
+
+==============================[2014-06-05 四]==============================
+
+今天在用emacs远程cscope的时候,因为还没有建cscope文件就输入了c-c s g的命令,导致就算建了所有
+的cscope文件后,emacs还是不能用c-c s g之类的命令,一用就卡在那里,要关掉emacs再开才可以.
+
+内核态和用户态的交互可以用NETLINK
+socket(PF_NETLINK, SOCK_DGRAM, NETLINK_KOBJECT_UEVENT);
+http://www.cnblogs.com/iceocean/articles/1594195.html
+
+==============================[2014-06-07 六]==============================
+
+主流驱动:base, bluetooth, char(里面很杂), clk, clocksource, dma, gpio, i2c, input,
+iommu, mmc, mtd, power, rtc, spi, usb, tty/serial
