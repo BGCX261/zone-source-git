@@ -69,8 +69,8 @@ nil 0 nil "_NET_WM_STATE" 32
 ;脢贸卤锚鹿枚脗脰拢卢脛卢脠脧碌脛鹿枚露炉脤芦驴矛拢卢脮芒脌茂赂脛脦陋3脨脨
 (defun up-slightly () (interactive) (scroll-up 5))
 (defun down-slightly () (interactive) (scroll-down 5))
-(global-set-key [mouse-4] 'down-slightly)
-(global-set-key [mouse-5] 'up-slightly)
+;; (global-set-key [mouse-4] 'down-slightly)
+;; (global-set-key [mouse-5] 'up-slightly)
 
 ;;========================================
 ;;鹿脴卤脮碌卤脟掳禄潞鲁氓脟酶 Alt+4  ;; C-x 0
@@ -292,7 +292,8 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 ;; (global-semantic-tag-folding-mode 1)
 ;; (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
 ;; (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
-
+(add-hook 'c-mode-hook 'hs-minor-mode)
+(add-hook 'c++-mode-hook 'hs-minor-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;脪脭脡脧脢脟CEDET碌脛脜盲脰脙;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;setup ecb
 (require 'semantic/analyze)
@@ -613,5 +614,8 @@ Ignores CHAR at point."
 
 (global-set-key (kbd "M-2") 'windmove-left)          ; move to left windnow
 (global-set-key (kbd "M-3") 'windmove-right)        ; move to right window
-(global-set-key (kbd "M-p") 'windmove-up)              ; move to upper window
-(global-set-key (kbd "M-n") 'windmove-down)          ; move to downer window
+(global-set-key (kbd "M-0") 'windmove-up)              ; move to upper window
+(global-set-key (kbd "M-9") 'windmove-down)          ; move to downer window
+
+(global-ede-mode t)
+
