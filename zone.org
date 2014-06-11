@@ -7630,3 +7630,5 @@ http://www.cnblogs.com/iceocean/articles/1594195.html
 
 主流驱动:base, bluetooth, char(里面很杂), clk, clocksource, dma, gpio, i2c, input,
 iommu, mmc, mtd, power, rtc, spi, usb, tty/serial
+
+base/core.c bus.c platform,c class.c driver.c
