@@ -7632,3 +7632,6 @@ http://www.cnblogs.com/iceocean/articles/1594195.html
 iommu, mmc, mtd, power, rtc, spi, usb, tty/serial
 
 base/core.c bus.c platform,c class.c driver.c
+
+设备插入是如何被系统认别的.
+http://bbs.csdn.net/topics/390636313?page=1
